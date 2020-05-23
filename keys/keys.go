@@ -6,6 +6,8 @@ import (
     "io/ioutil"
     "os"
     "path"
+    "regexp"
+    "strings"
 )
 
 func RemoveKey(hash string) {
@@ -19,6 +21,21 @@ func RemoveKey(hash string) {
     _ = os.Remove(keyPath)
 }
 
+func GetKey(hash string) string {
+    keyPath := getKeyPath(hash)
+
+    if _, err := os.Stat(keyPath); os.IsNotExist(err) {
+        return ""
+    }
+
+    pubKey, err := ioutil.ReadFile(keyPath)
+    if err != nil {
+        return ""
+    }
+
+    return string(pubKey)
+}
+
 func AddKey(hash string, key string) {
     keyPath := getKeyPath(hash)
 
@@ -30,6 +47,10 @@ func AddKey(hash string, key string) {
     if err != nil {
         logger.Panic(err)
     }
+
+    // Remove any newlines if found
+    re := regexp.MustCompile(`\r?\n`)
+    key = re.ReplaceAllString(key, "")
 
     // @TODO: Does not take into account we can have multiple keys
     _ = ioutil.WriteFile(keyPath, []byte(key), 0600)
@@ -48,6 +69,6 @@ func HasKey(hash string) bool {
 }
 
 func getKeyPath(hash string) string {
-    return fmt.Sprintf(".keydb/%s/%s", hash[:2], hash[2:])
+    return fmt.Sprintf(".keydb/%s/%s", strings.ToLower(hash[:2]), strings.ToLower(hash[2:]))
 }
 

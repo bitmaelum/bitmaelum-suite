@@ -38,8 +38,6 @@ func main() {
     if err != nil {
         panic(err)
     }
-
-    fmt.Printf("%s", msg.Message)
 }
 
 func loadMessage(path string) (*Message, error) {
