@@ -115,13 +115,13 @@ func (a *AccountInfo) Get(email string) (*Account, error) {
 }
 
 func (a *AccountInfo) GenerateAccount(email string, name string) (*Account, error) {
-    logger.Info("generating new keypair")
+    logger.Trace("generating new keypair")
     privateKey, err := utils.CreateNewKeyPair(4096)
     if err != nil {
         return nil, err
     }
 
-    logger.Info("calculating for proof-of-work")
+    logger.Trace("calculating for proof-of-work")
     pow := ProofOfWork{
         Bits:  20,
         Nonce: utils.ProofOfWork(20, []byte(email)),
@@ -144,7 +144,7 @@ func (a *AccountInfo) GenerateAccount(email string, name string) (*Account, erro
         Pow:     pow,
     }
 
-    logger.Info("saving account")
+    logger.Debug("saving account")
     a.Accounts = append(a.Accounts, account)
     a.SaveAccount()
 

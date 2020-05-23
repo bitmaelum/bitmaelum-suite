@@ -19,13 +19,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// accountCmd represents the account command
-var accountCmd = &cobra.Command{
-	Use:   "account",
-	Short: "Information about your account",
-	Long: `This command allows you to manage or create your account`,
+// keysCmd represents the keys command
+var keysCmd = &cobra.Command{
+	Use:   "keys",
+	Short: "Keys stuff",
+	Long: `Manage public keys so you can send messages encrypted`,
 }
 
 func init() {
-	rootCmd.AddCommand(accountCmd)
+	rootCmd.AddCommand(keysCmd)
 }

@@ -16,31 +16,34 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
+	"crypto/sha256"
+	"encoding/base64"
+	"github.com/jaytaph/mailv2/keys"
+	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-// infoCmd represents the info command
-var infoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "Information about your account",
-	Long: `This command gives you information about your account`,
+// removeCmd represents the remove command
+var removeCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "Remove a key",
+	Long: `Remove a key`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("info called")
+		hasher := sha256.New()
+		hasher.Write([]byte(emailFlag))
+		hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+		if ! keys.HasKey(hash) {
+			logger.Error("Email does not exist in the public key database")
+		}
+		keys.RemoveKey(hash)
 	},
 }
 
 func init() {
-	accountCmd.AddCommand(infoCmd)
+	keysCmd.AddCommand(removeCmd)
 
-	// Here you will define your flags and configuration settings.
+	removeCmd.Flags().StringVar(&emailFlag, "email", "", "Email address")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// infoCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// infoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	_ = removeCmd.MarkFlagRequired("email")
 }

@@ -22,9 +22,6 @@ import (
 	"os"
 )
 
-var emailFlag *string
-var nameFlag *string
-
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
@@ -34,12 +31,12 @@ var generateCmd = &cobra.Command{
 		logger.Info("generating new account")
 
 		accounts := account.LoadAccount()
-		if accounts.Has(*emailFlag) {
+		if accounts.Has(emailFlag) {
 			logger.Error("Looks like this account has already be generated.")
 			os.Exit(128)
 		}
 
-		account, err := accounts.GenerateAccount(*emailFlag, *nameFlag)
+		account, err := accounts.GenerateAccount(emailFlag, nameFlag)
 		if err != nil {
 			logger.Error("Error while generating new account")
 			os.Exit(128)
@@ -52,8 +49,9 @@ var generateCmd = &cobra.Command{
 func init() {
 	accountCmd.AddCommand(generateCmd)
 
-	emailFlag = generateCmd.PersistentFlags().String("email", "", "Your email address to generate")
-	nameFlag = generateCmd.PersistentFlags().String("name", "", "Your name")
-	_ = generateCmd.MarkPersistentFlagRequired("email")
-	_ = generateCmd.MarkPersistentFlagRequired("name")
+	generateCmd.Flags().StringVar(&emailFlag, "email", "", "Your email address to generate")
+	generateCmd.Flags().StringVar(&nameFlag, "name", "", "Your name")
+
+	_ = generateCmd.MarkFlagRequired("email")
+	_ = generateCmd.MarkFlagRequired("name")
 }

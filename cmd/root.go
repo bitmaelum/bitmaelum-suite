@@ -43,26 +43,30 @@ var muchVerboseFlag *bool
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	logger.Debug("Checking verbosity flags")
-
-	if *verboseFlag == true {
-		logger.SetLevel(logger.InfoLevel)
-	}
-	if *moreVerboseFlag == true {
-		logger.SetLevel(logger.DebugLevel)
-	}
-	if *muchVerboseFlag == true {
-		logger.SetLevel(logger.TraceLevel)
-	}
-
-
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
+func initLogger() {
+	if *verboseFlag == true {
+		fmt.Println("INfo level")
+		logger.SetLevel(logger.InfoLevel)
+	}
+	if *moreVerboseFlag == true {
+		fmt.Println("Debug level")
+		logger.SetLevel(logger.DebugLevel)
+	}
+	if *muchVerboseFlag == true {
+		fmt.Println("trace level")
+		logger.SetLevel(logger.TraceLevel)
+	}
+}
+
 func init() {
+	cobra.OnInitialize(initLogger)
+
 	verboseFlag = rootCmd.PersistentFlags().BoolP("v", "", false, "verbosity level")
 	moreVerboseFlag = rootCmd.PersistentFlags().BoolP("vv", "", false, "medium verbosity")
 	muchVerboseFlag = rootCmd.PersistentFlags().BoolP("vvv", "", false, "highest verbosity level")
