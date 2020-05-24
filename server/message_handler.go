@@ -2,7 +2,7 @@ package server
 
 import (
     "encoding/json"
-    "github.com/google/uuid"
+    "github.com/jaytaph/mailv2/container"
     http_status "github.com/jaytaph/mailv2/http"
     "github.com/jaytaph/mailv2/message"
     "math/rand"
@@ -16,8 +16,10 @@ const (
 )
 
 type ProofOfWorkType struct {
-    Load    int      `json:"load"`
-    Data    []byte   `json:"data"`
+    Bits        int         `json:"bits"`
+    Nonce       string      `json:"nonce"`
+    Path        string      `json:"path"`
+    Timeout     string      `json:"timeout"`
 }
 
 type BodyAcceptType struct {
@@ -34,8 +36,11 @@ type OutputHeaderType struct {
 }
 
 func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
+    is := container.GetIncomingService()
+
     decoder := json.NewDecoder(req.Body)
 
+    // Decode JSON
     var input message.MessageHeader
     err := decoder.Decode(&input)
     if err != nil {
@@ -45,6 +50,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
         return
     }
 
+    // Validate incoming header
     err = message.ValidateHeader(input)
     if err != nil {
         w.Header().Set("Content-Type", "application/json")
@@ -53,16 +59,28 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
         return
     }
 
-    pow, err := needsProofOfWork(input)
-    if err != nil {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusBadRequest)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError(err.Error()))
-        return
-    }
+    // Check if we need proof of work.
+    if needsProofOfWork(input) {
+        // Generate proof-of-work data
+        path, nonce, err := is.GeneratePowPath(input.From.Email, 24)
+        if err != nil {
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+            _ = json.NewEncoder(w).Encode(http_status.StatusError(err.Error()))
+            return
+        }
 
-    // Seems like this message needs to do some proof of work before continuing
-    if pow != nil {
+        // Allow 30 minutes for proof-of-work
+        to := time.Now()
+        to.Add(time.Minute * 30)
+
+        pow := &ProofOfWorkType{
+            Bits: 24,
+            Nonce: nonce,
+            Path: "/incoming/" + path,
+            Timeout: to.Format(time.RFC3339),
+        }
+
         ret := OutputHeaderType{
             Error: false,
             Status: PROOF_OF_WORK,
@@ -76,7 +94,8 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
         return
     }
 
-    path, err := uuid.NewRandom()
+    // No proof-of-work, generate accept path
+    path, err := is.GenerateAcceptPath(input.From.Email)
     if err != nil {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusBadRequest)
@@ -93,7 +112,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
         Status: BODY_ACCEPT,
         Description: "Accepting body for this header",
         BodyAccept: &BodyAcceptType{
-            Path: "/incoming/" + path.String(),
+            Path: "/incoming/" + path,
             Timeout: to.Format(time.RFC3339),
         },
     }
@@ -103,23 +122,9 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func needsProofOfWork(header message.MessageHeader) (*ProofOfWorkType, error) {
+func needsProofOfWork(header message.MessageHeader) bool {
     // @TODO: We probably want to use different metrics to check if we need to do proof-of-work
-    if rand.Intn(10) < 5 {
-        rnd := make([]byte, 20)
-        _, err := rand.Read(rnd)
-        if err != nil {
-            return nil, err
-        }
-
-        pow := &ProofOfWorkType{
-            Load: 10,
-            Data: rnd,
-        }
-        return pow, nil
-    }
-
-    return nil, nil;
+    return rand.Intn(10) < 5
 }
 
 func PostMessageBody(w http.ResponseWriter, req *http.Request) {

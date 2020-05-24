@@ -4,14 +4,15 @@ import "time"
 
 type Reader interface {
     Has(path string) (bool, error)
-    Get(path string) (string, error)
+    Get(path string) ([]byte, error)
 }
 
 type Writer interface {
-    Set(path string, value string, expiry time.Duration) error
+    Create(path string, value []byte, expiry time.Duration) error
+    Remove(path string) error
 }
 
-type IncomingRepository interface {
+type Repository interface {
     Reader
     Writer
 }
