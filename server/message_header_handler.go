@@ -5,7 +5,6 @@ import (
     "crypto/sha256"
     "encoding/json"
     "github.com/jaytaph/mailv2/container"
-    http_status "github.com/jaytaph/mailv2/http"
     "github.com/jaytaph/mailv2/message"
     "io/ioutil"
     "math/rand"
@@ -126,7 +125,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 func sendBadRequest(w http.ResponseWriter, err error) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusBadRequest)
-    _ = json.NewEncoder(w).Encode(http_status.StatusError(err.Error()))
+    _ = json.NewEncoder(w).Encode(StatusError(err.Error()))
 }
 
 func needsProofOfWork(header message.MessageHeader) bool {

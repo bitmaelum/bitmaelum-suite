@@ -1,4 +1,4 @@
-package http
+package server
 
 type OutputStatus struct {
     Error bool `json:"error"`

@@ -4,7 +4,6 @@ import (
     "encoding/json"
     "github.com/gorilla/mux"
     "github.com/jaytaph/mailv2/container"
-    http_status "github.com/jaytaph/mailv2/http"
     "github.com/jaytaph/mailv2/incoming"
     "github.com/jaytaph/mailv2/message"
     "github.com/jaytaph/mailv2/utils"
@@ -27,7 +26,7 @@ func PostMessageBody(w http.ResponseWriter, req *http.Request) {
     if info == nil {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusNotFound)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError("not found"))
+        _ = json.NewEncoder(w).Encode(StatusError("not found"))
         return
     }
 
@@ -42,7 +41,7 @@ func PostMessageBody(w http.ResponseWriter, req *http.Request) {
 
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusInternalServerError)
-    _ = json.NewEncoder(w).Encode(http_status.StatusError("unknown incoming type for this request"))
+    _ = json.NewEncoder(w).Encode(StatusError("unknown incoming type for this request"))
 }
 
 func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.IncomingInfoType) {
@@ -60,7 +59,7 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
     if ! utils.ValidateProofOfWork(info.Bits, []byte(info.Nonce), input.Data) {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusNotAcceptable)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError("proof-of-work cannot be validated"))
+        _ = json.NewEncoder(w).Encode(StatusError("proof-of-work cannot be validated"))
         return
     }
 

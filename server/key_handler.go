@@ -6,7 +6,6 @@ import (
     "github.com/jaytaph/mailv2/keys"
     "net/http"
     "strings"
-    http_status "github.com/jaytaph/mailv2/http"
 )
 
 type OutputPublicKey struct {
@@ -25,7 +24,7 @@ func RetrieveKey(w http.ResponseWriter, req *http.Request) {
     if ! keys.HasKey(hash) {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusNotFound)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError("public key not found"))
+        _ = json.NewEncoder(w).Encode(StatusError("public key not found"))
         return
     }
 
@@ -45,7 +44,7 @@ func DeleteKey(w http.ResponseWriter, req *http.Request) {
     if ! keys.HasKey(hash) {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusNotFound)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError("public key not found"))
+        _ = json.NewEncoder(w).Encode(StatusError("public key not found"))
         return
     }
 
@@ -53,7 +52,7 @@ func DeleteKey(w http.ResponseWriter, req *http.Request) {
 
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    _ = json.NewEncoder(w).Encode(http_status.StatusOk("public key has been deleted"))
+    _ = json.NewEncoder(w).Encode(StatusOk("public key has been deleted"))
 }
 
 func StoreKey(w http.ResponseWriter, req *http.Request) {
@@ -67,7 +66,7 @@ func StoreKey(w http.ResponseWriter, req *http.Request) {
     if err != nil {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusBadRequest)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError("Malformed JSON: " + err.Error()))
+        _ = json.NewEncoder(w).Encode(StatusError("Malformed JSON: " + err.Error()))
         return
     }
 
@@ -75,6 +74,6 @@ func StoreKey(w http.ResponseWriter, req *http.Request) {
 
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    _ = json.NewEncoder(w).Encode(http_status.StatusOk("public key has been added"))
+    _ = json.NewEncoder(w).Encode(StatusOk("public key has been added"))
 }
 
