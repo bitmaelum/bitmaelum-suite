@@ -2,7 +2,7 @@ package message
 
 import (
     "errors"
-    "github.com/jaytaph/mailv2/utils"
+    "github.com/jaytaph/mailv2/core/utils"
 )
 
 func ValidateHeader(input MessageHeader) error {

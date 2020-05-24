@@ -2,8 +2,8 @@ package container
 
 import (
     "github.com/go-redis/redis/v8"
-    "github.com/jaytaph/mailv2/config"
-    "github.com/jaytaph/mailv2/incoming"
+    "github.com/jaytaph/mailv2/core/config"
+    "github.com/jaytaph/mailv2/server/incoming"
     logger "github.com/sirupsen/logrus"
 )
 

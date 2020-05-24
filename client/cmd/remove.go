@@ -18,7 +18,7 @@ package cmd
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"github.com/jaytaph/mailv2/keys"
+	"github.com/jaytaph/mailv2/core/keys"
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

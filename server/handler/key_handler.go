@@ -1,9 +1,9 @@
-package server
+package handler
 
 import (
     "encoding/json"
     "github.com/gorilla/mux"
-    "github.com/jaytaph/mailv2/keys"
+    "github.com/jaytaph/mailv2/core/keys"
     "net/http"
     "strings"
 )

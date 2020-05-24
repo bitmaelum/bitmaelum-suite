@@ -1,11 +1,11 @@
-package server
+package handler
 
 import (
     "bytes"
     "crypto/sha256"
     "encoding/json"
-    "github.com/jaytaph/mailv2/container"
-    "github.com/jaytaph/mailv2/message"
+    "github.com/jaytaph/mailv2/core/container"
+    "github.com/jaytaph/mailv2/core/message"
     "io/ioutil"
     "math/rand"
     "net/http"

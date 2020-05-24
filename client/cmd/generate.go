@@ -16,7 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/jaytaph/mailv2/account"
+	"github.com/jaytaph/mailv2/core/account"
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"

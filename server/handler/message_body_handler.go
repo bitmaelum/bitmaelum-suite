@@ -1,12 +1,12 @@
-package server
+package handler
 
 import (
     "encoding/json"
     "github.com/gorilla/mux"
-    "github.com/jaytaph/mailv2/container"
-    "github.com/jaytaph/mailv2/incoming"
-    "github.com/jaytaph/mailv2/message"
-    "github.com/jaytaph/mailv2/utils"
+    "github.com/jaytaph/mailv2/core/container"
+    "github.com/jaytaph/mailv2/core/message"
+    "github.com/jaytaph/mailv2/server/incoming"
+    "github.com/jaytaph/mailv2/core/utils"
     "net/http"
     "time"
 )

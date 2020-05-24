@@ -6,7 +6,7 @@ import (
     "encoding/pem"
     "errors"
     "fmt"
-    "github.com/jaytaph/mailv2/utils"
+    "github.com/jaytaph/mailv2/core/utils"
     logger "github.com/sirupsen/logrus"
     "io/ioutil"
     "os"

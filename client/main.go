@@ -1,7 +1,7 @@
-package main
+package client
 
 import (
-	"github.com/jaytaph/mailv2/cmd"
+	"github.com/jaytaph/mailv2/client/cmd"
 	"github.com/sirupsen/logrus"
 	logger "github.com/sirupsen/logrus"
 	"os"
