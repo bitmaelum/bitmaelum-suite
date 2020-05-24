@@ -22,13 +22,15 @@
     
 # Mail server
 
+* You'll need redis. Run either locally or via a container. Make sure you set the host info in the configuration file `./config.yml`
+
 * Run the mail-server:
 
-    ./release/mailv2-server
+    ./release/mailv2-server -config ./config.yml
 
-    This will run a mailserver on port 2424 over a TLS connection.
-
-* The server has no configuration yet. There should be a "server.yaml" configuration file in the future.
+    This will run a mailserver on localhost port 2424 over a TLS connection.
+    
+    Configuration for the server can be found in `./config.yml`
 
 ## Paths and files
 
