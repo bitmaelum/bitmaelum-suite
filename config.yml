@@ -1,0 +1,20 @@
+config:
+    logging:
+        # LogLevel
+        level: trace
+    registration:
+        # Allows users to create an account
+        enabled: true
+    server:
+        # Address where to listen. Use 0.0.0.0 for all interfaces
+        host: 127.0.0.1
+        # Default port to listen on
+        port: 2424
+    tls:
+        # Certification and key files
+        certfile: server.crt
+        keyfile: server.key
+    redis:
+        # Redis host
+        host: 127.0.0.1:6379
+        db: 0

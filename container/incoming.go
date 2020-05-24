@@ -2,6 +2,7 @@ package container
 
 import (
     "github.com/go-redis/redis/v8"
+    "github.com/jaytaph/mailv2/config"
     "github.com/jaytaph/mailv2/incoming"
     logger "github.com/sirupsen/logrus"
 )
@@ -29,8 +30,8 @@ func GetIncomingRepository() *incoming.Repository {
 
     logger.Trace("Creating new incomingRepository")
     opts := redis.Options{
-        Addr: "127.0.0.1:6379",
-        DB: 0,
+        Addr: config.Configuration.Redis.Host,
+        DB: config.Configuration.Redis.Db,
     }
 
     repo := incoming.NewRedisRepository(&opts)
