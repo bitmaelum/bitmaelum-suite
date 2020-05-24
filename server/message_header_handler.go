@@ -1,10 +1,13 @@
 package server
 
 import (
+    "bytes"
+    "crypto/sha256"
     "encoding/json"
     "github.com/jaytaph/mailv2/container"
     http_status "github.com/jaytaph/mailv2/http"
     "github.com/jaytaph/mailv2/message"
+    "io/ioutil"
     "math/rand"
     "net/http"
     "time"
@@ -13,6 +16,8 @@ import (
 const (
     PROOF_OF_WORK   string = "proof_of_work"
     BODY_ACCEPT     string = "body_accept"
+
+    BITS_FOR_PROOF_OF_WORK      int = 22
 )
 
 type ProofOfWorkType struct {
@@ -38,35 +43,34 @@ type OutputHeaderType struct {
 func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     is := container.GetIncomingService()
 
-    decoder := json.NewDecoder(req.Body)
+    // Generate checksum for header message
+    body, err := ioutil.ReadAll(req.Body)
+    req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+    checksum := sha256.Sum256(body)
 
     // Decode JSON
+    decoder := json.NewDecoder(req.Body)
     var input message.MessageHeader
-    err := decoder.Decode(&input)
+    err = decoder.Decode(&input)
     if err != nil {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusBadRequest)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError("Malformed JSON: " + err.Error()))
+        sendBadRequest(w, err)
         return
     }
 
     // Validate incoming header
     err = message.ValidateHeader(input)
     if err != nil {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusBadRequest)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError(err.Error()))
+        sendBadRequest(w, err)
         return
     }
 
     // Check if we need proof of work.
     if needsProofOfWork(input) {
+
         // Generate proof-of-work data
-        path, nonce, err := is.GeneratePowPath(input.From.Email, 24)
+        path, nonce, err := is.GeneratePowPath(input.From.Email, BITS_FOR_PROOF_OF_WORK, checksum[:])
         if err != nil {
-            w.Header().Set("Content-Type", "application/json")
-            w.WriteHeader(http.StatusBadRequest)
-            _ = json.NewEncoder(w).Encode(http_status.StatusError(err.Error()))
+            sendBadRequest(w, err)
             return
         }
 
@@ -75,7 +79,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
         to.Add(time.Minute * 30)
 
         pow := &ProofOfWorkType{
-            Bits: 24,
+            Bits: BITS_FOR_PROOF_OF_WORK,
             Nonce: nonce,
             Path: "/incoming/" + path,
             Timeout: to.Format(time.RFC3339),
@@ -95,11 +99,9 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     }
 
     // No proof-of-work, generate accept path
-    path, err := is.GenerateAcceptPath(input.From.Email)
+    path, err := is.GenerateAcceptPath(input.From.Email, checksum[:])
     if err != nil {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusBadRequest)
-        _ = json.NewEncoder(w).Encode(http_status.StatusError(err.Error()))
+        sendBadRequest(w, err)
         return
     }
 
@@ -119,19 +121,17 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
     _ = json.NewEncoder(w).Encode(ret)
+}
 
+func sendBadRequest(w http.ResponseWriter, err error) {
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusBadRequest)
+    _ = json.NewEncoder(w).Encode(http_status.StatusError(err.Error()))
 }
 
 func needsProofOfWork(header message.MessageHeader) bool {
     // @TODO: We probably want to use different metrics to check if we need to do proof-of-work
     return rand.Intn(10) < 5
 }
-
-func PostMessageBody(w http.ResponseWriter, req *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-    _ = json.NewEncoder(w).Encode([]byte{})
-}
-
 
 

@@ -1,5 +1,9 @@
 package message
 
+type MessageProofOfWork struct {
+    Data     int64      `json:"data"`
+}
+
 type ProofOfWorkType struct {
     Bits     int64 `json:"bits"`
     Nonce    int64 `json:"nonce"`

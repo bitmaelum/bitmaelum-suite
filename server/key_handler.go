@@ -23,7 +23,9 @@ func RetrieveKey(w http.ResponseWriter, req *http.Request) {
     hash := strings.ToLower(vars["sha256"])
 
     if ! keys.HasKey(hash) {
-        http.Error(w, "No public key found", http.StatusNotFound)
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusNotFound)
+        _ = json.NewEncoder(w).Encode(http_status.StatusError("public key not found"))
         return
     }
 

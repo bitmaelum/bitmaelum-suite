@@ -17,11 +17,12 @@ type Service struct {
     repo Repository
 }
 
-type redisType struct {
-    Type    string  `json:"type"`
-    Email   string  `json:"email"`
-    Nonce   string  `json:"nonce,omitempty"`
-    Bits    int     `json:"bits,omitempty"`
+type IncomingInfoType struct {
+    Type        string      `json:"type"`
+    Email       string      `json:"email"`
+    Nonce       string      `json:"nonce,omitempty"`
+    Bits        int         `json:"bits,omitempty"`
+    Checksum    []byte      `json:"checksum"`
 }
 
 func NewIncomingService(repo Repository) *Service {
@@ -30,10 +31,11 @@ func NewIncomingService(repo Repository) *Service {
     }
 }
 
-func (is *Service) GenerateAcceptPath(email string) (string, error) {
-    data := &redisType{
+func (is *Service) GenerateAcceptPath(email string, checksum []byte) (string, error) {
+    data := &IncomingInfoType{
         Type: ACCEPT,
         Email: email,
+        Checksum: checksum,
     }
     jsonData, err := json.Marshal(data)
     if err != nil {
@@ -50,7 +52,7 @@ func (is *Service) GenerateAcceptPath(email string) (string, error) {
     return path, nil
 }
 
-func (is *Service) GeneratePowPath(email string, bits int) (string, string, error) {
+func (is *Service) GeneratePowPath(email string, bits int, checksum []byte) (string, string, error) {
     rnd := make([]byte, 32)
     _, err := rand.Read(rnd)
     if err != nil {
@@ -58,11 +60,12 @@ func (is *Service) GeneratePowPath(email string, bits int) (string, string, erro
     }
     nonce := base64.StdEncoding.EncodeToString(rnd)
 
-    data := &redisType{
+    data := &IncomingInfoType{
         Type: PROOF_OF_WORK,
         Email: email,
         Nonce: nonce,
         Bits: bits,
+        Checksum: checksum,
     }
     jsonData, err := json.Marshal(data)
     if err != nil {
@@ -92,4 +95,26 @@ func (is *Service) generatePath() (string, error) {
     }
 
     return path.String(), nil
+}
+
+func (is *Service) GetIncomingInfo(path string) (*IncomingInfoType, error) {
+    found, err := is.repo.Has(path)
+    if err != nil {
+        return nil, err
+    } else if ! found {
+        return nil, nil
+    }
+
+    data, err := is.repo.Get(path)
+    if err != nil {
+        return nil, err
+    }
+
+    incomingInfo := IncomingInfoType{}
+    err = json.Unmarshal(data, &incomingInfo)
+    if err != nil {
+        return nil, err
+    }
+
+    return &incomingInfo, nil
 }
