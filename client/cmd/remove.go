@@ -19,7 +19,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"github.com/jaytaph/mailv2/core/keys"
-	logger "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +34,7 @@ var removeCmd = &cobra.Command{
 		hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
 		if ! keys.HasKey(hash) {
-			logger.Error("Email does not exist in the public key database")
+			logrus.Error("email does not exist in the public key database")
 		}
 		keys.RemoveKey(hash)
 	},

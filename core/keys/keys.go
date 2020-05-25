@@ -2,7 +2,7 @@ package keys
 
 import (
     "fmt"
-    logger "github.com/sirupsen/logrus"
+    "github.com/sirupsen/logrus"
     "io/ioutil"
     "os"
     "path"
@@ -17,7 +17,7 @@ func RemoveKey(hash string) {
         return
     }
 
-    logger.Infof("Removing key file %s", keyPath)
+    logrus.Infof("removing key file %s", keyPath)
     _ = os.Remove(keyPath)
 }
 
@@ -39,13 +39,13 @@ func GetKey(hash string) string {
 func AddKey(hash string, key string) {
     keyPath := getKeyPath(hash)
 
-    logger.Tracef("Storing key in path %s", keyPath)
+    logrus.Tracef("storing key in path %s", keyPath)
 
     // Create path if needed
     dir := path.Dir(keyPath)
     err := os.MkdirAll(dir, 0700)
     if err != nil {
-        logger.Panic(err)
+        logrus.Panic(err)
     }
 
     // Remove any newlines if found
@@ -59,7 +59,7 @@ func AddKey(hash string, key string) {
 func HasKey(hash string) bool {
     keyPath := getKeyPath(hash)
 
-    logger.Tracef("checking if key exists on path %s", keyPath)
+    logrus.Tracef("checking if key exists on path %s", keyPath)
 
     if _, err := os.Stat(keyPath); os.IsNotExist(err) {
         return false

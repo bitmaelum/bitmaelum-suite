@@ -1,7 +1,7 @@
 package middleware
 
 import (
-    logger "github.com/sirupsen/logrus"
+    "github.com/sirupsen/logrus"
     "net/http"
     "time"
 )
@@ -12,5 +12,5 @@ func (*Logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Handl
     t := time.Now()
 
     next.ServeHTTP(w, r)
-    logger.Tracef("execution time: %s \n", time.Now().Sub(t).String())
+    logrus.Tracef("execution time: %s \n", time.Now().Sub(t).String())
 }

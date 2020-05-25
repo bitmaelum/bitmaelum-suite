@@ -21,7 +21,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"github.com/jaytaph/mailv2/core/keys"
-	logger "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
@@ -40,7 +40,7 @@ var addCmd = &cobra.Command{
 		hash := hex.EncodeToString(sum[:])
 
 		if keys.HasKey(hash) {
-			logger.Error("Email already exist in the public key database")
+			logrus.Error("Email already exist in the public key database")
 		}
 
 		var reader io.Reader
@@ -59,7 +59,7 @@ var addCmd = &cobra.Command{
 
 		pubKey, err := ioutil.ReadAll(reader)
 		if err != nil {
-			logger.Panicf("cannot read file: %s", err)
+			logrus.Panicf("cannot read file: %s", err)
 		}
 
 		// Sanity check to see if our file really contains a public key

@@ -23,7 +23,7 @@ package cmd
 
 import (
 	"fmt"
-	logger "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -52,15 +52,15 @@ func Execute() {
 func initLogger() {
 	if *verboseFlag == true {
 		fmt.Println("INfo level")
-		logger.SetLevel(logger.InfoLevel)
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 	if *moreVerboseFlag == true {
 		fmt.Println("Debug level")
-		logger.SetLevel(logger.DebugLevel)
+		logrus.SetLevel(logrus.DebugLevel)
 	}
 	if *muchVerboseFlag == true {
 		fmt.Println("trace level")
-		logger.SetLevel(logger.TraceLevel)
+		logrus.SetLevel(logrus.TraceLevel)
 	}
 }
 

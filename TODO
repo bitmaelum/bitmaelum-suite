@@ -1,0 +1,2 @@
+[ ] User registration through POST /account.
+[ ] Mailbox info through /account/<sha>.

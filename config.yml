@@ -2,9 +2,13 @@ config:
     logging:
         # LogLevel
         level: trace
-    registration:
+    account:
         # Allows users to create an account
-        enabled: true
+        registration: true
+        # How many bits of proof-of-work must be completed to register a new account
+        proof_of_work: 22
+        # Path to our email accounts
+        path: .maildb
     server:
         # Address where to listen. Use 0.0.0.0 for all interfaces
         host: 127.0.0.1

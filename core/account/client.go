@@ -7,7 +7,7 @@ import (
     "errors"
     "fmt"
     "github.com/jaytaph/mailv2/core/utils"
-    logger "github.com/sirupsen/logrus"
+    "github.com/sirupsen/logrus"
     "io/ioutil"
     "os"
     "path"
@@ -54,7 +54,7 @@ func (a *AccountInfo) SaveAccount() {
         dir := path.Dir(accountPath)
         err := os.MkdirAll(dir, 700)
         if err != nil {
-            logger.Error(err)
+            logrus.Error(err)
             os.Exit(128)
         }
     }
@@ -62,13 +62,13 @@ func (a *AccountInfo) SaveAccount() {
     // Marshal and save account data
     data, err := json.MarshalIndent(a.Accounts, "", " ")
     if err != nil {
-        logger.Error(err)
+        logrus.Error(err)
         os.Exit(128)
     }
 
     err = ioutil.WriteFile(accountPath, data, 0600)
     if err != nil {
-        logger.Error(err)
+        logrus.Error(err)
         os.Exit(128)
     }
 }
@@ -88,7 +88,7 @@ func LoadAccount() *AccountInfo {
     accountInfo := AccountInfo{}
     err = json.Unmarshal(data, &accountInfo.Accounts)
     if err != nil {
-        logger.Errorf("error while parsing account file: ", err)
+        logrus.Errorf("error while parsing account file: ", err)
     }
 
     return &accountInfo
@@ -115,13 +115,13 @@ func (a *AccountInfo) Get(email string) (*Account, error) {
 }
 
 func (a *AccountInfo) GenerateAccount(email string, name string) (*Account, error) {
-    logger.Trace("generating new keypair")
+    logrus.Trace("generating new keypair")
     privateKey, err := utils.CreateNewKeyPair(4096)
     if err != nil {
         return nil, err
     }
 
-    logger.Trace("calculating for proof-of-work")
+    logrus.Trace("calculating for proof-of-work")
     pow := ProofOfWork{
         Bits:  20,
         Nonce: utils.ProofOfWork(20, []byte(email)),
@@ -144,7 +144,7 @@ func (a *AccountInfo) GenerateAccount(email string, name string) (*Account, erro
         Pow:     pow,
     }
 
-    logger.Debug("saving account")
+    logrus.Debug("saving account")
     a.Accounts = append(a.Accounts, account)
     a.SaveAccount()
 

@@ -5,12 +5,11 @@ import (
     "github.com/gorilla/mux"
     "github.com/jaytaph/mailv2/core/container"
     "github.com/jaytaph/mailv2/core/message"
-    "github.com/jaytaph/mailv2/server/incoming"
     "github.com/jaytaph/mailv2/core/utils"
+    "github.com/jaytaph/mailv2/server/incoming"
     "net/http"
     "time"
 )
-
 
 func PostMessageBody(w http.ResponseWriter, req *http.Request) {
     is := container.GetIncomingService()

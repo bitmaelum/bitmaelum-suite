@@ -59,14 +59,9 @@ func StoreKey(w http.ResponseWriter, req *http.Request) {
     vars := mux.Vars(req)
     hash := strings.ToLower(vars["sha256"])
 
-    decoder := json.NewDecoder(req.Body)
-
     var input InputPublicKey
-    err := decoder.Decode(&input)
+    err := DecodeBody(w, req.Body, &input)
     if err != nil {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusBadRequest)
-        _ = json.NewEncoder(w).Encode(StatusError("Malformed JSON: " + err.Error()))
         return
     }
 
@@ -76,4 +71,6 @@ func StoreKey(w http.ResponseWriter, req *http.Request) {
     w.WriteHeader(http.StatusOK)
     _ = json.NewEncoder(w).Encode(StatusOk("public key has been added"))
 }
+
+
 

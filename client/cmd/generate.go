@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"github.com/jaytaph/mailv2/core/account"
-	logger "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -28,21 +28,21 @@ var generateCmd = &cobra.Command{
 	Short: "Generate a new account",
 	Long: `This command allows you to generate a new account`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Info("generating new account")
+		logrus.Info("generating new account")
 
 		accounts := account.LoadAccount()
 		if accounts.Has(emailFlag) {
-			logger.Error("Looks like this account has already be generated.")
+			logrus.Error("looks like this account has already be generated.")
 			os.Exit(128)
 		}
 
 		account, err := accounts.GenerateAccount(emailFlag, nameFlag)
 		if err != nil {
-			logger.Error("Error while generating new account")
+			logrus.Error("error while generating new account")
 			os.Exit(128)
 		}
 
-		logger.Infof("Account for %s generated.", account.Email)
+		logrus.Infof("account for %s generated.", account.Email)
 	},
 }
 

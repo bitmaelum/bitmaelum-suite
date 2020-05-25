@@ -17,9 +17,11 @@ type Config struct {
        Level    string `yaml:"level"`
     } `yaml:"logging"`
 
-    Registration struct {
-       Enabled bool `yaml:"enabled"`
-    } `yaml:"registration"`
+    Account struct {
+       Registration bool    `yaml:"registration"`
+       Path         string  `yaml:"path"`
+       ProofOfWork  int     `yaml:"proof_of_work"`
+    } `yaml:"account"`
 
     Server struct {
        Host    string   `yaml:"host"`
