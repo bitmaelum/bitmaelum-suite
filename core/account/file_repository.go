@@ -2,10 +2,10 @@ package account
 
 import (
     "encoding/json"
-    "fmt"
     "github.com/sirupsen/logrus"
     "io/ioutil"
     "os"
+    "path"
     "strings"
 )
 
@@ -14,6 +14,11 @@ type MailBoxInfo struct {
     Description string `json:"description"`
     Quota int `json:"quota"`
 }
+
+const (
+    PUBKEY_FILE = ".pubkey"
+    INFO_FILE = ".info.json"
+)
 
 
 type fileRepo struct {
@@ -37,12 +42,12 @@ func (r *fileRepo) Exists(hash string) bool {
     return r.pathExists(hash, "")
 }
 
-func (r *fileRepo) StorePubKey(hash string, path string, data []byte) error {
-    return r.store(hash, ".pubkey", data)
+func (r *fileRepo) StorePubKey(hash string, data []byte) error {
+    return r.store(hash, PUBKEY_FILE, data)
 }
 
-func (r *fileRepo) FetchPubKey(hash string, path string) ([]byte, error) {
-    return r.fetch(hash, ".pubkey")
+func (r *fileRepo) FetchPubKey(hash string) ([]byte, error) {
+    return r.fetch(hash, PUBKEY_FILE)
 }
 
 func (r *fileRepo) CreateBox(hash string, box string, description string, quota int) error {
@@ -56,7 +61,9 @@ func (r *fileRepo) CreateBox(hash string, box string, description string, quota 
     }
 
     data, _ := json.MarshalIndent(mbi, "", " ")
-    return r.store(hash, box + "/.info.json", data)
+    return r.store(hash, path.Join(box, INFO_FILE), data)
+
+
 }
 
 func (r *fileRepo) ExistsBox(hash string, box string) bool {
@@ -80,7 +87,7 @@ func (r *fileRepo) pathExists(hash string, path string) bool {
     fullPath := r.getPath(hash, path)
     _, err := os.Stat(fullPath)
 
-    return os.IsExist(err)
+    return ! os.IsNotExist(err)
 }
 
 func (r *fileRepo) delete(hash string, path string) error {
@@ -97,12 +104,9 @@ func (r *fileRepo) fetch(hash string, path string) ([]byte, error) {
     return ioutil.ReadFile(fullPath)
 }
 
-func (r *fileRepo) getPath(hash string, path string) string {
+func (r *fileRepo) getPath(hash string, suffix string) string {
     hash = strings.ToLower(hash)
-    path = strings.ToLower(path)
+    suffix = strings.ToLower(suffix)
 
-    if path == "" {
-        return fmt.Sprintf("%s/%s/%s", r.basePath, hash[:2], hash[2:])
-    }
-    return fmt.Sprintf("%s/%s/%s/%s", r.basePath, hash[:2], hash[2:], path)
+    return path.Join(r.basePath, hash[:2], hash[2:], suffix)
 }

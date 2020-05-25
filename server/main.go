@@ -23,18 +23,14 @@ func main() {
 
     // Main router
     mainRouter := mux.NewRouter().StrictSlash(true)
-    mainRouter.HandleFunc("/key/{sha256:[A-Za-z0-9]{64}}", handler.RetrieveKey).Methods("GET")
-    mainRouter.HandleFunc("/key/{sha256:[A-Za-z0-9]{64}}", handler.StoreKey).Methods("PUT")
-    mainRouter.HandleFunc("/key/{sha256:[A-Za-z0-9]{64}}", handler.DeleteKey).Methods("DELETE")
 
     mainRouter.HandleFunc("/account", handler.NewAccount).Methods("POST")
-    mainRouter.HandleFunc("/account/{id:.+}", handler.RetrieveAccount).Methods("GET")
+    mainRouter.HandleFunc("/account/{id:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
+    mainRouter.HandleFunc("/account/{id:[A-Za-z0-9]{64}}/key", handler.RetrieveKey).Methods("GET")
 
     mainRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
-    mainRouter.HandleFunc("/incoming/{id:.+}", handler.PostMessageBody).Methods("POST")
+    mainRouter.HandleFunc("/incoming/{id:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
 
-    // Client router
-    // Server router
 
     middlewareRouter := negroni.New()
     middlewareRouter.Use(&middleware.Logger{})
@@ -53,6 +49,7 @@ func main() {
 func processLogging() {
     logrus.SetFormatter(new(logrus.JSONFormatter))
     logrus.SetFormatter(new(logrus.TextFormatter))
+
     switch (config.Configuration.Logging.Level) {
     case "trace":
         logrus.SetLevel(logrus.TraceLevel)
