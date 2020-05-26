@@ -1,0 +1,57 @@
+---
+swagger: "2.0"
+info:
+  description: "This is mailv2 API server"
+  version: "0.0.1"
+  title: "MailV2 swagger"
+host: "mailv2.swagger.io"
+basePath: "/"
+schemes:
+- "https"
+paths:
+  /account:
+    post:
+      tags:
+      - "account"
+      summary: "Create a new account"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Account info"
+        required: true
+        schema:
+          $ref: "#/definitions/AccountCreate"
+        x-exportParamName: "Body"
+      responses:
+        "400":
+          description: "Invalid input, invalid proof of work or not enough number of bits"
+        "403":
+          description: "Registration not allowed"
+
+
+definitions:
+  AccountCreate:
+    type: "object"
+    properties:
+      mailbox:
+        type: "string"
+        description: "The SHA256 of the email address"
+      public_key:
+        type: "string"
+        description: "PEM formatted public RSA key"
+      proof_of_work:
+        type: "object"
+        properties:
+          bits:
+            type: "integer"
+            format: "int64"
+            description: "Number of bits for this proof"
+          proof:
+            type: "integer"
+            format: "int64"
+            description: "Actual proof based on the mailbox"
