@@ -62,8 +62,6 @@ func (r *fileRepo) CreateBox(hash string, box string, description string, quota 
 
     data, _ := json.MarshalIndent(mbi, "", " ")
     return r.store(hash, path.Join(box, INFO_FILE), data)
-
-
 }
 
 func (r *fileRepo) ExistsBox(hash string, box string) bool {

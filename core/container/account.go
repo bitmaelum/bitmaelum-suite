@@ -14,7 +14,7 @@ func GetAccountService() *account.Service{
     }
 
     repo := GetAccountRepository()
-    accountService = account.NewAccountService(*repo)
+    accountService = account.AccountService(*repo)
     return accountService
 }
 

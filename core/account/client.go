@@ -15,15 +15,16 @@ import (
 
 type ProofOfWork struct {
     Bits    int     `json:"bits"`
-    Nonce   int64   `json:"nonce"`
+    Proof   int64   `json:"proof"`
 }
 
 type Account struct {
-    Email       string          `json:"email"`
-    Name        string          `json:"name"`
-    PrivKey     string          `json:"privKey"`
-    PubKey      string          `json:"pubKey"`
-    Pow         ProofOfWork     `json:"pow"`
+    Email           string          `json:"email"`
+    Name            string          `json:"name"`
+    Organisation    string          `json:"name"`
+    PrivKey         string          `json:"privKey"`
+    PubKey          string          `json:"pubKey"`
+    Pow             ProofOfWork     `json:"pow"`
 }
 
 type AccountInfo struct {
@@ -73,7 +74,7 @@ func (a *AccountInfo) SaveAccount() {
     }
 }
 
-func LoadAccount() *AccountInfo {
+func LoadAccountConfig() *AccountInfo {
     accountPath := getAccountPath()
 
     if _, err := os.Stat(accountPath); os.IsNotExist(err) {
@@ -124,7 +125,7 @@ func (a *AccountInfo) GenerateAccount(email string, name string) (*Account, erro
     logrus.Trace("calculating for proof-of-work")
     pow := ProofOfWork{
         Bits:  20,
-        Nonce: utils.ProofOfWork(20, []byte(email)),
+        Proof: utils.ProofOfWork(20, []byte(email)),
     }
 
     privPem := pem.EncodeToMemory(&pem.Block{

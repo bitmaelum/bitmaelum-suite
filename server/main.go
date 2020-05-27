@@ -24,7 +24,9 @@ func main() {
     // Main router
     mainRouter := mux.NewRouter().StrictSlash(true)
 
-    mainRouter.HandleFunc("/account", handler.NewAccount).Methods("POST")
+    mainRouter.HandleFunc("/info", handler.Info).Methods("GET")
+
+    mainRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
     mainRouter.HandleFunc("/account/{id:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
     mainRouter.HandleFunc("/account/{id:[A-Za-z0-9]{64}}/key", handler.RetrieveKey).Methods("GET")
 
@@ -33,6 +35,7 @@ func main() {
 
 
     middlewareRouter := negroni.New()
+    middlewareRouter.Use(&middleware.Tracer{})
     middlewareRouter.Use(&middleware.Logger{})
     //middlewareRouter.Use(&middleware.BasicAuth{})
     middlewareRouter.UseHandler(mainRouter)

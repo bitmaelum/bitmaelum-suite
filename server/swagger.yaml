@@ -14,7 +14,7 @@ paths:
       tags:
       - "account"
       summary: "Create a new account"
-      description: ""
+      description: "This request will create a new account on the server if registration is available."
       consumes:
       - "application/json"
       produces:
@@ -32,6 +32,17 @@ paths:
           description: "Invalid input, invalid proof of work or not enough number of bits"
         "403":
           description: "Registration not allowed"
+  /account/{mailbox}/key:
+    get:
+      tags:
+        - "account"
+      summary: "Retrieve the public key for this mailbox"
+      description: "Retrives the public key for this mailbox."
+      responses:
+        "200":
+          description: "Public key in PEM format"
+        "404":
+          description: "Mailbox not found"
 
 
 definitions:

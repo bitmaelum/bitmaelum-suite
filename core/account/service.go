@@ -8,7 +8,7 @@ type Service struct {
     repo Repository
 }
 
-func NewAccountService(repo Repository) *Service {
+func AccountService(repo Repository) *Service {
     return &Service{
         repo: repo,
     }

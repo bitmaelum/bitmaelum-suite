@@ -8,7 +8,7 @@ import (
     "net/http"
 )
 
-type InputNewAccount struct {
+type InputCreateAccount struct {
     Mailbox     string  `json:"mailbox"`
     PublicKey   string  `json:"public_key"`
     ProofOfWork struct {
@@ -17,7 +17,7 @@ type InputNewAccount struct {
     } `json:"proof_of_work"`
 }
 
-func NewAccount(w http.ResponseWriter, req *http.Request) {
+func CreateAccount(w http.ResponseWriter, req *http.Request) {
     if ! config.Configuration.Account.Registration {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusForbidden)
@@ -25,13 +25,13 @@ func NewAccount(w http.ResponseWriter, req *http.Request) {
         return
     }
 
-    var input InputNewAccount
+    var input InputCreateAccount
     err := DecodeBody(w, req.Body, &input)
     if err != nil {
         return
     }
 
-    // @TODO: Check proof of work first
+    // Check proof of work first
     if input.ProofOfWork.Bits < config.Configuration.Account.ProofOfWork {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusBadRequest)
@@ -53,7 +53,7 @@ func NewAccount(w http.ResponseWriter, req *http.Request) {
     }
 
     w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
+    w.WriteHeader(http.StatusCreated)
     _ = json.NewEncoder(w).Encode(StatusOk("mailbox created"))
 }
 

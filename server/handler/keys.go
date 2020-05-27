@@ -18,7 +18,7 @@ type InputPublicKey struct {
 
 func RetrieveKey(w http.ResponseWriter, req *http.Request) {
     vars := mux.Vars(req)
-    hash := vars["sha256"]
+    hash := vars["id"]
 
     as := container.GetAccountService()
     if ! as.AccountExists(hash) {
