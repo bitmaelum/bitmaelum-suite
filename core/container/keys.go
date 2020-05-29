@@ -1,21 +1,22 @@
 package container
 
 import (
-    "github.com/jaytaph/mailv2/core/keys"
+    "github.com/jaytaph/mailv2/core/config"
+    "github.com/jaytaph/mailv2/core/resolve"
 )
 
-var keysService *keys.Service = nil
+var keysService *resolve.Service = nil
 
-var localKeysRepository *keys.Repository = nil
+var localKeysRepository *resolve.Repository = nil
 
-var remoteKeysRepository *keys.Repository = nil
+var remoteKeysRepository *resolve.Repository = nil
 
-var dhtKeysRepository *keys.Repository = nil
+var dhtKeysRepository *resolve.Repository = nil
 
-var chainKeysRepository *keys.ChainRepository = nil
+var chainKeysRepository *resolve.ChainRepository = nil
 
 
-func GetKeyRetrievalService() *keys.Service{
+func GetKeyRetrievalService() *resolve.Service{
     if keysService != nil {
         return keysService;
     }
@@ -25,45 +26,45 @@ func GetKeyRetrievalService() *keys.Service{
     repo.Add(*getRemoteRepository())
     repo.Add(*getDhtRepository())
 
-    keysService = keys.KeyRetrievalService(repo)
+    keysService = resolve.KeyRetrievalService(repo)
     return keysService
 }
 
-func getChainRepository() *keys.ChainRepository {
+func getChainRepository() *resolve.ChainRepository {
     if chainKeysRepository != nil {
         return chainKeysRepository;
     }
 
-    chainKeysRepository = keys.NewChainRepository()
+    chainKeysRepository = resolve.NewChainRepository()
     return chainKeysRepository
 }
 
-func getLocalRepository() *keys.Repository {
+func getLocalRepository() *resolve.Repository {
     if localKeysRepository != nil {
         return localKeysRepository;
     }
 
-    repo := keys.NewLocalRepository(GetAccountService())
+    repo := resolve.NewLocalRepository(GetAccountService())
     localKeysRepository = &repo
     return localKeysRepository
 }
 
-func getRemoteRepository() *keys.Repository {
+func getRemoteRepository() *resolve.Repository {
     if remoteKeysRepository != nil {
         return remoteKeysRepository;
     }
 
-    repo := keys.NewRemoteRepository()
+    repo := resolve.NewRemoteRepository(config.Client.Resolve.Remote.Url)
     remoteKeysRepository = &repo
     return remoteKeysRepository
 }
 
-func getDhtRepository() *keys.Repository {
+func getDhtRepository() *resolve.Repository {
     if dhtKeysRepository != nil {
         return dhtKeysRepository;
     }
 
-    repo := keys.NewDHTRepository()
+    repo := resolve.NewDHTRepository()
     dhtKeysRepository = &repo
     return dhtKeysRepository
 }

@@ -6,6 +6,7 @@ import (
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
     "github.com/jaytaph/mailv2/core/checksum"
+    "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/core/container"
     "github.com/jaytaph/mailv2/core/encode"
     "github.com/jaytaph/mailv2/core/encrypt"
@@ -13,11 +14,13 @@ import (
     "github.com/jessevdk/go-flags"
     "io/ioutil"
     "os"
+    "path"
     "strings"
     "time"
 )
 
 type Options struct {
+    Config      string      `short:"c" long:"config" description:"Configuration file" default:"./client-config.yml"`
     From        string      `short:"f" long:"from" description:"Sender email address"`
     To          string      `short:"t" long:"to" description:"Receiver email address"`
     Subject     string      `short:"s" long:"subject" description:"Subject of the message"`
@@ -39,6 +42,13 @@ func main() {
         fmt.Println()
         return
     }
+
+    // Load configuration
+    err := config.Server.LoadConfig(path.Clean(opts.Config))
+    if err != nil {
+        panic(err)
+    }
+
 
     // Load and check our FROM account
     ai := account.LoadAccountConfig()

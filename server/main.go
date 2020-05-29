@@ -41,9 +41,9 @@ func main() {
     middlewareRouter.UseHandler(mainRouter)
 
 
-    host := fmt.Sprintf("%s:%d", config.Configuration.Server.Host, config.Configuration.Server.Port)
+    host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
     logrus.Tracef("listenAndServeTLS on '%s'", host)
-    err := http.ListenAndServeTLS(host, config.Configuration.TLS.CertFile, config.Configuration.TLS.KeyFile, middlewareRouter)
+    err := http.ListenAndServeTLS(host, config.Server.TLS.CertFile, config.Server.TLS.KeyFile, middlewareRouter)
     if err != nil {
         log.Fatal("listenAndServe: ", err)
     }
@@ -74,18 +74,16 @@ func processLogging() {
     }
     logrus.SetOutput(os.Stdout)
 
-    logrus.Tracef("setting loglevel to '%s'", config.Configuration.Logging.Level)
+    logrus.Tracef("setting loglevel to '%s'", config.Server.Logging.Level)
 }
 
 func parseFlags() {
-    flag.StringVar(&configPath, "config", "./config.yml", "path to config file")
+    flag.StringVar(&configPath, "config", "./server.config.yml", "path to config file")
     flag.Parse()
 }
 
 func processConfig() {
-    config.Configuration.Logging.Level = "foobar"
-
-    err := config.Configuration.LoadConfig(configPath)
+    err := config.Server.LoadConfig(configPath)
     if err != nil {
         panic(err)
     }

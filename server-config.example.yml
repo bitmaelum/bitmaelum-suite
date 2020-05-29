@@ -1,0 +1,31 @@
+config:
+    # Logging of information
+    logging:
+        # LogLevel, trace, debug, info, warn, error, crit
+        level: trace
+    account:
+        # Allow users to create an account on this mailserver (with no limitations currently)
+        registration: true
+        # How many bits of proof-of-work must an account have to be able to register here
+        proof_of_work: 22
+        # Path to our email accounts
+        path: .maildb
+    server:
+        # Address where to listen. Use 0.0.0.0 for all interfaces
+        host: 127.0.0.1
+        # Default port to listen on
+        port: 2424
+    tls:
+        # Certification and key for running on HTTPS. This should be a valid certificate via letsencrypt for instance
+        # You can use self-signed certificates is you wnt
+        certfile: server.crt
+        keyfile: server.key
+    redis:
+        # Redis host
+        host: 127.0.0.1:6379
+        db: 0
+    resolve:
+        local:
+            path: "~/.mailv2/.resolvecache"
+        remote:
+            url: "https://resolve.mailv2.nl"

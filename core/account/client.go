@@ -15,13 +15,13 @@ import (
 
 type ProofOfWork struct {
     Bits    int     `json:"bits"`
-    Proof   int64   `json:"proof"`
+    Proof   string  `json:"proof"`
 }
 
 type Account struct {
-    Email           string          `json:"email"`
+    Address         string          `json:"address"`
     Name            string          `json:"name"`
-    Organisation    string          `json:"name"`
+    Organisation    string          `json:"organisation"`
     PrivKey         string          `json:"privKey"`
     PubKey          string          `json:"pubKey"`
     Pow             ProofOfWork     `json:"pow"`
@@ -96,18 +96,18 @@ func LoadAccountConfig() *AccountInfo {
 }
 
 
-func (a *AccountInfo) Has(email string) bool {
+func (a *AccountInfo) Has(address string) bool {
     for idx := range a.Accounts {
-        if a.Accounts[idx].Email == email {
+        if a.Accounts[idx].Address == address {
             return true
         }
     }
     return false
 }
 
-func (a *AccountInfo) Get(email string) (*Account, error) {
+func (a *AccountInfo) Get(address string) (*Account, error) {
     for idx := range a.Accounts {
-        if a.Accounts[idx].Email == email {
+        if a.Accounts[idx].Address == address {
             return &a.Accounts[idx], nil
         }
     }
@@ -115,7 +115,7 @@ func (a *AccountInfo) Get(email string) (*Account, error) {
     return nil, errors.New("account not found")
 }
 
-func (a *AccountInfo) GenerateAccount(email string, name string) (*Account, error) {
+func (a *AccountInfo) GenerateAccount(address string, name string) (*Account, error) {
     logrus.Trace("generating new keypair")
     privateKey, err := utils.CreateNewKeyPair(4096)
     if err != nil {
@@ -125,7 +125,7 @@ func (a *AccountInfo) GenerateAccount(email string, name string) (*Account, erro
     logrus.Trace("calculating for proof-of-work")
     pow := ProofOfWork{
         Bits:  20,
-        Proof: utils.ProofOfWork(20, []byte(email)),
+        Proof: utils.ProofOfWork(20, []byte(address)),
     }
 
     privPem := pem.EncodeToMemory(&pem.Block{
@@ -138,7 +138,7 @@ func (a *AccountInfo) GenerateAccount(email string, name string) (*Account, erro
     })
 
     account := Account{
-        Email:   email,
+        Address: address,
         Name:    name,
         PrivKey: string(privPem),
         PubKey:  string(pubPem),

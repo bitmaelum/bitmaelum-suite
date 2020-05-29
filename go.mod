@@ -3,6 +3,7 @@ module github.com/jaytaph/mailv2
 go 1.13
 
 require (
+	github.com/fatih/color v1.9.0
 	github.com/go-redis/redis/v8 v8.0.0-beta.2
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.4

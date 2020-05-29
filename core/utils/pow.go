@@ -3,16 +3,17 @@ package utils
 import (
     "bytes"
     "crypto/sha256"
+    "encoding/hex"
     "math"
     "math/big"
     "strconv"
 )
 
-func IntToHex(n int64) []byte {
-    return []byte(strconv.FormatInt(n, 16))
+func intToHex(n uint64) []byte {
+    return []byte(strconv.FormatUint(n, 16))
 }
 
-func ProofOfWork(bits int, data []byte) int64 {
+func ProofOfWork(bits int, data []byte) string {
     var hashInt big.Int
 
     // Hash must be less than this
@@ -20,12 +21,12 @@ func ProofOfWork(bits int, data []byte) int64 {
     target = target.Lsh(target, uint(256 - bits))
 
     // Count from 0 to MAXINT
-    var counter int64 = 0
+    var counter uint64 = 0
     for counter < math.MaxInt64 {
         // SHA256 the data
         hash := sha256.Sum256(bytes.Join([][]byte{
             data,
-            IntToHex(counter),
+            intToHex(counter),
         }, []byte{}))
         hashInt.SetBytes(hash[:])
 
@@ -38,15 +39,16 @@ func ProofOfWork(bits int, data []byte) int64 {
         counter += 1
     }
 
-    return counter
+    sum := sha256.Sum256(intToHex(counter))
+    return hex.EncodeToString(sum[:])
 }
 
-func ValidateProofOfWork(bits int, data []byte, nonce int64) bool {
+func ValidateProofOfWork(bits int, data []byte, proof uint64) bool {
     var hashInt big.Int
 
     hash := sha256.Sum256(bytes.Join([][]byte{
         data,
-        IntToHex(nonce),
+        intToHex(proof),
     }, []byte{}))
     hashInt.SetBytes(hash[:])
 

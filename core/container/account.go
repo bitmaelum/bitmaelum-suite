@@ -23,7 +23,7 @@ func GetAccountRepository() *account.Repository {
         return accountRepository;
     }
 
-    repo := account.NewFileRepository(config.Configuration.Account.Path)
+    repo := account.NewFileRepository(config.Server.Account.Path)
     accountRepository = &repo
     return accountRepository
 }

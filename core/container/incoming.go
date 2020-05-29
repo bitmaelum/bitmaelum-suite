@@ -25,8 +25,8 @@ func GetIncomingRepository() *incoming.Repository {
     }
 
     opts := redis.Options{
-        Addr: config.Configuration.Redis.Host,
-        DB: config.Configuration.Redis.Db,
+        Addr: config.Server.Redis.Host,
+        DB: config.Server.Redis.Db,
     }
 
     repo := incoming.NewRedisRepository(&opts)

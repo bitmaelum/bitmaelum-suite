@@ -5,14 +5,14 @@ import (
     "io/ioutil"
 )
 
-var Configuration Config = Config{}
+var Server ServerConfig = ServerConfig{}
 
 // Basically, our config is inside the "config" section. So we load the whole file and only store the Cfg section
-type LoadConfig struct {
-    Cfg Config `yaml:"config"`
+type WrappedServerConfig struct {
+    Cfg ServerConfig `yaml:"config"`
 }
 
-type Config struct {
+type ServerConfig struct {
     Logging struct {
        Level    string `yaml:"level"`
     } `yaml:"logging"`
@@ -37,23 +37,34 @@ type Config struct {
        Host    string `yaml:"host"`
        Db      int `yaml:"port"`
     } `yaml:"redis"`
+
+    Resolve struct {
+       Local struct {
+           Path  string  `yaml:"path"`
+       } `yaml:"local"`
+
+       Remote struct {
+           Url  string  `yaml:"url"`
+       } `yaml:"remote"`
+    } `yaml:"resolve"`
 }
 
-func (c *Config) LoadConfig(configPath string) error {
+func (c *ServerConfig) LoadConfig(configPath string) error {
     data, err := ioutil.ReadFile(configPath)
     if err != nil {
         return err
     }
 
-    var lc LoadConfig = LoadConfig{}
+    var lc WrappedServerConfig = WrappedServerConfig{}
     err = yaml.Unmarshal(data, &lc)
     if err != nil {
         return err
     }
 
     // We only care about the Cfg section. This keeps our "config:" section in the yaml file but we can still use
-    // config.Configuration.Logger.Level instead of config.Configuration.Cfg.Logger.Level
+    // config.Server.Logger.Level instead of config.Configuration.Cfg.Logger.Level
     *c = lc.Cfg
 
     return nil
 }
+
