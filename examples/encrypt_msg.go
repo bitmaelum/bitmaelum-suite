@@ -96,15 +96,15 @@ func encrypt(msg *Message, privKey *rsa.PrivateKey) error {
     return nil
 }
 
-func LoadPrivateKey(email string) (*rsa.PrivateKey, error) {
-    privateKey, err := utils.LoadPrivKey(fmt.Sprintf("%s.key.pem", email))
+func LoadPrivateKey(address string) (*rsa.PrivateKey, error) {
+    privateKey, err := utils.LoadPrivKey(fmt.Sprintf("%s.key.pem", address))
     if err != nil {
         privateKey, err := utils.CreateNewKeyPair(4096)
         if err != nil {
             panic(err)
         }
 
-        err = utils.SavePrivKey(fmt.Sprintf("%s.key.pem", email), privateKey)
+        err = utils.SavePrivKey(fmt.Sprintf("%s.key.pem", address), privateKey)
         if err != nil {
             panic(err)
         }

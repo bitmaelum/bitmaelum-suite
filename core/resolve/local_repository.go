@@ -2,6 +2,7 @@ package resolve
 
 import (
     "errors"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
     "github.com/sirupsen/logrus"
 )
@@ -16,12 +17,12 @@ func NewLocalRepository(s *account.Service) Repository {
     }
 }
 
-func (r *localRepo) Retrieve(hash string) (*ResolveInfo, error) {
+func (r *localRepo) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
     logrus.Trace("local repository cache is not available.")
 
     return nil, errors.New("key not found in local cache")
 }
 
-func (r *localRepo) Upload(hash, pubKey, address, signature string) error {
+func (r *localRepo) Upload(addr core.HashAddress, pubKey, address, signature string) error {
     return nil
 }

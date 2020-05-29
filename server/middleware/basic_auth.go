@@ -11,6 +11,7 @@ var username = "user"
 var password = "pass"
 var realm = "mailv2"
 
+// Basic authentication
 func (*BasicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
     user, pass, ok := r.BasicAuth()
 

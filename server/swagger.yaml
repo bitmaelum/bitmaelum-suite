@@ -51,7 +51,7 @@ definitions:
     properties:
       mailbox:
         type: "string"
-        description: "The SHA256 of the email address"
+        description: "The SHA256 of the address"
       public_key:
         type: "string"
         description: "PEM formatted public RSA key"

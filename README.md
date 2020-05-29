@@ -1,6 +1,6 @@
 # Usage
 
-* Think of a FQDN to host your email server. It doesn't have to exist for local development. For instance `mail.test.v2`
+* Think of a FQDN to host your message server. It doesn't have to exist for local development. For instance `mail.test.v2`
 
 * Create a server certificate and key file. 
 

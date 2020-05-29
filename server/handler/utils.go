@@ -8,16 +8,18 @@ import (
 )
 
 type OutputResponse struct {
-    Error bool `json:"error"`
+    Error bool `json:"error,omitempty"`
     Status string `json:"status"`
 }
 
+// Return an ok status response
 func StatusOk(status string) *OutputResponse {
     return &OutputResponse{
-        Error: false,
         Status: status,
     }
 }
+
+// Return an error status response
 func StatusError(status string) *OutputResponse {
     return &OutputResponse{
         Error: true,
@@ -25,6 +27,7 @@ func StatusError(status string) *OutputResponse {
     }
 }
 
+// Return an error status response
 func StatusErrorf(status string, args ...interface{}) *OutputResponse {
     return &OutputResponse{
         Error: true,
@@ -32,7 +35,7 @@ func StatusErrorf(status string, args ...interface{}) *OutputResponse {
     }
 }
 
-
+// Decode a JSON body or write/return an error
 func DecodeBody(w http.ResponseWriter, body io.ReadCloser, v interface{}) error {
     decoder := json.NewDecoder(body)
     err := decoder.Decode(v)

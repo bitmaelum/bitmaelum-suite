@@ -5,6 +5,7 @@ import (
     "encoding/base64"
     "encoding/json"
     "github.com/google/uuid"
+    "github.com/jaytaph/mailv2/core"
     "time"
 )
 
@@ -18,23 +19,25 @@ type Service struct {
 }
 
 type IncomingInfoType struct {
-    Type        string      `json:"type"`
-    Id          string      `json:"id"`
-    Nonce       string      `json:"nonce,omitempty"`
-    Bits        int         `json:"bits,omitempty"`
-    Checksum    []byte      `json:"checksum"`
+    Type        string              `json:"type"`
+    Addr        core.HashAddress    `json:"address"`
+    Nonce       string              `json:"nonce,omitempty"`
+    Bits        int                 `json:"bits,omitempty"`
+    Checksum    []byte              `json:"checksum"`
 }
 
+// Create new incoming service
 func NewIncomingService(repo Repository) *Service {
     return &Service{
         repo: repo,
     }
 }
 
-func (is *Service) GenerateAcceptPath(id string, checksum []byte) (string, error) {
+// Generate an accept response path
+func (is *Service) GenerateAcceptResponsePath(addr core.HashAddress, checksum []byte) (string, error) {
     data := &IncomingInfoType{
         Type: ACCEPT,
-        Id: id,
+        Addr: addr,
         Checksum: checksum,
     }
     jsonData, err := json.Marshal(data)
@@ -52,7 +55,8 @@ func (is *Service) GenerateAcceptPath(id string, checksum []byte) (string, error
     return path, nil
 }
 
-func (is *Service) GeneratePowPath(id string, bits int, checksum []byte) (string, string, error) {
+// Generate an proof-of-work response
+func (is *Service) GeneratePowResponsePath(addr core.HashAddress, bits int, checksum []byte) (string, string, error) {
     rnd := make([]byte, 32)
     _, err := rand.Read(rnd)
     if err != nil {
@@ -62,7 +66,7 @@ func (is *Service) GeneratePowPath(id string, bits int, checksum []byte) (string
 
     data := &IncomingInfoType{
         Type: PROOF_OF_WORK,
-        Id: id,
+        Addr: addr,
         Nonce: nonce,
         Bits: bits,
         Checksum: checksum,
@@ -82,12 +86,14 @@ func (is *Service) GeneratePowPath(id string, bits int, checksum []byte) (string
     return path, nonce, nil
 }
 
+// Remove an incoming path
 func (is *Service) RemovePath(path string) error {
     _ = is.repo.Remove(path)
 
     return nil
 }
 
+// Generates a new incoming path for either proof-of-work or accept responses
 func (is *Service) generatePath() (string, error) {
     path, err := uuid.NewRandom()
     if err != nil {
@@ -97,7 +103,8 @@ func (is *Service) generatePath() (string, error) {
     return path.String(), nil
 }
 
-func (is *Service) GetIncomingInfo(path string) (*IncomingInfoType, error) {
+// Get incoming info
+func (is *Service) GetIncomingPath(path string) (*IncomingInfoType, error) {
     found, err := is.repo.Has(path)
     if err != nil {
         return nil, err

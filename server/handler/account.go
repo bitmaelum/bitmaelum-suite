@@ -2,6 +2,7 @@ package handler
 
 import (
     "encoding/json"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/core/container"
     "github.com/jaytaph/mailv2/core/utils"
@@ -9,15 +10,18 @@ import (
 )
 
 type InputCreateAccount struct {
-    Mailbox     string  `json:"mailbox"`
-    PublicKey   string  `json:"public_key"`
+    Mailbox     core.HashAddress    `json:"mailbox"`
+    PublicKey   string              `json:"public_key"`
     ProofOfWork struct {
-        Bits     int     `json:"bits"`
-        Proof    uint64  `json:"proof"`
-    } `json:"proof_of_work"`
+        Bits     int                `json:"bits"`
+        Proof    uint64             `json:"proof"`
+    }                               `json:"proof_of_work"`
 }
 
+// Create account handler
 func CreateAccount(w http.ResponseWriter, req *http.Request) {
+
+    // Only allow registration when enabled in the configuration
     if ! config.Server.Account.Registration {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusForbidden)
@@ -45,6 +49,9 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
         return
     }
 
+    // @TODO: check if account already exists?
+
+    // Create account
     as := container.GetAccountService()
     err = as.CreateAccount(input.Mailbox, input.PublicKey)
     if err != nil {
@@ -57,6 +64,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
     _ = json.NewEncoder(w).Encode(StatusOk("mailbox created"))
 }
 
+// Retrieve account information
 func RetrieveAccount(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)

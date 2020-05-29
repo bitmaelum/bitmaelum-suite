@@ -10,6 +10,7 @@ import (
     "io"
 )
 
+// Encrypt json data with AES256
 func EncryptJson(key, iv []byte, data interface{}) ([]byte, error) {
     jsonData, err := json.Marshal(data)
     if err != nil {
@@ -29,6 +30,7 @@ func EncryptJson(key, iv []byte, data interface{}) ([]byte, error) {
     return ciphertext, nil
 }
 
+// Decrypt AES256 data back into json data
 func DecryptJson(key, iv []byte, ciphertext []byte, v interface{}) error {
     block, err := aes.NewCipher([]byte(key))
     if err != nil {
@@ -46,7 +48,7 @@ func EncryptData(key, iv []byte, r io.Reader, w *io.Writer) {
 }
 
 
-
+// Encrypt a catalog data. Use random key and iv.
 func EncryptCatalog(catalog message.Catalog) ([]byte, []byte, []byte, error) {
     var err error
 

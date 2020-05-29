@@ -18,6 +18,11 @@ const (
 // SHA256'd address
 type HashAddress    string
 
+// Cast an hash address to string
+func (ha HashAddress) String() string {
+    return string(ha)
+}
+
 // An actual address
 type Address struct {
     Local  string
@@ -25,9 +30,9 @@ type Address struct {
 }
 
 // Actual hash function
-func StringToHash(address string) string {
+func StringToHash(address string) HashAddress {
     sum := sha256.Sum256([]byte(address))
-    return hex.EncodeToString(sum[:])
+    return HashAddress(hex.EncodeToString(sum[:]))
 }
 
 // Return true when the given string is a valid address
@@ -65,6 +70,6 @@ func (a *Address) ToString() string {
 }
 
 // Converts an address to a hashed value
-func (a *Address) ToHash() string {
+func (a *Address) ToHash() HashAddress {
     return StringToHash(a.ToString())
 }

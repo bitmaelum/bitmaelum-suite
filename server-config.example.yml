@@ -8,7 +8,7 @@ config:
         registration: true
         # How many bits of proof-of-work must an account have to be able to register here
         proof_of_work: 22
-        # Path to our email accounts
+        # Path to our message accounts
         path: .maildb
     server:
         # Address where to listen. Use 0.0.0.0 for all interfaces

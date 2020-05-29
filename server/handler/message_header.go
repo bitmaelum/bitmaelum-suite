@@ -13,10 +13,9 @@ import (
 )
 
 const (
-    PROOF_OF_WORK   string = "proof_of_work"
-    BODY_ACCEPT     string = "body_accept"
-
-    BITS_FOR_PROOF_OF_WORK      int = 22
+    PROOF_OF_WORK           string = "proof_of_work"
+    BODY_ACCEPT             string = "body_accept"
+    BITS_FOR_PROOF_OF_WORK  int = 22
 )
 
 type ProofOfWorkType struct {
@@ -39,6 +38,7 @@ type OutputHeaderType struct {
     BodyAccept      *BodyAcceptType     `json:"body_accept,omitempty"`
 }
 
+// Handler when a message header is posted
 func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     is := container.GetIncomingService()
 
@@ -56,18 +56,17 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
         return
     }
 
-    // Validate incoming header
-    err = message.ValidateHeader(input)
-    if err != nil {
-        sendBadRequest(w, err)
-        return
-    }
+    // @TODO: Validate incoming header
+    //err = message.ValidateHeader(input)
+    //if err != nil {
+    //    sendBadRequest(w, err)
+    //    return
+    //}
 
     // Check if we need proof of work.
     if needsProofOfWork(input) {
-
         // Generate proof-of-work data
-        path, nonce, err := is.GeneratePowPath(input.From.Id, BITS_FOR_PROOF_OF_WORK, checksum[:])
+        path, nonce, err := is.GeneratePowResponsePath(input.From.Id, BITS_FOR_PROOF_OF_WORK, checksum[:])
         if err != nil {
             sendBadRequest(w, err)
             return
@@ -122,12 +121,14 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     _ = json.NewEncoder(w).Encode(ret)
 }
 
+// Send a bad request
 func sendBadRequest(w http.ResponseWriter, err error) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusBadRequest)
     _ = json.NewEncoder(w).Encode(StatusError(err.Error()))
 }
 
+// Defines if we need to do a proof-of-work based on the incoming header message
 func needsProofOfWork(header message.Header) bool {
     // @TODO: We probably want to use different metrics to check if we need to do proof-of-work
     return rand.Intn(10) < 5

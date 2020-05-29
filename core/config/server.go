@@ -49,6 +49,7 @@ type ServerConfig struct {
     } `yaml:"resolve"`
 }
 
+// Load server configuration
 func (c *ServerConfig) LoadConfig(configPath string) error {
     data, err := ioutil.ReadFile(configPath)
     if err != nil {

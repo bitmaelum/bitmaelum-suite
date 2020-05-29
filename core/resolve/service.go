@@ -28,23 +28,28 @@ func KeyRetrievalService(repo Repository) *Service {
     }
 }
 
-func (s *Service) GetInfo(addr core.Address) (*ResolveInfo, error) {
-    return s.repo.Retrieve(addr.ToHash())
+// Resolve an address
+func (s *Service) Resolve(addr core.Address) (*ResolveInfo, error) {
+    return s.repo.Resolve(addr.ToHash())
 }
 
-func (s *Service) UploadInfo(acc account.Account, resolveAddress string) error {
+// Upload resolve information to a service
+func (s *Service) UploadInfo(acc account.AccountInfo, resolveAddress string) error {
+    // Get private key
     block, _ := pem.Decode([]byte(acc.PrivKey))
     privKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
     if err != nil {
         return err
     }
 
+    // Sign resolve address
     hash := sha256.Sum256([]byte(resolveAddress))
     signature, err := rsa.SignPKCS1v15(rand.Reader, privKey, crypto.SHA256, hash[:])
     if err != nil {
         return err
     }
 
+    // And upload
     return s.repo.Upload(
         core.StringToHash(acc.Address),
         acc.PubKey,

@@ -1,14 +1,16 @@
 package account
 
+import "github.com/jaytaph/mailv2/core"
+
 type Repository interface {
     // Account management
-    Create(hash string) error
-    Exists(hash string) bool
+    Create(addr core.HashAddress) error
+    Exists(addr core.HashAddress) bool
 
-    StorePubKey(hash string, data []byte) error
-    FetchPubKey(hash string) ([]byte, error)
+    StorePubKey(addr core.HashAddress, data []byte) error
+    FetchPubKey(addr core.HashAddress) ([]byte, error)
 
-    CreateBox(hash string, box string, description string, quota int) error
-    ExistsBox(hash string, box string) bool
-    DeleteBox(hash string, box string) error
+    CreateBox(addr core.HashAddress, box, description string, quota int) error
+    ExistsBox(addr core.HashAddress, box string) bool
+    DeleteBox(addr core.HashAddress, box string) error
 }

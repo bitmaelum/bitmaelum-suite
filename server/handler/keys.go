@@ -3,6 +3,7 @@ package handler
 import (
     "encoding/json"
     "github.com/gorilla/mux"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/container"
     "net/http"
 )
@@ -15,21 +16,23 @@ type InputPublicKey struct {
     PublicKey string `json:"public_key"`
 }
 
-
+// Retrieve key handler
 func RetrieveKey(w http.ResponseWriter, req *http.Request) {
     vars := mux.Vars(req)
-    hash := vars["id"]
+    addr := core.HashAddress(vars["addr"])
 
+    // Check if account exists
     as := container.GetAccountService()
-    if ! as.AccountExists(hash) {
+    if ! as.AccountExists(addr) {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusNotFound)
         _ = json.NewEncoder(w).Encode(StatusError("public key not found"))
         return
     }
 
+    // Return public key
     ret := OutputPublicKey{
-        PublicKey: as.GetPublicKey(hash),
+        PublicKey: as.GetPublicKey(addr),
     }
 
     w.Header().Set("Content-Type", "application/json")

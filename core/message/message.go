@@ -1,21 +1,22 @@
 package message
 
 import (
+    "github.com/jaytaph/mailv2/core"
     "io"
     "time"
 )
 
 type Header struct {
     From struct {
-        Id          string  `json:"id"`
-        PublicKey   string  `json:"public_key"`
+        Addr        core.HashAddress    `json:"address"`
+        PublicKey   string              `json:"public_key"`
         ProofOfWork struct {
             Bits    int     `json:"bits"`
             Proof   uint64  `json:"proof"`
         } `json:"proof_of_work"`
     } `json:"from"`
-        Id    string    `json:"id"`
     To struct {
+        Addr    core.HashAddress    `json:"address"`
     } `json:"to"`
     Catalog struct {
         Size        uint64          `json:"size"`
@@ -28,11 +29,11 @@ type Header struct {
 
 type Catalog struct {
     From struct {
-        Address      string          `json:"address"`
-        Name         string          `json:"name"`
-        Organisation string          `json:"organisation"`
-        ProofOfWork  ProofOfWorkType `json:"proof_of_work"`
-        PublicKey    string          `json:"public_key"`
+        Address      string             `json:"address"`
+        Name         string             `json:"name"`
+        Organisation string             `json:"organisation"`
+        ProofOfWork  ProofOfWorkType    `json:"proof_of_work"`
+        PublicKey    string             `json:"public_key"`
     } `json:"from"`
     To struct {
         Address string `json:"address"`

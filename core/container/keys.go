@@ -22,9 +22,9 @@ func GetKeyRetrievalService() *resolve.Service{
     }
 
     repo := getChainRepository()
-    repo.Add(*getLocalRepository())
-    repo.Add(*getRemoteRepository())
-    repo.Add(*getDhtRepository())
+    _ = repo.Add(*getLocalRepository())
+    _ = repo.Add(*getRemoteRepository())
+    _ = repo.Add(*getDhtRepository())
 
     keysService = resolve.KeyRetrievalService(repo)
     return keysService

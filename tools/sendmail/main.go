@@ -21,8 +21,8 @@ import (
 
 type Options struct {
     Config      string      `short:"c" long:"config" description:"Configuration file" default:"./client-config.yml"`
-    From        string      `short:"f" long:"from" description:"Sender email address"`
-    To          string      `short:"t" long:"to" description:"Receiver email address"`
+    From        string      `short:"f" long:"from" description:"Sender address"`
+    To          string      `short:"t" long:"to" description:"Recipient address"`
     Subject     string      `short:"s" long:"subject" description:"Subject of the message"`
     Block       []string    `short:"b" long:"block" description:"Content block"`
     Attachment  []string    `short:"a" long:"attachment" description:"Attachment"`
@@ -31,6 +31,7 @@ type Options struct {
 var opts Options
 
 func main() {
+    // Parse config flags
     parser := flags.NewParser(&opts, flags.Default)
     if _, err := parser.Parse(); err != nil {
         flagsError, _ := err.(*flags.Error)
@@ -149,12 +150,14 @@ func main() {
     catalog.Subject = opts.Subject
     catalog.ThreadId = ""
 
+
     //for idx := range blocks {
     //    catalog.AddBlock(blocks[idx])
     //}
     //for idx := range attachments {
     //    catalog.AddAttachment(attachments[idx])
     //}
+
 
     catalogKey, catalogIv, encCatalog, err := encrypt.EncryptCatalog(*catalog)
     if err != nil {
@@ -195,10 +198,6 @@ func main() {
 
 
 
-    //
-    //
-    //
-    //
     //data, _ := ioutil.ReadFile("catalog.json.enc")
     //data, err = encode.Decode(data)
     //
@@ -206,7 +205,6 @@ func main() {
     //err = encrypt.DecryptJson(catalogKey, catalogIv, data, &dc)
     //
     //fmt.Printf("%#v", dc)
-
 
 
     //* fetch public key from receiver(s)

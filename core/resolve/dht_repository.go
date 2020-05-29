@@ -2,6 +2,7 @@ package resolve
 
 import (
     "errors"
+    "github.com/jaytaph/mailv2/core"
     "github.com/sirupsen/logrus"
 )
 
@@ -12,12 +13,12 @@ func NewDHTRepository() Repository {
     return &dhtRepo{}
 }
 
-func (r *dhtRepo) Retrieve(hash string) (*ResolveInfo, error) {
+func (r *dhtRepo) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
     logrus.Trace("DHT is not implemented yet")
 
     return nil, errors.New("key not found in DHT")
 }
 
-func (r *dhtRepo) Upload(hash, pubKey, address, signature string) error {
+func (r *dhtRepo) Upload(addr core.HashAddress, pubKey, address, signature string) error {
     return nil
 }

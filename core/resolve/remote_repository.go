@@ -4,6 +4,7 @@ import (
     "bytes"
     "encoding/json"
     "errors"
+    "github.com/jaytaph/mailv2/core"
     "io/ioutil"
     "net/http"
 )
@@ -25,6 +26,7 @@ type KeyDownload struct {
     Address     string  `json:"address"`
 }
 
+// Create new remote resolve repository
 func NewRemoteRepository(baseUrl string) Repository {
     return &remoteRepo{
         BaseUrl: baseUrl,
@@ -32,8 +34,9 @@ func NewRemoteRepository(baseUrl string) Repository {
     }
 }
 
-func (r *remoteRepo) Retrieve(hash string) (*ResolveInfo, error) {
-    response, err := r.client.Get(r.BaseUrl + "/" + hash)
+// Resolve
+func (r *remoteRepo) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
+    response, err := r.client.Get(r.BaseUrl + "/" + addr.String())
     if err != nil {
         return nil, errors.New("Error while retrieving key")
     }
@@ -60,7 +63,7 @@ func (r *remoteRepo) Retrieve(hash string) (*ResolveInfo, error) {
     return nil, errors.New("Error while retrieving key")
 }
 
-func (r *remoteRepo) Upload(hash, pubKey, address, signature string) error {
+func (r *remoteRepo) Upload(addr core.HashAddress, pubKey, address, signature string) error {
     data := &KeyUpload{
         PublicKey: pubKey,
         Address:   address,
@@ -72,7 +75,7 @@ func (r *remoteRepo) Upload(hash, pubKey, address, signature string) error {
         return err
     }
 
-    response, err := r.client.Post(r.BaseUrl + "/" + hash, "application/json", bytes.NewBuffer(byteBuf))
+    response, err := r.client.Post(r.BaseUrl + "/" + addr.String(), "application/json", bytes.NewBuffer(byteBuf))
     if err != nil {
         return err
     }

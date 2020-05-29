@@ -71,6 +71,6 @@ func CreateCatalog() *message.Catalog {
 }
 
 
-func (c *message.Catalog) Encrypt(iv, key string) ([]byte, error) {
-    return []byte{}, nil
-}
+//func (c *message.Catalog) Encrypt(iv, key string) ([]byte, error) {
+//    return []byte{}, nil
+//}

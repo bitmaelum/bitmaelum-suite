@@ -24,6 +24,7 @@ type Options struct {
 var opts Options
 
 func main() {
+    // Parse config
     parser := flags.NewParser(&opts, flags.Default)
     if _, err := parser.Parse(); err != nil {
         flagsError, _ := err.(*flags.Error)
@@ -123,7 +124,7 @@ func main() {
     fmt.Println("\U0001F477 Let's do some proof-of-work... (this might take a while)")
     proof := utils.ProofOfWork(22, []byte(addr.ToHash()))
 
-    acc := account.Account{
+    acc := account.AccountInfo{
         Address:      address,
         Name:         name,
         Organisation: organisation,

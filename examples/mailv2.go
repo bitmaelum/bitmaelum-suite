@@ -8,7 +8,7 @@ import (
 )
 
 type GenerateFlags struct {
-    email string
+    address string
 }
 
 type EncryptFlags struct {
@@ -41,18 +41,18 @@ func main() {
     generateFlags := GenerateFlags{}
     accountCmd := flag.NewFlagSet("account", flag.ExitOnError)
     generateCmd := accountCmd.Bool("generate", false, "Generate")
-    generateFlags.email = accountCmd.String("email", "", "email address")
+    generateFlags.address = accountCmd.String("address", "", "address")
 
     encryptFlags := EncryptFlags{}
     encryptCmd := flag.NewFlagSet("encrypt", flag.ExitOnError)
-    encryptFlags.from = encryptCmd.String("from", "", "email address")
-    encryptFlags.to = encryptCmd.String("to", "", "email address")
+    encryptFlags.from = encryptCmd.String("from", "", "sender address")
+    encryptFlags.to = encryptCmd.String("to", "", "recipient address")
     encryptFlags.input = encryptCmd.String("input", "", "file to encrypt")
 
     decryptFlags := DecryptFlags{}
     decryptCmd := flag.NewFlagSet("decrypt", flag.ExitOnError)
-    decryptFlags.from = decryptCmd.String("from", "", "email address")
-    decryptFlags.to = decryptCmd.String("to", "", "email address")
+    decryptFlags.from = decryptCmd.String("from", "", "sender address")
+    decryptFlags.to = decryptCmd.String("to", "", "recipient address")
     decryptFlags.input = decryptCmd.String("input", "", "file to decrypt")
 
     flag.Parse()

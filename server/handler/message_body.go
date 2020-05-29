@@ -2,6 +2,7 @@ package handler
 
 import (
     "encoding/json"
+    "github.com/google/uuid"
     "github.com/gorilla/mux"
     "github.com/jaytaph/mailv2/core/container"
     "github.com/jaytaph/mailv2/core/message"
@@ -11,12 +12,20 @@ import (
     "time"
 )
 
+//
 func PostMessageBody(w http.ResponseWriter, req *http.Request) {
     is := container.GetIncomingService()
-    path := mux.Vars(req)["id"]
+    path := mux.Vars(req)["addr"]
 
-    // @TODO: We need to check if path is actually an UUID, otherwise we could browse through the whole redis DB
-    info, err := is.GetIncomingInfo(path)
+    // Check if the path is actually an UUID
+    _, err := uuid.Parse(path)
+    if err != nil {
+        sendBadRequest(w, err)
+        return
+    }
+
+    // Check if this UUID path is an live incoming path (and not yet expired)
+    info, err := is.GetIncomingPath(path)
     if err != nil {
         sendBadRequest(w, err)
         return
@@ -29,6 +38,7 @@ func PostMessageBody(w http.ResponseWriter, req *http.Request) {
         return
     }
 
+    // Handle either accept response path or proof-of-work response path
     switch info.Type {
     case incoming.ACCEPT:
         handleAccept(w, req, info)
@@ -38,6 +48,7 @@ func PostMessageBody(w http.ResponseWriter, req *http.Request) {
         return
     }
 
+    // Something else has happened. Unknown
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusInternalServerError)
     _ = json.NewEncoder(w).Encode(StatusError("unknown incoming type for this request"))
@@ -55,6 +66,7 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
         return
     }
 
+    // Make sure the proof-of-work is completed and valid
     if ! utils.ValidateProofOfWork(info.Bits, []byte(info.Nonce), input.Proof) {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusNotAcceptable)
@@ -62,8 +74,8 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
         return
     }
 
-    // POW has been done. We can create an accept path
-    path, err := is.GenerateAcceptPath(info.Id, info.Checksum)
+    // We can generate an accept path
+    path, err := is.GenerateAcceptResponsePath(info.Addr, info.Checksum)
     if err != nil {
         sendBadRequest(w, err)
         return

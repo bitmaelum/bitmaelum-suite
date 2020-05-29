@@ -8,6 +8,7 @@ import (
 
 type Logger struct{}
 
+// Logs the request time
 func (*Logger) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
     t := time.Now()
 

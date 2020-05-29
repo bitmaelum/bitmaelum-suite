@@ -7,8 +7,9 @@ import (
 
 type Tracer struct{}
 
+// Prints request in log
 func (*Tracer) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-    logrus.Tracef("%s %s", r.Method, r.URL)
+    logrus.Debugf("%s %s", r.Method, r.URL)
 
     next.ServeHTTP(w, r)
 }

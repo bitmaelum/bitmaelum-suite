@@ -27,11 +27,11 @@ func main() {
     mainRouter.HandleFunc("/info", handler.Info).Methods("GET")
 
     mainRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
-    mainRouter.HandleFunc("/account/{id:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
-    mainRouter.HandleFunc("/account/{id:[A-Za-z0-9]{64}}/key", handler.RetrieveKey).Methods("GET")
+    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
+    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/key", handler.RetrieveKey).Methods("GET")
 
     mainRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
-    mainRouter.HandleFunc("/incoming/{id:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
+    mainRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
 
 
     middlewareRouter := negroni.New()
@@ -78,7 +78,7 @@ func processLogging() {
 }
 
 func parseFlags() {
-    flag.StringVar(&configPath, "config", "./server.config.yml", "path to config file")
+    flag.StringVar(&configPath, "config", "./server-config.yml", "path to config file")
     flag.Parse()
 }
 

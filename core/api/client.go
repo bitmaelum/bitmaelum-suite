@@ -5,6 +5,7 @@ import (
     "encoding/json"
     "errors"
     "fmt"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/api/types"
     "net/http"
     "strconv"
@@ -18,6 +19,7 @@ type Api struct {
     client  *http.Client
 }
 
+// Create a new mailserver API client
 func NewClient(host string, port int) (*Api, error) {
     tr := &http.Transport{
         TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -41,8 +43,9 @@ func NewClient(host string, port int) (*Api, error) {
 }
 
 
-func (api* Api) GetPublicKey(hash string) (string, error) {
-    resp, err := api.client.Get(api.BaseUrl + "/account/" + hash + "/key")
+// Get public address from mailserver API
+func (api* Api) GetPublicKey(addr core.HashAddress) (string, error) {
+    resp, err := api.client.Get(api.BaseUrl + "/account/" + addr.String() + "/key")
     if err != nil {
         return "", err
     }
