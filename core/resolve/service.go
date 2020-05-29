@@ -8,6 +8,7 @@ import (
     "crypto/x509"
     "encoding/hex"
     "encoding/pem"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
 )
 
@@ -27,27 +28,27 @@ func KeyRetrievalService(repo Repository) *Service {
     }
 }
 
-func (s *Service) GetInfo(email string) (*ResolveInfo, error) {
-    return s.repo.Retrieve(account.HashId(email))
+func (s *Service) GetInfo(addr core.Address) (*ResolveInfo, error) {
+    return s.repo.Retrieve(addr.ToHash())
 }
 
-func (s *Service) UploadInfo(acc account.Account, mailserver string) error {
+func (s *Service) UploadInfo(acc account.Account, resolveAddress string) error {
     block, _ := pem.Decode([]byte(acc.PrivKey))
     privKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
     if err != nil {
         return err
     }
 
-    hash := sha256.Sum256([]byte(mailserver))
+    hash := sha256.Sum256([]byte(resolveAddress))
     signature, err := rsa.SignPKCS1v15(rand.Reader, privKey, crypto.SHA256, hash[:])
     if err != nil {
         return err
     }
 
     return s.repo.Upload(
-        account.HashId(acc.Address),
+        core.StringToHash(acc.Address),
         acc.PubKey,
-        mailserver,
+        resolveAddress,
         hex.EncodeToString(signature),
     )
 }

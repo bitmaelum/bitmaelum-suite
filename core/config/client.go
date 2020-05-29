@@ -41,7 +41,7 @@ func (c *ClientConfig) LoadConfig(configPath string) error {
     }
 
     // We only care about the Cfg section. This keeps our "config:" section in the yaml file but we can still use
-    // config.Client.Logger.Level instead of config.Configuration.Cfg.Logger.Level
+    // config.Client.Logger.Level instead of config.Client.Cfg.Logger.Level
     *c = lc.Cfg
 
     return nil

@@ -49,7 +49,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 
     // Decode JSON
     decoder := json.NewDecoder(req.Body)
-    var input message.MessageHeader
+    var input message.Header
     err = decoder.Decode(&input)
     if err != nil {
         sendBadRequest(w, err)
@@ -67,7 +67,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     if needsProofOfWork(input) {
 
         // Generate proof-of-work data
-        path, nonce, err := is.GeneratePowPath(input.From.Email, BITS_FOR_PROOF_OF_WORK, checksum[:])
+        path, nonce, err := is.GeneratePowPath(input.From.Id, BITS_FOR_PROOF_OF_WORK, checksum[:])
         if err != nil {
             sendBadRequest(w, err)
             return
@@ -98,7 +98,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     }
 
     // No proof-of-work, generate accept path
-    path, err := is.GenerateAcceptPath(input.From.Email, checksum[:])
+    path, err := is.GenerateAcceptPath(input.From.Id, checksum[:])
     if err != nil {
         sendBadRequest(w, err)
         return
@@ -128,7 +128,7 @@ func sendBadRequest(w http.ResponseWriter, err error) {
     _ = json.NewEncoder(w).Encode(StatusError(err.Error()))
 }
 
-func needsProofOfWork(header message.MessageHeader) bool {
+func needsProofOfWork(header message.Header) bool {
     // @TODO: We probably want to use different metrics to check if we need to do proof-of-work
     return rand.Intn(10) < 5
 }

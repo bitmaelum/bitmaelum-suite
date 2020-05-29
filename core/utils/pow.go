@@ -3,17 +3,38 @@ package utils
 import (
     "bytes"
     "crypto/sha256"
-    "encoding/hex"
     "math"
     "math/big"
     "strconv"
 )
 
+//
+// Proof of work consists of SHA256 hashing data with an additional counter
+//
+//      counter = 0
+//      do
+//          counter += 1
+//          hash = SHA256(data + counter)
+//      until X number of left bits of hash is 0
+//
+// The idea is that is takes time to calculate a SHA256 from data. Because
+// the SHA256 is distributed evenly, there is no way to know how many bits
+// on the left are 0. By increasing the counter with 1 every time and hashing
+// again, we get many different hashes. As soon as we found a hash with
+// X bits 0 on the left, we use the counter value as the proof for the work
+// that has been done.
+//
+
+
+
+// convert a large number to hexidecimal bytes
 func intToHex(n uint64) []byte {
     return []byte(strconv.FormatUint(n, 16))
 }
 
-func ProofOfWork(bits int, data []byte) string {
+// Does a proof-of-work for X number of bits based on the data
+// This function can take a long time
+func ProofOfWork(bits int, data []byte) uint64 {
     var hashInt big.Int
 
     // Hash must be less than this
@@ -39,10 +60,10 @@ func ProofOfWork(bits int, data []byte) string {
         counter += 1
     }
 
-    sum := sha256.Sum256(intToHex(counter))
-    return hex.EncodeToString(sum[:])
+    return counter
 }
 
+// Validate if the proof for the given data has been completed
 func ValidateProofOfWork(bits int, data []byte, proof uint64) bool {
     var hashInt big.Int
 

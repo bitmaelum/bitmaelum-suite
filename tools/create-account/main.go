@@ -6,6 +6,7 @@ import (
     "encoding/json"
     "encoding/pem"
     "fmt"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
     "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/core/container"
@@ -57,7 +58,7 @@ func main() {
         address, _ = reader.ReadString('\n')
         address = strings.Trim(address, "\n")
 
-        if account.ValidateId(address) {
+        if core.IsValidAddress(address) {
             break;
         }
 
@@ -67,8 +68,10 @@ func main() {
     fmt.Println("")
     fmt.Printf("Checking if '%s' already exists...\n", address)
 
+    addr, _ := core.NewAddressFromString(address)
+
     ks := container.GetKeyRetrievalService()
-    _, err = ks.GetInfo(address)
+    _, err = ks.GetInfo(*addr)
     if err == nil {
         fmt.Printf("It seems that this address is already in use. Please specify another address.")
         os.Exit(1)
@@ -118,7 +121,7 @@ func main() {
 
     fmt.Println("")
     fmt.Println("\U0001F477 Let's do some proof-of-work... (this might take a while)")
-    proof := utils.ProofOfWork(22, []byte(account.HashId(address)))
+    proof := utils.ProofOfWork(22, []byte(addr.ToHash()))
 
     acc := account.Account{
         Address:      address,

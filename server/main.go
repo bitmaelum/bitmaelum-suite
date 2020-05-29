@@ -53,7 +53,7 @@ func processLogging() {
     logrus.SetFormatter(new(logrus.JSONFormatter))
     logrus.SetFormatter(new(logrus.TextFormatter))
 
-    switch (config.Configuration.Logging.Level) {
+    switch (config.Server.Logging.Level) {
     case "trace":
         logrus.SetLevel(logrus.TraceLevel)
         break;
@@ -69,7 +69,7 @@ func processLogging() {
     case "error":
     default:
         logrus.SetLevel(logrus.ErrorLevel)
-        config.Configuration.Logging.Level = "error"
+        config.Server.Logging.Level = "error"
         break;
     }
     logrus.SetOutput(os.Stdout)

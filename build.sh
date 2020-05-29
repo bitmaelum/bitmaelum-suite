@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+#set -e
 
 REPO="github.com/jaytaph/mailv2"
 

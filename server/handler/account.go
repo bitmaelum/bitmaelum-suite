@@ -12,13 +12,13 @@ type InputCreateAccount struct {
     Mailbox     string  `json:"mailbox"`
     PublicKey   string  `json:"public_key"`
     ProofOfWork struct {
-        Bits     int    `json:"bits"`
-        Proof    int64  `json:"proof"`
+        Bits     int     `json:"bits"`
+        Proof    uint64  `json:"proof"`
     } `json:"proof_of_work"`
 }
 
 func CreateAccount(w http.ResponseWriter, req *http.Request) {
-    if ! config.Configuration.Account.Registration {
+    if ! config.Server.Account.Registration {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusForbidden)
         _ = json.NewEncoder(w).Encode(StatusError("public registration not available"))
@@ -32,10 +32,10 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
     }
 
     // Check proof of work first
-    if input.ProofOfWork.Bits < config.Configuration.Account.ProofOfWork {
+    if input.ProofOfWork.Bits < config.Server.Account.ProofOfWork {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusBadRequest)
-        _ = json.NewEncoder(w).Encode(StatusErrorf("Proof of work must be at least %d bits", config.Configuration.Account.ProofOfWork))
+        _ = json.NewEncoder(w).Encode(StatusErrorf("Proof of work must be at least %d bits", config.Server.Account.ProofOfWork))
         return
     }
     if ! utils.ValidateProofOfWork(input.ProofOfWork.Bits, []byte(input.Mailbox), input.ProofOfWork.Proof) {

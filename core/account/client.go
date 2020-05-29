@@ -15,7 +15,7 @@ import (
 
 type ProofOfWork struct {
     Bits    int     `json:"bits"`
-    Proof   string  `json:"proof"`
+    Proof   uint64  `json:"proof"`
 }
 
 type Account struct {

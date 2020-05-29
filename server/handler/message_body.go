@@ -48,14 +48,14 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
     decoder := json.NewDecoder(req.Body)
 
     // Decode JSON
-    var input message.MessageProofOfWork
+    var input message.ProofOfWorkType
     err := decoder.Decode(&input)
     if err != nil {
         sendBadRequest(w, err)
         return
     }
 
-    if ! utils.ValidateProofOfWork(info.Bits, []byte(info.Nonce), input.Data) {
+    if ! utils.ValidateProofOfWork(info.Bits, []byte(info.Nonce), input.Proof) {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusNotAcceptable)
         _ = json.NewEncoder(w).Encode(StatusError("proof-of-work cannot be validated"))
@@ -63,7 +63,7 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
     }
 
     // POW has been done. We can create an accept path
-    path, err := is.GenerateAcceptPath(info.Email, info.Checksum)
+    path, err := is.GenerateAcceptPath(info.Id, info.Checksum)
     if err != nil {
         sendBadRequest(w, err)
         return

@@ -25,7 +25,7 @@ func (s *Service) CreateAccount(hash string, pubKey string) error {
     }
 
     _ = s.repo.CreateBox(hash, "inbox", "This is your regular inbox", 0)
-    _ = s.repo.CreateBox(hash, "outbox", "All your outgoing emails will be stored here", 0)
+    _ = s.repo.CreateBox(hash, "outbox", "All your outgoing messages will be stored here", 0)
     _ = s.repo.CreateBox(hash, "trash", "Trashcan. Everything in here will be removed automatically after 30 days or when purged manually", 0)
     _ = s.repo.StorePubKey(hash, []byte(pubKey))
 

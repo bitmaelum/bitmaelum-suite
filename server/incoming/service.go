@@ -19,7 +19,7 @@ type Service struct {
 
 type IncomingInfoType struct {
     Type        string      `json:"type"`
-    Email       string      `json:"email"`
+    Id          string      `json:"id"`
     Nonce       string      `json:"nonce,omitempty"`
     Bits        int         `json:"bits,omitempty"`
     Checksum    []byte      `json:"checksum"`
@@ -31,10 +31,10 @@ func NewIncomingService(repo Repository) *Service {
     }
 }
 
-func (is *Service) GenerateAcceptPath(email string, checksum []byte) (string, error) {
+func (is *Service) GenerateAcceptPath(id string, checksum []byte) (string, error) {
     data := &IncomingInfoType{
         Type: ACCEPT,
-        Email: email,
+        Id: id,
         Checksum: checksum,
     }
     jsonData, err := json.Marshal(data)
@@ -52,7 +52,7 @@ func (is *Service) GenerateAcceptPath(email string, checksum []byte) (string, er
     return path, nil
 }
 
-func (is *Service) GeneratePowPath(email string, bits int, checksum []byte) (string, string, error) {
+func (is *Service) GeneratePowPath(id string, bits int, checksum []byte) (string, string, error) {
     rnd := make([]byte, 32)
     _, err := rand.Read(rnd)
     if err != nil {
@@ -62,7 +62,7 @@ func (is *Service) GeneratePowPath(email string, bits int, checksum []byte) (str
 
     data := &IncomingInfoType{
         Type: PROOF_OF_WORK,
-        Email: email,
+        Id: id,
         Nonce: nonce,
         Bits: bits,
         Checksum: checksum,

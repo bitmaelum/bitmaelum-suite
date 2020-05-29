@@ -1,0 +1,67 @@
+package core
+
+import (
+    "github.com/stretchr/testify/assert"
+    "testing"
+)
+
+func Test_ValidAddress(t *testing.T) {
+    validAddresses := []string{
+        "jay!",
+        "jay@org!",
+        "jay.@org!",
+        "jay-@org!",
+        "jay-@o-rg!",
+        "jay-@o.rg!",
+        "j1234!",
+        "1ja!",
+        "yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay@yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay!",
+    }
+
+    for _, address := range validAddresses {
+        assert.True(t, IsValidAddress(address), address)
+    }
+}
+
+func Test_InvalidAddress(t *testing.T) {
+    invalidAddresses := []string{
+        "jay",
+        "j!",
+        "ja!",
+        "1!",
+        ".@org!",
+        "@@org!",
+        "jay",
+        "yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay1@yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay1!",
+        "yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay1@yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay!",
+        "yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay@yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay1!",
+        ".jay!",
+        "-jay!",
+        "jay@-org!",
+        "jay@.org!",
+    }
+
+    for _, address := range invalidAddresses {
+        assert.False(t, IsValidAddress(address), address)
+    }
+}
+
+func Test_Address(t *testing.T) {
+    a, err := NewAddressFromString("john@example!")
+    assert.NotNil(t, a)
+    assert.NoError(t, err)
+
+    a, err = NewAddressFromString("j!")
+    assert.Nil(t, a)
+    assert.Error(t, err)
+
+    a, err = NewAddressFromString("JOHN@EXAMPLE!")
+    assert.NotNil(t, a)
+    assert.NoError(t, err)
+
+    assert.Equal(t, "john", a.Local)
+    assert.Equal(t, "example", a.Org)
+
+    assert.Equal(t, "john@example!", a.ToString())
+    assert.Equal(t, "f454fe8d4b5017369f9e64861f0d471efe3cdcbdf45732f26b7a377c3e93d278", a.ToHash())
+}

@@ -60,16 +60,23 @@ func main() {
         panic(err)
     }
 
-
+    fromAddr, err := core.NewAddressFromString(opts.From)
+    if err != nil {
+        panic(err)
+    }
+    toAddr, err := core.NewAddressFromString(opts.To)
+    if err != nil {
+        panic(err)
+    }
 
     // Get public key from receiver
     keyService := container.GetKeyRetrievalService()
-    publicKey, err := keyService.GetPublicKey(opts.To)
+    info, err := keyService.GetInfo(*toAddr)
     if err != nil {
         panic(fmt.Sprintf("cannot retrieve public key for '%s'", opts.To))
     }
 
-    fmt.Printf("Public key: %s", string(publicKey))
+    fmt.Printf("Public key: %s", string(info.PublicKey))
 
 
 
@@ -127,14 +134,14 @@ func main() {
     // Create catalog
     catalog := CreateCatalog()
 
-    catalog.From.Email = acc.Email
+    catalog.From.Address = acc.Address
     catalog.From.Name = acc.Name
     catalog.From.Organisation = acc.Organisation
     catalog.From.ProofOfWork.Bits = acc.Pow.Bits
     catalog.From.ProofOfWork.Proof = acc.Pow.Proof
     catalog.From.PublicKey = acc.PubKey
 
-    catalog.To.Email = opts.To
+    catalog.To.Address = opts.To
     catalog.To.Name = ""
 
     catalog.Flags = append(catalog.Flags, "important")
@@ -165,15 +172,15 @@ func main() {
     header.Catalog.Checksum = append(header.Catalog.Checksum, checksum.Sha1(encCatalog))
     header.Catalog.Checksum = append(header.Catalog.Checksum, checksum.Crc32(encCatalog))
     header.Catalog.Checksum = append(header.Catalog.Checksum, checksum.Md5(encCatalog))
-    header.Catalog.Size = int64(len(encCatalog))
+    header.Catalog.Size = uint64(len(encCatalog))
     header.Catalog.Crypto = "rsa+aes256"
     header.Catalog.Iv = encode.Encode(catalogIv)
     header.Catalog.Key, err = encrypt.EncryptKey([]byte(publicKey), catalogKey)
     if err != nil {
         panic(fmt.Sprintf("trying to encrypt keys: %s", err))
     }
-    header.Id = core.HashEmail(opts.To)
-    header.From.Id = core.HashEmail(opts.From)
+    header.Id = toAddr.ToHash()
+    header.From.Id = fromAddr.ToHash()
     header.From.PublicKey = acc.PubKey
     header.From.ProofOfWork.Bits = acc.Pow.Bits
     header.From.ProofOfWork.Proof = acc.Pow.Proof
