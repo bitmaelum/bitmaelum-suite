@@ -51,16 +51,7 @@ func main() {
     }
 
 
-    // Load and check our FROM account
-    ai := account.LoadAccountConfig()
-    if ! ai.Has(opts.From) {
-        panic(fmt.Sprintf("Cannot find account %s\n", opts.From))
-    }
-    acc, err := ai.Get(opts.From)
-    if err != nil {
-        panic(err)
-    }
-
+    // Convert strings into addresses
     fromAddr, err := core.NewAddressFromString(opts.From)
     if err != nil {
         panic(err)
@@ -70,14 +61,21 @@ func main() {
         panic(err)
     }
 
-    // Get public key from receiver
-    keyService := container.GetKeyRetrievalService()
-    info, err := keyService.GetInfo(*toAddr)
+
+    // Load our FROM account
+    ai, err := account.LoadAccount(*fromAddr)
+    if err != nil {
+        panic(err)
+    }
+
+    // Resolve public key for our recipient
+    resolver := container.GetResolveService()
+    resolvedInfo, err := resolver.Resolve(*toAddr)
     if err != nil {
         panic(fmt.Sprintf("cannot retrieve public key for '%s'", opts.To))
     }
 
-    fmt.Printf("Public key: %s", string(info.PublicKey))
+    fmt.Printf("Public found for reciever: %s", string(info.PublicKey))
 
 
 
@@ -135,12 +133,12 @@ func main() {
     // Create catalog
     catalog := CreateCatalog()
 
-    catalog.From.Address = acc.Address
-    catalog.From.Name = acc.Name
-    catalog.From.Organisation = acc.Organisation
-    catalog.From.ProofOfWork.Bits = acc.Pow.Bits
-    catalog.From.ProofOfWork.Proof = acc.Pow.Proof
-    catalog.From.PublicKey = acc.PubKey
+    catalog.From.Address = ai.Address
+    catalog.From.Name = ai.Name
+    catalog.From.Organisation = ai.Organisation
+    catalog.From.ProofOfWork.Bits = ai.Pow.Bits
+    catalog.From.ProofOfWork.Proof = ai.Pow.Proof
+    catalog.From.PublicKey = ai.PubKey
 
     catalog.To.Address = opts.To
     catalog.To.Name = ""
@@ -178,15 +176,17 @@ func main() {
     header.Catalog.Size = uint64(len(encCatalog))
     header.Catalog.Crypto = "rsa+aes256"
     header.Catalog.Iv = encode.Encode(catalogIv)
-    header.Catalog.Key, err = encrypt.EncryptKey([]byte(publicKey), catalogKey)
+    header.Catalog.Key, err = encrypt.EncryptKey([]byte(resolvedInfo.PublicKey), catalogKey)
     if err != nil {
         panic(fmt.Sprintf("trying to encrypt keys: %s", err))
     }
-    header.Id = toAddr.ToHash()
-    header.From.Id = fromAddr.ToHash()
-    header.From.PublicKey = acc.PubKey
-    header.From.ProofOfWork.Bits = acc.Pow.Bits
-    header.From.ProofOfWork.Proof = acc.Pow.Proof
+
+    header.To.Addr = toAddr.Hash()
+
+    header.From.Addr = fromAddr.Hash()
+    header.From.PublicKey = ai.PubKey
+    header.From.ProofOfWork.Bits = ai.Pow.Bits
+    header.From.ProofOfWork.Proof = ai.Pow.Proof
 
     data, err := json.Marshal(header)
     if err != nil {

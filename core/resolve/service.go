@@ -30,7 +30,7 @@ func KeyRetrievalService(repo Repository) *Service {
 
 // Resolve an address
 func (s *Service) Resolve(addr core.Address) (*ResolveInfo, error) {
-    return s.repo.Resolve(addr.ToHash())
+    return s.repo.Resolve(addr.Hash())
 }
 
 // Upload resolve information to a service

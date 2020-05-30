@@ -5,7 +5,7 @@ import (
     "github.com/jaytaph/mailv2/core/resolve"
 )
 
-var keysService *resolve.Service = nil
+var resolveService *resolve.Service = nil
 
 var localKeysRepository *resolve.Repository = nil
 
@@ -16,9 +16,9 @@ var dhtKeysRepository *resolve.Repository = nil
 var chainKeysRepository *resolve.ChainRepository = nil
 
 
-func GetKeyRetrievalService() *resolve.Service{
-    if keysService != nil {
-        return keysService;
+func GetResolveService() *resolve.Service{
+    if resolveService != nil {
+        return resolveService;
     }
 
     repo := getChainRepository()
@@ -26,8 +26,7 @@ func GetKeyRetrievalService() *resolve.Service{
     _ = repo.Add(*getRemoteRepository())
     _ = repo.Add(*getDhtRepository())
 
-    keysService = resolve.KeyRetrievalService(repo)
-    return keysService
+    return resolve.KeyRetrievalService(repo)
 }
 
 func getChainRepository() *resolve.ChainRepository {

@@ -34,9 +34,9 @@ func (r *ChainRepository) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
 }
 
 // Upload public key through the chained repos
-func (r *ChainRepository) Upload(hash, pubKey, address, signature string) error {
+func (r *ChainRepository) Upload(addr core.HashAddress, pubKey, address, signature string) error {
     for idx := range(r.repos) {
-        err := r.repos[idx].Upload(hash, pubKey, address, signature)
+        err := r.repos[idx].Upload(addr, pubKey, address, signature)
         if err != nil {
             return err
         }

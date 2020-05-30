@@ -61,7 +61,7 @@ func NewAddressFromString(address string) (*Address, error) {
 }
 
 // Converts an address to a string
-func (a *Address) ToString() string {
+func (a *Address) String() string {
     if a.Org == "" {
         return fmt.Sprintf("%s!", a.Local)
     }
@@ -70,6 +70,6 @@ func (a *Address) ToString() string {
 }
 
 // Converts an address to a hashed value
-func (a *Address) ToHash() HashAddress {
-    return StringToHash(a.ToString())
+func (a *Address) Hash() HashAddress {
+    return StringToHash(a.String())
 }
