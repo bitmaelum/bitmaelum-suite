@@ -45,7 +45,7 @@ func main() {
     }
 
     // Load configuration
-    err := config.Server.LoadConfig(path.Clean(opts.Config))
+    err := config.Client.LoadConfig(path.Clean(opts.Config))
     if err != nil {
         panic(err)
     }
@@ -75,7 +75,7 @@ func main() {
         panic(fmt.Sprintf("cannot retrieve public key for '%s'", opts.To))
     }
 
-    fmt.Printf("Public found for reciever: %s", string(info.PublicKey))
+    fmt.Printf("Public found for reciever: %s", string(resolvedInfo.PublicKey))
 
 
 

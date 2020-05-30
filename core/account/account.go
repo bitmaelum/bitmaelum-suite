@@ -5,6 +5,7 @@ import (
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/config"
     "io/ioutil"
+    "path"
 )
 
 type ProofOfWork struct {
@@ -22,9 +23,9 @@ type AccountInfo struct {
 }
 
 func LoadAccount(addr core.Address) (*AccountInfo, error) {
-    path := config.Client.Account.Path + addr.String() + ".account.json"
+    fullPath := path.Clean(path.Join(config.Client.Account.Path, addr.String() + ".account.json"))
 
-    data, err := ioutil.ReadFile(path)
+    data, err := ioutil.ReadFile(fullPath)
     if err != nil {
         return nil, err
     }
