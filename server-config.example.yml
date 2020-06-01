@@ -25,7 +25,9 @@ config:
         host: 127.0.0.1:6379
         db: 0
     resolve:
+        # Local resolver
         local:
             path: "~/.mailv2/.resolvecache"
+        # Remove resolver
         remote:
             url: "https://resolve.mailv2.nl"

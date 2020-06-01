@@ -5,8 +5,8 @@ import (
     "crypto/cipher"
     "crypto/rand"
     "encoding/json"
+    "github.com/jaytaph/mailv2/core/catalog"
     "github.com/jaytaph/mailv2/core/encode"
-    "github.com/jaytaph/mailv2/core/message"
     "io"
 )
 
@@ -49,7 +49,7 @@ func EncryptData(key, iv []byte, r io.Reader, w *io.Writer) {
 
 
 // Encrypt a catalog data. Use random key and iv.
-func EncryptCatalog(catalog message.Catalog) ([]byte, []byte, []byte, error) {
+func EncryptCatalog(catalog catalog.Catalog) ([]byte, []byte, []byte, error) {
     var err error
 
     catalogKey := make([]byte, 32)

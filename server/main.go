@@ -33,6 +33,8 @@ func main() {
     mainRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
     mainRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
 
+    mainRouter.HandleFunc("/send", handler.SendMessage).Methods("POST")
+
 
     middlewareRouter := negroni.New()
     middlewareRouter.Use(&middleware.Tracer{})

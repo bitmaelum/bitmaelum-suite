@@ -5,6 +5,7 @@ import (
     "fmt"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
+    "github.com/jaytaph/mailv2/core/catalog"
     "github.com/jaytaph/mailv2/core/checksum"
     "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/core/container"
@@ -16,7 +17,6 @@ import (
     "os"
     "path"
     "strings"
-    "time"
 )
 
 type Options struct {
@@ -80,7 +80,7 @@ func main() {
 
 
     // Parse blocks
-    var blocks []message.Block
+    var blocks []catalog.Block
     for idx := range opts.Block {
         split := strings.Split(opts.Block[idx], ",")
         if len(split) <= 1 {
@@ -99,7 +99,7 @@ func main() {
             inlineContent = false
         }
 
-        blocks = append(blocks, message.Block{
+        blocks = append(blocks, catalog.Block{
             Type: split[0],
             Inline: inlineContent,
             Content: content,
@@ -110,7 +110,7 @@ func main() {
 
 
     // Parse attachments
-    var attachments []message.Attachment
+    var attachments []catalog.Attachment
     for idx := range opts.Attachment {
         _, err := os.Stat(opts.Attachment[idx])
         if os.IsNotExist(err) {
@@ -122,7 +122,7 @@ func main() {
             panic(fmt.Sprintf("attachment %s or cannot be opened", opts.Attachment[idx]))
         }
 
-        attachments = append(attachments, message.Attachment{
+        attachments = append(attachments, catalog.Attachment{
             Path: opts.Attachment[idx],
             Reader: reader,
         })
@@ -131,14 +131,7 @@ func main() {
 
 
     // Create catalog
-    catalog := CreateCatalog()
-
-    catalog.From.Address = ai.Address
-    catalog.From.Name = ai.Name
-    catalog.From.Organisation = ai.Organisation
-    catalog.From.ProofOfWork.Bits = ai.Pow.Bits
-    catalog.From.ProofOfWork.Proof = ai.Pow.Proof
-    catalog.From.PublicKey = ai.PubKey
+    catalog := catalog.NewCatalog(ai)
 
     catalog.To.Address = opts.To
     catalog.To.Name = ""
@@ -149,13 +142,15 @@ func main() {
     catalog.ThreadId = ""
 
 
-    //for idx := range blocks {
-    //    catalog.AddBlock(blocks[idx])
-    //}
-    //for idx := range attachments {
-    //    catalog.AddAttachment(attachments[idx])
-    //}
+    for idx := range blocks {
+       catalog.AddBlock(blocks[idx])
+    }
+    for idx := range attachments {
+       _ = catalog.AddAttachment(attachments[idx])
+    }
 
+    data, _ := json.MarshalIndent(catalog, "", "  ")
+    _ = ioutil.WriteFile("catalog.json", data, 0600)
 
     catalogKey, catalogIv, encCatalog, err := encrypt.EncryptCatalog(*catalog)
     if err != nil {
@@ -188,7 +183,7 @@ func main() {
     header.From.ProofOfWork.Bits = ai.Pow.Bits
     header.From.ProofOfWork.Proof = ai.Pow.Proof
 
-    data, err := json.Marshal(header)
+    data, err = json.Marshal(header)
     if err != nil {
         panic(fmt.Sprintf("error trying to marshal header: %s", err))
     }
@@ -215,12 +210,6 @@ func main() {
     //header, body := message.NewMessage(opts.From, opts.To, opts.Subject, blocks, attachments)
 }
 
-func CreateCatalog() *message.Catalog {
-    cat := &message.Catalog{}
-
-    cat.CreatedAt = time.Now()
-    return cat;
-}
 
 func CreateHeader() *message.Header {
     hdr := &message.Header{}
