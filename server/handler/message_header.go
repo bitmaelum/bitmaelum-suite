@@ -66,7 +66,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     // Check if we need proof of work.
     if needsProofOfWork(input) {
         // Generate proof-of-work data
-        path, nonce, err := is.GeneratePowResponsePath(input.From.Id, BITS_FOR_PROOF_OF_WORK, checksum[:])
+        path, nonce, err := is.GeneratePowResponsePath(input.From.Addr, BITS_FOR_PROOF_OF_WORK, checksum[:])
         if err != nil {
             sendBadRequest(w, err)
             return
@@ -97,7 +97,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
     }
 
     // No proof-of-work, generate accept path
-    path, err := is.GenerateAcceptPath(input.From.Id, checksum[:])
+    path, err := is.GenerateAcceptResponsePath(input.From.Addr, checksum[:])
     if err != nil {
         sendBadRequest(w, err)
         return

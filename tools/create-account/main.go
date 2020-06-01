@@ -71,8 +71,8 @@ func main() {
 
     addr, _ := core.NewAddressFromString(address)
 
-    ks := container.GetKeyRetrievalService()
-    _, err = ks.GetInfo(*addr)
+    ks := container.GetResolveService()
+    _, err = ks.Resolve(*addr)
     if err == nil {
         fmt.Printf("It seems that this address is already in use. Please specify another address.")
         os.Exit(1)
@@ -122,7 +122,7 @@ func main() {
 
     fmt.Println("")
     fmt.Println("\U0001F477 Let's do some proof-of-work... (this might take a while)")
-    proof := utils.ProofOfWork(22, []byte(addr.ToHash()))
+    proof := utils.ProofOfWork(22, []byte(addr.Hash()))
 
     acc := account.AccountInfo{
         Address:      address,
@@ -142,7 +142,7 @@ func main() {
 
     fmt.Println("")
     fmt.Println("\U0001F310 Uploading resolve information and public key to the central resolve server")
-    err = container.GetKeyRetrievalService().UploadInfo(acc, mailserver)
+    err = container.GetResolveService().UploadInfo(acc, mailserver)
     if err != nil {
         panic(err)
     }
