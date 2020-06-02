@@ -28,6 +28,12 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	cobra.EnableCommandSorting = false
+	rootCmd.SetHelpCommand(&cobra.Command{
+		Use:    "no-help",
+		Hidden: true,
+	})
+
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mailv2/config/client-config.yaml)")
 }
 

@@ -2,8 +2,8 @@ package main
 
 import (
     "bufio"
+    "bytes"
     "crypto/x509"
-    "encoding/json"
     "encoding/pem"
     "fmt"
     "github.com/jaytaph/mailv2/core"
@@ -12,9 +12,10 @@ import (
     "github.com/jaytaph/mailv2/core/container"
     "github.com/jaytaph/mailv2/core/utils"
     "github.com/jessevdk/go-flags"
-    "io/ioutil"
+    "golang.org/x/crypto/ssh/terminal"
     "os"
     "strings"
+    "syscall"
 )
 
 type Options struct {
@@ -102,7 +103,7 @@ func main() {
     mailserver = strings.TrimSuffix(mailserver, "\n")
 
     fmt.Println("")
-    fmt.Println("\U0001F510 Let's generate a key-pair for our new key... (this might take a while)")
+    fmt.Println("\U0001F510 Let's generate a key-pair for our new account... (this might take a while)")
     privateKey, err := utils.CreateNewKeyPair(4096)
     if err != nil {
         panic(err)
@@ -136,9 +137,30 @@ func main() {
         },
     }
 
-    path := fmt.Sprintf("%s.account.json", address)
-    data, _ := json.MarshalIndent(&acc, "", "  ")
-    _ = ioutil.WriteFile(path, data, 0600)
+
+    var password []byte
+    for {
+        fmt.Println("")
+        fmt.Print("\U0001F511 Enter your password ")
+        password, _ = terminal.ReadPassword(int(syscall.Stdin))
+        fmt.Println("")
+
+        fmt.Println("")
+        fmt.Print("\U0001F511 Retype your password ")
+        password2, _ := terminal.ReadPassword(int(syscall.Stdin))
+        fmt.Println("")
+
+        if bytes.Equal(password, password2) {
+            break
+        }
+
+        fmt.Println("passwords do not match. Please try again.")
+    }
+
+    err = account.SaveAccount(*addr, password, acc)
+    if err != nil {
+        panic(err)
+    }
 
     fmt.Println("")
     fmt.Println("\U0001F310 Uploading resolve information and public key to the central resolve server")
@@ -149,6 +171,5 @@ func main() {
 
     fmt.Println("")
     fmt.Println("-----------------------")
-    fmt.Printf("Your new account configuration is stored at %s.\n", path)
-    fmt.Println("Please make sure you keep this FOR YOUR EYES ONLY!")
+    fmt.Printf("Your new account configuration is stored. Make sure you do not forget your password!\n")
 }

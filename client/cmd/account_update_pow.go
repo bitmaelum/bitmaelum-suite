@@ -15,6 +15,7 @@ Message servers can demand a certain work to be done.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("pow called")
 	},
+	Annotations: map[string]string{"position": "20"},
 }
 
 func init() {

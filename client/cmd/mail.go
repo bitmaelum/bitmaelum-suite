@@ -9,6 +9,7 @@ var mailCmd = &cobra.Command{
 	Short: "Mail management",
 	Long:  `Read or compose messages.`,
 	Run:   SelectAndRun,
+	Annotations: map[string]string{"position": "10"},
 }
 
 func init() {

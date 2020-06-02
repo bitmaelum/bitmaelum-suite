@@ -13,6 +13,7 @@ var mailCreateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("create called")
 	},
+	Annotations: map[string]string{"position": "40"},
 }
 
 func init() {

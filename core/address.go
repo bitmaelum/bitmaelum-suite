@@ -73,3 +73,8 @@ func (a *Address) String() string {
 func (a *Address) Hash() HashAddress {
     return StringToHash(a.String())
 }
+
+// Converts an address to []byte
+func (a *Address) Bytes() []byte {
+    return []byte(a.String())
+}

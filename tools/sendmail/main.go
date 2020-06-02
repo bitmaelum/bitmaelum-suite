@@ -26,6 +26,7 @@ type Options struct {
     Subject     string      `short:"s" long:"subject" description:"Subject of the message"`
     Block       []string    `short:"b" long:"block" description:"Content block"`
     Attachment  []string    `short:"a" long:"attachment" description:"Attachment"`
+    Password    string      `short:"p" long:"password" description:"Password to decrypt your account"`
 }
 
 var opts Options
@@ -63,7 +64,7 @@ func main() {
 
 
     // Load our FROM account
-    ai, err := account.LoadAccount(*fromAddr)
+    ai, err := account.LoadAccount(*fromAddr, []byte(opts.Password))
     if err != nil {
         panic(err)
     }

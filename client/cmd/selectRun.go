@@ -4,12 +4,34 @@ import (
 	"fmt"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"sort"
+	"strconv"
 	"strings"
 )
 
+type commandSorterByPosition []*cobra.Command
+
+func (c commandSorterByPosition) Len() int           { return len(c) }
+func (c commandSorterByPosition) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
+func (c commandSorterByPosition) Less(i, j int) bool {
+	si, _ := strconv.Atoi(c[i].Annotations["position"])
+	sj, _ := strconv.Atoi(c[j].Annotations["position"])
+	return si < sj
+}
+
+
 func SelectAndRun(cmd *cobra.Command, args []string) {
-	items := make([]*cobra.Command, len(cmd.Commands()))
-	copy(items, cmd.Commands())
+	// Add all non-hidden commands (gets rid of "help")
+	var items []*cobra.Command
+	for i := range cmd.Commands() {
+		if cmd.Commands()[i].Hidden {
+			continue;
+		}
+		items = append(items, cmd.Commands()[i])
+	}
+
+	// sort commands
+	sort.Sort(commandSorterByPosition(items))
 
 	if cmd == cmd.Root() {
 		items = append(items, &cobra.Command{
@@ -38,9 +60,6 @@ func SelectAndRun(cmd *cobra.Command, args []string) {
 			path[i], path[j] = path[j], path[i]
 		}
 
-
-
-		fmt.Println("\033[2J")
 		prompt := promptui.Select{
 			Label: `Welcome to MailV2. Please select your commands below`,
 			Items: items,
@@ -54,7 +73,10 @@ func SelectAndRun(cmd *cobra.Command, args []string) {
 		}
 		idx, _, err := prompt.Run()
 		if err != nil {
-			panic(err)
+			if (err != promptui.ErrInterrupt) {
+				panic(err)
+			}
+			continue;
 		}
 
 		if (idx >= len(cmd.Commands())) {

@@ -19,6 +19,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("box called")
 	},
+	Annotations: map[string]string{"position": "30"},
 }
 
 func init() {

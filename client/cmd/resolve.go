@@ -9,6 +9,7 @@ var resolveCmd = &cobra.Command{
 	Short: "Account resolve management",
 	Long: `Manage your account resolver.`,
 	Run:   SelectAndRun,
+	Annotations: map[string]string{"position": "30"},
 }
 
 func init() {
