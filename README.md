@@ -1,3 +1,18 @@
+# What if
+we could redesign email without any need for backward compatiblity. What would it look like? Probably not like this, but at least its an attempt.
+We're trying to figure out how to make email a secure (end-to-end encrypted) system that will both combat spam and brings you back in charge of 
+your mail again. This means you and only you can signup for mailing-lists, you can unsubscribe whenever you like (cannot be ignored by the 
+mailinglist owners). It also means a vast reduction of spam emails, as sending spam is expensive for spammers.
+
+It even provides additional functionality:
+
+  - less spam (hopefully, spam free)
+  - no more email address leaks
+  - host your messages wherever you like
+  - move your messages to other competitor without loosing your mail address 
+  - easily detect mailing-lists for your favourite companies and organisations
+  - don't get tracked (unless you want to) 
+
 # Usage
 
 * Think of a FQDN to host your message server. It doesn't have to exist for local development. For instance `mail.test.v2`
@@ -30,7 +45,7 @@
 
     This will run a mailserver on localhost port 2424 over a TLS connection.
     
-    Configuration for the server can be found in `./config.yml`
+    Configuration for the server can be found in `./server-config.example.yml`
 
 ## Paths and files
 
@@ -40,4 +55,7 @@ Mail is stored in the `.maildb` directory.
 
 # Mail client
 
-* There is no functional client yet.
+Some kind of client is underway. It uses rivo/tview as UI framework.
+
+![client.png](client.png) 
+
