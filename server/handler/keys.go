@@ -9,7 +9,7 @@ import (
 )
 
 type OutputPublicKey struct {
-    PublicKey string `json:"public_key"`
+    PublicKeys []string `json:"public_key"`
 }
 
 type InputPublicKey struct {
@@ -17,7 +17,7 @@ type InputPublicKey struct {
 }
 
 // Retrieve key handler
-func RetrieveKey(w http.ResponseWriter, req *http.Request) {
+func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
     vars := mux.Vars(req)
     addr := core.HashAddress(vars["addr"])
 
@@ -32,7 +32,7 @@ func RetrieveKey(w http.ResponseWriter, req *http.Request) {
 
     // Return public key
     ret := OutputPublicKey{
-        PublicKey: as.GetPublicKey(addr),
+        PublicKeys: as.GetPublicKeys(addr),
     }
 
     w.Header().Set("Content-Type", "application/json")

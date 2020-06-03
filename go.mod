@@ -15,6 +15,7 @@ require (
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.3.1 // indirect
+	github.com/nightlyone/lockfile v1.0.0
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/rivo/tview v0.0.0-20200528200248-fe953220389f
 	github.com/sirupsen/logrus v1.2.0

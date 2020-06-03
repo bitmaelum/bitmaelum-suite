@@ -12,6 +12,21 @@ type OutputResponse struct {
     Status string `json:"status"`
 }
 
+func JsonOut(w http.ResponseWriter, v interface{}) error {
+    data, err := json.MarshalIndent(v, "", "  ")
+    if err != nil {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusBadRequest)
+        _ = json.NewEncoder(w).Encode(StatusError("Malformed JSON: " + err.Error()))
+        return err
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    _, err = w.Write(data)
+    return err
+}
+
 // Return an ok status response
 func StatusOk(status string) *OutputResponse {
     return &OutputResponse{
