@@ -9,13 +9,14 @@ import (
     "encoding/json"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/config"
+    "github.com/sirupsen/logrus"
     "golang.org/x/crypto/pbkdf2"
     "io"
     "io/ioutil"
     "path"
 )
 
-type AccountFile struct {
+type EncryptedAccountInfo struct {
     Address         string  `json:"address"`
     AccountInfo     []byte  `json:"data"`
     Salt            []byte  `json:"salt"`
@@ -33,23 +34,27 @@ func LoadAccount(addr core.Address, password []byte) (*core.AccountInfo, error) 
         return nil, err
     }
 
-    af := &AccountFile{}
+    var plainText []byte
+
+    af := &EncryptedAccountInfo{}
     err = json.Unmarshal(data, &af)
-    if err != nil {
-        return nil, err
+    if err != nil || af.AccountInfo == nil {
+        logrus.Warning("account file is unprotected with a password.")
+
+        plainText = []byte(data)
+    } else {
+        // @TODO: Check HMAC
+
+        derivedAESKey := pbkdf2.Key(password, af.Salt, PbkdfIterations, 32, sha256.New)
+        aes256, err := aes.NewCipher(derivedAESKey)
+        if err != nil {
+            return nil, err
+        }
+
+        //plainText := make([]byte, len(af.AccountInfo))
+        ctr := cipher.NewCTR(aes256, af.Iv)
+        ctr.XORKeyStream(af.AccountInfo, plainText)
     }
-
-    // @TODO: Check HMAC
-
-    derivedAESKey := pbkdf2.Key(password, af.Salt, PbkdfIterations, 32, sha256.New)
-    aes256, err := aes.NewCipher(derivedAESKey)
-    if err != nil {
-        return nil, err
-    }
-
-    plainText := make([]byte, len(af.AccountInfo))
-    ctr := cipher.NewCTR(aes256, af.Iv)
-    ctr.XORKeyStream(af.AccountInfo, plainText)
 
     ai := &core.AccountInfo{}
     err = json.Unmarshal(plainText, &ai)
@@ -98,7 +103,7 @@ func SaveAccount(addr core.Address, password []byte, acc core.AccountInfo) (erro
     hash := hmac.New(sha256.New, password)
     hash.Write(cipherText)
 
-    af := &AccountFile{
+    af := &EncryptedAccountInfo{
         Address:     addr.String(),
         AccountInfo: cipherText,
         Salt:        salt,
@@ -120,5 +125,5 @@ func SaveAccount(addr core.Address, password []byte, acc core.AccountInfo) (erro
 }
 
 func getPath(addr core.Address) string {
-    return path.Clean(path.Join(config.Client.Account.Path, addr.String() + ".account.json"))
+    return path.Clean(path.Join(config.Client.Accounts.Path, addr.String() + ".account.json"))
 }

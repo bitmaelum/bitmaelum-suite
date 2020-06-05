@@ -13,9 +13,9 @@ type WrappedClientConfig struct {
 }
 
 type ClientConfig struct {
-    Account struct {
+    Accounts struct {
        Path         string  `yaml:"path"`
-    } `yaml:"account"`
+    } `yaml:"accounts"`
 
     Resolve struct {
        Local struct {

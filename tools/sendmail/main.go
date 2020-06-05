@@ -3,6 +3,7 @@ package main
 import (
     "encoding/json"
     "fmt"
+    "github.com/google/uuid"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
     "github.com/jaytaph/mailv2/core/catalog"
@@ -79,6 +80,15 @@ func main() {
     fmt.Printf("Public found for reciever: %s", string(resolvedInfo.PublicKey))
 
 
+    // Create message id and temporary outbox
+    msgUuid, err := uuid.NewRandom()
+    if err != nil {
+        panic(err)
+    }
+    err = os.MkdirAll(".out/" + msgUuid.String(), 0755)
+    if err != nil {
+        panic(err)
+    }
 
     // Parse blocks
     var blocks []catalog.Block
@@ -151,14 +161,14 @@ func main() {
     }
 
     data, _ := json.MarshalIndent(catalog, "", "  ")
-    _ = ioutil.WriteFile("catalog.json", data, 0600)
+    _ = ioutil.WriteFile(".out/" + msgUuid.String() + "/catalog.json", data, 0600)
 
     catalogKey, catalogIv, encCatalog, err := encrypt.EncryptCatalog(*catalog)
     if err != nil {
         panic(fmt.Sprintf("Error while encrypting catalog: %s", err))
     }
 
-    _ = ioutil.WriteFile("catalog.json.enc", encCatalog, 0600)
+    _ = ioutil.WriteFile(".out/" + msgUuid.String() + "/catalog.json.enc", encCatalog, 0600)
 
 
 
@@ -189,7 +199,7 @@ func main() {
         panic(fmt.Sprintf("error trying to marshal header: %s", err))
     }
 
-    _ = ioutil.WriteFile("header.json", data, 0600)
+    _ = ioutil.WriteFile(".out/" + msgUuid.String() + "/header.json", data, 0600)
 
 
 
