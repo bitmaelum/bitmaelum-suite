@@ -3,7 +3,8 @@ package account
 import (
     "encoding/json"
     "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/message"
+    "github.com/jaytaph/mailv2/core/catalog"
+    "github.com/jaytaph/mailv2/core/messagebox"
     "github.com/nightlyone/lockfile"
     "github.com/sirupsen/logrus"
     "io/ioutil"
@@ -58,7 +59,7 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
     }()
 
     // Read keys
-    pk := &message.Pubkeys{}
+    pk := &messagebox.Pubkeys{}
     err = r.fetchJson(addr, PUBKEY_FILE, pk)
     if err != nil {
         return err
@@ -79,7 +80,7 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
 
 // Retrieve the public key for this account
 func (r *fileRepo) FetchPubKeys(addr core.HashAddress) ([]string, error) {
-    pk := &message.Pubkeys{}
+    pk := &messagebox.Pubkeys{}
     err := r.fetchJson(addr, PUBKEY_FILE, pk)
     if err != nil {
         return nil, err
@@ -94,7 +95,7 @@ func (r *fileRepo) CreateBox(addr core.HashAddress, box, description string, quo
 
     _ = os.MkdirAll(fullPath, 0700)
 
-    mbi := message.MailBoxInfo{
+    mbi := messagebox.MailBoxInfo{
         Description: description,
         Quota: quota,
     }
@@ -172,8 +173,8 @@ func (r *fileRepo) getPath(addr core.HashAddress, suffix string) string {
 }
 
 // Retrieve a single mailbox
-func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*message.MailBoxInfo, error) {
-    mbi := &message.MailBoxInfo{}
+func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*messagebox.MailBoxInfo, error) {
+    mbi := &messagebox.MailBoxInfo{}
     err := r.fetchJson(addr, path.Join(box, INFO_FILE), mbi)
     if err != nil {
         return nil, err
@@ -184,8 +185,8 @@ func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*message.MailBoxIn
 }
 
 // Search for mailboxes. Use glob-patterns for querying
-func (r *fileRepo) FindBox(addr core.HashAddress, query string) ([]message.MailBoxInfo, error) {
-    list := []message.MailBoxInfo{}
+func (r *fileRepo) FindBox(addr core.HashAddress, query string) ([]messagebox.MailBoxInfo, error) {
+    list := []messagebox.MailBoxInfo{}
 
     files, err := ioutil.ReadDir(r.getPath(addr, ""))
     if err != nil {
@@ -209,8 +210,8 @@ func (r *fileRepo) FindBox(addr core.HashAddress, query string) ([]message.MailB
     return list, nil
 }
 
-func (r *fileRepo) FindMessages(addr core.HashAddress, box string, offset, limit int) ([]message.MessageInfo, error) {
-    list := []message.MessageInfo{}
+func (r *fileRepo) FindMessages(addr core.HashAddress, box string, offset, limit int) ([]messagebox.MessageInfo, error) {
+    list := []messagebox.MessageInfo{}
 
     files, err := ioutil.ReadDir(r.getPath(addr, box))
     if err != nil {
@@ -233,18 +234,18 @@ func (r *fileRepo) FindMessages(addr core.HashAddress, box string, offset, limit
 }
 
 // Fetch specific mail
-func (r *fileRepo) GetMessageInfo(addr core.HashAddress, box string, msgUuid string) (*message.MessageInfo, error) {
+func (r *fileRepo) GetMessageInfo(addr core.HashAddress, box string, msgUuid string) (*messagebox.MessageInfo, error) {
 
-    c := &message.Catalog{}
+    c := &catalog.Catalog{}
     err := r.fetchJson(addr, path.Join(box, msgUuid, "catalog.json"), c)
     if err != nil {
         return nil, err
     }
 
-    f := &message.Flags{}
+    f := &messagebox.Flags{}
     _ = r.fetchJson(addr, path.Join(box, msgUuid, ".flags"), f)
-    
-    return &message.MessageInfo{
+
+    return &messagebox.MessageInfo{
         Flags:   *f,
         Catalog: *c,
     }, nil

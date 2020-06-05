@@ -3,7 +3,7 @@ package account
 import (
     "errors"
     "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/message"
+    "github.com/jaytaph/mailv2/core/messagebox"
 )
 
 type Service struct {
@@ -55,19 +55,19 @@ func (s *Service) GetPublicKeys(addr core.HashAddress) []string {
     return pubKeys
 }
 
-func (s *Service) FetchMessageBoxes(addr core.HashAddress, query string) []message.MailBoxInfo {
+func (s *Service) FetchMessageBoxes(addr core.HashAddress, query string) []messagebox.MailBoxInfo {
     list, err := s.repo.FindBox(addr, query)
     if err != nil {
-        return []message.MailBoxInfo{}
+        return []messagebox.MailBoxInfo{}
     }
 
     return list
 }
 
-func (s *Service) FetchMailFromBox(addr core.HashAddress, box string, offset int, limit int) []message.MessageInfo {
+func (s *Service) FetchMailFromBox(addr core.HashAddress, box string, offset int, limit int) []messagebox.MessageInfo {
     list, err := s.repo.FindMessages(addr, box, offset, limit)
     if err != nil {
-        return []message.MessageInfo{}
+        return []messagebox.MessageInfo{}
     }
 
     return list

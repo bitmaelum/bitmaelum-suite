@@ -4,9 +4,8 @@ import (
     "encoding/json"
     "github.com/google/uuid"
     "github.com/gorilla/mux"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/container"
-    "github.com/jaytaph/mailv2/core/message"
-    "github.com/jaytaph/mailv2/core/utils"
     "github.com/jaytaph/mailv2/server/incoming"
     "net/http"
     "time"
@@ -59,7 +58,7 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
     decoder := json.NewDecoder(req.Body)
 
     // Decode JSON
-    var input message.ProofOfWorkType
+    var input core.ProofOfWork
     err := decoder.Decode(&input)
     if err != nil {
         sendBadRequest(w, err)
@@ -67,7 +66,8 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
     }
 
     // Make sure the proof-of-work is completed and valid
-    if ! utils.ValidateProofOfWork(info.Bits, []byte(info.Nonce), input.Proof) {
+    pow := core.NewProofOfWork(input.Bits, []byte(info.Nonce), input.Proof)
+    if ! pow.Validate() {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusNotAcceptable)
         _ = json.NewEncoder(w).Encode(StatusError("proof-of-work cannot be validated"))

@@ -2,7 +2,7 @@ package main
 
 import (
     "fmt"
-    "github.com/jaytaph/mailv2/core/utils"
+    "github.com/jaytaph/mailv2/core"
     "os"
     "strconv"
 )
@@ -17,7 +17,8 @@ func main() {
     data := os.Args[2]
 
     fmt.Printf("Working on %d bits proof...\n", bits)
-    pow := utils.ProofOfWork(bits, []byte(data))
+    pow := core.NewProofOfWork(bits, []byte(data), 0)
 
-    fmt.Printf("Proof: %d\n", pow)
+    pow.Work()
+    fmt.Printf("Proof: %d\n", pow.Proof)
 }

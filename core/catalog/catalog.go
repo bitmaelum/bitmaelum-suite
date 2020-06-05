@@ -3,14 +3,68 @@ package catalog
 import (
     "github.com/gabriel-vasile/mimetype"
     "github.com/google/uuid"
-    "github.com/jaytaph/mailv2/core/account"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/message"
     "io"
     "os"
     "time"
 )
 
-func NewCatalog(ai *account.AccountInfo) *Catalog {
+type BlockType struct {
+    Id          string         `json:"id"`
+    Type        string         `json:"type"`
+    Size        uint64         `json:"size"`
+    Encoding    string         `json:"encoding"`
+    Compression string         `json:"compression"`
+    Checksum    []message.Checksum `json:"checksum"`
+    Content     string         `json:"content"`
+}
+
+type AttachmentType struct {
+    Id          string         `json:"id"`
+    MimeType    string         `json:"mimetype"`
+    FileName    string         `json:"filename"`
+    Size        uint64         `json:"size"`
+    Compression string         `json:"compression"`
+    Checksum    []message.Checksum `json:"checksum"`
+}
+
+type Catalog struct {
+    From struct {
+        Address      string             `json:"address"`
+        Name         string             `json:"name"`
+        Organisation string             `json:"organisation"`
+        ProofOfWork  core.ProofOfWork   `json:"proof_of_work"`
+        PublicKey    string             `json:"public_key"`
+    } `json:"from"`
+    To struct {
+        Address string `json:"address"`
+        Name    string `json:"name"`
+    } `json:"to"`
+    CreatedAt        time.Time  `json:"created_at"`
+    ThreadId         string     `json:"thread_id"`
+    Subject          string     `json:"subject"`
+    Flags            []string   `json:"flags"`
+    Labels           []string   `json:"labels"`
+    Catalog struct {
+        Blocks          []BlockType         `json:"blocks"`
+        Attachments     []AttachmentType    `json:"attachments"`
+    }
+}
+
+type Attachment struct {
+    Path        string
+    Reader      io.Reader
+}
+
+type Block struct {
+    Type        string
+    Inline      bool
+    Content     []byte
+}
+
+
+func NewCatalog(ai *core.AccountInfo) *Catalog {
     c := &Catalog{}
 
     c.CreatedAt = time.Now()

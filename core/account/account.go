@@ -15,20 +15,6 @@ import (
     "path"
 )
 
-type ProofOfWork struct {
-    Bits    int     `json:"bits"`
-    Proof   uint64  `json:"proof"`
-}
-
-type AccountInfo struct {
-    Address         string          `json:"address"`
-    Name            string          `json:"name"`
-    Organisation    string          `json:"organisation"`
-    PrivKey         string          `json:"privKey"`
-    PubKey          string          `json:"pubKey"`
-    Pow             ProofOfWork     `json:"pow"`
-}
-
 type AccountFile struct {
     Address         string  `json:"address"`
     AccountInfo     []byte  `json:"data"`
@@ -38,10 +24,10 @@ type AccountFile struct {
 }
 
 const (
-    PBKDF_ITERATIONS = 100002
+    PbkdfIterations = 100002
 )
 
-func LoadAccount(addr core.Address, password []byte) (*AccountInfo, error) {
+func LoadAccount(addr core.Address, password []byte) (*core.AccountInfo, error) {
     data, err := ioutil.ReadFile(getPath(addr))
     if err != nil {
         return nil, err
@@ -55,7 +41,7 @@ func LoadAccount(addr core.Address, password []byte) (*AccountInfo, error) {
 
     // @TODO: Check HMAC
 
-    derivedAESKey := pbkdf2.Key(password, af.Salt, PBKDF_ITERATIONS, 32, sha256.New)
+    derivedAESKey := pbkdf2.Key(password, af.Salt, PbkdfIterations, 32, sha256.New)
     aes256, err := aes.NewCipher(derivedAESKey)
     if err != nil {
         return nil, err
@@ -65,7 +51,7 @@ func LoadAccount(addr core.Address, password []byte) (*AccountInfo, error) {
     ctr := cipher.NewCTR(aes256, af.Iv)
     ctr.XORKeyStream(af.AccountInfo, plainText)
 
-    ai := &AccountInfo{}
+    ai := &core.AccountInfo{}
     err = json.Unmarshal(plainText, &ai)
     if err != nil {
         return nil, err
@@ -74,7 +60,7 @@ func LoadAccount(addr core.Address, password []byte) (*AccountInfo, error) {
     return ai, nil
 }
 
-func SaveAccount(addr core.Address, password []byte, acc AccountInfo) (error) {
+func SaveAccount(addr core.Address, password []byte, acc core.AccountInfo) (error) {
     // Generate JSON structure that we will encrypt
     plainText, err := json.MarshalIndent(&acc, "", "  ")
     if err != nil {
@@ -89,7 +75,7 @@ func SaveAccount(addr core.Address, password []byte, acc AccountInfo) (error) {
     }
 
     // Generate key based on password
-    derivedAESKey := pbkdf2.Key(password, salt, PBKDF_ITERATIONS, 32, sha256.New)
+    derivedAESKey := pbkdf2.Key(password, salt, PbkdfIterations, 32, sha256.New)
     aes256, err := aes.NewCipher(derivedAESKey)
     if err != nil {
         return err

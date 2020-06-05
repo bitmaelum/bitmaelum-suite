@@ -5,26 +5,6 @@ import (
 	"github.com/rivo/tview"
 )
 
-/*
-[.]    account
-[.]        add
-[.]        list
-[.]        update
-[.]            pow <bits>
-[.]            key
-[X]                add <key>
-[X]                list
-[X]                rm <id>
-[X]    resolve
-[X]        ls <address>
-[X]        update
-[X]    mail
-[X]        open    <account>
-[X]        info    <account>
-[X]        boxes   <account>
-[X]        create	<to> <subject>
- */
-
 var app *tview.Application
 var pages *tview.Pages
 
@@ -106,6 +86,8 @@ func newAccountsPanel() tview.Primitive {
 		AddItem(header, 0, 0, 1, 1, 0, 0, false).
 		AddItem(list, 1, 0, 1, 1, 0, 0, true)
 
+	grid.SetBorderColor(tcell.ColorSteelBlue)
+
 	return grid
 }
 
@@ -122,7 +104,7 @@ func newMessageBoxPanel() tview.Primitive {
 	root.AddChild(personalBox)
 	personalBox.AddChild(tview.NewTreeNode("Gym"))
 	personalBox.AddChild(tview.NewTreeNode("Home"))
-	personalBox.AddChild(tview.NewTreeNode("Hobbies"))
+	personalBox.AddChild(tview.NewTreeNode("Hobbies (1)"))
 	root.AddChild(tview.NewTreeNode("Work related"))
 	list := tview.NewTreeView().SetRoot(root).SetCurrentNode(root)
 
@@ -141,9 +123,11 @@ func main() {
 	app.SetInputCapture(func (event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTab {
 			navigate(1)
+			return nil
 		}
 		if event.Key() == tcell.KeyBacktab {
 			navigate(-1)
+			return nil
 		}
 
 		return event

@@ -9,7 +9,6 @@ import (
     "encoding/hex"
     "encoding/pem"
     "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/account"
 )
 
 type Service struct {
@@ -34,7 +33,7 @@ func (s *Service) Resolve(addr core.Address) (*ResolveInfo, error) {
 }
 
 // Upload resolve information to a service
-func (s *Service) UploadInfo(acc account.AccountInfo, resolveAddress string) error {
+func (s *Service) UploadInfo(acc core.AccountInfo, resolveAddress string) error {
     // Get private key
     block, _ := pem.Decode([]byte(acc.PrivKey))
     privKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)

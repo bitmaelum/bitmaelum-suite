@@ -2,7 +2,7 @@ package account
 
 import (
     "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/message"
+    "github.com/jaytaph/mailv2/core/messagebox"
 )
 
 type Repository interface {
@@ -18,9 +18,9 @@ type Repository interface {
     CreateBox(addr core.HashAddress, box, description string, quota int) error
     ExistsBox(addr core.HashAddress, box string) bool
     DeleteBox(addr core.HashAddress, box string) error
-    GetBox(addr core.HashAddress, box string) (*message.MailBoxInfo, error)
-    FindBox(addr core.HashAddress, query string) ([]message.MailBoxInfo, error)
+    GetBox(addr core.HashAddress, box string) (*messagebox.MailBoxInfo, error)
+    FindBox(addr core.HashAddress, query string) ([]messagebox.MailBoxInfo, error)
 
     // Message boxes
-    FindMessages(addr core.HashAddress, box string, offset, limit int) ([]message.MessageInfo, error)
+    FindMessages(addr core.HashAddress, box string, offset, limit int) ([]messagebox.MessageInfo, error)
 }

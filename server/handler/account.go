@@ -5,7 +5,6 @@ import (
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/core/container"
-    "github.com/jaytaph/mailv2/core/utils"
     "net/http"
 )
 
@@ -15,7 +14,7 @@ type InputCreateAccount struct {
     ProofOfWork struct {
         Bits     int                `json:"bits"`
         Proof    uint64             `json:"proof"`
-    }                               `json:"proof_of_work"`
+    } `json:"proof_of_work"`
 }
 
 // Create account handler
@@ -42,7 +41,8 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
         _ = json.NewEncoder(w).Encode(StatusErrorf("Proof of work must be at least %d bits", config.Server.Account.ProofOfWork))
         return
     }
-    if ! utils.ValidateProofOfWork(input.ProofOfWork.Bits, []byte(input.Mailbox), input.ProofOfWork.Proof) {
+    pow := core.NewProofOfWork(input.ProofOfWork.Bits, []byte(input.Mailbox), input.ProofOfWork.Proof)
+    if ! pow.Validate() {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusBadRequest)
         _ = json.NewEncoder(w).Encode(StatusError("Proof of work incorrect"))

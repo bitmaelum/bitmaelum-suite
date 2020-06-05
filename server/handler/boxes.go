@@ -4,7 +4,7 @@ import (
     "github.com/gorilla/mux"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/container"
-    "github.com/jaytaph/mailv2/core/message"
+    "github.com/jaytaph/mailv2/core/messagebox"
     "net/http"
     "strconv"
 )
@@ -19,7 +19,7 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 
     type MailBoxListOutput struct {
         Address string                  `json:"address"`
-        Boxes   []message.MailBoxInfo   `json:"boxes"`
+        Boxes   []messagebox.MailBoxInfo   `json:"boxes"`
     }
 
     output := &MailBoxListOutput{

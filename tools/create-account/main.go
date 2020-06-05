@@ -10,7 +10,6 @@ import (
     "github.com/jaytaph/mailv2/core/account"
     "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/core/container"
-    "github.com/jaytaph/mailv2/core/utils"
     "github.com/jessevdk/go-flags"
     "golang.org/x/crypto/ssh/terminal"
     "os"
@@ -104,7 +103,7 @@ func main() {
 
     fmt.Println("")
     fmt.Println("\U0001F510 Let's generate a key-pair for our new account... (this might take a while)")
-    privateKey, err := utils.CreateNewKeyPair(4096)
+    privateKey, err := core.CreateNewKeyPair(4096)
     if err != nil {
         panic(err)
     }
@@ -123,18 +122,15 @@ func main() {
 
     fmt.Println("")
     fmt.Println("\U0001F477 Let's do some proof-of-work... (this might take a while)")
-    proof := utils.ProofOfWork(22, []byte(addr.Hash()))
+    proof := core.NewProofOfWork(22, addr.Bytes(), 0)
 
-    acc := account.AccountInfo{
+    acc := core.AccountInfo{
         Address:      address,
         Name:         name,
         Organisation: organisation,
         PrivKey:      string(privateKeyPEM),
         PubKey:       string(publicKeyPEM),
-        Pow:          account.ProofOfWork{
-            Bits:  22,
-            Proof: proof,
-        },
+        Pow:          *proof,
     }
 
 

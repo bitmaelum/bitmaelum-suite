@@ -1,4 +1,4 @@
-package utils
+package core
 
 import (
     "bytes"
@@ -25,28 +25,41 @@ import (
 // that has been done.
 //
 
-
-
-// convert a large number to hexidecimal bytes
-func intToHex(n uint64) []byte {
-    return []byte(strconv.FormatUint(n, 16))
+type ProofOfWork struct {
+    Bits    int     `json:"bits"`
+    Proof   uint64  `json:"proof,omitempty"`
+    Data    []byte  `json:"data,omitempty"`
 }
 
-// Does a proof-of-work for X number of bits based on the data
-// This function can take a long time
-func ProofOfWork(bits int, data []byte) uint64 {
+func NewProofOfWork(bits int, data []byte, proof uint64) *ProofOfWork {
+    pow := &ProofOfWork{
+        Bits: bits,
+        Proof: proof,
+        Data: data,
+    }
+
+    return pow
+}
+
+// Returns true if this instance already has done proof-of-work
+func (pow *ProofOfWork) HasDoneWork() bool {
+    return pow.Proof > 0
+}
+
+// Actually do proof-of-work
+func (pow *ProofOfWork) Work() {
     var hashInt big.Int
 
     // Hash must be less than this
     target := big.NewInt(1)
-    target = target.Lsh(target, uint(256 - bits))
+    target = target.Lsh(target, uint(256 - pow.Bits))
 
     // Count from 0 to MAXINT
     var counter uint64 = 0
     for counter < math.MaxInt64 {
         // SHA256 the data
         hash := sha256.Sum256(bytes.Join([][]byte{
-            data,
+            pow.Data,
             intToHex(counter),
         }, []byte{}))
         hashInt.SetBytes(hash[:])
@@ -60,21 +73,26 @@ func ProofOfWork(bits int, data []byte) uint64 {
         counter += 1
     }
 
-    return counter
+    pow.Proof = counter
 }
 
-// Validate if the proof for the given data has been completed
-func ValidateProofOfWork(bits int, data []byte, proof uint64) bool {
+// Returns true when the given work can be validated against the proof
+func (pow *ProofOfWork) Validate() bool {
     var hashInt big.Int
 
     hash := sha256.Sum256(bytes.Join([][]byte{
-        data,
-        intToHex(proof),
+        pow.Data,
+        intToHex(pow.Proof),
     }, []byte{}))
     hashInt.SetBytes(hash[:])
 
     target := big.NewInt(1)
-    target = target.Lsh(target, uint(256 - bits))
+    target = target.Lsh(target, uint(256 - pow.Bits))
 
     return hashInt.Cmp(target) == -1
+}
+
+// convert a large number to hexidecimal bytes
+func intToHex(n uint64) []byte {
+    return []byte(strconv.FormatUint(n, 16))
 }
