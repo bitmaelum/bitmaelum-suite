@@ -1,12 +1,14 @@
 package account
 
 import (
+    "bytes"
     "crypto/aes"
     "crypto/cipher"
     "crypto/hmac"
     "crypto/rand"
     "crypto/sha256"
     "encoding/json"
+    "errors"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/config"
     "github.com/sirupsen/logrus"
@@ -45,15 +47,23 @@ func LoadAccount(addr core.Address, password []byte) (*core.AccountInfo, error) 
     } else {
         // @TODO: Check HMAC
 
+        hash := hmac.New(sha256.New, password)
+        hash.Write(af.AccountInfo)
+
+
+        if bytes.Compare(hash.Sum(nil), af.Hmac) != 0 {
+            return nil, errors.New("HMAC incorrect")
+        }
+
         derivedAESKey := pbkdf2.Key(password, af.Salt, PbkdfIterations, 32, sha256.New)
         aes256, err := aes.NewCipher(derivedAESKey)
         if err != nil {
             return nil, err
         }
 
-        //plainText := make([]byte, len(af.AccountInfo))
+        plainText = make([]byte, len(af.AccountInfo))
         ctr := cipher.NewCTR(aes256, af.Iv)
-        ctr.XORKeyStream(af.AccountInfo, plainText)
+        ctr.XORKeyStream(plainText, af.AccountInfo)
     }
 
     ai := &core.AccountInfo{}
