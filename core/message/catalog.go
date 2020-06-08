@@ -1,32 +1,32 @@
-package catalog
+package message
 
 import (
     "github.com/gabriel-vasile/mimetype"
     "github.com/google/uuid"
     "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/message"
     "io"
     "os"
     "time"
 )
 
 type BlockType struct {
-    Id          string         `json:"id"`
-    Type        string         `json:"type"`
-    Size        uint64         `json:"size"`
-    Encoding    string         `json:"encoding"`
-    Compression string         `json:"compression"`
-    Checksum    []message.Checksum `json:"checksum"`
-    Content     string         `json:"content"`
+    Id          string              `json:"id"`
+    Type        string              `json:"type"`
+    Size        uint64              `json:"size"`
+    Encoding    string              `json:"encoding"`
+    Compression string     `json:"compression"`
+    Checksum    []Checksum `json:"checksum"`
+    Reader      io.Reader  `json:"content"`
 }
 
 type AttachmentType struct {
-    Id          string         `json:"id"`
-    MimeType    string         `json:"mimetype"`
-    FileName    string         `json:"filename"`
-    Size        uint64         `json:"size"`
-    Compression string         `json:"compression"`
-    Checksum    []message.Checksum `json:"checksum"`
+    Id          string              `json:"id"`
+    MimeType    string              `json:"mimetype"`
+    FileName    string              `json:"filename"`
+    Size        uint64              `json:"size"`
+    Compression string     `json:"compression"`
+    Checksum    []Checksum `json:"checksum"`
+    Reader      io.Reader  `json:"content"`
 }
 
 type Catalog struct {
@@ -59,8 +59,8 @@ type Attachment struct {
 
 type Block struct {
     Type        string
-    Inline      bool
-    Content     []byte
+    Size        uint64
+    Reader     io.Reader
 }
 
 
@@ -85,26 +85,19 @@ func (c *Catalog) AddBlock(entry Block) error {
         return err
     }
 
-    content := entry.Content
-    size := uint64(len(entry.Content))
-    if entry.Inline == false {
-        stats, err := os.Stat(string(entry.Content))
-        if err != nil {
-            return err
-        }
-
-        content = nil
-        size = uint64(stats.Size())
-    }
+    //content, err := ioutil.ReadAll(entry.Reader)
+    //if err != nil {
+    //    return err
+    //}
 
     bt := &BlockType{
         Id:          id.String(),
         Type:        entry.Type,
-        Size:        size,
-        Encoding:    "",
-        Compression: "",
+        Size:        entry.Size,
+        Encoding:    "base64",
+        Compression: "zlib",
         Checksum:    nil,
-        Content:     string(content),
+        Reader:      core.Compress(entry.Reader),
     }
 
     c.Catalog.Blocks = append(c.Catalog.Blocks, *bt)

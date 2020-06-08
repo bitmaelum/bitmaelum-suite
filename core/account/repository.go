@@ -22,5 +22,11 @@ type Repository interface {
     FindBox(addr core.HashAddress, query string) ([]messagebox.MailBoxInfo, error)
 
     // Message boxes
-    FindMessages(addr core.HashAddress, box string, offset, limit int) ([]messagebox.MessageInfo, error)
+    FetchListFromBox(addr core.HashAddress, box string, offset, limit int) ([]messagebox.MessageList, error)
+
+
+    // Flags
+    GetFlags(addr core.HashAddress, box string, id string) ([]string, error)
+    SetFlag(addr core.HashAddress, box string, id string, flag string) error
+    UnsetFlag(addr core.HashAddress, box string, id string, flag string) error
 }

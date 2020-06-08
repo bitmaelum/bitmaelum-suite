@@ -8,9 +8,7 @@ import (
     "fmt"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
-    "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/core/container"
-    "github.com/jessevdk/go-flags"
     "golang.org/x/crypto/ssh/terminal"
     "os"
     "strings"
@@ -24,24 +22,8 @@ type Options struct {
 var opts Options
 
 func main() {
-    // Parse config
-    parser := flags.NewParser(&opts, flags.Default)
-    if _, err := parser.Parse(); err != nil {
-        flagsError, _ := err.(*flags.Error)
-        if flagsError.Type == flags.ErrHelp {
-            return
-        }
-        fmt.Println()
-        parser.WriteHelp(os.Stdout)
-        fmt.Println()
-        return
-    }
-
-    // Load configuration
-    err := config.Client.LoadConfig(opts.Config)
-    if err != nil {
-        panic(err)
-    }
+    core.ParseOptions(&opts)
+    core.LoadClientConfig(opts.Config)
 
     fmt.Println("Account generation for mailv2")
     fmt.Println("-----------------------------")
@@ -72,7 +54,7 @@ func main() {
     addr, _ := core.NewAddressFromString(address)
 
     ks := container.GetResolveService()
-    _, err = ks.Resolve(*addr)
+    _, err := ks.Resolve(*addr)
     if err == nil {
         fmt.Printf("It seems that this address is already in use. Please specify another address.")
         os.Exit(1)

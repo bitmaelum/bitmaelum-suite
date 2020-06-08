@@ -1,5 +1,5 @@
 config:
-    account:
+    accounts:
         # where are our accounts stored?
         path: "~/.mailv2/account"
 

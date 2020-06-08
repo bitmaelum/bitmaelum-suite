@@ -1,0 +1,56 @@
+package main
+
+import (
+    "fmt"
+    "github.com/jaytaph/mailv2/core"
+    "github.com/jaytaph/mailv2/core/account"
+    "github.com/jaytaph/mailv2/core/config"
+    "github.com/jaytaph/mailv2/core/container"
+    "github.com/jessevdk/go-flags"
+    "github.com/mitchellh/go-homedir"
+    "os"
+)
+
+type Options struct {
+    Config      string      `short:"c" long:"config" description:"Configuration file" default:"./client-config.yml"`
+    Addr        string      `short:"a" long:"address" description:"account"`
+    Password    string      `short:"p" long:"password" description:"Password to decrypt your account"`
+    Box         string      `short:"b" long:"box" description:"message box"`
+    Id          string      `short:"i" long:"id" description:"message id"`
+}
+
+var opts Options
+
+func main() {
+    core.ParseOptions(&opts)
+    core.LoadClientConfig(opts.Config)
+
+
+    // Convert strings into addresses
+    fromAddr, err := core.NewAddressFromString(opts.Addr)
+    if err != nil {
+        panic(err)
+    }
+
+    var pwd = []byte(opts.Password)
+
+    // Load our FROM account
+    ai, err := account.LoadAccount(*fromAddr, pwd)
+    if err != nil {
+        panic(err)
+    }
+
+    as := container.GetAccountService()
+    mbi := as.FetchMessageBoxes(fromAddr, opts.Box)
+    if err != nil {
+        panic(err)
+    }
+
+
+    //message, err := message.LoadMessage(fromAddr, opts.Id)
+    //if err != nil {
+    //    panic(err)
+    //}
+
+    // Do things with message
+}

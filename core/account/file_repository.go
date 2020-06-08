@@ -2,8 +2,8 @@ package account
 
 import (
     "encoding/json"
+    "errors"
     "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/catalog"
     "github.com/jaytaph/mailv2/core/messagebox"
     "github.com/nightlyone/lockfile"
     "github.com/sirupsen/logrus"
@@ -12,13 +12,20 @@ import (
     "path"
     "path/filepath"
     "strings"
+    "time"
 )
 
 
 const (
     PUBKEY_FILE = ".pubkeys.json"
     INFO_FILE = ".info.json"
+    FLAG_FILE = ".flags.json"
 )
+
+type Pubkeys struct {
+    PubKeys []string `json:"keys"`
+}
+
 
 type fileRepo struct {
     basePath string
@@ -47,7 +54,8 @@ func (r *fileRepo) Exists(addr core.HashAddress) bool {
 // Store the public key for this account
 func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
     // Lock our keyfile for writing
-    lock, err := lockfile.New(PUBKEY_FILE + ".lock")
+    lockfilePath := r.getPath(addr, PUBKEY_FILE +".lock")
+    lock, err := lockfile.New(lockfilePath)
 
     err = lock.TryLock()
     if err != nil {
@@ -59,7 +67,7 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
     }()
 
     // Read keys
-    pk := &messagebox.Pubkeys{}
+    pk := &Pubkeys{}
     err = r.fetchJson(addr, PUBKEY_FILE, pk)
     if err != nil {
         return err
@@ -80,7 +88,7 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
 
 // Retrieve the public key for this account
 func (r *fileRepo) FetchPubKeys(addr core.HashAddress) ([]string, error) {
-    pk := &messagebox.Pubkeys{}
+    pk := &Pubkeys{}
     err := r.fetchJson(addr, PUBKEY_FILE, pk)
     if err != nil {
         return nil, err
@@ -175,12 +183,26 @@ func (r *fileRepo) getPath(addr core.HashAddress, suffix string) string {
 // Retrieve a single mailbox
 func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*messagebox.MailBoxInfo, error) {
     mbi := &messagebox.MailBoxInfo{}
+    mbi.Name = box
+
+    // Fetch information from .info file
     err := r.fetchJson(addr, path.Join(box, INFO_FILE), mbi)
     if err != nil {
         return nil, err
     }
 
-    mbi.Name = box
+    // Check number of messages in directory
+    files, err := ioutil.ReadDir(r.getPath(addr, box))
+    if err != nil {
+        mbi.Total = 0
+    } else {
+        for _, file := range files {
+            if file.IsDir() {
+                mbi.Total++
+            }
+        }
+    }
+
     return mbi, nil
 }
 
@@ -210,8 +232,9 @@ func (r *fileRepo) FindBox(addr core.HashAddress, query string) ([]messagebox.Ma
     return list, nil
 }
 
-func (r *fileRepo) FindMessages(addr core.HashAddress, box string, offset, limit int) ([]messagebox.MessageInfo, error) {
-    list := []messagebox.MessageInfo{}
+// Query messages inside mailbox
+func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, limit int) ([]messagebox.MessageList, error) {
+    var list []messagebox.MessageList
 
     files, err := ioutil.ReadDir(r.getPath(addr, box))
     if err != nil {
@@ -223,30 +246,125 @@ func (r *fileRepo) FindMessages(addr core.HashAddress, box string, offset, limit
             continue
         }
 
-        mi, err := r.GetMessageInfo(addr, box, f.Name())
-        if err != nil {
-            continue
+        flags := &messagebox.Flags{}
+        _ = r.fetchJson(addr, path.Join(box, f.Name(), FLAG_FILE), flags)
+
+        msg := messagebox.MessageList{
+            Id: f.Name(),
+            Dt: f.ModTime().Format(time.RFC3339),
+            Flags: flags.Flags,
         }
-        list = append(list, *mi)
+
+        list = append(list, msg)
     }
 
     return list, nil
 }
 
-// Fetch specific mail
-func (r *fileRepo) GetMessageInfo(addr core.HashAddress, box string, msgUuid string) (*messagebox.MessageInfo, error) {
+//// Fetch specific mail
+//func (r *fileRepo) GetMessageInfo(addr core.HashAddress, box string, msgUuid string) (*messagebox.MessageInfo, error) {
+//
+//    c := &message.Catalog{}
+//    err := r.fetchJson(addr, path.Join(box, msgUuid, "catalog.json"), c)
+//    if err != nil {
+//        return nil, err
+//    }
+//
+//    f := &messagebox.Flags{}
+//    _ = r.fetchJson(addr, path.Join(box, msgUuid, FLAG_FILE), f)
+//
+//    return &messagebox.MessageInfo{
+//        Flags:   *f,
+//        Catalog: *c,
+//    }, nil
+//}
 
-    c := &catalog.Catalog{}
-    err := r.fetchJson(addr, path.Join(box, msgUuid, "catalog.json"), c)
+// Set flag from the given message
+func (r *fileRepo) SetFlag(addr core.HashAddress, box string, id string, flag string) error {
+    return r.writeFlag(addr, box, id, flag, true)
+}
+
+// Unset flag from the given message
+func (r *fileRepo) UnsetFlag(addr core.HashAddress, box string, id string, flag string) error {
+    return r.writeFlag(addr, box, id, flag, false)
+}
+
+// Get flags from the given message
+func (r *fileRepo) GetFlags(addr core.HashAddress, box string, id string) ([]string, error) {
+    flags := &messagebox.Flags{}
+    err := r.fetchJson(addr, path.Join(box, id, FLAG_FILE), flags)
     if err != nil {
         return nil, err
     }
 
-    f := &messagebox.Flags{}
-    _ = r.fetchJson(addr, path.Join(box, msgUuid, ".flags"), f)
-
-    return &messagebox.MessageInfo{
-        Flags:   *f,
-        Catalog: *c,
-    }, nil
+    return flags.Flags, err
 }
+
+// Remove element from slice
+func remove(slice []string, item string) []string {
+    idx, err := find(slice, item)
+    if err != nil {
+        return slice
+    }
+
+    return append(slice[:idx], slice[idx+1:]...)
+}
+
+// Find element in slice
+func find(slice []string, item string) (int, error) {
+        for i, n := range slice {
+            if item == n {
+                return i, nil
+            }
+        }
+
+        return 0, errors.New("not found")
+}
+
+func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag string, addFlag bool) error {
+    // Lock our flags for writing
+
+
+    lockfilePath := r.getPath(addr, path.Join(box, id, FLAG_FILE + ".lock"))
+    lockfilePath, err := filepath.Abs(lockfilePath)
+    if err != nil {
+        return err
+    }
+    lock, err := lockfile.New(lockfilePath)
+
+    err = lock.TryLock()
+    if err != nil {
+        return err
+    }
+
+    defer func () {
+        _ = lock.Unlock()
+    }()
+
+
+    // Get flags
+    flags, err := r.GetFlags(addr, box, id)
+    if err != nil {
+        return err
+    }
+
+    // We remove the flag first. This also takes care of duplicate flags
+    flags = remove(flags, flag)
+
+    // Add flag if needed.
+    if addFlag {
+        flags = append(flags, flag)
+    }
+
+    // Save flags back
+    ft := &messagebox.Flags{
+        Flags: flags,
+    }
+    data, err := json.MarshalIndent(ft, "", "  ")
+    if err != nil {
+        return err
+    }
+
+    return r.store(addr, path.Join(box, id, FLAG_FILE), data)
+}
+

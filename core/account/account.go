@@ -11,6 +11,7 @@ import (
     "errors"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/config"
+    "github.com/mitchellh/go-homedir"
     "github.com/sirupsen/logrus"
     "golang.org/x/crypto/pbkdf2"
     "io"
@@ -45,12 +46,9 @@ func LoadAccount(addr core.Address, password []byte) (*core.AccountInfo, error) 
 
         plainText = []byte(data)
     } else {
-        // @TODO: Check HMAC
-
+        // Check HMAC
         hash := hmac.New(sha256.New, password)
         hash.Write(af.AccountInfo)
-
-
         if bytes.Compare(hash.Sum(nil), af.Hmac) != 0 {
             return nil, errors.New("HMAC incorrect")
         }
@@ -135,5 +133,8 @@ func SaveAccount(addr core.Address, password []byte, acc core.AccountInfo) (erro
 }
 
 func getPath(addr core.Address) string {
-    return path.Clean(path.Join(config.Client.Accounts.Path, addr.String() + ".account.json"))
+    p := path.Join(config.Client.Accounts.Path, addr.String() + ".account.json")
+    p = path.Clean(p)
+    p, _ = homedir.Expand(p)
+    return p
 }

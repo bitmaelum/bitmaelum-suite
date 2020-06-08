@@ -14,7 +14,6 @@ It even provides additional functionality:
   - don't get tracked (unless you want to)
 
 
-
 # How do we want to achieve all this
 
 ### less spam (hopefully, spam free)
@@ -66,7 +65,6 @@ public registration.
 Everything inside the message is encrypted and can only be read by the recipient of the email. This means that no 
 server or agency that captures the traffic can view the contents and even the meta-data of your messages. The only piece
 of information available is the SHA256 of the sender and recipient. 
-
 
 
 

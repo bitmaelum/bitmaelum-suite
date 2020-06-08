@@ -3,6 +3,7 @@ package container
 import (
     "github.com/jaytaph/mailv2/core/account"
     "github.com/jaytaph/mailv2/core/config"
+    "github.com/mitchellh/go-homedir"
 )
 
 var accountService *account.Service = nil
@@ -23,7 +24,8 @@ func GetAccountRepository() *account.Repository {
         return accountRepository;
     }
 
-    repo := account.NewFileRepository(config.Server.Account.Path)
+    p, _ := homedir.Expand(config.Server.Account.Path)
+    repo := account.NewFileRepository(p)
     accountRepository = &repo
     return accountRepository
 }

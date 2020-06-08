@@ -64,11 +64,27 @@ func (s *Service) FetchMessageBoxes(addr core.HashAddress, query string) []messa
     return list
 }
 
-func (s *Service) FetchMailFromBox(addr core.HashAddress, box string, offset int, limit int) []messagebox.MessageInfo {
-    list, err := s.repo.FindMessages(addr, box, offset, limit)
-    if err != nil {
-        return []messagebox.MessageInfo{}
-    }
+func (s *Service) FetchListFromBox(addr core.HashAddress, box string, offset int, limit int) []messagebox.MessageList {
+   list, err := s.repo.FetchListFromBox(addr, box, offset, limit)
+   if err != nil {
+       return []messagebox.MessageList{}
+   }
 
-    return list
+   return list
 }
+
+// Gets the flags for the given message
+func (s *Service) GetFlags(addr core.HashAddress, box string, id string) ([]string, error) {
+    return s.repo.GetFlags(addr, box, id)
+}
+
+// Sets a flag for a given message
+func (s *Service) SetFlag(addr core.HashAddress, box string, id string, flag string) error {
+    return s.repo.SetFlag(addr, box, id, flag)
+}
+
+// Unsets a flag for a given message
+func (s *Service) UnsetFlag(addr core.HashAddress, box string, id string, flag string) error {
+    return s.repo.UnsetFlag(addr, box, id, flag)
+}
+

@@ -1,14 +1,15 @@
 package messagebox
 
+
 // Structure of the .info.json file
 type MailBoxInfo struct {
     Name            string
     Description     string      `json:"description"`
     Quota           int         `json:"quota"`
+    Total           int         `json:"total"`
 }
 
-type Flags map[string]string
-
-type Pubkeys struct {
-    PubKeys []string `json:"keys"`
+type Flags struct {
+    Flags []string  `json:"flags"`
 }
+

@@ -7,6 +7,7 @@ import (
     "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/server/handler"
     "github.com/jaytaph/mailv2/server/middleware"
+    "github.com/mitchellh/go-homedir"
     "github.com/sirupsen/logrus"
     "github.com/urfave/negroni"
     "log"
@@ -32,6 +33,10 @@ func main() {
     mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.RetrieveBoxes).Methods("GET")
     mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}", handler.RetrieveBox).Methods("GET")
 
+    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flags", handler.GetFlags).Methods("GET")
+    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.SetFlag).Methods("PUT")
+    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.UnsetFlag).Methods("DELETE")
+
     mainRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
     mainRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
 
@@ -44,9 +49,12 @@ func main() {
     middlewareRouter.UseHandler(mainRouter)
 
 
+    cfp, _ := homedir.Expand(config.Server.TLS.CertFile)
+    kfp, _ := homedir.Expand(config.Server.TLS.KeyFile)
+
     host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
     logrus.Tracef("listenAndServeTLS on '%s'", host)
-    err := http.ListenAndServeTLS(host, config.Server.TLS.CertFile, config.Server.TLS.KeyFile, middlewareRouter)
+    err := http.ListenAndServeTLS(host, cfp, kfp, middlewareRouter)
     if err != nil {
         log.Fatal("listenAndServe: ", err)
     }
@@ -86,7 +94,8 @@ func parseFlags() {
 }
 
 func processConfig() {
-    err := config.Server.LoadConfig(configPath)
+    p, _ := homedir.Expand(configPath)
+    err := config.Server.LoadConfig(p)
     if err != nil {
         panic(err)
     }

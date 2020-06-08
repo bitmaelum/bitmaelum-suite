@@ -5,10 +5,7 @@ import (
     "fmt"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
-    "github.com/jaytaph/mailv2/core/config"
-    "github.com/jessevdk/go-flags"
     "golang.org/x/crypto/ssh/terminal"
-    "os"
     "syscall"
 )
 
@@ -20,25 +17,8 @@ type Options struct {
 var opts Options
 
 func main() {
-    // Parse config
-    parser := flags.NewParser(&opts, flags.Default)
-    if _, err := parser.Parse(); err != nil {
-        flagsError, _ := err.(*flags.Error)
-        if flagsError.Type == flags.ErrHelp {
-            return
-        }
-        fmt.Println()
-        parser.WriteHelp(os.Stdout)
-        fmt.Println()
-        return
-    }
-
-    // Load configuration
-    err := config.Client.LoadConfig(opts.Config)
-    if err != nil {
-        panic(err)
-    }
-
+    core.ParseOptions(&opts)
+    core.LoadClientConfig(opts.Config)
 
     var password []byte
 
