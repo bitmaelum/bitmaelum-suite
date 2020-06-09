@@ -34,11 +34,14 @@ func GenerateJWTToken(addr HashAddress, privKey string) (string, error) {
 }
 
 // Validate a JWT token with the given public key and address
-func ValidateJWTToken(tokenString string, addr HashAddress, pubKey string) (bool, error) {
+func ValidateJWTToken(tokenString string, addr HashAddress, pubKey string) (*jwt.Token, error) {
     block, _ := pem.Decode([]byte(pubKey))
+    if block == nil {
+        return nil, errors.New("public key not valid")
+    }
     pk, err := x509.ParsePKCS1PublicKey(block.Bytes)
     if err != nil {
-        return false, err
+        return nil, err
     }
 
     kf := func(token *jwt.Token) (interface{}, error) {
@@ -48,31 +51,31 @@ func ValidateJWTToken(tokenString string, addr HashAddress, pubKey string) (bool
     claims := &jwt.StandardClaims{}
     token, err := jwt.ParseWithClaims(tokenString, claims, kf)
     if err != nil {
-        return false, err
+        return nil, err
     }
 
     // Make sure the token actually uses RSA for signing
     _, ok := token.Method.(*jwt.SigningMethodRSA)
     if ! ok {
-        return false, errors.New("incorrect signing method")
+        return nil, errors.New("incorrect signing method")
     }
 
     // It should be a valid token
     if ! token.Valid {
-        return false, errors.New("token not valid")
+        return nil, errors.New("token not valid")
     }
 
     // The standard claims should be valid
     err = token.Claims.Valid()
     if err != nil {
-        return false, err
+        return nil, err
     }
 
     // Check subject explicitly
     res := subtle.ConstantTimeCompare([]byte(token.Claims.(*jwt.StandardClaims).Subject), []byte(addr.String()))
-    if res != 0 {
-        return false, errors.New("subject not valid")
+    if res == 0 {
+        return nil, errors.New("subject not valid")
     }
 
-    return token.Valid, nil
+    return token, nil
 }

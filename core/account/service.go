@@ -88,3 +88,4 @@ func (s *Service) UnsetFlag(addr core.HashAddress, box string, id string, flag s
     return s.repo.UnsetFlag(addr, box, id, flag)
 }
 
+

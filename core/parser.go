@@ -8,7 +8,7 @@ import (
 
 // Parse config options. Will exit when issues arrise
 func ParseOptions(opts interface{}) {
-    parser := flags.NewParser(opts, flags.Default)
+    parser := flags.NewParser(opts, flags.IgnoreUnknown)
     _, err := parser.Parse()
     if err != nil {
         flagsError, _ := err.(*flags.Error)

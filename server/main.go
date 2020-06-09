@@ -1,52 +1,58 @@
 package main
 
 import (
-    "flag"
     "fmt"
     "github.com/gorilla/mux"
+    "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/config"
     "github.com/jaytaph/mailv2/server/handler"
     "github.com/jaytaph/mailv2/server/middleware"
     "github.com/mitchellh/go-homedir"
     "github.com/sirupsen/logrus"
-    "github.com/urfave/negroni"
     "log"
     "net/http"
-    "os"
 )
 
-var configPath string
+type Options struct {
+    Config      string      `short:"c" long:"config" description:"Configuration file" default:"./server-config.yml"`
+}
+
+var opts Options
+
 
 func main() {
-    parseFlags()
-    processConfig()
-    processLogging()
+    core.ParseOptions(&opts)
+    core.LoadServerConfig(opts.Config)
+    core.SetLogging(config.Server.Logging.Level)
 
-    // Main router
+    logger := &middleware.Logger{}
+    tracer := &middleware.Tracer{}
+    jwt := &middleware.JwtToken{}
+
     mainRouter := mux.NewRouter().StrictSlash(true)
 
-    mainRouter.HandleFunc("/info", handler.Info).Methods("GET")
+    // Public things router
+    publicRouter := mainRouter.PathPrefix("/").Subrouter()
+    publicRouter.Use(logger.Middleware)
+    publicRouter.Use(tracer.Middleware)
+    publicRouter.HandleFunc("/info", handler.Info).Methods("GET")
+    publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
+    //publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
+    publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
+    publicRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
+    publicRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
 
-    mainRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
-    //mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
-    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
-    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.RetrieveBoxes).Methods("GET")
-    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}", handler.RetrieveBox).Methods("GET")
-
-    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flags", handler.GetFlags).Methods("GET")
-    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.SetFlag).Methods("PUT")
-    mainRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.UnsetFlag).Methods("DELETE")
-
-    mainRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
-    mainRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
-
-    mainRouter.HandleFunc("/send", handler.SendMessage).Methods("POST")
-
-    middlewareRouter := negroni.New()
-    middlewareRouter.Use(&middleware.Tracer{})
-    middlewareRouter.Use(&middleware.Logger{})
-    //middlewareRouter.Use(&middleware.BasicAuth{})
-    middlewareRouter.UseHandler(mainRouter)
+    //Routes that need to be authenticated
+    authRouter := mainRouter.PathPrefix("/").Subrouter()
+    authRouter.Use(jwt.Middleware)
+    authRouter.Use(logger.Middleware)
+    authRouter.Use(tracer.Middleware)
+    authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.RetrieveBoxes).Methods("GET")
+    authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}", handler.RetrieveBox).Methods("GET")
+    authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flags", handler.GetFlags).Methods("GET")
+    authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.SetFlag).Methods("PUT")
+    authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.UnsetFlag).Methods("DELETE")
+    authRouter.HandleFunc("/send", handler.SendMessage).Methods("POST")
 
 
     cfp, _ := homedir.Expand(config.Server.TLS.CertFile)
@@ -54,49 +60,8 @@ func main() {
 
     host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
     logrus.Tracef("listenAndServeTLS on '%s'", host)
-    err := http.ListenAndServeTLS(host, cfp, kfp, middlewareRouter)
+    err := http.ListenAndServeTLS(host, cfp, kfp, mainRouter)
     if err != nil {
         log.Fatal("listenAndServe: ", err)
-    }
-}
-
-func processLogging() {
-    logrus.SetFormatter(new(logrus.JSONFormatter))
-    logrus.SetFormatter(new(logrus.TextFormatter))
-
-    switch (config.Server.Logging.Level) {
-    case "trace":
-        logrus.SetLevel(logrus.TraceLevel)
-        break;
-    case "debug":
-        logrus.SetLevel(logrus.DebugLevel)
-        break;
-    case "info":
-        logrus.SetLevel(logrus.InfoLevel)
-        break;
-    case "warning":
-        logrus.SetLevel(logrus.WarnLevel)
-        break;
-    case "error":
-    default:
-        logrus.SetLevel(logrus.ErrorLevel)
-        config.Server.Logging.Level = "error"
-        break;
-    }
-    logrus.SetOutput(os.Stdout)
-
-    logrus.Tracef("setting loglevel to '%s'", config.Server.Logging.Level)
-}
-
-func parseFlags() {
-    flag.StringVar(&configPath, "config", "./server-config.yml", "path to config file")
-    flag.Parse()
-}
-
-func processConfig() {
-    p, _ := homedir.Expand(configPath)
-    err := config.Server.LoadConfig(p)
-    if err != nil {
-        panic(err)
     }
 }

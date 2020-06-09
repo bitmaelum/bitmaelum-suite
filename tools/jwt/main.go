@@ -32,6 +32,13 @@ func main() {
        panic(err)
     }
 
+    fmt.Println("PRIV:")
+    fmt.Printf("%s\n", ai.PrivKey)
+
+    fmt.Println("PUB:")
+    fmt.Printf("%s\n", ai.PubKey)
+    fmt.Println("")
+
     ts,err := core.GenerateJWTToken(fromAddr.Hash(), ai.PrivKey)
     if err != nil {
         panic(err)
@@ -39,10 +46,10 @@ func main() {
 
     fmt.Println(ts)
 
-    v, err := core.ValidateJWTToken(ts, fromAddr.Hash(), ai.PubKey)
+    token, err := core.ValidateJWTToken(ts, fromAddr.Hash(), ai.PubKey)
     if err != nil {
         panic(err)
     }
 
-    fmt.Printf("%#v\n", v)
+    fmt.Printf("%#v\n", token.Claims)
 }

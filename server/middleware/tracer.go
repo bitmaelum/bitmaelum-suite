@@ -8,8 +8,10 @@ import (
 type Tracer struct{}
 
 // Prints request in log
-func (*Tracer) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-    logrus.Debugf("%s %s", r.Method, r.URL)
+func (*Tracer) Middleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+        logrus.Debugf("%s %s", req.Method, req.URL)
 
-    next.ServeHTTP(w, r)
+        next.ServeHTTP(w, req)
+    })
 }
