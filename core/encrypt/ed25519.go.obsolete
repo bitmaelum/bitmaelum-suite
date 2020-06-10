@@ -1,0 +1,69 @@
+package encrypt
+
+import (
+    "crypto"
+    "crypto/ed25519"
+    "crypto/x509"
+    "encoding/pem"
+    "errors"
+)
+
+// Converts PEM data to a ed25519 private key
+func PEMToPrivKey(pemData []byte) (ed25519.PrivateKey, error) {
+    block, _ := pem.Decode(pemData)
+    if block == nil {
+        return nil, errors.New("PEM decoding failed")
+    }
+
+    key, err x509.ParsePKCS8PrivateKey(block.Bytes)
+
+    return ed25519.PrivateKey{key}
+}
+
+// Converts PEM data to a ed25519 public key
+func PEMtoPubKey(pemData []byte) (ed25519.PublicKey, error) {
+    block, _ := pem.Decode(pemData)
+    if block == nil {
+        return nil, errors.New("PEM decoding failed")
+    }
+
+    pubKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+    if err != nil {
+        return nil, err
+    }
+
+    return crypto.PublicKey()
+     ed25519.PublicKey.(pubKey)
+}
+
+// Converts a privkey to PEM format
+func PrivKeyToPEM(privKey *ed25519.PrivateKey) ([]byte, error) {
+    derData, err := x509.MarshalPKCS8PrivateKey(privKey)
+    if err != nil {
+        return nil, err
+    }
+
+    block := pem.Block{
+        Type:    "PRIVATE KEY",
+        Headers: nil,
+        Bytes:   derData,
+    }
+
+    return pem.EncodeToMemory(&block), nil
+}
+
+// Converts a public key to PEM format
+func PubKeyToPEM(pubKey *ed25519.PublicKey) ([]byte, error) {
+    derData, err := x509.MarshalPKIXPublicKey(pubKey)
+    if err != nil {
+        return nil, err
+    }
+
+    block := pem.Block{
+        Type:    "PUBLIC KEY",
+        Headers: nil,
+        Bytes:   derData,
+    }
+
+    return pem.EncodeToMemory(&block), nil
+}

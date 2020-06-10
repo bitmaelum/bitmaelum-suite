@@ -1,11 +1,13 @@
 package core
 
 import (
+    "crypto"
+    "crypto/ecdsa"
+    "crypto/ed25519"
+    "crypto/rsa"
     "crypto/subtle"
-    "crypto/x509"
-    "encoding/pem"
     "errors"
-    "github.com/dgrijalva/jwt-go"
+    "github.com/vtolstov/jwt-go"
     "time"
 )
 
@@ -15,12 +17,7 @@ type JwtClaims struct {
 }
 
 // Generate a JWT token with the address and singed by the given private key
-func GenerateJWTToken(addr HashAddress, privKey string) (string, error) {
-    pk, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privKey))
-    if err != nil {
-       return "", err
-    }
-
+func GenerateJWTToken(addr HashAddress, key crypto.PrivateKey) (string, error) {
     claims := &jwt.StandardClaims{
         ExpiresAt: time.Now().Add(time.Hour * time.Duration(1)).Unix(),
         IssuedAt:  time.Now().Unix(),
@@ -30,22 +27,14 @@ func GenerateJWTToken(addr HashAddress, privKey string) (string, error) {
 
     token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
-    return token.SignedString(pk)
+    return token.SignedString(key)
 }
 
 // Validate a JWT token with the given public key and address
-func ValidateJWTToken(tokenString string, addr HashAddress, pubKey string) (*jwt.Token, error) {
-    block, _ := pem.Decode([]byte(pubKey))
-    if block == nil {
-        return nil, errors.New("public key not valid")
-    }
-    pk, err := x509.ParsePKCS1PublicKey(block.Bytes)
-    if err != nil {
-        return nil, err
-    }
+func ValidateJWTToken(tokenString string, addr HashAddress, key crypto.PublicKey) (*jwt.Token, error) {
 
     kf := func(token *jwt.Token) (interface{}, error) {
-        return pk, nil
+        return key, nil
     }
 
     claims := &jwt.StandardClaims{}
@@ -54,9 +43,24 @@ func ValidateJWTToken(tokenString string, addr HashAddress, pubKey string) (*jwt
         return nil, err
     }
 
-    // Make sure the token actually uses RSA for signing
-    _, ok := token.Method.(*jwt.SigningMethodRSA)
-    if ! ok {
+    // Make sure the token actually uses the correct signing method
+    switch key.(type) {
+    case *rsa.PrivateKey:
+        _, ok := token.Method.(*jwt.SigningMethodRSA)
+        if ! ok {
+            return nil, errors.New("incorrect signing method")
+        }
+    case *ecdsa.PrivateKey:
+        _, ok := token.Method.(*jwt.SigningMethodRSA)
+        if ! ok {
+            return nil, errors.New("incorrect signing method")
+        }
+    case ed25519.PrivateKey:
+        _, ok := token.Method.(*jwt.SigningMethodRSA)
+        if ! ok {
+            return nil, errors.New("incorrect signing method")
+        }
+    default:
         return nil, errors.New("incorrect signing method")
     }
 
