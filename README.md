@@ -1,8 +1,16 @@
+         ____  _ _   __  __            _                 
+        |  _ \(_) | |  \/  |          | |                
+        | |_) |_| |_| \  / | __ _  ___| |_   _ _ __ ___  
+        |  _ <| | __| |\/| |/ _` |/ _ \ | | | | '_ ` _ \ 
+        | |_) | | |_| |  | | (_| |  __/ | |_| | | | | | |
+        |____/|_|\__|_|  |_|\__,_|\___|_|\__,_|_| |_| |_|
+           P r i v a c y   i s   y o u r s   a g a i n                                          
+
 # What if
 we could redesign email without any need for backward compatiblity. What would it look like? Probably not like this, but at least its an attempt.
 We're trying to figure out how to make email a secure (end-to-end encrypted) system that will both combat spam and brings you back in charge of 
 your mail again. This means you and only you can signup for mailing-lists, you can unsubscribe whenever you like (cannot be ignored by the 
-mailinglist owners). It also means a vast reduction of spam emails, as sending spam is expensive for spammers.
+mailinglist owners). It also means a vast reduction of spam emails, as sending spam is expensive for spammers.                                                  
 
 It even provides additional functionality:
 
