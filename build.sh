@@ -2,14 +2,14 @@
 
 #set -e
 
-REPO="github.com/jaytaph/mailv2"
+REPO="github.com/bitmaelum/bitmaelum-server"
 
 TOOLS="create-account hash-address jwt mail-server-config proof-of-work protect-account readmail sendmail"
 
 echo "Compiling [\c"
 
 echo ".\c"
-go build -o release/mailv2-server ${REPO}/server
+go build -o release/bitmaelum-server ${REPO}/server
 echo ".\c"
 go build -o release/client ${REPO}/client-ui
 echo ".\c"

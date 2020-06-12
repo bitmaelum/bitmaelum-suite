@@ -1,4 +1,4 @@
-module github.com/jaytaph/mailv2
+module github.com/bitmaelum/bitmaelum-server
 
 go 1.13
 

@@ -61,7 +61,7 @@ func SelectAndRun(cmd *cobra.Command, args []string) {
 		}
 
 		prompt := promptui.Select{
-			Label: `Welcome to MailV2. Please select your commands below`,
+			Label: `Welcome to BitMaelum. Please select your commands below`,
 			Items: items,
 			Templates: &promptui.SelectTemplates{
 				Label:    fmt.Sprintf("Path: %s", strings.Join(path[1:

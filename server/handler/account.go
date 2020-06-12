@@ -2,9 +2,9 @@ package handler
 
 import (
     "encoding/json"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/config"
-    "github.com/jaytaph/mailv2/core/container"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
+    "github.com/bitmaelum/bitmaelum-server/core/container"
     "net/http"
 )
 

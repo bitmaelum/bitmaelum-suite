@@ -2,7 +2,7 @@ package main
 
 import (
     "fmt"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
     "os"
     "strconv"
 )

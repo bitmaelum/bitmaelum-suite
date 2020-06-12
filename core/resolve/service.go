@@ -3,8 +3,8 @@ package resolve
 import (
     "crypto/sha256"
     "encoding/hex"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/encrypt"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/encrypt"
 )
 
 type Service struct {
@@ -31,6 +31,7 @@ func (s *Service) Resolve(addr core.Address) (*ResolveInfo, error) {
 // Upload resolve information to a service
 func (s *Service) UploadInfo(acc core.AccountInfo, resolveAddress string) error {
 
+    // @TODO: We maybe should sign with a different algo? Otherwise we use the same one for all systems
     privKey, err := encrypt.PEMToPrivKey([]byte(acc.PrivKey))
     if err != nil {
         return err

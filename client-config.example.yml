@@ -1,11 +1,11 @@
 config:
     accounts:
         # where are our accounts stored?
-        path: "~/.mailv2/account"
+        path: "~/.bitmaelum/account"
 
     # How can we resolve public keys and accounts
     resolve:
         local:
-            path: "~/.mailv2/.resolvecache"
+            path: "~/.bitmaelum/.resolvecache"
         remote:
-            url: "https://resolve.mailv2.nl"
+            url: "https://resolver.bitmaelum.com"

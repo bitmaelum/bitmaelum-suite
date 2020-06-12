@@ -3,8 +3,8 @@ package main
 import (
     "bytes"
     "fmt"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/account"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/account"
     "golang.org/x/crypto/ssh/terminal"
     "syscall"
 )

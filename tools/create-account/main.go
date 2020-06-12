@@ -4,10 +4,10 @@ import (
     "bufio"
     "bytes"
     "fmt"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/account"
-    "github.com/jaytaph/mailv2/core/container"
-    "github.com/jaytaph/mailv2/core/encrypt"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/account"
+    "github.com/bitmaelum/bitmaelum-server/core/container"
+    "github.com/bitmaelum/bitmaelum-server/core/encrypt"
     "golang.org/x/crypto/ssh/terminal"
     "os"
     "strings"
@@ -24,8 +24,8 @@ func main() {
     core.ParseOptions(&opts)
     core.LoadClientConfig(opts.Config)
 
-    fmt.Println("Account generation for mailv2")
-    fmt.Println("-----------------------------")
+    fmt.Println("Account generation for BitMaelum")
+    fmt.Println("--------------------------------")
     fmt.Println("")
 
     fmt.Println("Please specify the account you want to create.")
@@ -78,13 +78,13 @@ func main() {
     organisation = strings.TrimSuffix(organisation, "\n")
 
     fmt.Println("")
-    fmt.Print("\U0001F4BB What is the mailv2 server you want to store your account on: ")
+    fmt.Print("\U0001F4BB What is the bitmaelum server you want to store your account on: ")
     mailserver, _ := reader.ReadString('\n')
     mailserver = strings.TrimSuffix(mailserver, "\n")
 
     fmt.Println("")
     fmt.Println("\U0001F510 Let's generate a key-pair for our new account... (this might take a while)")
-    privateKey, publicKey, err := encrypt.GenerateKeyPair(encrypt.KeyTypeED25519)
+    privateKey, publicKey, err := encrypt.GenerateKeyPair(encrypt.KeyTypeRsa)
     if err != nil {
         panic(err)
     }

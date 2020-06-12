@@ -99,7 +99,7 @@ of information available is the SHA256 of the sender and recipient.
 
 * Run the mail-server:
 
-    ./release/mailv2-server -config ./config.yml
+    ./release/bitmaelum-server -config ./config.yml
 
     This will run a mailserver on localhost port 2424 over a TLS connection.
     

@@ -1,6 +1,6 @@
 package resolve
 
-import "github.com/jaytaph/mailv2/core"
+import "github.com/bitmaelum/bitmaelum-server/core"
 
 type Repository interface {
     Resolve(addr core.HashAddress) (*ResolveInfo, error)

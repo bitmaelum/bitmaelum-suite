@@ -4,7 +4,7 @@ import (
     "bytes"
     "encoding/json"
     "errors"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
     "io/ioutil"
     "net/http"
 )

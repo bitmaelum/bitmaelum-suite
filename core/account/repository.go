@@ -1,8 +1,8 @@
 package account
 
 import (
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/messagebox"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/messagebox"
 )
 
 type Repository interface {

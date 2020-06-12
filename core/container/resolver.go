@@ -1,8 +1,8 @@
 package container
 
 import (
-    "github.com/jaytaph/mailv2/core/config"
-    "github.com/jaytaph/mailv2/core/resolve"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
+    "github.com/bitmaelum/bitmaelum-server/core/resolve"
 )
 
 var resolveService *resolve.Service = nil

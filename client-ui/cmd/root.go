@@ -12,8 +12,8 @@ var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "client",
-	Short: "MailV2 mail client",
-	Long: `This is the default mail client for the MailV2 system. It is used simply 
+	Short: "BitMaelum mail client",
+	Long: `This is the default mail client for the BitMaelum system. It is used simply 
 as a proof-of-concept to demonstrate that it should be easy to use.`,
 	Run:	SelectAndRun,
 }
@@ -34,7 +34,7 @@ func init() {
 		Hidden: true,
 	})
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mailv2/config/client-config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.bitmaelum/config/client-config.yaml)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -52,7 +52,7 @@ func initConfig() {
 
 		// Search config in home directory with name ".client" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".mailv2/config/client-config")
+		viper.SetConfigName(".bitmaelum/config/client-config")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

@@ -1,8 +1,8 @@
 package main
 
 import (
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/tools/mail-server-config/cmd"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/tools/mail-server-config/cmd"
 )
 
 type Options struct {
