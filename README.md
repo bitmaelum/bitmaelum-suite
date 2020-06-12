@@ -33,6 +33,8 @@ There are multiple ways we try to combat spam:
   - Selling compiled email lists is not viable anymore. Personal keys are only valid for that specific organisation 
     and not for others, making large email lists pointless. 
 
+### Are you guys serious!?
+We don't expect this to hit production level ever. It's mostly a nice hobby-project to identify issues with current email infrastructure and see if we can come up with (realistic) solutions. Will they work? Do the benefits outweight using a complete new system? It can.. but we don't assume it will. Still.. it's a fun project to work on.
 
 ### no more email address leaks
 Obviously, we cannot prevent that your email address will be leaked. You must make your address public to at least 
