@@ -3,8 +3,8 @@ package account
 import (
     "encoding/json"
     "errors"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/messagebox"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/messagebox"
     "github.com/nightlyone/lockfile"
     "github.com/sirupsen/logrus"
     "io/ioutil"

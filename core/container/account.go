@@ -1,8 +1,8 @@
 package container
 
 import (
-    "github.com/jaytaph/mailv2/core/account"
-    "github.com/jaytaph/mailv2/core/config"
+    "github.com/bitmaelum/bitmaelum-server/core/account"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/mitchellh/go-homedir"
 )
 

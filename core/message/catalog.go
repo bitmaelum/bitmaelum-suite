@@ -3,7 +3,7 @@ package message
 import (
     "github.com/gabriel-vasile/mimetype"
     "github.com/google/uuid"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
     "io"
     "os"
     "time"

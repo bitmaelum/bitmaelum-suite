@@ -3,7 +3,7 @@ package invite
 import (
     "encoding/base64"
     "github.com/go-redis/redis/v8"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
     "math/rand"
     "time"
 )

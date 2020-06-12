@@ -1,14 +1,7 @@
 package main
 
 import (
-    "fmt"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/account"
-    "github.com/jaytaph/mailv2/core/config"
-    "github.com/jaytaph/mailv2/core/container"
-    "github.com/jessevdk/go-flags"
-    "github.com/mitchellh/go-homedir"
-    "os"
+    "github.com/bitmaelum/bitmaelum-server/core"
 )
 
 type Options struct {
@@ -26,25 +19,25 @@ func main() {
     core.LoadClientConfig(opts.Config)
 
 
-    // Convert strings into addresses
-    fromAddr, err := core.NewAddressFromString(opts.Addr)
-    if err != nil {
-        panic(err)
-    }
+    //// Convert strings into addresses
+    //fromAddr, err := core.NewAddressFromString(opts.Addr)
+    //if err != nil {
+    //    panic(err)
+    //}
+    //
+    //var pwd = []byte(opts.Password)
 
-    var pwd = []byte(opts.Password)
+    //// Load our FROM account
+    //ai, err := account.LoadAccount(*fromAddr, pwd)
+    //if err != nil {
+    //    panic(err)
+    //}
 
-    // Load our FROM account
-    ai, err := account.LoadAccount(*fromAddr, pwd)
-    if err != nil {
-        panic(err)
-    }
-
-    as := container.GetAccountService()
-    mbi := as.FetchMessageBoxes(fromAddr, opts.Box)
-    if err != nil {
-        panic(err)
-    }
+    //as := container.GetAccountService()
+    //mbi := as.FetchMessageBoxes(fromAddr.Hash(), opts.Box)
+    //if err != nil {
+    //    panic(err)
+    //}
 
 
     //message, err := message.LoadMessage(fromAddr, opts.Id)

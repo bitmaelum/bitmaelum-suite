@@ -3,7 +3,7 @@ package main
 import (
     "bufio"
     "fmt"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
     "os"
     "strings"
 )

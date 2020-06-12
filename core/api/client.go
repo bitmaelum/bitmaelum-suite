@@ -5,8 +5,8 @@ import (
     "encoding/json"
     "errors"
     "fmt"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/api/types"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/api/types"
     "net/http"
     "strconv"
 )

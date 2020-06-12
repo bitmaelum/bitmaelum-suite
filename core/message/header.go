@@ -1,7 +1,7 @@
 package message
 
 import (
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
 )
 
 type Header struct {
@@ -14,11 +14,11 @@ type Header struct {
         Addr    core.HashAddress    `json:"address"`
     } `json:"to"`
     Catalog struct {
-        Size        uint64      `json:"size"`
-        Checksum    []Checksum  `json:"checksum"`
-        Crypto      string      `json:"crypto"`
-        Key         []byte      `json:"key"`
-        Iv          []byte      `json:"iv"`
+        Size            uint64      `json:"size"`
+        Checksum        []Checksum  `json:"checksum"`
+        Crypto          string      `json:"crypto"`
+        EncryptedKey    []byte      `json:"encrypted_key"`
+        Iv              []byte      `json:"iv"`
     } `json:"catalog"`
 }
 

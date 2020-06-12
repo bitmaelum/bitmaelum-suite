@@ -2,8 +2,8 @@ package container
 
 import (
     "github.com/go-redis/redis/v8"
-    "github.com/jaytaph/mailv2/core/config"
-    "github.com/jaytaph/mailv2/server/incoming"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
+    "github.com/bitmaelum/bitmaelum-server/server/incoming"
 )
 
 var incomingService *incoming.Service = nil

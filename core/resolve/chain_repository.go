@@ -2,7 +2,7 @@ package resolve
 
 import (
     "errors"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
 )
 
 type ChainRepository struct {

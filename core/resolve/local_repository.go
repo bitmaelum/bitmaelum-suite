@@ -2,8 +2,8 @@ package resolve
 
 import (
     "errors"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/account"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/account"
     "github.com/sirupsen/logrus"
 )
 

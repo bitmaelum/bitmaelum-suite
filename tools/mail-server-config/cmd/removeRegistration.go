@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/jaytaph/mailv2/core"
-	"github.com/jaytaph/mailv2/core/container"
+	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/core/container"
 	"github.com/spf13/cobra"
 )
 

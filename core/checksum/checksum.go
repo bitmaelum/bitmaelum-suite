@@ -5,7 +5,7 @@ import (
     "crypto/sha1"
     "crypto/sha256"
     "encoding/hex"
-    "github.com/jaytaph/mailv2/core/message"
+    "github.com/bitmaelum/bitmaelum-server/core/message"
     "hash/crc32"
 )
 

@@ -4,13 +4,13 @@ import (
     "encoding/json"
     "fmt"
     "github.com/google/uuid"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/account"
-    "github.com/jaytaph/mailv2/core/checksum"
-    "github.com/jaytaph/mailv2/core/container"
-    "github.com/jaytaph/mailv2/core/encode"
-    "github.com/jaytaph/mailv2/core/encrypt"
-    "github.com/jaytaph/mailv2/core/message"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/account"
+    "github.com/bitmaelum/bitmaelum-server/core/checksum"
+    "github.com/bitmaelum/bitmaelum-server/core/container"
+    "github.com/bitmaelum/bitmaelum-server/core/encode"
+    "github.com/bitmaelum/bitmaelum-server/core/encrypt"
+    "github.com/bitmaelum/bitmaelum-server/core/message"
     "io"
     "io/ioutil"
     "os"
@@ -207,7 +207,7 @@ func main() {
     header.Catalog.Size = uint64(len(encCatalog))
     header.Catalog.Crypto = "rsa+aes256"
     header.Catalog.Iv = encode.Encode(catalogIv)
-    header.Catalog.Key, err = encrypt.EncryptKey([]byte(resolvedInfo.PublicKey), catalogKey)
+    header.Catalog.EncryptedKey, err = encrypt.EncryptKey([]byte(resolvedInfo.PublicKey), catalogKey)
     if err != nil {
         panic(fmt.Sprintf("trying to encrypt keys: %s", err))
     }

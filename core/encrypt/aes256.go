@@ -5,8 +5,8 @@ import (
     "crypto/cipher"
     "crypto/rand"
     "encoding/json"
-    "github.com/jaytaph/mailv2/core/encode"
-    "github.com/jaytaph/mailv2/core/message"
+    "github.com/bitmaelum/bitmaelum-server/core/encode"
+    "github.com/bitmaelum/bitmaelum-server/core/message"
     "io"
 )
 

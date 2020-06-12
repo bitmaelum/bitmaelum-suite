@@ -3,10 +3,10 @@ package middleware
 import (
     "context"
     "errors"
-    "github.com/dgrijalva/jwt-go"
     "github.com/gorilla/mux"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/container"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/container"
+    "github.com/vtolstov/jwt-go"
     "net/http"
     "strings"
 )

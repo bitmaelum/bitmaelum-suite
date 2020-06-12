@@ -1,6 +1,6 @@
 package keychain
 
-import "github.com/jaytaph/mailv2/core"
+import "github.com/bitmaelum/bitmaelum-server/core"
 
 type KeyChain interface {
     // Fetch a key from the keychain

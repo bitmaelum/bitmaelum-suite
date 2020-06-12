@@ -13,7 +13,7 @@ var panelIdx = 0
 
 func createWelcomeScreen() {
 	modal := tview.NewModal().
-		SetText("Welcome to MailV2\n\nThis is the first message client for the MailV2 system. It's highly experimental but should give you a good idea on the functionality.").
+		SetText("Welcome to BitMaelum\n\nThis is the first message client for the BitMaelum system. It's highly experimental but should give you a good idea on the functionality.").
 		AddButtons([]string{"Okay"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			pages.SwitchToPage("layout")
@@ -44,7 +44,7 @@ func createLayout() {
 		return tmp
 	}
 
-	main := newPrimitive("MailV2 Client")
+	main := newPrimitive("BitMaelum Client")
 	accounts := newAccountsPanel()
 	boxes := newMessageBoxPanel()
 

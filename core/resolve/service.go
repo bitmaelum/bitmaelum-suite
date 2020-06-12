@@ -1,14 +1,10 @@
 package resolve
 
 import (
-    "crypto"
-    "crypto/rand"
-    "crypto/rsa"
     "crypto/sha256"
-    "crypto/x509"
     "encoding/hex"
-    "encoding/pem"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/encrypt"
 )
 
 type Service struct {
@@ -34,16 +30,16 @@ func (s *Service) Resolve(addr core.Address) (*ResolveInfo, error) {
 
 // Upload resolve information to a service
 func (s *Service) UploadInfo(acc core.AccountInfo, resolveAddress string) error {
-    // Get private key
-    block, _ := pem.Decode([]byte(acc.PrivKey))
-    privKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+
+    // @TODO: We maybe should sign with a different algo? Otherwise we use the same one for all systems
+    privKey, err := encrypt.PEMToPrivKey([]byte(acc.PrivKey))
     if err != nil {
         return err
     }
 
     // Sign resolve address
     hash := sha256.Sum256([]byte(resolveAddress))
-    signature, err := rsa.SignPKCS1v15(rand.Reader, privKey, crypto.SHA256, hash[:])
+    signature, err := encrypt.Sign(privKey, hash[:])
     if err != nil {
         return err
     }

@@ -2,13 +2,13 @@ package keychain
 
 import (
     "errors"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/keybase/go-keychain"
 )
 
 const (
-    ACCESSGROUP string = "keychain.mailv2.nl"
-    SERVICE     string = "mailv2"
+    ACCESSGROUP string = "keychain.bitmaelum.nl"
+    SERVICE     string = "bitmaelum"
 )
 
 type OSXKeyChain struct {

@@ -1,10 +1,10 @@
 ---
 swagger: "2.0"
 info:
-  description: "This is mailv2 API server"
+  description: "This is BitMaelum API server"
   version: "0.0.1"
-  title: "MailV2 swagger"
-host: "mailv2.swagger.io"
+  title: "BitMaelum swagger"
+host: "bitmaelum.swagger.io"
 basePath: "/"
 schemes:
 - "https"

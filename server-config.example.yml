@@ -18,8 +18,8 @@ config:
     tls:
         # Certification and key for running on HTTPS. This should be a valid certificate via letsencrypt for instance
         # You can use self-signed certificates is you wnt
-        certfile: ~/.mailv2/certs/server.crt
-        keyfile: ~/.mailv2/certs/server.key
+        certfile: ~/.bitmaelum/certs/server.crt
+        keyfile: ~/.bitmaelum/certs/server.key
     redis:
         # Redis host
         host: 127.0.0.1:6379
@@ -27,7 +27,7 @@ config:
     resolve:
         # Local resolver
         local:
-            path: "~/.mailv2/.resolvecache"
+            path: "~/.bitmaelum/.resolvecache"
         # Remove resolver
         remote:
-            url: "https://resolve.mailv2.nl"
+            url: "https://resolver.bitmaelum.com"

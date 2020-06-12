@@ -4,9 +4,9 @@ import (
     "encoding/json"
     "github.com/google/uuid"
     "github.com/gorilla/mux"
-    "github.com/jaytaph/mailv2/core"
-    "github.com/jaytaph/mailv2/core/container"
-    "github.com/jaytaph/mailv2/server/incoming"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/container"
+    "github.com/bitmaelum/bitmaelum-server/server/incoming"
     "net/http"
     "time"
 )

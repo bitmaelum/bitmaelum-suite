@@ -5,7 +5,7 @@ import (
     "encoding/base64"
     "encoding/json"
     "github.com/google/uuid"
-    "github.com/jaytaph/mailv2/core"
+    "github.com/bitmaelum/bitmaelum-server/core"
     "time"
 )
 
