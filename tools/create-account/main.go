@@ -3,12 +3,11 @@ package main
 import (
     "bufio"
     "bytes"
-    "crypto/x509"
-    "encoding/pem"
     "fmt"
     "github.com/jaytaph/mailv2/core"
     "github.com/jaytaph/mailv2/core/account"
     "github.com/jaytaph/mailv2/core/container"
+    "github.com/jaytaph/mailv2/core/encrypt"
     "golang.org/x/crypto/ssh/terminal"
     "os"
     "strings"
@@ -85,22 +84,11 @@ func main() {
 
     fmt.Println("")
     fmt.Println("\U0001F510 Let's generate a key-pair for our new account... (this might take a while)")
-    privateKey, err := core.CreateNewKeyPair(4096)
+    privateKey, publicKey, err := encrypt.GenerateKeyPair(encrypt.KeyTypeED25519)
     if err != nil {
         panic(err)
     }
 
-    pemData := x509.MarshalPKCS1PrivateKey(privateKey)
-    privateKeyPEM := pem.EncodeToMemory(&pem.Block{
-        Type:  "RSA PRIVATE KEY",
-        Bytes: pemData,
-    })
-
-    pemData = x509.MarshalPKCS1PublicKey(&privateKey.PublicKey)
-    publicKeyPEM := pem.EncodeToMemory(&pem.Block{
-        Type:  "RSA PUBLIC KEY",
-        Bytes: pemData,
-    })
 
     fmt.Println("")
     fmt.Println("\U0001F477 Let's do some proof-of-work... (this might take a while)")
@@ -110,8 +98,8 @@ func main() {
         Address:      address,
         Name:         name,
         Organisation: organisation,
-        PrivKey:      string(privateKeyPEM),
-        PubKey:       string(publicKeyPEM),
+        PrivKey:      string(privateKey),
+        PubKey:       string(publicKey),
         Pow:          *proof,
     }
 
