@@ -1,71 +1,117 @@
 package api
 
 import (
+    "bytes"
     "crypto/tls"
     "encoding/json"
     "errors"
-    "fmt"
     "github.com/bitmaelum/bitmaelum-server/core"
-    "github.com/bitmaelum/bitmaelum-server/core/api/types"
+    "github.com/bitmaelum/bitmaelum-server/core/encrypt"
+    "io/ioutil"
     "net/http"
-    "strconv"
+    "time"
 )
 
 type Api struct {
-    Host    string
-    Port    int
-    BaseUrl string
-
-    client  *http.Client
+    account     *core.AccountInfo
+    jwt         string
+    client      *http.Client
 }
 
 // Create a new mailserver API client
-func NewClient(host string, port int) (*Api, error) {
+func CreateNewClient(ai *core.AccountInfo) (*Api, error) {
+    // Create JWT token based on the private key of the user
+    privKey, err := encrypt.PEMToPrivKey([]byte(ai.PrivKey))
+    if err != nil {
+        return nil, err
+    }
+    jwtToken, err := core.GenerateJWTToken(core.StringToHash(ai.Address), privKey)
+    if err != nil {
+        return nil, err
+    }
+
+
+    // Create API
     tr := &http.Transport{
+        // @TODO: We don't want this...
         TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
     }
 
     api := &Api{
-        Host: host,
-        Port: port,
-        BaseUrl : "https://" + host + ":" + strconv.Itoa(port),
-        client: &http.Client{Transport: tr},
-    }
-
-
-    // Check info
-    _, err := api.client.Get(api.BaseUrl + "/info")
-    if (err != nil) {
-        return nil, err
+        account: ai,
+        jwt: jwtToken,
+        client: &http.Client{
+            Transport: tr,
+            Timeout: 30 * time.Second,
+        },
     }
 
     return api, nil;
 }
 
-
-// Get public address from mailserver API
-func (api* Api) GetPublicKey(addr core.HashAddress) (string, error) {
-    resp, err := api.client.Get(api.BaseUrl + "/account/" + addr.String() + "/key")
+// Get JSON result from API
+func (api *Api) GetJSON(path string, v interface{}) error {
+    body, err := api.Get(path)
     if err != nil {
-        return "", err
+        return err
     }
 
-    if resp.StatusCode != http.StatusOK {
-        return "", errors.New(fmt.Sprintf("Incorrect status code returned: %d", resp.StatusCode))
+    err = json.Unmarshal(body, v)
+    if err != nil {
+        return err
     }
 
-    //b, _ := ioutil.ReadAll(resp.Body)
-    //fmt.Printf("%s", string(b))
-    //
-    //return []byte{}, nil
+    return nil
+}
 
+// Get raw bytes from API
+func (api *Api) Get(path string) ([]byte, error) {
+    req, err := http.NewRequest("GET", api.account.Server + path, nil)
+    if err != nil {
+        return nil, err
+    }
+
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Authorization", "Bearer " + api.jwt)
+
+    resp, err := api.client.Do(req)
+    if err != nil {
+        return nil, err
+    }
     defer resp.Body.Close()
 
-    target := types.PubKeyOutput{}
-    err = json.NewDecoder(resp.Body).Decode(&target)
-    if err != nil {
-       return "", err
+    if resp.StatusCode < 200 || resp.StatusCode > 299 {
+        return nil, errors.New("incorrect status code returned")
     }
 
-    return target.PublicKey, nil
+    return ioutil.ReadAll(resp.Body)
 }
+
+// Post to API
+func (api *Api) Post(path string, body interface{}) error {
+    bodyBytes, err := json.Marshal(body)
+    if err != nil {
+        return err
+    }
+
+    req, err := http.NewRequest("POST", api.account.Server + path, bytes.NewBuffer(bodyBytes))
+    if err != nil {
+        return err
+    }
+
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Authorization", "Bearer " + api.jwt)
+
+    resp, err := api.client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode < 200 || resp.StatusCode > 299 {
+        return errors.New("incorrect status code returned")
+    }
+
+    return nil
+}
+

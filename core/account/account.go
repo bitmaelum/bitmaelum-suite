@@ -10,6 +10,7 @@ import (
     "encoding/json"
     "errors"
     "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/api"
     "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/mitchellh/go-homedir"
     "github.com/sirupsen/logrus"
@@ -31,6 +32,7 @@ const (
     PbkdfIterations = 100002
 )
 
+// Load local account information
 func LoadAccount(addr core.Address, password []byte) (*core.AccountInfo, error) {
     data, err := ioutil.ReadFile(getPath(addr))
     if err != nil {
@@ -73,7 +75,8 @@ func LoadAccount(addr core.Address, password []byte) (*core.AccountInfo, error) 
     return ai, nil
 }
 
-func SaveAccount(addr core.Address, password []byte, acc core.AccountInfo) (error) {
+// Create local account
+func CreateLocalAccount(addr core.Address, password []byte, acc core.AccountInfo) (error) {
     // Generate JSON structure that we will encrypt
     plainText, err := json.MarshalIndent(&acc, "", "  ")
     if err != nil {
@@ -132,9 +135,19 @@ func SaveAccount(addr core.Address, password []byte, acc core.AccountInfo) (erro
     return nil
 }
 
+// Create remote account
+func CreateRemoteAccount(acc *core.AccountInfo, token string) (error) {
+    client, err := api.CreateNewClient(acc)
+    if err != nil {
+        return err
+    }
+
+    return client.CreateAccount(core.StringToHash(acc.Address), token)
+}
+
+// Generate path to account file for the given address
 func getPath(addr core.Address) string {
     p := path.Join(config.Client.Accounts.Path, addr.String() + ".account.json")
-    p = path.Clean(p)
     p, _ = homedir.Expand(p)
     return p
 }

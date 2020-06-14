@@ -10,23 +10,27 @@ import (
 )
 
 type BlockType struct {
-    Id          string              `json:"id"`
-    Type        string              `json:"type"`
-    Size        uint64              `json:"size"`
-    Encoding    string              `json:"encoding"`
+    Id          string     `json:"id"`
+    Type        string     `json:"type"`
+    Size        uint64     `json:"size"`
+    Encoding    string     `json:"encoding"`
     Compression string     `json:"compression"`
     Checksum    []Checksum `json:"checksum"`
     Reader      io.Reader  `json:"content"`
+    Key         []byte     `json:"key"`
+    Iv          []byte     `json:"iv"`
 }
 
 type AttachmentType struct {
-    Id          string              `json:"id"`
-    MimeType    string              `json:"mimetype"`
-    FileName    string              `json:"filename"`
-    Size        uint64              `json:"size"`
+    Id          string     `json:"id"`
+    MimeType    string     `json:"mimetype"`
+    FileName    string     `json:"filename"`
+    Size        uint64     `json:"size"`
     Compression string     `json:"compression"`
     Checksum    []Checksum `json:"checksum"`
     Reader      io.Reader  `json:"content"`
+    Key         []byte     `json:"key"`
+    Iv          []byte     `json:"iv"`
 }
 
 type Catalog struct {

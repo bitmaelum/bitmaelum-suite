@@ -9,7 +9,8 @@ import (
 )
 
 type InputCreateAccount struct {
-    Mailbox     core.HashAddress    `json:"mailbox"`
+    Addr        core.HashAddress    `json:"address"`
+    Token       string              `json:"token"`
     PublicKey   string              `json:"public_key"`
     ProofOfWork struct {
         Bits     int                `json:"bits"`
@@ -41,7 +42,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
         _ = json.NewEncoder(w).Encode(StatusErrorf("Proof of work must be at least %d bits", config.Server.Accounts.ProofOfWork))
         return
     }
-    pow := core.NewProofOfWork(input.ProofOfWork.Bits, []byte(input.Mailbox), input.ProofOfWork.Proof)
+    pow := core.NewProofOfWork(input.ProofOfWork.Bits, []byte(input.Addr), input.ProofOfWork.Proof)
     if ! pow.Validate() {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusBadRequest)
