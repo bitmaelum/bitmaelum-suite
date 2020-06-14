@@ -1,11 +1,10 @@
 #!/bin/sh
 
-#set -e
-
 REPO="github.com/bitmaelum/bitmaelum-server"
 
 TOOLS="create-account hash-address jwt mail-server-config proof-of-work protect-account readmail sendmail"
 
+# We use govvv to inject GIT version information into the applications
 GO_PATH=`go env GOPATH`
 GO_BUILD_FLAGS=`${GO_PATH}/bin/govvv build -pkg version -flags`
 

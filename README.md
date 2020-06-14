@@ -6,122 +6,66 @@
         |____/|_|\__|_|  |_|\__,_|\___|_|\__,_|_| |_| |_|
            P r i v a c y   i s   y o u r s   a g a i n                                          
 
-# What if
-we could redesign email without any need for backward compatiblity. What would it look like? Probably not like this, but at least its an attempt.
-We're trying to figure out how to make email a secure (end-to-end encrypted) system that will both combat spam and brings you back in charge of 
-your mail again. This means you and only you can signup for mailing-lists, you can unsubscribe whenever you like (cannot be ignored by the 
-mailinglist owners). It also means a vast reduction of spam emails, as sending spam is expensive for spammers.                                                  
+# What if..
+we could redesign email without any need for backward compatibility. What would it look like? 
+Could we solve the problems we face nowadays like spam, email forgery, phishing emails and, maybe the most important 
+one: privacy?
 
-It even provides additional functionality:
+BitMaelum (old Anglo-Saxon for "bit-by-bit") is an attempt. Instead of trying to figure out how to fix email, we are building a new email system from the ground up. This way, we can design the system to solve mail problems at its core.
 
-  - less spam (hopefully, spam free)
-  - no more email address leaks
-  - host your messages wherever you like
-  - move your messages to another mailserver without loosing your mail address 
-  - easily detect mailing-lists for your favourite companies and organisations
-  - don't get tracked (unless you want to)
+# Benefits
+We try to design a system that
 
+  - Deal with less to no spam at all
+  - Nullifies mail address harvesting (it becomes useless)
+  - Host your mail wherever you like
+  - Move your messages to another provider without losing your mail address
+  - Allows that only you can subscribe and unsubscribe from mailing lists
+  - Slow connection / mobile friendly 
+  - Privacy first
 
-# How do we want to achieve all this
+# How do we want to achieve all this?
 
-### less spam (hopefully, spam free)
+### Deal with less to no spam at all
 There are multiple ways we try to combat spam:
 
-  - we verify that the email came from the original sender and is not in any way tampered.
-  - sending out emails costs effort, making it less economic for spamlists as sending out thousands (even millions) of
-    messages comes too costly. When botnets (computers taken over by unknowning users that sends out spam) are used, 
-    it will trigger enough workload to become either noticable for botnet victims, or not economic viable to use these 
-    kind of systems.
-  - when sending ligimate emails, we allow users to enroll in mailing-lists. This gives the mailing-list owner a personal
-    key that will allow you to send mail to users for this specific list. Even if this key gets public through hacks 
-    and leaks, no other organisation or user cannot do anything with this information, as this key is not valid anymore.
-  - Not signed up for this list? Since signing up becomes an action from the recipient and not from the sender, this 
-    makes the recipient in charge. Don't want to receive any more emails? Just revoke your key for that mailinglist and 
-    they are not able to send you mail. 
-  - Selling compiled email lists is not viable anymore. Personal keys are only valid for that specific organisation 
-    and not for others, making large email lists pointless. 
-
-### Are you guys serious!?
-We don't expect this to hit production level ever. It's mostly a nice hobby-project to identify issues with current email infrastructure and see if we can come up with (realistic) solutions. Will they work? Do the benefits outweight using a complete new system? It can.. but we don't assume it will. Still.. it's a fun project to work on.
-
-### no more email address leaks
-Obviously, we cannot prevent that your email address will be leaked. You must make your address public to at least 
-others in order to receive email and we cannot guarantee that those users will take care of your address.
-
-However, when your email is leaked, it will not be feasible for spam lists to send you email (see: the less spam 
-bullit above). Ligitimate mailing lists can only mail you with a personal key that only works for that specific 
-mailing list.
+  - We verify that the email came from the original sender and has not tampered with in any way.
+  - Sending out emails costs effort, making it less economical for spammers to send out thousands (even millions) of messages. When botnets are used (computers that have been taken over that sends out spam), it will trigger enough workload to become either noticeable for the botnet victim.
+  - When sending legitimate emails, we allow users to enroll in mailing-lists. This gives the mailing-list owner a personal key that will enable you to send mail to users for this specific list. Even if this key gets public through hacks and leaks, no other organization or user cannot do anything with this information, as this key is not valid for anyone else.
+  - Not signed up for this list? Since signing up becomes an action from the recipient and not from the sender, this makes the recipient in charge. Don't want to receive any more emails? Just revoke your key for that mailing list, and they are not able to send you mail. 
+  - Selling email addresses is not viable anymore. Personal keys are only valid for that specific organization and not for others, making collections of many email addresses pointless. 
 
 
-### host your messages wherever you like
-Setting up a mail server is easy and by default secure out of the box. Just point your mail address to your new server 
-and you are good to go! 
+
+### Nullifies mail address harvesting
+We cannot prevent that your email address will be leaked. In fact, we assume it will, no matter how careful you are.
+
+But when your email is out there in the open, it will not be feasible for spam lists to send you mail. Legitimate mailing lists can only mail you with a personal key that only works for that specific mailing list. So even you can send somebody mail, sending thousands of millions of people mail is practically not possible. 
+
+
+### Host your mail wherever you like
+Setting up a mail server is easy and by default, secure out of the box. Just point your mail address to your new server, and you are good to go! 
+You can host your mail at home, at your office, or as most users do, at a mail provider.
 
 
 ### move your messages to another mailserver without loosing your mail address
-Don't like company X anymore, or getting to pricy? Or maybe you just want to move hosting provider, just because. Take 
-your email address with you.  
+Don't like provider X anymore, or are they getting too pricy? Or maybe you changed your internet provider. BitMaelum allows you to take your message AND your address with you. You are not bound to any email provider anymore!
 
  
-### easily detect mailing-lists for your favourite companies and organisations
-Find information about users and organisations by quering their mailserver. This way you can easily figure out if they 
-have mailinglists and give you to opportunity to join them.
+### Allows that only you can subscribe and unsubscribe from mailing lists
+Tired of getting email you never subscribed to? Or ever tried to unsubscribe to such a list, only to find yourself getting MORE mail?
 
-Want a secure and private mailinglist? That's no problem too! You can send out invitations to others and don't allow 
-public registration.
-
-
-### don't get tracked (unless you want to)
-Everything inside the message is encrypted and can only be read by the recipient of the email. This means that no 
-server or agency that captures the traffic can view the contents and even the meta-data of your messages. The only piece
-of information available is the SHA256 of the sender and recipient. 
-
-
-
-
-# Usage
-
-* Think of a FQDN to host your message server. It doesn't have to exist for local development. For instance `mail.test.v2`
-
-* Create a server certificate and key file. 
-
-    openssl req -x509 -newkey rsa:4096 -keyout server-passphrase.key -out server.crt -days 3650
-
-    Most important part is that you set your CN (common name)to the FQDN chosen above. You need to add a passphrase to the key.
+BitMaelum puts you in charge of mailing lists. You and ONLY you decide if you want to subscribe to a mailing list. Want to unsubscribe? This is also YOUR decision. There is no need to wait for any action from the mailing list owner. As soon as you decide to unsubscribe, you're unsubscribed!
  
-* Remove the passphrase from the key:
- 
-    openssl rsa -in server-passphrase.key -out server.key
+### Slow connection / mobile friendly
+Not everybody has a 10Gbit fiber internet connection. And in the middle of the woods, you're probably lucky with a 1-bar connection.
+We try to keep communication to a minimum by selective downloading what you need.
 
-* Or, if you like, you can always use LetsEncrypt to fetch your own certificate (with the help of certbot). Make sure you 
-  name your certificate `server.crt` and key `server.key`.
+### Privacy first
+We use end-to-end encryption between the sender and recipient. When sending a message, ONLY the recipient can decrypt the email. This means that no server, router, or agency that is snooping traffic can read your messages or email meta-data. Even your mail provider cannot read or modify your messages.
 
-* Build the components:
-
-    ./build.sh
-    
-    
-# Mail server
-
-* You'll need redis. Run either locally or via a container. Make sure you set the host info in the configuration file `./config.yml`
-
-* Run the mail-server:
-
-    ./release/bitmaelum-server -config ./config.yml
-
-    This will run a mailserver on localhost port 2424 over a TLS connection.
-    
-    Configuration for the server can be found in `./server-config.example.yml`
-
-## Paths and files
-
-Public keys that are pushed to the mailserver are stored in the `.keydb` directory.
-Mail is stored in the `.maildb` directory.
+The only piece of information that is known publicly is the hashed of the sender and recipient (so you can't even detect to who we send or receive a message from). 
 
 
-# Mail client
-
-Some kind of client is underway. It uses rivo/tview as UI framework.
-
-![client.png](client.png) 
-
+### Are you guys serious!?
+We don't expect this to hit the production level ever. It's mostly a nice hobby-project to identify issues with current email infrastructure and see if we can come up with (realistic) solutions. Will they work? Do the benefits outweigh using a completely new system? It can.. but we don't assume it will. Still, it's a fun project.
