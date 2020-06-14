@@ -67,5 +67,7 @@ We use end-to-end encryption between the sender and recipient. When sending a me
 The only piece of information that is known publicly is the hashed of the sender and recipient (so you can't even detect to who we send or receive a message from). 
 
 
-### Are you guys serious!?
+# Are you guys serious!?
 We don't expect this to hit the production level ever. It's mostly a nice hobby-project to identify issues with current email infrastructure and see if we can come up with (realistic) solutions. Will they work? Do the benefits outweigh using a completely new system? It can.. but we don't assume it will. Still, it's a fun project.
+
+![https://bitmaelum.com/logo_and_name.svg](https://bitmaelum.com/logo_and_name.svg)
