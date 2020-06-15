@@ -13,7 +13,7 @@ var opts Options
 
 func main() {
     core.ParseOptions(&opts)
-    core.LoadServerConfig(opts.Config)
+    //core.LoadServerConfig(opts.Config)
 
     cmd.Execute()
 }
