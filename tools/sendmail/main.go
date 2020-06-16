@@ -3,14 +3,13 @@ package main
 import (
     "encoding/json"
     "fmt"
-    "github.com/google/uuid"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/account"
     "github.com/bitmaelum/bitmaelum-server/core/checksum"
     "github.com/bitmaelum/bitmaelum-server/core/container"
-    "github.com/bitmaelum/bitmaelum-server/core/encode"
     "github.com/bitmaelum/bitmaelum-server/core/encrypt"
     "github.com/bitmaelum/bitmaelum-server/core/message"
+    "github.com/google/uuid"
     "io"
     "io/ioutil"
     "log"
@@ -190,7 +189,7 @@ func main() {
     data, _ := json.MarshalIndent(cat, "", "  ")
     _ = ioutil.WriteFile(".out/" + msgUuid.String() + "/catalog.json", data, 0600)
 
-    catalogKey, catalogIv, encCatalog, err := encrypt.EncryptCatalog(*cat)
+    catalogKey, encCatalog, err := encrypt.EncryptCatalog(*cat)
     if err != nil {
         log.Fatalf("Error while encrypting catalog: %v", err)
     }
@@ -207,7 +206,6 @@ func main() {
     header.Catalog.Checksum = append(header.Catalog.Checksum, checksum.Md5(encCatalog))
     header.Catalog.Size = uint64(len(encCatalog))
     header.Catalog.Crypto = "rsa+aes256"
-    header.Catalog.Iv = encode.Encode(catalogIv)
     header.Catalog.EncryptedKey, err = encrypt.Encrypt([]byte(resolvedInfo.PublicKey), catalogKey)
     if err != nil {
         log.Fatalf("trying to encrypt keys: %v", err)

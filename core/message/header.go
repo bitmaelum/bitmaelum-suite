@@ -18,7 +18,6 @@ type Header struct {
         Checksum        []Checksum  `json:"checksum"`
         Crypto          string      `json:"crypto"`
         EncryptedKey    []byte      `json:"encrypted_key"`
-        Iv              []byte      `json:"iv"`
     } `json:"catalog"`
 }
 

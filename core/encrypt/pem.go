@@ -26,12 +26,10 @@ func PEMToPubKey(pemData []byte) (interface{}, error) {
     return x509.ParsePKIXPublicKey(block.Bytes)
 }
 
-
 // Convert a private key into PKCS8/PEM format
 func PrivKeyToPEM(key interface{}) ([]byte, error) {
     return x509.MarshalPKCS8PrivateKey(key)
 }
-
 
 // Convert a public key into PKCS8/PEM format
 func PubKeyToPEM(key interface{}) ([]byte, error) {
