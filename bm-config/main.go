@@ -16,5 +16,8 @@ func main() {
     core.ParseOptions(&opts)
     fmt.Println(core.GetAsciiLogo())
 
+    core.LoadClientConfigOrPass(opts.Config)
+    core.LoadServerConfigOrPass(opts.Config)
+
     cmd.Execute()
 }
