@@ -54,7 +54,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 
     // Create account
     as := container.GetAccountService()
-    err = as.CreateAccount(input.Mailbox, input.PublicKey)
+    err = as.CreateAccount(input.Addr, input.PublicKey)
     if err != nil {
         sendBadRequest(w, err)
         return

@@ -15,6 +15,7 @@ func Test_ValidAddress(t *testing.T) {
         "jay-@o.rg!",
         "j1234!",
         "1ja!",
+        "abc@de!",
         "yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay@yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay!",
     }
 
@@ -31,6 +32,9 @@ func Test_InvalidAddress(t *testing.T) {
         "1!",
         ".@org!",
         "@@org!",
+        "@org!",
+        "ab@de!",
+        "abc@d!",
         "jay",
         "yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay1@yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay1!",
         "yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay1@yjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjayjay!",
@@ -63,7 +67,7 @@ func Test_Address(t *testing.T) {
     assert.Equal(t, "example", a.Org)
 
     assert.Equal(t, "john@example!", a.String())
-    assert.Equal(t, "f454fe8d4b5017369f9e64861f0d471efe3cdcbdf45732f26b7a377c3e93d278", a.Hash())
+    assert.Equal(t, "f454fe8d4b5017369f9e64861f0d471efe3cdcbdf45732f26b7a377c3e93d278", a.Hash().String())
 
     a, err = NewAddressFromString("JOHN!")
     assert.Equal(t, "john!", a.String())
