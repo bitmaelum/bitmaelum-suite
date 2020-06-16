@@ -11,9 +11,9 @@ GO_BUILD_FLAGS=`${GO_PATH}/bin/govvv build -pkg version -flags`
 echo "Compiling [\c"
 
 echo ".\c"
-go build -ldflags "${GO_BUILD_FLAGS}" -o release/bitmaelum-server ${REPO}/server
+go build -ldflags "${GO_BUILD_FLAGS}" -o release/bitmaelum-server ${REPO}/bm-server
 echo ".\c"
-go build -ldflags "${GO_BUILD_FLAGS}" -o release/client ${REPO}/client-ui
+go build -ldflags "${GO_BUILD_FLAGS}" -o release/client ${REPO}/bm-client
 echo ".\c"
 
 for TOOL in $TOOLS; do

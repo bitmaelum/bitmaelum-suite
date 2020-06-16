@@ -6,7 +6,7 @@ import (
     "github.com/gorilla/mux"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/container"
-    "github.com/bitmaelum/bitmaelum-server/server/incoming"
+    "github.com/bitmaelum/bitmaelum-server/bm-server/incoming"
     "net/http"
     "time"
 )

@@ -3,7 +3,7 @@ package container
 import (
     "github.com/go-redis/redis/v8"
     "github.com/bitmaelum/bitmaelum-server/core/config"
-    "github.com/bitmaelum/bitmaelum-server/server/incoming"
+    "github.com/bitmaelum/bitmaelum-server/bm-server/incoming"
 )
 
 var incomingService *incoming.Service = nil

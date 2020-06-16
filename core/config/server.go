@@ -34,11 +34,11 @@ type ServerConfig struct {
     } `yaml:"tls"`
 
     Redis struct {
-       Host    string `yaml:"host"`
-       Db      int `yaml:"port"`
+       Host    string   `yaml:"host"`
+       Db      int      `yaml:"port"`
     } `yaml:"redis"`
 
-    Resolve struct {
+    Resolver struct {
        Local struct {
            Path  string  `yaml:"path"`
        } `yaml:"local"`
@@ -46,7 +46,7 @@ type ServerConfig struct {
        Remote struct {
            Url  string  `yaml:"url"`
        } `yaml:"remote"`
-    } `yaml:"resolve"`
+    } `yaml:"resolver"`
 }
 
 // Load server configuration
@@ -68,4 +68,3 @@ func (c *ServerConfig) LoadConfig(configPath string) error {
 
     return nil
 }
-

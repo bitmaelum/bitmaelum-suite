@@ -53,7 +53,7 @@ func getRemoteRepository() *resolve.Repository {
         return remoteKeysRepository;
     }
 
-    repo := resolve.NewRemoteRepository(config.Client.Resolve.Remote.Url)
+    repo := resolve.NewRemoteRepository(config.Client.Resolver.Remote.Url)
     remoteKeysRepository = &repo
     return remoteKeysRepository
 }

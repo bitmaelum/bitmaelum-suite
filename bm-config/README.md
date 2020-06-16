@@ -1,4 +1,4 @@
-# Tool: mail-server-config
+# Tool: bm-config
 
 Allows you to easily configure certain aspects of your mail server.
 

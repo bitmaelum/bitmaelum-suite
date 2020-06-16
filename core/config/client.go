@@ -17,7 +17,7 @@ type ClientConfig struct {
        Path         string  `yaml:"path"`
     } `yaml:"accounts"`
 
-    Resolve struct {
+    Resolver struct {
        Local struct {
            Path  string  `yaml:"path"`
        } `yaml:"local"`
@@ -25,8 +25,9 @@ type ClientConfig struct {
        Remote struct {
            Url  string  `yaml:"url"`
        } `yaml:"remote"`
-    } `yaml:"resolve"`
+    } `yaml:"resolver"`
 }
+
 
 // Load client configuration
 func (c *ClientConfig) LoadConfig(configPath string) error {

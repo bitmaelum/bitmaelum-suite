@@ -7,9 +7,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "mail-server-config",
-	Short: "Configuration application for your mail server",
-	Long: `This tool allows you to easily manage certain aspects of your mail server`,
+	Use:   "bm-config",
+	Short: "Configuration application for your mail server and client",
+	Long: `This tool allows you to easily manage certain aspects of your mail server and client`,
 }
 
 func Execute() {
