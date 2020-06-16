@@ -24,7 +24,7 @@ func main() {
     var password []byte
 
     fmt.Print("\U0001F511 Enter current password (or enter when none)")
-    password, _ = terminal.ReadPassword(int(syscall.Stdin))
+    password, _ = terminal.ReadPassword(syscall.Stdin)
 
 
     addr, err := core.NewAddressFromString(opts.Addr)
@@ -39,12 +39,12 @@ func main() {
     for {
         fmt.Println("")
         fmt.Print("\U0001F511 Enter new password ")
-        password, _ = terminal.ReadPassword(int(syscall.Stdin))
+        password, _ = terminal.ReadPassword(syscall.Stdin)
         fmt.Println("")
 
         fmt.Println("")
         fmt.Print("\U0001F511 Retype your password ")
-        password2, _ := terminal.ReadPassword(int(syscall.Stdin))
+        password2, _ := terminal.ReadPassword(syscall.Stdin)
         fmt.Println("")
 
         if bytes.Equal(password, password2) {
@@ -54,7 +54,7 @@ func main() {
         fmt.Println("passwords do not match. Please try again.")
     }
 
-    err = account.SaveAccount(*addr, password, *ai)
+    err = account.CreateLocalAccount(*addr, password, *ai)
     if err != nil {
         log.Fatal(err)
     }

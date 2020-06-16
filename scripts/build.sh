@@ -17,7 +17,7 @@ go build -ldflags "${GO_BUILD_FLAGS}" -o release/bm-server ${REPO}/bm-server
 echo ".\c"
 go build -ldflags "${GO_BUILD_FLAGS}" -o release/bm-config ${REPO}/bm-config
 echo ".\c"
-go build -ldflags "${GO_BUILD_FLAGS}" -o release/client ${REPO}/bm-client
+go build -ldflags "${GO_BUILD_FLAGS}" -o release/bm-client ${REPO}/bm-client-ui
 echo ".\c"
 
 for TOOL in $TOOLS; do

@@ -17,7 +17,7 @@ import (
 )
 
 type Options struct {
-    Config      string      `short:"c" long:"config" description:"Configuration file" default:"./client-config.yml"`
+    Config      string      `short:"c" long:"config" description:"Configuration file"`
 }
 
 var opts Options
@@ -33,7 +33,7 @@ func main() {
     fmt.Println("")
 
     fmt.Println("Please specify the account you want to create.")
-    fmt.Println("Use the 'name@organisation!' or 'name!' format.")
+    fmt.Println("Use the 'name!' or 'name@organisation!' format.")
     fmt.Println("")
 
     address := readFromInput(InputReaderOpts{
@@ -68,15 +68,15 @@ func main() {
     })
 
     fmt.Println("")
-    mailserver := readFromInput(InputReaderOpts{
-        r: os.Stdin,
-        prefix: "\U0001F4BB What is the BitMaelum server you want to store your account on: ",
+    mailServer := readFromInput(InputReaderOpts{
+       r: os.Stdin,
+       prefix: "\U0001F4BB What is the BitMaelum server you want to store your account on: ",
     })
 
-    token := readFromInput(InputReaderOpts{
-        r: os.Stdin,
-        prefix: "\U0001F4BB Please enter your invitation token that you have received from the mailserver: ",
-    })
+    //token := readFromInput(InputReaderOpts{
+    //    r: os.Stdin,
+    //    prefix: "\U0001F4BB Please enter your invitation token that you have received from the mailServer: ",
+    //})
 
     fmt.Println("")
     fmt.Println("\U0001F510 Let's generate a key-pair for our new account... (this might take a while)")
@@ -97,7 +97,7 @@ func main() {
         PrivKey:      string(privateKey),
         PubKey:       string(publicKey),
         Pow:          *proof,
-        Server:       mailserver,
+        Server:       mailServer,
     }
 
 
@@ -106,12 +106,12 @@ func main() {
     for {
         fmt.Println("")
         fmt.Print("\U0001F511 Enter your password ")
-        password, _ = terminal.ReadPassword(int(syscall.Stdin))
+        password, _ = terminal.ReadPassword(syscall.Stdin)
         fmt.Println("")
 
         fmt.Println("")
         fmt.Print("\U0001F511 Retype your password ")
-        password2, _ := terminal.ReadPassword(int(syscall.Stdin))
+        password2, _ := terminal.ReadPassword(syscall.Stdin)
         fmt.Println("")
 
         if bytes.Equal(password, password2) {
@@ -127,13 +127,15 @@ func main() {
 
     err = account.CreateLocalAccount(*addr, password, acc)
     if err != nil {
-    err = account.CreateRemoteAccount(*addr, token, acc)
         log.Fatal(err)
     }
+    //err = account.CreateRemoteAccount(*addr, token, acc)
+    //    log.Fatal(err)
+    //}
 
     fmt.Println("")
     fmt.Println("\U0001F310 Uploading resolve information and public key to the central resolve server")
-    err = container.GetResolveService().UploadInfo(acc, mailserver)
+    err = container.GetResolveService().UploadInfo(acc, mailServer)
     if err != nil {
         log.Fatal(err)
     }
@@ -150,6 +152,7 @@ type InputReaderOpts struct {
     validate    func(s string) bool
 }
 
+// Ask questions and validate based on the input options and returns the entered string
 func readFromInput(opts InputReaderOpts) string {
     reader := bufio.NewReader(opts.r)
 

@@ -208,7 +208,7 @@ func main() {
     header.Catalog.Size = uint64(len(encCatalog))
     header.Catalog.Crypto = "rsa+aes256"
     header.Catalog.Iv = encode.Encode(catalogIv)
-    header.Catalog.EncryptedKey, err = encrypt.EncryptKey([]byte(resolvedInfo.PublicKey), catalogKey)
+    header.Catalog.EncryptedKey, err = encrypt.Encrypt([]byte(resolvedInfo.PublicKey), catalogKey)
     if err != nil {
         log.Fatalf("trying to encrypt keys: %v", err)
     }
