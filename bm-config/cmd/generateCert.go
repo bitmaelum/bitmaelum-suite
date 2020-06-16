@@ -41,7 +41,7 @@ func generateCert(domain string) {
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		log.Panicf("Cannot generate serial number: %v ", err)
+		log.Fatalf("Cannot generate serial number: %v ", err)
 	}
 
 	template := x509.Certificate{

@@ -4,6 +4,7 @@ import (
     "fmt"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/account"
+    "log"
 )
 
 type Options struct {
@@ -22,14 +23,14 @@ func main() {
     // Convert strings into addresses
     fromAddr, err := core.NewAddressFromString(opts.Addr)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
 
     // Load account
     var pwd = []byte(opts.Password)
     ai, err := account.LoadAccount(*fromAddr, pwd)
     if err != nil {
-       panic(err)
+       log.Fatalf(err)
     }
 
     fmt.Println("PRIV:")
@@ -41,14 +42,14 @@ func main() {
 
     ts,err := core.GenerateJWTToken(fromAddr.Hash(), ai.PrivKey)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
 
     fmt.Println(ts)
 
     token, err := core.ValidateJWTToken(ts, fromAddr.Hash(), ai.PubKey)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
 
     fmt.Printf("%#v\n", token.Claims)

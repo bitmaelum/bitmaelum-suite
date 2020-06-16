@@ -13,6 +13,7 @@ import (
     "github.com/bitmaelum/bitmaelum-server/core/message"
     "io"
     "io/ioutil"
+    "log"
     "os"
     "strings"
 )
@@ -39,11 +40,11 @@ func main() {
     // Convert strings into addresses
     fromAddr, err := core.NewAddressFromString(opts.From)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
     toAddr, err := core.NewAddressFromString(opts.To)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
 
 
@@ -65,7 +66,7 @@ func main() {
     // Load our FROM account
     ai, err := account.LoadAccount(*fromAddr, pwd)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
 
     //// @TODO: We don't want specific stuff here. We should have a more generic function to fetch passwords from either
@@ -76,7 +77,7 @@ func main() {
     //        kc := &keychain.OSXKeyChain{}
     //        err = kc.Store(*fromAddr, pwd)
     //        if err != nil {
-    //            panic(err)
+    //            log.Fatalf(err)
     //        }
     //    }
     //}
@@ -86,18 +87,18 @@ func main() {
     resolver := container.GetResolveService()
     resolvedInfo, err := resolver.Resolve(*toAddr)
     if err != nil {
-        panic(fmt.Sprintf("cannot retrieve public key for '%s'", opts.To))
+        log.Fatalf(fmt.Sprintf("cannot retrieve public key for '%s'", opts.To))
     }
 
 
     // Create message id and temporary outbox
     msgUuid, err := uuid.NewRandom()
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
     err = os.MkdirAll(".out/" + msgUuid.String(), 0755)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
 
     // Parse blocks
@@ -105,7 +106,7 @@ func main() {
     for idx := range opts.Block {
         split := strings.Split(opts.Block[idx], ",")
         if len(split) <= 1 {
-            panic("Please specify blocks in the format '<type>,<content>' or '<type>,file:<filename>'")
+            log.Fatalf("Please specify blocks in the format '<type>,<content>' or '<type>,file:<filename>'")
         }
 
 
@@ -117,13 +118,13 @@ func main() {
             // Open file as a reader
             f, err := os.Open(strings.TrimPrefix(split[1], "file:"))
             if err != nil {
-                panic(err)
+                log.Fatalf(err)
             }
 
             // Read file size
             fi, err := f.Stat()
             if err != nil {
-                panic(err)
+                log.Fatalf(err)
             }
 
             r = f
@@ -145,12 +146,12 @@ func main() {
     for idx := range opts.Attachment {
         _, err := os.Stat(opts.Attachment[idx])
         if os.IsNotExist(err) {
-            panic(fmt.Sprintf("attachment %s does not exist", opts.Attachment[idx]))
+            log.Fatalf(fmt.Sprintf("attachment %s does not exist", opts.Attachment[idx]))
         }
 
         reader, err := os.Open(opts.Attachment[idx])
         if err != nil {
-            panic(fmt.Sprintf("attachment %s or cannot be opened", opts.Attachment[idx]))
+            log.Fatalf(fmt.Sprintf("attachment %s or cannot be opened", opts.Attachment[idx]))
         }
 
         attachments = append(attachments, message.Attachment{
@@ -176,13 +177,13 @@ func main() {
     for idx := range blocks {
        err = cat.AddBlock(blocks[idx])
        if err != nil {
-           panic(err)
+           log.Fatalf(err)
        }
     }
     for idx := range attachments {
        err = cat.AddAttachment(attachments[idx])
        if err != nil {
-           panic(err)
+           log.Fatalf(err)
        }
     }
 
@@ -191,7 +192,7 @@ func main() {
 
     catalogKey, catalogIv, encCatalog, err := encrypt.EncryptCatalog(*cat)
     if err != nil {
-        panic(fmt.Sprintf("Error while encrypting catalog: %s", err))
+        log.Fatalf(fmt.Sprintf("Error while encrypting catalog: %s", err))
     }
 
     _ = ioutil.WriteFile(".out/" + msgUuid.String() + "/catalog.json.enc", encCatalog, 0600)
@@ -209,7 +210,7 @@ func main() {
     header.Catalog.Iv = encode.Encode(catalogIv)
     header.Catalog.EncryptedKey, err = encrypt.EncryptKey([]byte(resolvedInfo.PublicKey), catalogKey)
     if err != nil {
-        panic(fmt.Sprintf("trying to encrypt keys: %s", err))
+        log.Fatalf(fmt.Sprintf("trying to encrypt keys: %s", err))
     }
 
     header.To.Addr = toAddr.Hash()
@@ -221,7 +222,7 @@ func main() {
 
     data, err = json.MarshalIndent(header, "", "  ")
     if err != nil {
-        panic(fmt.Sprintf("error trying to marshal header: %s", err))
+        log.Fatalf(fmt.Sprintf("error trying to marshal header: %s", err))
     }
 
     _ = ioutil.WriteFile(".out/" + msgUuid.String() + "/header.json", data, 0600)

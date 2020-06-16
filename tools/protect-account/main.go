@@ -6,6 +6,7 @@ import (
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/account"
     "golang.org/x/crypto/ssh/terminal"
+    "log"
     "syscall"
 )
 
@@ -28,11 +29,11 @@ func main() {
 
     addr, err := core.NewAddressFromString(opts.Addr)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
     ai, err := account.LoadAccount(*addr, password)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
 
     for {
@@ -55,7 +56,7 @@ func main() {
 
     err = account.SaveAccount(*addr, password, *ai)
     if err != nil {
-        panic(err)
+        log.Fatalf(err)
     }
 
     fmt.Printf("Account encrypted. Please do not loose your password!\n")

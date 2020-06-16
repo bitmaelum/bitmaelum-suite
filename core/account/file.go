@@ -17,9 +17,9 @@ import (
 
 
 const (
-    PUBKEY_FILE = ".pubkeys.json"
-    INFO_FILE = ".info.json"
-    FLAG_FILE = ".flags.json"
+    PubkeyFile = ".pubkeys.json"
+    InfoFile = ".info.json"
+    FlagFile = ".flags.json"
 )
 
 type Pubkeys struct {
@@ -54,8 +54,11 @@ func (r *fileRepo) Exists(addr core.HashAddress) bool {
 // Store the public key for this account
 func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
     // Lock our keyfile for writing
-    lockfilePath := r.getPath(addr, PUBKEY_FILE +".lock")
+    lockfilePath := r.getPath(addr, PubkeyFile +".lock")
     lock, err := lockfile.New(lockfilePath)
+    if err != nil {
+        return err
+    }
 
     err = lock.TryLock()
     if err != nil {
@@ -68,7 +71,7 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
 
     // Read keys
     pk := &Pubkeys{}
-    err = r.fetchJson(addr, PUBKEY_FILE, pk)
+    err = r.fetchJson(addr, PubkeyFile, pk)
     if err != nil {
         return err
     }
@@ -83,13 +86,13 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
     }
 
     // And store
-    return r.store(addr, PUBKEY_FILE, data)
+    return r.store(addr, PubkeyFile, data)
 }
 
 // Retrieve the public key for this account
 func (r *fileRepo) FetchPubKeys(addr core.HashAddress) ([]string, error) {
     pk := &Pubkeys{}
-    err := r.fetchJson(addr, PUBKEY_FILE, pk)
+    err := r.fetchJson(addr, PubkeyFile, pk)
     if err != nil {
         return nil, err
     }
@@ -109,7 +112,7 @@ func (r *fileRepo) CreateBox(addr core.HashAddress, box, description string, quo
     }
 
     data, _ := json.MarshalIndent(mbi, "", " ")
-    return r.store(addr, path.Join(box, INFO_FILE), data)
+    return r.store(addr, path.Join(box, InfoFile), data)
 }
 
 // Returns true when the given mailbox exists in this account
@@ -120,7 +123,7 @@ func (r *fileRepo) ExistsBox(addr core.HashAddress, box string) bool {
 // Delete a given mailbox in the account
 func (r *fileRepo) DeleteBox(addr core.HashAddress, box string) error {
     // @TODO: not yet implemented
-    panic("not implemented yet")
+    return errors.New("not implemented yet")
 }
 
 // Store data on the given account path
@@ -186,7 +189,7 @@ func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*messagebox.MailBo
     mbi.Name = box
 
     // Fetch information from .info file
-    err := r.fetchJson(addr, path.Join(box, INFO_FILE), mbi)
+    err := r.fetchJson(addr, path.Join(box, InfoFile), mbi)
     if err != nil {
         return nil, err
     }
@@ -208,7 +211,7 @@ func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*messagebox.MailBo
 
 // Search for mailboxes. Use glob-patterns for querying
 func (r *fileRepo) FindBox(addr core.HashAddress, query string) ([]messagebox.MailBoxInfo, error) {
-    list := []messagebox.MailBoxInfo{}
+    var list []messagebox.MailBoxInfo
 
     files, err := ioutil.ReadDir(r.getPath(addr, ""))
     if err != nil {
@@ -247,7 +250,7 @@ func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, l
         }
 
         flags := &messagebox.Flags{}
-        _ = r.fetchJson(addr, path.Join(box, f.Name(), FLAG_FILE), flags)
+        _ = r.fetchJson(addr, path.Join(box, f.Name(), FlagFile), flags)
 
         msg := messagebox.MessageList{
             Id: f.Name(),
@@ -271,7 +274,7 @@ func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, l
 //    }
 //
 //    f := &messagebox.Flags{}
-//    _ = r.fetchJson(addr, path.Join(box, msgUuid, FLAG_FILE), f)
+//    _ = r.fetchJson(addr, path.Join(box, msgUuid, FlagFile), f)
 //
 //    return &messagebox.MessageInfo{
 //        Flags:   *f,
@@ -292,7 +295,7 @@ func (r *fileRepo) UnsetFlag(addr core.HashAddress, box string, id string, flag 
 // Get flags from the given message
 func (r *fileRepo) GetFlags(addr core.HashAddress, box string, id string) ([]string, error) {
     flags := &messagebox.Flags{}
-    err := r.fetchJson(addr, path.Join(box, id, FLAG_FILE), flags)
+    err := r.fetchJson(addr, path.Join(box, id, FlagFile), flags)
     if err != nil {
         return nil, err
     }
@@ -325,12 +328,15 @@ func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag 
     // Lock our flags for writing
 
 
-    lockfilePath := r.getPath(addr, path.Join(box, id, FLAG_FILE + ".lock"))
+    lockfilePath := r.getPath(addr, path.Join(box, id, FlagFile + ".lock"))
     lockfilePath, err := filepath.Abs(lockfilePath)
     if err != nil {
         return err
     }
     lock, err := lockfile.New(lockfilePath)
+    if err != nil {
+        return err
+    }
 
     err = lock.TryLock()
     if err != nil {
@@ -365,6 +371,6 @@ func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag 
         return err
     }
 
-    return r.store(addr, path.Join(box, id, FLAG_FILE), data)
+    return r.store(addr, path.Join(box, id, FlagFile), data)
 }
 

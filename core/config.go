@@ -3,6 +3,7 @@ package core
 import (
     "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/mitchellh/go-homedir"
+    "log"
 )
 
 /**
@@ -19,7 +20,7 @@ import (
 func LoadClientConfig(path string) {
     loaded := LoadClientConfigOrPass(path)
     if !loaded {
-        panic("cannot load client configuration")
+        log.Fatalf("cannot load client configuration")
     }
 }
 
@@ -27,7 +28,7 @@ func LoadClientConfig(path string) {
 func LoadServerConfig(path string) {
     loaded := LoadServerConfigOrPass(path)
     if !loaded {
-        panic("cannot load server configuration")
+        log.Fatalf("cannot load server configuration")
     }
 }
 

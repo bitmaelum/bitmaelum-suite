@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -74,7 +75,7 @@ func SelectAndRun(cmd *cobra.Command, args []string) {
 		idx, _, err := prompt.Run()
 		if err != nil {
 			if (err != promptui.ErrInterrupt) {
-				panic(err)
+				log.Fatalf(err)
 			}
 			continue;
 		}
