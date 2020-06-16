@@ -3,6 +3,9 @@ package config
 import "io"
 
 const clientConfigTemplate string = `
+#
+# BitMaelum Client Configuration Template
+#
 config:
     accounts:
         # where are our accounts stored?
@@ -17,6 +20,9 @@ config:
 `
 
 const serverConfigTemplate string = `
+#
+# BitMaelum Server Configuration Template
+#
 config:
     # Logging of information
     logging:

@@ -25,7 +25,7 @@ self-signed certificates.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		domainName, err := cmd.Flags().GetString("domain")
 		if err != nil {
-			log.Panicf("Cannot read domain: %v", err)
+			log.Fatalf("Cannot read domain: %v", err)
 		}
 		generateCert(domainName)
 	},
@@ -62,13 +62,13 @@ func generateCert(domain string) {
 
 	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		log.Panicf("Error while generating keypair: %v", err)
+		log.Fatalf("Error while generating keypair: %v", err)
 	}
 
 	// Create certificate
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privKey.PublicKey, privKey)
 	if err != nil {
-		log.Panicf("Failed to generate certificate: %v", err)
+		log.Fatalf("Failed to generate certificate: %v", err)
 	}
 
 	// Write certificate to file
@@ -76,15 +76,15 @@ func generateCert(domain string) {
 
 	certOut, err := os.OpenFile("./server.cert", os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
-		log.Panicf("Error while opening ./server.cert: %v", err)
+		log.Fatalf("Error while opening ./server.cert: %v", err)
 	}
 	err = pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	if err != nil {
-		log.Panicf("Failed to write to ./server.cert: %v", err)
+		log.Fatalf("Failed to write to ./server.cert: %v", err)
 	}
 	err = certOut.Close()
 	if err != nil {
-		log.Panicf("ERror while closing ./server.cert: %v", err)
+		log.Fatalf("ERror while closing ./server.cert: %v", err)
 	}
 
 
@@ -93,19 +93,19 @@ func generateCert(domain string) {
 
 	keyOut, err := os.OpenFile("./server.key", os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
-		log.Panicf("Error while opening ./server.key: %v", err)
+		log.Fatalf("Error while opening ./server.key: %v", err)
 	}
 	privBytes, err := x509.MarshalPKCS8PrivateKey(privKey)
 	if err != nil {
-		log.Panicf("Error while marshalling key: %v", err)
+		log.Fatalf("Error while marshalling key: %v", err)
 	}
 	err = pem.Encode(keyOut, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
 	if err != nil {
-		log.Panicf("Failed to write to ./server.key: %v", err)
+		log.Fatalf("Failed to write to ./server.key: %v", err)
 	}
 	err = keyOut.Close()
 	if err != nil {
-		log.Panicf("ERror while closing ./server.key: %v", err)
+		log.Fatalf("Error while closing ./server.key: %v", err)
 	}
 
 

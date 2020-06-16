@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/spf13/cobra"
 	"io"
+	"log"
 	"os"
 )
 
@@ -13,9 +13,9 @@ var (
 	serverConfigPath string = "./server.config.yml"
 )
 
-// initCmd represents the init command
-var initCmd = &cobra.Command{
-	Use:   "init",
+// initConfigCmd represents the initConfig command
+var initConfigCmd = &cobra.Command{
+	Use:   "init-config",
 	Short: "Creates default server and client configurations",
 	Long: `Before you can run the mailserver or client, you will need a configuration file which you need to adjust 
 to your own needs.
@@ -28,29 +28,22 @@ This command creates default templates that you can use as a starting point.`,
 }
 
 func createFile(path string, configTemplate func(w io.Writer) error) {
-	_, err := os.Stat(path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
-		// File exists
-		fmt.Println(path + " already exists. Skipping.")
-		return
-	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		panic(err)
+		log.Fatalf("Error while creating file: %v", err)
 	}
 
 	err = configTemplate(f)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error while creating file: %v", err)
 	}
 
 	err = f.Close()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error while closing file: %v", err)
 	}
 }
 
 func init() {
-	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(initConfigCmd)
 }

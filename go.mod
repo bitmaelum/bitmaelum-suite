@@ -3,6 +3,7 @@ module github.com/bitmaelum/bitmaelum-server
 go 1.13
 
 require (
+	github.com/ahmetb/govvv v0.3.0 // indirect
 	github.com/coreos/go-semver v0.3.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gabriel-vasile/mimetype v1.1.0

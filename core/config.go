@@ -5,33 +5,78 @@ import (
     "github.com/mitchellh/go-homedir"
 )
 
+/**
+ * Configuration if found the following way:
+ *
+ * 1. If path is not empty and path is not found, error
+ * 2. Check for config in current directory
+ * 3. Check for config in directory ~/.bitmealum
+ * 4. Check for config in directory /etc/bitmealum
+ * 5. Error
+ */
+
 // Load client configuration from given path or panic if cannot load
 func LoadClientConfig(path string) {
-    p, _ := homedir.Expand(path)
-    err := config.Client.LoadConfig(p)
-    if err != nil{
-        panic(err)
+    loaded := LoadClientConfigOrPass(path)
+    if !loaded {
+        panic("cannot load client configuration")
     }
 }
 
 // Load server configuration from given path or panic if cannot load
 func LoadServerConfig(path string) {
-    p, _ := homedir.Expand(path)
-    err := config.Server.LoadConfig(p)
-    if err != nil {
-        panic(err)
+    loaded := LoadServerConfigOrPass(path)
+    if !loaded {
+        panic("cannot load server configuration")
     }
 }
 
-// Load client configuration, but don't panic if we can't
-func LoadClientConfigOrPass(path string) {
-    p, _ := homedir.Expand(path)
-    _ = config.Client.LoadConfig(p)
+// Load client configuration, but return false if not able
+func LoadClientConfigOrPass(path string) bool {
+    var err error
+
+    err = readConfigPath(path, config.Client.LoadConfig)
+    if err != nil {
+        return false
+    }
+
+    err = readConfigPath("~/.bitmealum/client-config.yml", config.Client.LoadConfig)
+    if err == nil {
+        return true
+    }
+
+    err = readConfigPath("/etc/bitmealum/client-config.yml", config.Client.LoadConfig)
+    if err == nil {
+        return true
+    }
+
+    return false
 }
 
-// Load server configuration, but don't panic if we can't
-func LoadServerConfigOrPass(path string) {
-    p, _ := homedir.Expand(path)
-    _ = config.Server.LoadConfig(p)
+// Load client configuration, but return false if not able
+func LoadServerConfigOrPass(path string) bool {
+    var err error
+
+    err = readConfigPath(path, config.Server.LoadConfig)
+    if err != nil {
+        return false
+    }
+
+    err = readConfigPath("~/.bitmealum/server-config.yml", config.Server.LoadConfig)
+    if err == nil {
+        return true
+    }
+
+    err = readConfigPath("/etc/bitmealum/server-config.yml", config.Server.LoadConfig)
+    if err == nil {
+        return true
+    }
+
+    return false
 }
 
+// Expands the given path and loads the configuration
+func readConfigPath(path string, loader func(string) error) error {
+    p, _ := homedir.Expand(path)
+    return loader(p)
+}

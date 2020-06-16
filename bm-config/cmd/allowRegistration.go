@@ -10,6 +10,7 @@ import (
 
 // allowRegistrationCmd represents the allowRegistration command
 var allowRegistrationCmd = &cobra.Command{
+
 	Use:   "allow-registration",
 	Short: "Allows registration of given address",
 	Long: `When running a mailserver, it's nice to limit the number of users that can create addresses`,
