@@ -200,12 +200,13 @@ func main() {
 
     header := CreateHeader()
 
+    // We can add a multitude of checksums here.. whatever we like
     header.Catalog.Checksum = append(header.Catalog.Checksum, checksum.Sha256(encCatalog))
     header.Catalog.Checksum = append(header.Catalog.Checksum, checksum.Sha1(encCatalog))
     header.Catalog.Checksum = append(header.Catalog.Checksum, checksum.Crc32(encCatalog))
     header.Catalog.Checksum = append(header.Catalog.Checksum, checksum.Md5(encCatalog))
     header.Catalog.Size = uint64(len(encCatalog))
-    header.Catalog.Crypto = "rsa+aes256"
+    header.Catalog.Crypto = "rsa+aes256gcm"
     header.Catalog.EncryptedKey, err = encrypt.Encrypt([]byte(resolvedInfo.PublicKey), catalogKey)
     if err != nil {
         log.Fatalf("trying to encrypt keys: %v", err)
