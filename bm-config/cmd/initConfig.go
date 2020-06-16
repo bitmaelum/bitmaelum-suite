@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/spf13/cobra"
 	"io"
@@ -22,8 +23,17 @@ to your own needs.
 
 This command creates default templates that you can use as a starting point.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		createFile(clientConfigPath, config.GenerateClientConfig)
-		createFile(serverConfigPath, config.GenerateServerConfig)
+		c, _ := cmd.Flags().GetBool("client")
+		s, _ := cmd.Flags().GetBool("server")
+
+		if c == false && s == false || c == true {
+			createFile(clientConfigPath, config.GenerateClientConfig)
+			fmt.Println("Generated client configuration file")
+		}
+		if c == false && s == false || s == true {
+			createFile(serverConfigPath, config.GenerateServerConfig)
+			fmt.Println("Generated server configuration file")
+		}
 	},
 }
 
@@ -46,4 +56,7 @@ func createFile(path string, configTemplate func(w io.Writer) error) {
 
 func init() {
 	rootCmd.AddCommand(initConfigCmd)
+
+	initConfigCmd.Flags().Bool("client", false, "Generate only the client configuration")
+	initConfigCmd.Flags().Bool("server", false, "Generate only the server configuration")
 }

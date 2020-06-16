@@ -82,7 +82,7 @@ func main() {
     fmt.Println("\U0001F510 Let's generate a key-pair for our new account... (this might take a while)")
     privateKey, publicKey, err := encrypt.GenerateKeyPair(encrypt.KeyTypeRSA)
     if err != nil {
-        log.Fatalf(err)
+        log.Fatal(err)
     }
 
 
@@ -128,14 +128,14 @@ func main() {
     err = account.CreateLocalAccount(*addr, password, acc)
     if err != nil {
     err = account.CreateRemoteAccount(*addr, token, acc)
-        log.Fatalf(err)
+        log.Fatal(err)
     }
 
     fmt.Println("")
     fmt.Println("\U0001F310 Uploading resolve information and public key to the central resolve server")
     err = container.GetResolveService().UploadInfo(acc, mailserver)
     if err != nil {
-        log.Fatalf(err)
+        log.Fatal(err)
     }
 
     fmt.Println("")

@@ -29,11 +29,11 @@ func main() {
 
     addr, err := core.NewAddressFromString(opts.Addr)
     if err != nil {
-        log.Fatalf(err)
+        log.Fatal(err)
     }
     ai, err := account.LoadAccount(*addr, password)
     if err != nil {
-        log.Fatalf(err)
+        log.Fatal(err)
     }
 
     for {
@@ -56,7 +56,7 @@ func main() {
 
     err = account.SaveAccount(*addr, password, *ai)
     if err != nil {
-        log.Fatalf(err)
+        log.Fatal(err)
     }
 
     fmt.Printf("Account encrypted. Please do not loose your password!\n")

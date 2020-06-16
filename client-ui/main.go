@@ -140,6 +140,6 @@ func main() {
 	pages.SwitchToPage("welcome")
 
 	if err := app.SetRoot(pages, true).SetFocus(pages).Run(); err != nil {
-		log.Fatalf(err)
+		log.Fatal(err)
 	}
 }

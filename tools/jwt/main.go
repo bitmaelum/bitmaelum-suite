@@ -23,14 +23,14 @@ func main() {
     // Convert strings into addresses
     fromAddr, err := core.NewAddressFromString(opts.Addr)
     if err != nil {
-        log.Fatalf(err)
+        log.Fatal(err)
     }
 
     // Load account
     var pwd = []byte(opts.Password)
     ai, err := account.LoadAccount(*fromAddr, pwd)
     if err != nil {
-       log.Fatalf(err)
+       log.Fatal(err)
     }
 
     fmt.Println("PRIV:")
@@ -42,14 +42,14 @@ func main() {
 
     ts,err := core.GenerateJWTToken(fromAddr.Hash(), ai.PrivKey)
     if err != nil {
-        log.Fatalf(err)
+        log.Fatal(err)
     }
 
     fmt.Println(ts)
 
     token, err := core.ValidateJWTToken(ts, fromAddr.Hash(), ai.PubKey)
     if err != nil {
-        log.Fatalf(err)
+        log.Fatal(err)
     }
 
     fmt.Printf("%#v\n", token.Claims)

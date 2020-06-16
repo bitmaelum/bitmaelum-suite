@@ -22,7 +22,7 @@ func main() {
     //// Convert strings into addresses
     //fromAddr, err := core.NewAddressFromString(opts.Addr)
     //if err != nil {
-    //    log.Fatalf(err)
+    //    log.Fatal(err)
     //}
     //
     //var pwd = []byte(opts.Password)
@@ -30,19 +30,19 @@ func main() {
     //// Load our FROM account
     //ai, err := account.LoadAccount(*fromAddr, pwd)
     //if err != nil {
-    //    log.Fatalf(err)
+    //    log.Fatal(err)
     //}
 
     //as := container.GetAccountService()
     //mbi := as.FetchMessageBoxes(fromAddr.Hash(), opts.Box)
     //if err != nil {
-    //    log.Fatalf(err)
+    //    log.Fatal(err)
     //}
 
 
     //message, err := message.LoadMessage(fromAddr, opts.Id)
     //if err != nil {
-    //    log.Fatalf(err)
+    //    log.Fatal(err)
     //}
 
     // Do things with message

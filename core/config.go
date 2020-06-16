@@ -28,7 +28,7 @@ func LoadClientConfig(path string) {
 func LoadServerConfig(path string) {
     loaded := LoadServerConfigOrPass(path)
     if !loaded {
-        log.Fatalf("cannot load server configuration")
+        log.Fatal("cannot load server configuration")
     }
 }
 
