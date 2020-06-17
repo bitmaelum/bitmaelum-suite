@@ -28,6 +28,10 @@ var rainbow256AsciiLogo = "\033[38;5;208m ____  _ _   __  __            _\n" +
 	"\033[38;5;214m   P r i v a c y   i s   y o u r s   a g a i n\n" +
 	"\033[0m"
 
+func GetMonochromeAsciiLogo() string {
+	return asciiLogo
+}
+
 // Returns ASCII logo with or without colors depending on your console settings
 func GetAsciiLogo() string {
 	// Ooh. Nice and shiny terminal! Display a cool colorscheme

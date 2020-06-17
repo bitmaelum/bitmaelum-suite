@@ -42,7 +42,7 @@ func main() {
     publicRouter := mainRouter.PathPrefix("/").Subrouter()
     publicRouter.Use(logger.Middleware)
     publicRouter.Use(tracer.Middleware)
-    publicRouter.HandleFunc("/info", handler.Info).Methods("GET")
+    publicRouter.HandleFunc("/", handler.HomePage).Methods("GET")
     publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
     //publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
     publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
