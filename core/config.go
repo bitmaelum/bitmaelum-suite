@@ -9,7 +9,7 @@ import (
 /**
  * Configuration if found the following way:
  *
- * 1. If path is not empty and path is not found, error
+ * 1. Check path is not empty and config found in path
  * 2. Check for config in current directory
  * 3. Check for config in directory ~/.bitmealum
  * 4. Check for config in directory /etc/bitmealum
@@ -36,9 +36,11 @@ func LoadServerConfig(path string) {
 func LoadClientConfigOrPass(path string) bool {
     var err error
 
-    err = readConfigPath(path, config.Client.LoadConfig)
-    if err != nil {
-        return false
+    if path != "" {
+        err = readConfigPath(path, config.Client.LoadConfig)
+        if err == nil {
+            return true
+        }
     }
 
     err = readConfigPath("~/.bitmealum/client-config.yml", config.Client.LoadConfig)
@@ -58,9 +60,11 @@ func LoadClientConfigOrPass(path string) bool {
 func LoadServerConfigOrPass(path string) bool {
     var err error
 
-    err = readConfigPath(path, config.Server.LoadConfig)
-    if err != nil {
-        return false
+    if path != "" {
+        err = readConfigPath(path, config.Server.LoadConfig)
+        if err == nil {
+            return true
+        }
     }
 
     err = readConfigPath("~/.bitmealum/server-config.yml", config.Server.LoadConfig)
@@ -78,6 +82,7 @@ func LoadServerConfigOrPass(path string) bool {
 
 // Expands the given path and loads the configuration
 func readConfigPath(path string, loader func(string) error) error {
+    log.Printf("Loading path %s\n", path)
     p, _ := homedir.Expand(path)
     return loader(p)
 }
