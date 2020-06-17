@@ -6,7 +6,7 @@ import (
     "os"
 )
 
-// Parse config options. Will exit when issues arrise
+// ParseOptions will parse the commandline options given by opts. It will exit when issues arise or help is wanted
 func ParseOptions(opts interface{}) {
     parser := flags.NewParser(opts, flags.IgnoreUnknown)
     _, err := parser.Parse()

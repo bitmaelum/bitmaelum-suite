@@ -2,26 +2,33 @@ package main
 
 import (
     "fmt"
-    "github.com/gorilla/mux"
-    "github.com/bitmaelum/bitmaelum-server/core"
-    "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/bitmaelum/bitmaelum-server/bm-server/handler"
     "github.com/bitmaelum/bitmaelum-server/bm-server/middleware"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
+    "github.com/gorilla/mux"
     "github.com/mitchellh/go-homedir"
     "github.com/sirupsen/logrus"
     "log"
     "net/http"
+    "os"
 )
 
 type Options struct {
     Config      string      `short:"c" long:"config" description:"Configuration file" default:"./server-config.yml"`
+    Version     bool        `short:"v" long:"version" description:"Display version information"`
 }
 
 var opts Options
 
-
 func main() {
     core.ParseOptions(&opts)
+    if opts.Version {
+       core.WriteVersionInfo("BitMaelum Server", os.Stdout)
+       fmt.Println()
+       os.Exit(1)
+    }
+
     core.LoadServerConfig(opts.Config)
     core.SetLogging(config.Server.Logging.Level)
 

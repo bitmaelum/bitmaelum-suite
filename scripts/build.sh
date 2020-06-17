@@ -4,11 +4,11 @@ REPO="github.com/bitmaelum/bitmaelum-server"
 
 TOOLS="create-account hash-address jwt proof-of-work protect-account readmail sendmail"
 
-# We use govvv to inject GIT version information into the applications
-go get github.com/ahmetb/govvv
-
-GO_PATH=`go env GOPATH`
-GO_BUILD_FLAGS=`${GO_PATH}/bin/govvv build -pkg version -flags`
+# Generate commit / date variables we will inject in our code
+BUILD_DATE=`date`
+COMMIT=`git rev-parse HEAD`
+PKG=`go list ./core`
+GO_BUILD_FLAGS="-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMIT}'"
 
 printf "Compiling ["
 
