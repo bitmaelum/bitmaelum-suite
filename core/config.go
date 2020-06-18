@@ -7,7 +7,7 @@ import (
 )
 
 /**
- * Configuration if found the following way:
+ * Configuration is found the following way:
  *
  * 1. Check path is not empty and config found in path
  * 2. Check for config in current directory

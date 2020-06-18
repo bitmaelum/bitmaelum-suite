@@ -1,10 +1,10 @@
 package invite
 
 import (
+    "crypto/rand"
     "encoding/base64"
-    "github.com/go-redis/redis/v8"
     "github.com/bitmaelum/bitmaelum-server/core"
-    "math/rand"
+    "github.com/go-redis/redis/v8"
     "time"
 )
 
@@ -20,10 +20,13 @@ func NewRedisRepository(opts *redis.Options) Repository {
 
 func (r *redisRepo) CreateInvite(addr core.HashAddress, expiry time.Duration) (string, error) {
     buff := make([]byte, 32)
-    rand.Read(buff)
+    _, err := rand.Read(buff)
+    if err != nil {
+        return "", err
+    }
     token := base64.StdEncoding.EncodeToString(buff)
 
-    err := r.client.Set(r.client.Context(), "invite." + addr.String(), token, expiry).Err()
+    err = r.client.Set(r.client.Context(), "invite." + addr.String(), token, expiry).Err()
     if err != nil {
         return "", err
     }
