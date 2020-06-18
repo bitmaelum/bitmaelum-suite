@@ -4,9 +4,11 @@
 
 REPO="github.com/bitmaelum/bitmaelum-server"
 
+APPS="bm-server bm-client bm-config bm-client-ui"
 TOOLS="create-account hash-address jwt proof-of-work protect-account readmail sendmail"
 
 TARGET=${1:-all}
+
 # Generate commit / date variables we will inject in our code
 BUILD_DATE=`date`
 COMMIT=`git rev-parse HEAD`
@@ -15,21 +17,12 @@ GO_BUILD_FLAGS="-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMI
 
 printf "Compiling ["
 
-printf  "."
-if [[ ${TARGET} == "all" || ${TARGET} == "bm-server" ]] ; then
-  go build -ldflags "${GO_BUILD_FLAGS}" -o release/bm-server ${REPO}/bm-server
-fi
-
-printf  "."
-if [[ ${TARGET} == "all" || ${TARGET} == "bm-config" ]] ; then
-  go build -ldflags "${GO_BUILD_FLAGS}" -o release/bm-config ${REPO}/bm-config
-fi
-
-printf  "."
-if [[ ${TARGET} == "all" || ${TARGET} == "bm-client-ui" ]] ; then
-  go build -ldflags "${GO_BUILD_FLAGS}" -o release/bm-client ${REPO}/bm-client-ui
-fi
-printf  "."
+for APP in $APPS; do
+  if [[ ${TARGET} == "all" || ${TARGET} == $APP ]] ; then
+    go build -ldflags "${GO_BUILD_FLAGS}" -o release/${APP} ${REPO}/${APP}
+  fi
+  printf "."
+done
 
 for TOOL in $TOOLS; do
   if [[ ${TARGET} == "all" || ${TARGET} == $TOOL ]] ; then

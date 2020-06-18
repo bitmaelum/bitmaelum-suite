@@ -82,7 +82,6 @@ func LoadServerConfigOrPass(path string) bool {
 
 // Expands the given path and loads the configuration
 func readConfigPath(path string, loader func(string) error) error {
-    log.Printf("Loading path %s\n", path)
     p, _ := homedir.Expand(path)
     return loader(p)
 }
