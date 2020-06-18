@@ -1,17 +1,17 @@
 package resolve
 
 import (
-    "errors"
-    "github.com/bitmaelum/bitmaelum-server/core"
-    "github.com/bitmaelum/bitmaelum-server/core/account"
-    "github.com/sirupsen/logrus"
+	"errors"
+	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/core/account/server"
+	"github.com/sirupsen/logrus"
 )
 
 type localRepo struct {
-    as *account.Service
+    as *server.Service
 }
 
-func NewLocalRepository(s *account.Service) Repository {
+func NewLocalRepository(s *server.Service) Repository {
     return &localRepo{
         as: s,
     }

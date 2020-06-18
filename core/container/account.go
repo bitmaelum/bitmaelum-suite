@@ -1,31 +1,31 @@
 package container
 
 import (
-    "github.com/bitmaelum/bitmaelum-server/core/account"
-    "github.com/bitmaelum/bitmaelum-server/core/config"
-    "github.com/mitchellh/go-homedir"
+	"github.com/bitmaelum/bitmaelum-server/core/account/server"
+	"github.com/bitmaelum/bitmaelum-server/core/config"
+	"github.com/mitchellh/go-homedir"
 )
 
-var accountService *account.Service = nil
-var accountRepository *account.Repository = nil
+var accountService *server.Service = nil
+var accountRepository *server.Repository = nil
 
-func GetAccountService() *account.Service{
+func GetAccountService() *server.Service {
     if accountService != nil {
         return accountService;
     }
 
     repo := GetAccountRepository()
-    accountService = account.AccountService(*repo)
+    accountService = server.AccountService(*repo)
     return accountService
 }
 
-func GetAccountRepository() *account.Repository {
+func GetAccountRepository() *server.Repository {
     if accountRepository != nil {
         return accountRepository;
     }
 
     p, _ := homedir.Expand(config.Server.Accounts.Path)
-    repo := account.NewFileRepository(p)
+    repo := server.NewFileRepository(p)
     accountRepository = &repo
     return accountRepository
 }

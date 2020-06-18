@@ -1,4 +1,4 @@
-package keychain
+package password
 
 import "github.com/bitmaelum/bitmaelum-server/core"
 

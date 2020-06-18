@@ -23,7 +23,7 @@ func main() {
     }
 
     fmt.Println(core.GetAsciiLogo())
-    core.LoadClientConfigOrPass(opts.Config)
+    core.LoadClientConfig(opts.Config)
 
     cmd.Execute()
 }

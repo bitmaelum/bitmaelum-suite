@@ -1,4 +1,4 @@
-package keychain
+package password
 
 import (
     "errors"
@@ -46,7 +46,7 @@ func (kc *OSXKeyChain) Store(addr core.Address, key []byte) error {
     item.SetAccessGroup(ACCESSGROUP)
     item.SetData(key)
     item.SetSynchronizable(keychain.SynchronizableNo)
-    item.SetAccessible(keychain.AccessibleWhenUnlocked)
+    item.SetAccessible(keychain.AccessibleAfterFirstUnlockThisDeviceOnly)
 
     return keychain.AddItem(item)
 }

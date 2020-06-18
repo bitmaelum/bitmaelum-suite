@@ -5,7 +5,7 @@ import (
     "bytes"
     "fmt"
     "github.com/bitmaelum/bitmaelum-server/core"
-    "github.com/bitmaelum/bitmaelum-server/core/account"
+    "github.com/bitmaelum/bitmaelum-server/core/account/server"
     "github.com/bitmaelum/bitmaelum-server/core/container"
     "github.com/bitmaelum/bitmaelum-server/core/encrypt"
     "golang.org/x/crypto/ssh/terminal"
@@ -125,7 +125,7 @@ func main() {
     // All info is available.
     // Step 1: create a local account
 
-    err = account.CreateLocalAccount(*addr, password, acc)
+    err = server.CreateLocalAccount(*addr, password, acc)
     if err != nil {
         log.Fatal(err)
     }

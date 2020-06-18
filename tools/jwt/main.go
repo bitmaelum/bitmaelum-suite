@@ -1,10 +1,10 @@
 package main
 
 import (
-    "fmt"
-    "github.com/bitmaelum/bitmaelum-server/core"
-    "github.com/bitmaelum/bitmaelum-server/core/account"
-    "log"
+	"fmt"
+	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/core/account/server"
+	"log"
 )
 
 type Options struct {
@@ -28,7 +28,7 @@ func main() {
 
     // Load account
     var pwd = []byte(opts.Password)
-    ai, err := account.LoadAccount(*fromAddr, pwd)
+    ai, err := server.LoadAccount(*fromAddr, pwd)
     if err != nil {
        log.Fatal(err)
     }

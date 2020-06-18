@@ -1,4 +1,4 @@
-package account
+package server
 
 import (
     "encoding/json"
@@ -54,7 +54,7 @@ func (r *fileRepo) Exists(addr core.HashAddress) bool {
 // Store the public key for this account
 func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
     // Lock our keyfile for writing
-    lockfilePath := r.getPath(addr, PubkeyFile +".lock")
+    lockfilePath := r.getPath(addr, PubkeyFile+".lock")
     lock, err := lockfile.New(lockfilePath)
     if err != nil {
         return err
@@ -326,9 +326,7 @@ func find(slice []string, item string) (int, error) {
 
 func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag string, addFlag bool) error {
     // Lock our flags for writing
-
-
-    lockfilePath := r.getPath(addr, path.Join(box, id, FlagFile + ".lock"))
+    lockfilePath := r.getPath(addr, path.Join(box, id, FlagFile+ ".lock"))
     lockfilePath, err := filepath.Abs(lockfilePath)
     if err != nil {
         return err

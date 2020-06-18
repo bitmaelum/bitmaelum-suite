@@ -20,5 +20,5 @@ func Execute() {
 }
 
 func init() {
-	allowRegistrationCmd.PersistentFlags().StringArrayP("config", "c", []string{}, "configuration file")
+	rootCmd.PersistentFlags().StringArrayP("config", "c", []string{}, "path to configuration file")
 }

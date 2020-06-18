@@ -1,13 +1,13 @@
 package main
 
 import (
-    "bytes"
-    "fmt"
-    "github.com/bitmaelum/bitmaelum-server/core"
-    "github.com/bitmaelum/bitmaelum-server/core/account"
-    "golang.org/x/crypto/ssh/terminal"
-    "log"
-    "syscall"
+	"bytes"
+	"fmt"
+	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/core/account/server"
+	"golang.org/x/crypto/ssh/terminal"
+	"log"
+	"syscall"
 )
 
 type Options struct {
@@ -31,7 +31,7 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    ai, err := account.LoadAccount(*addr, password)
+    ai, err := server.LoadAccount(*addr, password)
     if err != nil {
         log.Fatal(err)
     }
@@ -54,7 +54,7 @@ func main() {
         fmt.Println("passwords do not match. Please try again.")
     }
 
-    err = account.CreateLocalAccount(*addr, password, *ai)
+    err = server.CreateLocalAccount(*addr, password, *ai)
     if err != nil {
         log.Fatal(err)
     }

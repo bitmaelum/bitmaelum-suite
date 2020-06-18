@@ -1,4 +1,4 @@
-package account
+package server
 
 import (
     "github.com/bitmaelum/bitmaelum-server/core"

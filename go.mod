@@ -3,7 +3,6 @@ module github.com/bitmaelum/bitmaelum-server
 go 1.13
 
 require (
-	github.com/ahmetb/govvv v0.3.0 // indirect
 	github.com/coreos/go-semver v0.3.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gabriel-vasile/mimetype v1.1.0
@@ -20,6 +19,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.3.1 // indirect
 	github.com/nightlyone/lockfile v1.0.0
+	github.com/olekukonko/tablewriter v0.0.4
+	github.com/opentracing/opentracing-go v1.1.1-0.20190913142402-a7454ce5950e
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/rivo/tview v0.0.0-20200528200248-fe953220389f
 	github.com/sirupsen/logrus v1.2.0

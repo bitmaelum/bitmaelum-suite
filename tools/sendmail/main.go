@@ -1,20 +1,20 @@
 package main
 
 import (
-    "encoding/json"
-    "fmt"
-    "github.com/bitmaelum/bitmaelum-server/core"
-    "github.com/bitmaelum/bitmaelum-server/core/account"
-    "github.com/bitmaelum/bitmaelum-server/core/checksum"
-    "github.com/bitmaelum/bitmaelum-server/core/container"
-    "github.com/bitmaelum/bitmaelum-server/core/encrypt"
-    "github.com/bitmaelum/bitmaelum-server/core/message"
-    "github.com/google/uuid"
-    "io"
-    "io/ioutil"
-    "log"
-    "os"
-    "strings"
+	"encoding/json"
+	"fmt"
+	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/core/account/server"
+	"github.com/bitmaelum/bitmaelum-server/core/checksum"
+	"github.com/bitmaelum/bitmaelum-server/core/container"
+	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-server/core/message"
+	"github.com/google/uuid"
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
+	"strings"
 )
 
 type Options struct {
@@ -63,7 +63,7 @@ func main() {
     //}
 
     // Load our FROM account
-    ai, err := account.LoadAccount(*fromAddr, pwd)
+    ai, err := server.LoadAccount(*fromAddr, pwd)
     if err != nil {
         log.Fatal(err)
     }
