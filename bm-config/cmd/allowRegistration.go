@@ -36,7 +36,8 @@ var allowRegistrationCmd = &cobra.Command{
 			fmt.Printf("error while inviting address")
 		}
 
-		fmt.Printf("'%s' is allowed to register on our server in the next %d days. The token is: %s\n", addr.String(), d, token)
+		fmt.Printf("'%s' is allowed to register on our server in the next %d days.\n", addr.String(), d)
+		fmt.Printf("The invitation token is: %s\n", token)
 	},
 }
 
@@ -45,4 +46,6 @@ func init() {
 
 	allowRegistrationCmd.Flags().String("address", "", "Address to register")
 	allowRegistrationCmd.Flags().Int("days", 30, "Days allowed for registration")
+
+	_ = allowRegistrationCmd.MarkFlagRequired("address")
 }

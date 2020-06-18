@@ -38,7 +38,7 @@ func main() {
 
     address := readFromInput(InputReaderOpts{
         r: os.Stdin,
-        prefix: "\U0001F4E8 Enter address: ",
+        prefix: "\U0001F4E8  Enter address: ",
         error: "Please specify an address in the correct format",
         validate: func(s string) bool {
             return core.IsValidAddress(s)
@@ -64,13 +64,13 @@ func main() {
     fmt.Println("")
     name := readFromInput(InputReaderOpts{
         r: os.Stdin,
-        prefix: "\U0001F464 Enter your full name: ",
+        prefix: "\U0001F464  Enter your full name: ",
     })
 
     fmt.Println("")
     mailServer := readFromInput(InputReaderOpts{
        r: os.Stdin,
-       prefix: "\U0001F4BB What is the BitMaelum server you want to store your account on: ",
+       prefix: "\U0001F4BB  What is the BitMaelum server you want to store your account on: ",
     })
 
     //token := readFromInput(InputReaderOpts{
@@ -79,7 +79,7 @@ func main() {
     //})
 
     fmt.Println("")
-    fmt.Println("\U0001F510 Let's generate a key-pair for our new account... (this might take a while)")
+    fmt.Println("\U0001F510  Let's generate a key-pair for our new account... (this might take a while)")
     privateKey, publicKey, err := encrypt.GenerateKeyPair(encrypt.KeyTypeRSA)
     if err != nil {
         log.Fatal(err)
@@ -87,7 +87,7 @@ func main() {
 
 
     fmt.Println("")
-    fmt.Println("\U0001F477 Let's do some proof-of-work... (this might take a while)")
+    fmt.Println("\U0001F477  Let's do some proof-of-work... (this might take a while)")
     proof := core.NewProofOfWork(23, addr.Bytes(), 0)
 
     acc := core.AccountInfo{
@@ -101,16 +101,16 @@ func main() {
     }
 
 
-    fmt.Println("\U0001F510 Your account must be protected with a password. Without this password, you are not able to read or send mail, so don't loose it!")
+    fmt.Println("\U0001F510  Your account must be protected with a password. Without this password, you are not able to read or send mail, so don't loose it!")
     var password []byte
     for {
         fmt.Println("")
-        fmt.Print("\U0001F511 Enter your password ")
+        fmt.Print("\U0001F511  Enter your password ")
         password, _ = terminal.ReadPassword(syscall.Stdin)
         fmt.Println("")
 
         fmt.Println("")
-        fmt.Print("\U0001F511 Retype your password ")
+        fmt.Print("\U0001F511  Retype your password ")
         password2, _ := terminal.ReadPassword(syscall.Stdin)
         fmt.Println("")
 
@@ -134,7 +134,7 @@ func main() {
     //}
 
     fmt.Println("")
-    fmt.Println("\U0001F310 Uploading resolve information and public key to the central resolve server")
+    fmt.Println("\U0001F310  Uploading resolve information and public key to the central resolve server")
     err = container.GetResolveService().UploadInfo(acc, mailServer)
     if err != nil {
         log.Fatal(err)

@@ -7,7 +7,7 @@ import (
 )
 
 /**
- * Configuration if found the following way:
+ * Configuration is found the following way:
  *
  * 1. Check path is not empty and config found in path
  * 2. Check for config in current directory
@@ -82,7 +82,6 @@ func LoadServerConfigOrPass(path string) bool {
 
 // Expands the given path and loads the configuration
 func readConfigPath(path string, loader func(string) error) error {
-    log.Printf("Loading path %s\n", path)
     p, _ := homedir.Expand(path)
     return loader(p)
 }
