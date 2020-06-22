@@ -78,7 +78,7 @@ func NewCatalog(ai *core.AccountInfo) *Catalog {
     c.From.Organisation = ai.Organisation
     c.From.ProofOfWork.Bits = ai.Pow.Bits
     c.From.ProofOfWork.Proof = ai.Pow.Proof
-    c.From.PublicKey = ai.PubKey
+    c.From.PublicKey = string(ai.PubKey)
 
     return c;
 }

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/bm-client/core"
+	"github.com/bitmaelum/bitmaelum-server/bm-client/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +11,7 @@ var listAccountsCmd = &cobra.Command{
 	Short: "List your accounts",
 	Long: `Displays a list of all your accounts currently available`,
 	Run: func(cmd *cobra.Command, args []string) {
-		core.ListAccounts()
+		handlers.ListAccounts()
 	},
 }
 

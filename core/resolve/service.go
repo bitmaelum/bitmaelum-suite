@@ -47,7 +47,7 @@ func (s *Service) UploadInfo(acc core.AccountInfo, resolveAddress string) error 
     // And upload
     return s.repo.Upload(
         core.StringToHash(acc.Address),
-        acc.PubKey,
+        string(acc.PubKey),
         resolveAddress,
         hex.EncodeToString(signature),
     )

@@ -11,8 +11,8 @@ import (
  *
  * 1. Check path is not empty and config found in path
  * 2. Check for config in current directory
- * 3. Check for config in directory ~/.bitmealum
- * 4. Check for config in directory /etc/bitmealum
+ * 3. Check for config in directory ~/.bitmaelum
+ * 4. Check for config in directory /etc/bitmaelum
  * 5. Error
  */
 
@@ -43,12 +43,12 @@ func LoadClientConfigOrPass(path string) bool {
         }
     }
 
-    err = readConfigPath("~/.bitmealum/client-config.yml", config.Client.LoadConfig)
+    err = readConfigPath("~/.bitmaelum/client-config.yml", config.Client.LoadConfig)
     if err == nil {
         return true
     }
 
-    err = readConfigPath("/etc/bitmealum/client-config.yml", config.Client.LoadConfig)
+    err = readConfigPath("/etc/bitmaelum/client-config.yml", config.Client.LoadConfig)
     if err == nil {
         return true
     }
@@ -67,12 +67,12 @@ func LoadServerConfigOrPass(path string) bool {
         }
     }
 
-    err = readConfigPath("~/.bitmealum/server-config.yml", config.Server.LoadConfig)
+    err = readConfigPath("~/.bitmaelum/server-config.yml", config.Server.LoadConfig)
     if err == nil {
         return true
     }
 
-    err = readConfigPath("/etc/bitmealum/server-config.yml", config.Server.LoadConfig)
+    err = readConfigPath("/etc/bitmaelum/server-config.yml", config.Server.LoadConfig)
     if err == nil {
         return true
     }

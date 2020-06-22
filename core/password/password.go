@@ -43,13 +43,13 @@ func StorePassword(addr *core.Address, pwd []byte) error {
 	return nil
 }
 
-func AskPassword() []byte {
+func AskDoublePassword() []byte {
 	for {
-		fmt.Printf("Please enter your password: ")
+		fmt.Printf("Please enter your vault password: ")
 		p1, _ := terminal.ReadPassword(syscall.Stdin)
 		fmt.Printf("\n")
 
-		fmt.Printf("Please retype your password: ")
+		fmt.Printf("Please retype your vault password: ")
 		p2, _ := terminal.ReadPassword(syscall.Stdin)
 		fmt.Printf("\n")
 
@@ -59,4 +59,12 @@ func AskPassword() []byte {
 
 		fmt.Printf("Passwords do not match. Please type again.\n")
 	}
+}
+
+func AskPassword() []byte {
+	fmt.Printf("Please enter your vault password: ")
+	p1, _ := terminal.ReadPassword(syscall.Stdin)
+	fmt.Printf("\n")
+
+	return p1
 }

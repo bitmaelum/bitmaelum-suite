@@ -12,6 +12,7 @@ require (
 	github.com/gookit/color v1.2.5
 	github.com/gorilla/mux v1.7.4
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/juju/fslock v0.0.0-20160525022230-4d5c94c67b4b
 	github.com/keybase/go-keychain v0.0.0-20200502122510-cda31fe0c86d
 	github.com/manifoldco/promptui v0.7.0
 	github.com/mattn/go-colorable v0.1.4 // indirect

@@ -20,5 +20,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringArrayP("config", "c", []string{}, "configuration file")
+	rootCmd.PersistentFlags().StringP("config", "c", "", "configuration file")
+	rootCmd.PersistentFlags().StringP("password", "p", "", "password to unlock your account vault")
 }
