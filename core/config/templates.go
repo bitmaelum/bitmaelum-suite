@@ -3,13 +3,15 @@ package config
 import "io"
 
 const clientConfigTemplate string = `
-#
-# BitMaelum Client Configuration Template
-#
+# BitMaelum Client Configuration Template. Edit for your own needs.
 config:
     accounts:
         # where are our accounts stored?
-        path: "~/.bitmaelum/accounts"
+        path: "~/.bitmaelum/accounts.vault.json"
+
+    server:
+        # Should we be able to connect to self-signed and other insecure servers?
+        allow_insecure: false
 
     # How can we resolve public keys and accounts
     resolver:
@@ -20,18 +22,13 @@ config:
 `
 
 const serverConfigTemplate string = `
-#
-# BitMaelum Server Configuration Template
-#
+# BitMaelum Server Configuration Template. Edit for your own needs.
 config:
     # Logging of information
     logging:
         # LogLevel, trace, debug, info, warn, error, crit
         level: trace
     accounts:
-        # Allow users to create an account on this server (with no limitations currently)
-        registration: false
-        
         # How many bits of proof-of-work must an account have to be able to register here
         proof_of_work: 22
     

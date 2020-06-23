@@ -7,11 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// removeRegistrationCmd represents the removeRegistration command
-var removeRegistrationCmd = &cobra.Command{
-	Use:   "remove-registration",
-	Short: "Removes the registration of given address",
-	Long: `When running a mailserver, it's nice to limit the number of users that can create addresses`,
+// uninviteCmd represents the uninvite command
+var uninviteCmd = &cobra.Command{
+	Use:   "uninvite",
+	Short: "Removes the invitation for the given address",
+	Long: `Removes the invitation for the given address. This address cannot register on your server until you invite them again.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := cmd.Flags().GetString("address")
 
@@ -24,7 +24,7 @@ var removeRegistrationCmd = &cobra.Command{
 		is := container.GetInviteService()
 		err = is.RemoveInvite(addr.Hash())
 		if err != nil {
-			fmt.Printf("error while removing address")
+			fmt.Printf("error while uninviting address")
 		}
 
 		fmt.Printf("'%s' has been removed.\n", addr.String())
@@ -32,7 +32,7 @@ var removeRegistrationCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(removeRegistrationCmd)
+	rootCmd.AddCommand(uninviteCmd)
 
-	removeRegistrationCmd.Flags().String("address", "", "Address to remove")
+	uninviteCmd.Flags().String("address", "", "Address to uninvite")
 }

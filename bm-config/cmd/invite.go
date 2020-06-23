@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-// allowRegistrationCmd represents the allowRegistration command
-var allowRegistrationCmd = &cobra.Command{
-
-	Use:   "allow-registration",
-	Short: "Allows registration of given address",
-	Long: `When running a mailserver, it's nice to limit the number of users that can create addresses`,
+// inviteCmd represents the invite command
+var inviteCmd = &cobra.Command{
+	Use:   "invite",
+	Short: "Invite a new user onto your server",
+	Long: `This command will generate an invitation token that must be used for registering an account on your 
+server. Only the specified address can register the account`,
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := cmd.Flags().GetString("address")
 		d, _ := cmd.Flags().GetInt("days")
@@ -42,10 +42,10 @@ var allowRegistrationCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(allowRegistrationCmd)
+	rootCmd.AddCommand(inviteCmd)
 
-	allowRegistrationCmd.Flags().String("address", "", "Address to register")
-	allowRegistrationCmd.Flags().Int("days", 30, "Days allowed for registration")
+	inviteCmd.Flags().String("address", "", "Address to register")
+	inviteCmd.Flags().Int("days", 30, "Days allowed for registration")
 
-	_ = allowRegistrationCmd.MarkFlagRequired("address")
+	_ = inviteCmd.MarkFlagRequired("address")
 }

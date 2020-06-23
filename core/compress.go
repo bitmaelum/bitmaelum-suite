@@ -20,14 +20,14 @@ func Compress(r io.Reader) io.Reader {
         fmt.Printf("Copying r to writer\n")
         _, err := io.Copy(writer, r)
         fmt.Printf("Closing writer\n")
-        writer.Close()
+        _ = writer.Close()
 
         if err != nil {
             fmt.Printf("Closing zpw with err " + err.Error() + "\n")
-            zpw.CloseWithError(err)
+            _ = zpw.CloseWithError(err)
         } else {
             fmt.Printf("Closing zpw\n")
-            zpw.Close()
+            _ = zpw.Close()
         }
     }()
 

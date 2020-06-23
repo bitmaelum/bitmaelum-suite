@@ -129,6 +129,18 @@ func (v *VaultType) Add(account core.AccountInfo) {
     v.Accounts = append(v.Accounts, account)
 }
 
+// Add adds a new account to the vault
+func (v *VaultType) Remove(address core.Address) {
+    k := 0
+    for _, acc := range v.Accounts {
+        if acc.Address != address.String() {
+            v.Accounts[k] = acc
+            k++
+        }
+    }
+    v.Accounts = v.Accounts[:k]
+}
+
 // Save saves the account data back into the vault on disk
 func (v *VaultType) Save() error {
     if v.password == nil {

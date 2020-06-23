@@ -4,12 +4,13 @@ import (
     "fmt"
     "github.com/bitmaelum/bitmaelum-server/bm-client/account"
     "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/api"
     "github.com/bitmaelum/bitmaelum-server/core/container"
     "github.com/bitmaelum/bitmaelum-server/core/encrypt"
     "os"
 )
 
-func CreateAccount(address, name, organisation, server string, passwd []byte) {
+func CreateAccount(address, name, organisation, server, token string, passwd []byte) {
 	if !core.IsValidAddress(address) {
 		fmt.Printf("Not a valid address")
 		fmt.Println("")
@@ -54,6 +55,29 @@ func CreateAccount(address, name, organisation, server string, passwd []byte) {
     err = account.Vault.Save()
     if err != nil {
         fmt.Printf("Error while saving account into vault: %#v", err)
+        fmt.Println("")
+        os.Exit(1)
+    }
+
+
+    client, err := api.CreateNewClient(&info)
+    if err != nil {
+        // Remove account from the local vault as well, as we could not store on the server
+        account.Vault.Remove(*addr)
+        _ = account.Vault.Save()
+
+        fmt.Printf("Cannot initialize API")
+        fmt.Println("")
+        os.Exit(1)
+    }
+
+    err = client.CreateAccount(info, token)
+    if err != nil {
+        // Remove account from the local vault as well, as we could not store on the server
+        account.Vault.Remove(*addr)
+        _ = account.Vault.Save()
+
+        fmt.Printf("Error from API while trying to create account: " + err.Error())
         fmt.Println("")
         os.Exit(1)
     }

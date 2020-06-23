@@ -1,6 +1,7 @@
 package handler
 
 import (
+    "crypto/subtle"
     "encoding/json"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/config"
@@ -20,15 +21,6 @@ type InputCreateAccount struct {
 
 // Create account handler
 func CreateAccount(w http.ResponseWriter, req *http.Request) {
-
-    // Only allow registration when enabled in the configuration
-    if ! config.Server.Accounts.Registration {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusForbidden)
-        _ = json.NewEncoder(w).Encode(StatusError("public registration not available"))
-        return
-    }
-
     var input InputCreateAccount
     err := DecodeBody(w, req.Body, &input)
     if err != nil {
@@ -50,19 +42,44 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
         return
     }
 
-    // @TODO: check if account already exists?
+    // Check if token exists for the given address
+    is := container.GetInviteService()
+    registeredToken, err := is.GetInvite(input.Addr)
+    if err != nil {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusBadRequest)
+        _ = json.NewEncoder(w).Encode(StatusError("No token found for this address."))
+        return
+    }
+    if subtle.ConstantTimeCompare([]byte(registeredToken), []byte(input.Token)) != 1 {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusBadRequest)
+        _ = json.NewEncoder(w).Encode(StatusError("Incorrect token found for this address."))
+        return
+    }
 
-    // Create account
+    // Check if account exists
     as := container.GetAccountService()
+    if as.AccountExists(input.Addr) {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusBadRequest)
+        _ = json.NewEncoder(w).Encode(StatusError("Account already exists."))
+        return
+    }
+
+    // All clear. Create account
     err = as.CreateAccount(input.Addr, input.PublicKey)
     if err != nil {
         sendBadRequest(w, err)
         return
     }
 
+    // Done with the invite, let's remove
+    _ = is.RemoveInvite(input.Addr)
+
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusCreated)
-    _ = json.NewEncoder(w).Encode(StatusOk("mailbox created"))
+    _ = json.NewEncoder(w).Encode(StatusOk("BitMaelum account has been successfully created."))
 }
 
 // Retrieve account information

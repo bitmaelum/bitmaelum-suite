@@ -14,17 +14,21 @@ type WrappedClientConfig struct {
 
 type ClientConfig struct {
     Accounts struct {
-       Path         string  `yaml:"path"`
+        Path         string  `yaml:"path"`
     } `yaml:"accounts"`
 
-    Resolver struct {
-       Local struct {
-           Path  string  `yaml:"path"`
-       } `yaml:"local"`
+    Server struct {
+        AllowInsecure  bool    `yaml:"allow_insecure"`
+    } `yaml:"server"`
 
-       Remote struct {
-           Url  string  `yaml:"url"`
-       } `yaml:"remote"`
+    Resolver struct {
+        Local struct {
+            Path  string  `yaml:"path"`
+        } `yaml:"local"`
+
+        Remote struct {
+            Url  string  `yaml:"url"`
+        } `yaml:"remote"`
     } `yaml:"resolver"`
 }
 

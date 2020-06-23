@@ -18,7 +18,6 @@ type ServerConfig struct {
     } `yaml:"logging"`
 
     Accounts struct {
-       Registration bool    `yaml:"registration"`
        Path         string  `yaml:"path"`
        ProofOfWork  int     `yaml:"proof_of_work"`
     } `yaml:"accounts"`

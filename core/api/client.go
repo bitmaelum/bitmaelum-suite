@@ -5,10 +5,13 @@ import (
     "crypto/tls"
     "encoding/json"
     "errors"
+    "fmt"
     "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/bitmaelum/bitmaelum-server/core/encrypt"
     "io/ioutil"
     "net/http"
+    "strings"
     "time"
 )
 
@@ -33,8 +36,16 @@ func CreateNewClient(ai *core.AccountInfo) (*Api, error) {
 
     // Create API
     tr := &http.Transport{
-        // @TODO: We don't want this...
-        TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+        // Allow insecure and self-signed certificates if so configured
+        TLSClientConfig: &tls.Config{InsecureSkipVerify: config.Client.Server.AllowInsecure},
+    }
+
+    // If no port is present in the server, we assume port 2424
+    if ! strings.Contains(ai.Server, ":") {
+        ai.Server = ai.Server + ":2424"
+    }
+    if ! strings.HasPrefix(ai.Server, "https://") {
+        ai.Server = "https://" + ai.Server
     }
 
     api := &Api{
@@ -109,7 +120,7 @@ func (api *Api) Post(path string, body interface{}) error {
     defer resp.Body.Close()
 
     if resp.StatusCode < 200 || resp.StatusCode > 299 {
-        return errors.New("incorrect status code returned")
+        return errors.New(fmt.Sprintf("incorrect status code returned (%d)", resp.StatusCode))
     }
 
     return nil

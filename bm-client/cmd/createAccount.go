@@ -17,21 +17,23 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 			panic(err)
 		}
 
-		handlers.CreateAccount(*address, *name, *organisation, *server, []byte(pwd))
+		handlers.CreateAccount(*address, *name, *organisation, *server, *token, []byte(pwd))
 	},
 }
 
-var address, name, organisation, server *string
+var address, name, organisation, server, token *string
 
 func init() {
 	rootCmd.AddCommand(createAccountCmd)
 
 	address = createAccountCmd.Flags().String("address", "", "Address to create")
-	name = createAccountCmd.Flags().String("name", "", "Name")
+	name = createAccountCmd.Flags().String("name", "", "Your full name")
 	organisation = createAccountCmd.Flags().String("org", "", "Organisation")
 	server = createAccountCmd.Flags().String("server", "", "Server to store the account")
+	token = createAccountCmd.Flags().String("token", "", "Invitation token from server")
 
 	_ = createAccountCmd.MarkFlagRequired("address")
 	_ = createAccountCmd.MarkFlagRequired("name")
 	_ = createAccountCmd.MarkFlagRequired("server")
+	_ = createAccountCmd.MarkFlagRequired("token")
 }

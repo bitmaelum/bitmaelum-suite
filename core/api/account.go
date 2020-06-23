@@ -21,8 +21,30 @@ func (api* Api) GetPublicKey(addr core.HashAddress) (string, error) {
 }
 
 // Create new account on server
-func (api *Api) CreateAccount(addr core.HashAddress, token string) error {
-    err := api.Post("/account", nil)
+func (api *Api) CreateAccount(ai core.AccountInfo, token string) error {
+    type InputCreateAccount struct {
+        Addr        core.HashAddress    `json:"address"`
+        Token       string              `json:"token"`
+        PublicKey   string              `json:"public_key"`
+        ProofOfWork struct {
+            Bits     int                `json:"bits"`
+            Proof    uint64             `json:"proof"`
+        } `json:"proof_of_work"`
+    }
 
-    return err
+    addr, _ := core.NewAddressFromString(ai.Address)
+
+    input := &InputCreateAccount{
+        Addr:      addr.Hash(),
+        Token:     token,
+        PublicKey: ai.PubKey,
+        ProofOfWork: struct {
+            Bits  int    `json:"bits"`
+            Proof uint64 `json:"proof"`
+        }{
+            Bits:  ai.Pow.Bits,
+            Proof: ai.Pow.Proof,
+        },
+    }
+    return api.Post("/account", input)
 }
