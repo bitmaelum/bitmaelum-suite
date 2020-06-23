@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/account/server"
-	"github.com/bitmaelum/bitmaelum-server/core/checksum"
-	"github.com/bitmaelum/bitmaelum-server/core/container"
+    "github.com/bitmaelum/bitmaelum-server/bm-client/account"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/checksum"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
+    "github.com/bitmaelum/bitmaelum-server/core/container"
 	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
 	"github.com/bitmaelum/bitmaelum-server/core/message"
 	"github.com/google/uuid"
@@ -47,39 +48,16 @@ func main() {
     }
 
 
-    var pwd = []byte(opts.Password)
-
-    //// @TODO: We don't want specific stuff here. We should have a more generic function to fetch passwords from either
-    //// the OS's keychain (or equivalent), from the commandline arguments, or through console stdio
-    //if runtime.GOOS == `darwin` {
-    //    // Fetch passwd from keychain if not
-    //    if len(opts.Password) == 0 {
-    //        kc := &keychain.OSXKeyChain{}
-    //        pwd, err = kc.Fetch(*fromAddr)
-    //        if err == nil {
-    //            alreadyStoredInKeychain = true
-    //        }
-    //    }
-    //}
-
     // Load our FROM account
-    ai, err := server.LoadAccount(*fromAddr, pwd)
+    err = account.UnlockVault(config.Client.Accounts.Path, []byte(opts.Password))
     if err != nil {
         log.Fatal(err)
     }
 
-    //// @TODO: We don't want specific stuff here. We should have a more generic function to fetch passwords from either
-    //// the OS's keychain (or equivalent), from the commandline arguments, or through console stdio
-    //// Store password in keychain
-    //if runtime.GOOS == `darwin` {
-    //    if !alreadyStoredInKeychain {
-    //        kc := &keychain.OSXKeyChain{}
-    //        err = kc.Store(*fromAddr, pwd)
-    //        if err != nil {
-    //            log.Fatal(err)
-    //        }
-    //    }
-    //}
+    ai, err := account.Vault.FindAccount(*fromAddr)
+    if err != nil {
+       log.Fatal(err)
+    }
 
 
     // Resolve public key for our recipient

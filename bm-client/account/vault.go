@@ -185,6 +185,24 @@ func (v *VaultType) Save() error {
     return safeWrite(v.path, data, 0600)
 }
 
+// FindAccount tries to find the given address and returns the account from the vault
+func (v *VaultType) FindAccount(address core.Address) (*core.AccountInfo, error) {
+    for _, acc := range v.Accounts {
+        if acc.Address == address.String() {
+            return &acc, nil
+        }
+    }
+
+    return nil, errors.New("cannot find account")
+}
+
+// HasAccount returns true when the vault has an account for the given address
+func (v *VaultType) HasAccount(address core.Address) bool {
+    _, err := v.FindAccount(address)
+
+    return err == nil
+}
+
 // safeWrite writes data by safely writing to a temp file first
 func safeWrite(path string, data []byte, perm os.FileMode) error {
     // Lock the file first. Make sure we are the only one working on it
@@ -207,4 +225,3 @@ func safeWrite(path string, data []byte, perm os.FileMode) error {
     err = os.Rename(path + ".tmp", path)
     return err
 }
-

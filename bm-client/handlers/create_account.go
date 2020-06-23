@@ -25,6 +25,12 @@ func CreateAccount(address, name, organisation, server string, passwd []byte) {
         os.Exit(1)
     }
 
+    if account.Vault.HasAccount(*addr) {
+        fmt.Printf("Account already present in the vault")
+        fmt.Println("")
+        os.Exit(1)
+    }
+
     pubKey, privKey, err := encrypt.GenerateKeyPair(encrypt.KeyTypeRSA)
     if err != nil {
         fmt.Print(err)

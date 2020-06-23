@@ -37,6 +37,7 @@ func main() {
     err := account.UnlockVault(config.Client.Accounts.Path, []byte(opts.Password))
     if err != nil {
         fmt.Printf("Error while opening vault: %s", err)
+        fmt.Println("")
         os.Exit(1)
     }
 

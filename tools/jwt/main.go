@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/account/server"
-	"log"
+    "fmt"
+    "github.com/bitmaelum/bitmaelum-server/bm-client/account"
+    "github.com/bitmaelum/bitmaelum-server/core"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
+    "log"
 )
 
 type Options struct {
@@ -27,8 +28,12 @@ func main() {
     }
 
     // Load account
-    var pwd = []byte(opts.Password)
-    ai, err := server.LoadAccount(*fromAddr, pwd)
+    err = account.UnlockVault(config.Client.Accounts.Path, []byte(opts.Password))
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    ai, err := account.Vault.FindAccount(*fromAddr)
     if err != nil {
        log.Fatal(err)
     }
