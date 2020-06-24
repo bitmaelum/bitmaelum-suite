@@ -5,6 +5,7 @@ import (
     "github.com/bitmaelum/bitmaelum-server/bm-client/account"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/api"
+    "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/bitmaelum/bitmaelum-server/core/container"
     "github.com/bitmaelum/bitmaelum-server/core/encrypt"
     "os"
@@ -39,7 +40,8 @@ func CreateAccount(address, name, organisation, server, token string, passwd []b
         os.Exit(1)
     }
 
-    proof := core.NewProofOfWork(23, addr.Bytes(), 0)
+    proof := core.NewProofOfWork(config.Client.Accounts.ProofOfWork, []byte(addr.Hash()), 0)
+    proof.Work()
 
     info := core.AccountInfo{
         Address:      address,
@@ -47,7 +49,10 @@ func CreateAccount(address, name, organisation, server, token string, passwd []b
         Organisation: organisation,
         PrivKey:      privKey,
         PubKey:       pubKey,
-        Pow:          *proof,
+        Pow: core.ProofOfWork{
+            Bits: proof.Bits,
+            Proof: proof.Proof,
+        },
         Server:       server,
     }
 

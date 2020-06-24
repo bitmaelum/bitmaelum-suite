@@ -101,14 +101,15 @@ func (r *fileRepo) FetchPubKeys(addr core.HashAddress) ([]string, error) {
 }
 
 // Create a new mailbox in this account
-func (r *fileRepo) CreateBox(addr core.HashAddress, box, description string, quota int) error {
+func (r *fileRepo) CreateBox(addr core.HashAddress, box, name, description string, quota int) error {
     fullPath := r.getPath(addr, box)
 
     _ = os.MkdirAll(fullPath, 0700)
 
     mbi := messagebox.MailBoxInfo{
+        Name:        name,
         Description: description,
-        Quota: quota,
+        Quota:       quota,
     }
 
     data, _ := json.MarshalIndent(mbi, "", " ")

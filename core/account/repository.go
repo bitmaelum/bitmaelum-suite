@@ -15,7 +15,7 @@ type Repository interface {
     FetchPubKeys(addr core.HashAddress) ([]string, error)
 
     // Box related functions
-    CreateBox(addr core.HashAddress, box, description string, quota int) error
+    CreateBox(addr core.HashAddress, box, name, description string, quota int) error
     ExistsBox(addr core.HashAddress, box string) bool
     DeleteBox(addr core.HashAddress, box string) error
     GetBox(addr core.HashAddress, box string) (*messagebox.MailBoxInfo, error)

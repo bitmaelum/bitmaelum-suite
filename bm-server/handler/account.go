@@ -34,6 +34,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
         _ = json.NewEncoder(w).Encode(StatusErrorf("Proof of work must be at least %d bits", config.Server.Accounts.ProofOfWork))
         return
     }
+
     pow := core.NewProofOfWork(input.ProofOfWork.Bits, []byte(input.Addr), input.ProofOfWork.Proof)
     if ! pow.Validate() {
         w.Header().Set("Content-Type", "application/json")

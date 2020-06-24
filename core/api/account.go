@@ -27,8 +27,8 @@ func (api *Api) CreateAccount(ai core.AccountInfo, token string) error {
         Token       string              `json:"token"`
         PublicKey   string              `json:"public_key"`
         ProofOfWork struct {
-            Bits     int                `json:"bits"`
-            Proof    uint64             `json:"proof"`
+            Bits     int            `json:"bits"`
+            Proof    uint64         `json:"proof"`
         } `json:"proof_of_work"`
     }
 

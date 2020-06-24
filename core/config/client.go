@@ -15,6 +15,7 @@ type WrappedClientConfig struct {
 type ClientConfig struct {
     Accounts struct {
         Path         string  `yaml:"path"`
+        ProofOfWork  int     `yaml:"proof_of_work"`
     } `yaml:"accounts"`
 
     Server struct {

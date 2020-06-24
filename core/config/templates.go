@@ -8,6 +8,8 @@ config:
     accounts:
         # where are our accounts stored?
         path: "~/.bitmaelum/accounts.vault.json"
+        # Number of bits for proof-of-work. The higher the number, the longer it takes to generate an account
+        proof_of_work: 22
 
     server:
         # Should we be able to connect to self-signed and other insecure servers?
