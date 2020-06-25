@@ -18,6 +18,10 @@ type ClientConfig struct {
         ProofOfWork  int     `yaml:"proof_of_work"`
     } `yaml:"accounts"`
 
+    Composer struct {
+        Editor  string    `yaml:"editor"`
+    } `yaml:"composer"`
+
     Server struct {
         AllowInsecure  bool    `yaml:"allow_insecure"`
     } `yaml:"server"`

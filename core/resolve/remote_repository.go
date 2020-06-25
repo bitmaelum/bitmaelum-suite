@@ -80,9 +80,10 @@ func (r *remoteRepo) Upload(addr core.HashAddress, pubKey, address, signature st
         return err
     }
 
+    body, err := ioutil.ReadAll(response.Body)
     if (response.StatusCode >= 200 && response.StatusCode <= 299) {
         return nil
     }
 
-    return errors.New("error status returned from account server")
+    return errors.New(string(body))
 }

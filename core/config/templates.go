@@ -10,7 +10,9 @@ config:
         path: "~/.bitmaelum/accounts.vault.json"
         # Number of bits for proof-of-work. The higher the number, the longer it takes to generate an account
         proof_of_work: 22
-
+    composer:
+        # Editor to use when composing messages. If not set, use the $EDITOR environment variable.
+        editor: 
     server:
         # Should we be able to connect to self-signed and other insecure servers?
         allow_insecure: false
