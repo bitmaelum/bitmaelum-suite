@@ -12,8 +12,8 @@ import (
 
 type commandSorterByPosition []*cobra.Command
 
-func (c commandSorterByPosition) Len() int           { return len(c) }
-func (c commandSorterByPosition) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
+func (c commandSorterByPosition) Len() int      { return len(c) }
+func (c commandSorterByPosition) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
 func (c commandSorterByPosition) Less(i, j int) bool {
 	si, _ := strconv.Atoi(c[i].Annotations["position"])
 	sj, _ := strconv.Atoi(c[j].Annotations["position"])

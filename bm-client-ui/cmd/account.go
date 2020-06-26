@@ -5,10 +5,10 @@ import (
 )
 
 var accountCmd = &cobra.Command{
-	Use:   "account",
-	Short: "Account management",
-	Long: `Commands to manage your local accounts.`,
-	Run:   SelectAndRun,
+	Use:         "account",
+	Short:       "Account management",
+	Long:        `Commands to manage your local accounts.`,
+	Run:         SelectAndRun,
 	Annotations: map[string]string{"position": "20"},
 }
 

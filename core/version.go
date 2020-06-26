@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	VersionMajor 	int64 = 0
-	VersionMinor 	int64 = 0
-	VersionPatch 	int64 = 1
+	VersionMajor int64 = 0
+	VersionMinor int64 = 0
+	VersionPatch int64 = 1
 )
 
 var BuildDate, GitCommit string

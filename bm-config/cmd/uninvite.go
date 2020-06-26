@@ -11,7 +11,7 @@ import (
 var uninviteCmd = &cobra.Command{
 	Use:   "uninvite",
 	Short: "Removes the invitation for the given address",
-	Long: `Removes the invitation for the given address. This address cannot register on your server until you invite them again.`,
+	Long:  `Removes the invitation for the given address. This address cannot register on your server until you invite them again.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := cmd.Flags().GetString("address")
 

@@ -9,7 +9,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "bm-config",
 	Short: "Configuration application for your mail server and client",
-	Long: `This tool allows you to easily manage certain aspects of your BitMaelum server and client.`,
+	Long:  `This tool allows you to easily manage certain aspects of your BitMaelum server and client.`,
 }
 
 func Execute() {

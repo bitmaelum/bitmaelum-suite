@@ -48,7 +48,7 @@ func createLayout() {
 	accounts := newAccountsPanel()
 	boxes := newMessageBoxPanel()
 
-	panels = []tview.Primitive{ accounts, boxes, main }
+	panels = []tview.Primitive{accounts, boxes, main}
 
 	status := tview.NewTextView().
 		SetDynamicColors(true).
@@ -119,7 +119,7 @@ func main() {
 	app = tview.NewApplication()
 	pages = tview.NewPages()
 
-	app.SetInputCapture(func (event *tcell.EventKey) *tcell.EventKey {
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTab {
 			navigate(1)
 			return nil

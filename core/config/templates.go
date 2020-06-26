@@ -80,14 +80,14 @@ config:
 
 // Generates a default client configuration
 func GenerateClientConfig(w io.Writer) error {
-    _, err := w.Write([]byte(clientConfigTemplate))
+	_, err := w.Write([]byte(clientConfigTemplate))
 
-    return err
+	return err
 }
 
 // Generates a default server configuration
 func GenerateServerConfig(w io.Writer) error {
-    _, err := w.Write([]byte(serverConfigTemplate))
+	_, err := w.Write([]byte(serverConfigTemplate))
 
-    return err
+	return err
 }

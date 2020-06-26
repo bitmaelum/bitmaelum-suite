@@ -49,11 +49,11 @@ func generateCert(domain string) {
 		Subject: pkix.Name{
 			CommonName: domain,
 		},
-		NotBefore: notBefore,
-		NotAfter: notAfter,
-		KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		BasicConstraintsValid: true,
-		IsCA: false,
+		IsCA:                  false,
 	}
 
 	// Generate Private/Public RSA key

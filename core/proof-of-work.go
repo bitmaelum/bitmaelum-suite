@@ -1,11 +1,11 @@
 package core
 
 import (
-    "bytes"
-    "crypto/sha256"
-    "math"
-    "math/big"
-    "strconv"
+	"bytes"
+	"crypto/sha256"
+	"math"
+	"math/big"
+	"strconv"
 )
 
 //
@@ -26,73 +26,73 @@ import (
 //
 
 type ProofOfWork struct {
-    Bits    int     `json:"bits"`
-    Proof   uint64  `json:"proof,omitempty"`
-    Data    []byte  `json:"data,omitempty"`
+	Bits  int    `json:"bits"`
+	Proof uint64 `json:"proof,omitempty"`
+	Data  []byte `json:"data,omitempty"`
 }
 
 func NewProofOfWork(bits int, data []byte, proof uint64) *ProofOfWork {
-    pow := &ProofOfWork{
-        Bits: bits,
-        Proof: proof,
-        Data: data,
-    }
+	pow := &ProofOfWork{
+		Bits:  bits,
+		Proof: proof,
+		Data:  data,
+	}
 
-    return pow
+	return pow
 }
 
 // Returns true if this instance already has done proof-of-work
 func (pow *ProofOfWork) HasDoneWork() bool {
-    return pow.Proof > 0
+	return pow.Proof > 0
 }
 
 // Actually do proof-of-work
 func (pow *ProofOfWork) Work() {
-    var hashInt big.Int
+	var hashInt big.Int
 
-    // Hash must be less than this
-    target := big.NewInt(1)
-    target = target.Lsh(target, uint(256 - pow.Bits))
+	// Hash must be less than this
+	target := big.NewInt(1)
+	target = target.Lsh(target, uint(256-pow.Bits))
 
-    // Count from 0 to MAXINT
-    var counter uint64 = 0
-    for counter < math.MaxInt64 {
-        // SHA256 the data
-        hash := sha256.Sum256(bytes.Join([][]byte{
-            pow.Data,
-            intToHex(counter),
-        }, []byte{}))
-        hashInt.SetBytes(hash[:])
+	// Count from 0 to MAXINT
+	var counter uint64 = 0
+	for counter < math.MaxInt64 {
+		// SHA256 the data
+		hash := sha256.Sum256(bytes.Join([][]byte{
+			pow.Data,
+			intToHex(counter),
+		}, []byte{}))
+		hashInt.SetBytes(hash[:])
 
-        // Is it less than our target, then we have done our work
-        if hashInt.Cmp(target) == -1 {
+		// Is it less than our target, then we have done our work
+		if hashInt.Cmp(target) == -1 {
 			break
-        }
+		}
 
-        // Higher, so we must do more work. Increase counter and try again
-        counter += 1
-    }
+		// Higher, so we must do more work. Increase counter and try again
+		counter += 1
+	}
 
-    pow.Proof = counter
+	pow.Proof = counter
 }
 
 // Returns true when the given work can be validated against the proof
 func (pow *ProofOfWork) Validate() bool {
-    var hashInt big.Int
+	var hashInt big.Int
 
-    hash := sha256.Sum256(bytes.Join([][]byte{
-        pow.Data,
-        intToHex(pow.Proof),
-    }, []byte{}))
-    hashInt.SetBytes(hash[:])
+	hash := sha256.Sum256(bytes.Join([][]byte{
+		pow.Data,
+		intToHex(pow.Proof),
+	}, []byte{}))
+	hashInt.SetBytes(hash[:])
 
-    target := big.NewInt(1)
-    target = target.Lsh(target, uint(256 - pow.Bits))
+	target := big.NewInt(1)
+	target = target.Lsh(target, uint(256-pow.Bits))
 
-    return hashInt.Cmp(target) == -1
+	return hashInt.Cmp(target) == -1
 }
 
 // convert a large number to hexidecimal bytes
 func intToHex(n uint64) []byte {
-    return []byte(strconv.FormatUint(n, 16))
+	return []byte(strconv.FormatUint(n, 16))
 }

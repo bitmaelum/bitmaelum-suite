@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/bm-client/account"
-	"github.com/bitmaelum/bitmaelum-server/bm-client/cmd"
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"github.com/bitmaelum/bitmaelum-server/core/config"
+	"github.com/bitmaelum/bitmaelum-server/core/container"
 	"github.com/bitmaelum/bitmaelum-server/core/password"
 	"os"
 )
@@ -13,20 +13,12 @@ import (
 type Options struct {
 	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
 	Password string `short:"p" long:"password" description:"Vault password" default:""`
-	Version  bool   `short:"v" long:"version" description:"Display version information"`
 }
 
 var opts Options
 
 func main() {
 	core.ParseOptions(&opts)
-	if opts.Version {
-		core.WriteVersionInfo("BitMaelum Client", os.Stdout)
-		fmt.Println()
-		os.Exit(1)
-	}
-
-	fmt.Println(core.GetAsciiLogo())
 	core.LoadClientConfig(opts.Config)
 
 	if opts.Password == "" {
@@ -41,5 +33,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd.Execute()
+	rs := container.GetResolveService()
+	for i, acc := range account.Vault.Accounts {
+		account.Vault.Accounts[i].Server = "bitmaelum.ngrok.io:443"
+		account.Vault.Save()
+
+		err = rs.UploadInfo(acc, acc.Server)
+		if err != nil {
+			fmt.Printf("Error for account %s: %s\n", acc.Address, err.Error())
+		}
+	}
 }

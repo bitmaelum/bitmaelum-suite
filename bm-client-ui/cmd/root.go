@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 	Short: "BitMaelum mail client",
 	Long: `This is the default mail client for the BitMaelum system. It is used simply 
 as a proof-of-concept to demonstrate that it should be easy to use.`,
-	Run:	SelectAndRun,
+	Run: SelectAndRun,
 }
 
 func Execute() {

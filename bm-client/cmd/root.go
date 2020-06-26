@@ -9,7 +9,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "bm-client",
 	Short: "BitMaelum client",
-	Long: `This client allows you to manage accounts, read and compose mail.`,
+	Long:  `This client allows you to manage accounts, read and compose mail.`,
 }
 
 func Execute() {

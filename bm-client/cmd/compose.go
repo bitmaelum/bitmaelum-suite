@@ -16,7 +16,7 @@ import (
 var composeCmd = &cobra.Command{
 	Use:   "compose",
 	Short: "Compose a new message",
-	Long: `This command will allow you to compose a new message and send it through your BitMaelum server`,
+	Long:  `This command will allow you to compose a new message and send it through your BitMaelum server`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		fromAddr, err := core.NewAddressFromString(*from)
@@ -49,14 +49,14 @@ var composeCmd = &cobra.Command{
 			if len(block) == 0 {
 				fmt.Println("Warning: empty message body")
 			} else {
-				*blocks = append(*blocks, "default," + block)
+				*blocks = append(*blocks, "default,"+block)
 			}
 		}
 
 		fmt.Printf("Endresult\n")
-		fmt.Printf("From:    %s (%s)\n", fromAccount.Name, fromAccount.Address)
-		fmt.Printf("To:      %s\n", *to)
-		fmt.Printf("Subject: %s\n", *subject)
+		fmt.Printf("  From:    %s (%s)\n", fromAccount.Name, fromAccount.Address)
+		fmt.Printf("  To:      %s\n", *to)
+		fmt.Printf("  Subject: %s\n", *subject)
 		for i, block := range *blocks {
 			fmt.Printf("Block  #%d %s\n", i, block)
 		}
@@ -93,13 +93,13 @@ func useRegularEditor() (string, error) {
 
 	tmpFile, err := ioutil.TempFile(os.TempDir(), "bm-")
 	if err != nil {
-        return "", err
-    }
-    defer os.Remove(tmpFile.Name())
+		return "", err
+	}
+	defer os.Remove(tmpFile.Name())
 
 	c := exec.Command(p, tmpFile.Name())
-    c.Stdin = os.Stdin
-    c.Stdout = os.Stdout
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
 	err = c.Run()
 	if err != nil {
 		fmt.Printf("%#v", err)

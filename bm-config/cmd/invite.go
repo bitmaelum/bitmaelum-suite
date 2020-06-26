@@ -31,7 +31,7 @@ server. Only the specified address can register the account`,
 			return
 		}
 
-		token, err = is.CreateInvite(addr.Hash(), time.Duration(d) * 24 * time.Hour)
+		token, err = is.CreateInvite(addr.Hash(), time.Duration(d)*24*time.Hour)
 		if err != nil {
 			fmt.Printf("error while inviting address")
 		}

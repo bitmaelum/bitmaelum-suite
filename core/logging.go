@@ -1,23 +1,23 @@
 package core
 
 import (
-    "github.com/bitmaelum/bitmaelum-server/core/config"
-    "github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-server/core/config"
+	"github.com/sirupsen/logrus"
 	logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
 	"log/syslog"
-    "os"
+	"os"
 	"strings"
 )
 
 func SetLogging(level, path string) {
-    logrus.SetFormatter(new(logrus.JSONFormatter))
-    logrus.SetFormatter(new(logrus.TextFormatter))
+	logrus.SetFormatter(new(logrus.JSONFormatter))
+	logrus.SetFormatter(new(logrus.TextFormatter))
 
 	// Default to stderr
 	logrus.SetOutput(os.Stderr)
 
 	if path == "stdout" {
-    logrus.SetOutput(os.Stdout)
+		logrus.SetOutput(os.Stdout)
 
 	} else if path == "stderr" {
 		logrus.SetOutput(os.Stderr)
@@ -48,23 +48,23 @@ func SetLogging(level, path string) {
 	}
 
 	switch level {
-    case "trace":
-        logrus.SetLevel(logrus.TraceLevel)
+	case "trace":
+		logrus.SetLevel(logrus.TraceLevel)
 		break
-    case "debug":
-        logrus.SetLevel(logrus.DebugLevel)
+	case "debug":
+		logrus.SetLevel(logrus.DebugLevel)
 		break
-    case "info":
-        logrus.SetLevel(logrus.InfoLevel)
+	case "info":
+		logrus.SetLevel(logrus.InfoLevel)
 		break
-    case "warning":
-        logrus.SetLevel(logrus.WarnLevel)
+	case "warning":
+		logrus.SetLevel(logrus.WarnLevel)
 		break
-    case "error":
-    default:
-        logrus.SetLevel(logrus.ErrorLevel)
+	case "error":
+	default:
+		logrus.SetLevel(logrus.ErrorLevel)
 		break
-    }
+	}
 
-    logrus.Tracef("setting loglevel to '%s'", config.Server.Logging.Level)
+	logrus.Tracef("setting loglevel to '%s'", config.Server.Logging.Level)
 }
