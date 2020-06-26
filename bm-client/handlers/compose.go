@@ -96,7 +96,6 @@ func generateHeader(ai core.AccountInfo, to *resolve.ResolveInfo, catalog []byte
     header.Catalog.Size = uint64(len(catalog))
     header.Catalog.Crypto = "rsa+aes256gcm"
 
-
     pubKey, err := encrypt.PEMToPubKey([]byte(to.PublicKey))
     if err != nil {
         return nil, err
@@ -128,7 +127,6 @@ func generateCatalog(ai core.AccountInfo, to *resolve.ResolveInfo, subject strin
     cat.Labels = append(cat.Labels, "invoice", "sales", "seams-cms")
     cat.Subject = subject
     cat.ThreadId = ""
-
 
     for _, block := range b {
        	err := cat.AddBlock(block)

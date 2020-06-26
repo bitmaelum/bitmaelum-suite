@@ -30,8 +30,22 @@ const serverConfigTemplate string = `
 config:
     # Logging of information
     logging:
-        # LogLevel, trace, debug, info, warn, error, crit
-        level: trace
+        # LogLevel: trace, debug, info, warn, error, crit
+        log_level: trace
+        
+        # Where to store logs. Can be one of the following:
+        #   <path>,  
+        #   stdout
+        #   stderr 
+        #   syslog
+        #   syslog:<ip:port>
+        log_path: stdout
+
+        # Log apache-style HTTP combined log 
+        apache_log: true
+        # Path to apache logfile
+        apache_log_path: ./bitmaelum.apache.log
+
     accounts:
         # How many bits of proof-of-work must an account have to be able to register here
         proof_of_work: 22

@@ -3,9 +3,9 @@ package middleware
 import (
     "context"
     "errors"
-    "github.com/gorilla/mux"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/container"
+	"github.com/gorilla/mux"
     "github.com/vtolstov/jwt-go"
     "net/http"
     "strings"

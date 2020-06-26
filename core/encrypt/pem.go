@@ -50,6 +50,3 @@ func PubKeyToPEM(key interface{}) (string, error) {
 	err = pem.Encode(&b, &pem.Block{Type: "RSA PUBLIC KEY", Bytes: pubBytes})
 	return b.String(), err
 }
-
-
-

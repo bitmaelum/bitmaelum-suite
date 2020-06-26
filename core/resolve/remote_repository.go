@@ -81,7 +81,7 @@ func (r *remoteRepo) Upload(addr core.HashAddress, pubKey, address, signature st
     }
 
     body, err := ioutil.ReadAll(response.Body)
-    if (response.StatusCode >= 200 && response.StatusCode <= 299) {
+	if response.StatusCode >= 200 && response.StatusCode <= 299 {
         return nil
     }
 

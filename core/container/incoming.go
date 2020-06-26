@@ -1,9 +1,9 @@
 package container
 
 import (
-    "github.com/go-redis/redis/v8"
-    "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/bitmaelum/bitmaelum-server/bm-server/incoming"
+	"github.com/bitmaelum/bitmaelum-server/core/config"
+	"github.com/go-redis/redis/v8"
 )
 
 var incomingService *incoming.Service = nil
@@ -11,7 +11,7 @@ var incomingRepository *incoming.Repository = nil
 
 func GetIncomingService() *incoming.Service{
     if incomingService != nil {
-        return incomingService;
+		return incomingService
     }
 
     repo := GetIncomingRepository()
@@ -21,7 +21,7 @@ func GetIncomingService() *incoming.Service{
 
 func GetIncomingRepository() *incoming.Repository {
     if incomingRepository != nil {
-        return incomingRepository;
+		return incomingRepository
     }
 
     opts := redis.Options{

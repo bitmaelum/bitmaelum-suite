@@ -64,7 +64,6 @@ func CreateAccount(address, name, organisation, server, token string, passwd []b
         os.Exit(1)
     }
 
-
     client, err := api.CreateNewClient(&info)
     if err != nil {
         // Remove account from the local vault as well, as we could not store on the server

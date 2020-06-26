@@ -1,9 +1,9 @@
 package container
 
 import (
-    "github.com/go-redis/redis/v8"
     "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/bitmaelum/bitmaelum-server/core/invite"
+	"github.com/go-redis/redis/v8"
 )
 
 var inviteService *invite.Service = nil
@@ -11,7 +11,7 @@ var inviteRepository *invite.Repository = nil
 
 func GetInviteService() *invite.Service{
     if inviteService != nil {
-        return inviteService;
+		return inviteService
     }
 
     repo := GetInviteRepository()
@@ -21,7 +21,7 @@ func GetInviteService() *invite.Service{
 
 func GetInviteRepository() *invite.Repository {
     if inviteRepository != nil {
-        return inviteRepository;
+		return inviteRepository
     }
 
     opts := redis.Options{

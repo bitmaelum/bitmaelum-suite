@@ -11,7 +11,7 @@ var accountRepository *account.Repository = nil
 
 func GetAccountService() *account.Service {
     if accountService != nil {
-        return accountService;
+		return accountService
     }
 
     repo := GetAccountRepository()
@@ -21,7 +21,7 @@ func GetAccountService() *account.Service {
 
 func GetAccountRepository() *account.Repository {
     if accountRepository != nil {
-        return accountRepository;
+		return accountRepository
     }
 
     p, _ := homedir.Expand(config.Server.Accounts.Path)

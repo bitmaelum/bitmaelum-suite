@@ -17,8 +17,6 @@ func Test_ProofOfWork(t *testing.T) {
     assert.True(t, pow.Validate())
     assert.Equal(t, uint64(88), pow.Proof)
 
-
-
     pow = NewProofOfWork(8, []byte("jane@example!"), 171)
     assert.Equal(t, 8, pow.Bits)
     assert.Equal(t, uint64(171), pow.Proof)

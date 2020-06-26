@@ -1,9 +1,9 @@
 package message
 
 import (
+	"github.com/bitmaelum/bitmaelum-server/core"
     "github.com/gabriel-vasile/mimetype"
     "github.com/google/uuid"
-    "github.com/bitmaelum/bitmaelum-server/core"
     "io"
     "os"
     "time"
@@ -67,7 +67,6 @@ type Block struct {
     Reader     io.Reader
 }
 
-
 func NewCatalog(ai *core.AccountInfo) *Catalog {
     c := &Catalog{}
 
@@ -80,7 +79,7 @@ func NewCatalog(ai *core.AccountInfo) *Catalog {
     c.From.ProofOfWork.Proof = ai.Pow.Proof
     c.From.PublicKey = string(ai.PubKey)
 
-    return c;
+	return c
 }
 
 func (c *Catalog) AddBlock(entry Block) error {
@@ -123,7 +122,6 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
     if err != nil {
         return err
     }
-
 
     at := &AttachmentType{
         Id:          id.String(),

@@ -1,10 +1,10 @@
 package handler
 
 import (
-    "github.com/gorilla/mux"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/container"
     "github.com/bitmaelum/bitmaelum-server/core/messagebox"
+	"github.com/gorilla/mux"
     "net/http"
     "strconv"
 )

@@ -1,9 +1,9 @@
 package handler
 
 import (
-    "github.com/gorilla/mux"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/container"
+	"github.com/gorilla/mux"
     "net/http"
 )
 
@@ -47,4 +47,3 @@ func UnsetFlag(w http.ResponseWriter, req *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
 }
-

@@ -87,5 +87,3 @@ func (s *Service) SetFlag(addr core.HashAddress, box string, id string, flag str
 func (s *Service) UnsetFlag(addr core.HashAddress, box string, id string, flag string) error {
     return s.repo.UnsetFlag(addr, box, id, flag)
 }
-
-

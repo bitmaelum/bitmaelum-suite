@@ -14,7 +14,6 @@ const (
 
 var BuildDate, GitCommit string
 
-
 var Version = semver.Version{
 	Major: VersionMajor,
 	Minor: VersionMinor,

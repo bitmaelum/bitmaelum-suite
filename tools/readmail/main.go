@@ -18,7 +18,6 @@ func main() {
     core.ParseOptions(&opts)
     core.LoadClientConfig(opts.Config)
 
-
     //// Convert strings into addresses
     //fromAddr, err := core.NewAddressFromString(opts.Addr)
     //if err != nil {
@@ -38,7 +37,6 @@ func main() {
     //if err != nil {
     //    log.Fatal(err)
     //}
-
 
     //message, err := message.LoadMessage(fromAddr, opts.Id)
     //if err != nil {

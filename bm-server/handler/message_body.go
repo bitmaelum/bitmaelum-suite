@@ -2,11 +2,11 @@ package handler
 
 import (
     "encoding/json"
-    "github.com/google/uuid"
-    "github.com/gorilla/mux"
+	"github.com/bitmaelum/bitmaelum-server/bm-server/incoming"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/container"
-    "github.com/bitmaelum/bitmaelum-server/bm-server/incoming"
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
     "net/http"
     "time"
 )
@@ -99,10 +99,6 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
     _ = json.NewEncoder(w).Encode(ret)
 }
 
-
 func handleAccept(w http.ResponseWriter, req *http.Request, info *incoming.IncomingInfoType) {
 
 }
-
-
-

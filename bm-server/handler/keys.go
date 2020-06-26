@@ -2,9 +2,9 @@ package handler
 
 import (
     "encoding/json"
-    "github.com/gorilla/mux"
     "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/core/container"
+	"github.com/gorilla/mux"
     "net/http"
 )
 
@@ -39,5 +39,3 @@ func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
     w.WriteHeader(http.StatusOK)
     _ = json.NewEncoder(w).Encode(ret)
 }
-
-

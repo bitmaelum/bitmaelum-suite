@@ -4,8 +4,8 @@ import (
     "crypto/rand"
     "encoding/base64"
     "encoding/json"
-    "github.com/google/uuid"
     "github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/google/uuid"
     "time"
 )
 

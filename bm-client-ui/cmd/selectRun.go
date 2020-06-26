@@ -20,13 +20,12 @@ func (c commandSorterByPosition) Less(i, j int) bool {
 	return si < sj
 }
 
-
 func SelectAndRun(cmd *cobra.Command, args []string) {
 	// Add all non-hidden commands (gets rid of "help")
 	var items []*cobra.Command
 	for i := range cmd.Commands() {
 		if cmd.Commands()[i].Hidden {
-			continue;
+			continue
 		}
 		items = append(items, cmd.Commands()[i])
 	}
@@ -46,7 +45,6 @@ func SelectAndRun(cmd *cobra.Command, args []string) {
 		})
 	}
 
-
 	for {
 		// Generate path
 		pc := cmd
@@ -65,8 +63,7 @@ func SelectAndRun(cmd *cobra.Command, args []string) {
 			Label: `Welcome to BitMaelum. Please select your commands below`,
 			Items: items,
 			Templates: &promptui.SelectTemplates{
-				Label:    fmt.Sprintf("Path: %s", strings.Join(path[1:
-					], " / ")),
+				Label:    fmt.Sprintf("Path: %s", strings.Join(path[1:], " / ")),
 				Active:   `❯ {{ printf "%-20s" .Use | cyan | red }}  {{ printf "%-30s" .Short | yellow | red }}`,
 				Inactive: `  {{ printf "%-20s" .Use | cyan  }}  {{ printf "%-30s" .Short | yellow }}`,
 				Selected: ``,
@@ -74,13 +71,13 @@ func SelectAndRun(cmd *cobra.Command, args []string) {
 		}
 		idx, _, err := prompt.Run()
 		if err != nil {
-			if (err != promptui.ErrInterrupt) {
+			if err != promptui.ErrInterrupt {
 				log.Fatal(err)
 			}
-			continue;
+			continue
 		}
 
-		if (idx >= len(cmd.Commands())) {
+		if idx >= len(cmd.Commands()) {
 			return
 		}
 

@@ -4,7 +4,6 @@ import (
     "github.com/bitmaelum/bitmaelum-server/core"
 )
 
-
 // Get public key for given address on the mail server
 func (api* Api) GetPublicKey(addr core.HashAddress) (string, error) {
     type PubKeyOutput struct {

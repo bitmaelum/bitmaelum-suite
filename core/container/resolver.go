@@ -15,10 +15,9 @@ var dhtKeysRepository *resolve.Repository = nil
 
 var chainKeysRepository *resolve.ChainRepository = nil
 
-
 func GetResolveService() *resolve.Service{
     if resolveService != nil {
-        return resolveService;
+		return resolveService
     }
 
     repo := getChainRepository()
@@ -31,7 +30,7 @@ func GetResolveService() *resolve.Service{
 
 func getChainRepository() *resolve.ChainRepository {
     if chainKeysRepository != nil {
-        return chainKeysRepository;
+		return chainKeysRepository
     }
 
     chainKeysRepository = resolve.NewChainRepository()
@@ -40,7 +39,7 @@ func getChainRepository() *resolve.ChainRepository {
 
 func getLocalRepository() *resolve.Repository {
     if localKeysRepository != nil {
-        return localKeysRepository;
+		return localKeysRepository
     }
 
     repo := resolve.NewLocalRepository(GetAccountService())
@@ -50,7 +49,7 @@ func getLocalRepository() *resolve.Repository {
 
 func getRemoteRepository() *resolve.Repository {
     if remoteKeysRepository != nil {
-        return remoteKeysRepository;
+		return remoteKeysRepository
     }
 
     repo := resolve.NewRemoteRepository(config.Client.Resolver.Remote.Url)
@@ -60,7 +59,7 @@ func getRemoteRepository() *resolve.Repository {
 
 func getDhtRepository() *resolve.Repository {
     if dhtKeysRepository != nil {
-        return dhtKeysRepository;
+		return dhtKeysRepository
     }
 
     repo := resolve.NewDHTRepository()

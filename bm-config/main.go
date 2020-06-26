@@ -2,8 +2,8 @@ package main
 
 import (
     "fmt"
-    "github.com/bitmaelum/bitmaelum-server/core"
     "github.com/bitmaelum/bitmaelum-server/bm-config/cmd"
+	"github.com/bitmaelum/bitmaelum-server/core"
     "os"
 )
 

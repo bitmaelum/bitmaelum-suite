@@ -14,7 +14,6 @@ const (
     ADDRESS_REGEX   string = "(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$"
 )
 
-
 // SHA256'd address
 type HashAddress    string
 

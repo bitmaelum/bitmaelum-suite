@@ -66,7 +66,7 @@ func (pow *ProofOfWork) Work() {
 
         // Is it less than our target, then we have done our work
         if hashInt.Cmp(target) == -1 {
-            break;
+			break
         }
 
         // Higher, so we must do more work. Increase counter and try again

@@ -37,7 +37,6 @@ type ClientConfig struct {
     } `yaml:"resolver"`
 }
 
-
 // Load client configuration
 func (c *ClientConfig) LoadConfig(configPath string) error {
     data, err := ioutil.ReadFile(configPath)

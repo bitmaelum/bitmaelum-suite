@@ -56,7 +56,6 @@ func generateCert(domain string) {
 		IsCA: false,
 	}
 
-
 	// Generate Private/Public RSA key
 	fmt.Println("Generating 2048 bits keypair...")
 
@@ -87,7 +86,6 @@ func generateCert(domain string) {
 		log.Fatalf("ERror while closing ./server.cert: %v", err)
 	}
 
-
 	// Write key to file
 	fmt.Println("Writing ./server.key file")
 
@@ -107,7 +105,6 @@ func generateCert(domain string) {
 	if err != nil {
 		log.Fatalf("Error while closing ./server.key: %v", err)
 	}
-
 
 	fmt.Println("All done.")
 }

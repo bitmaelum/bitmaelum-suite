@@ -33,7 +33,6 @@ func CreateNewClient(ai *core.AccountInfo) (*Api, error) {
         return nil, err
     }
 
-
     // Create API
     tr := &http.Transport{
         // Allow insecure and self-signed certificates if so configured
@@ -57,7 +56,7 @@ func CreateNewClient(ai *core.AccountInfo) (*Api, error) {
         },
     }
 
-    return api, nil;
+	return api, nil
 }
 
 // Get JSON result from API
@@ -125,4 +124,3 @@ func (api *Api) Post(path string, body interface{}) error {
 
     return nil
 }
-

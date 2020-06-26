@@ -33,7 +33,6 @@ var composeCmd = &cobra.Command{
 			panic(err)
 		}
 
-
 		// If no blocks are specified, we assume reading a single block from stdin
 		if len(*blocks) == 0 {
 			var block string
@@ -47,7 +46,7 @@ var composeCmd = &cobra.Command{
 			if err != nil {
 				panic(err)
 			}
-			if (len(block) == 0) {
+			if len(block) == 0 {
 				fmt.Println("Warning: empty message body")
 			} else {
 				*blocks = append(*blocks, "default," + block)
@@ -58,10 +57,10 @@ var composeCmd = &cobra.Command{
 		fmt.Printf("From:    %s (%s)\n", fromAccount.Name, fromAccount.Address)
 		fmt.Printf("To:      %s\n", *to)
 		fmt.Printf("Subject: %s\n", *subject)
-		for i, block := range(*blocks) {
+		for i, block := range *blocks {
 			fmt.Printf("Block  #%d %s\n", i, block)
 		}
-		for i, attachment := range(*attachments) {
+		for i, attachment := range *attachments {
 			fmt.Printf("Att.   #%d %s\n", i, attachment)
 		}
 

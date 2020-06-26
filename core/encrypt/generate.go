@@ -26,7 +26,7 @@ type JustAKey = interface{}
 func GenerateKeyPair(kt KeyType) (string, string, error) {
     var privKey, pubKey JustAKey
 
-    switch(kt) {
+	switch kt {
     case KeyTypeRSA:
         var err error
         privKey, err = rsa.GenerateKey(rand.Reader, rsa_bits)

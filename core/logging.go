@@ -3,35 +3,67 @@ package core
 import (
     "github.com/bitmaelum/bitmaelum-server/core/config"
     "github.com/sirupsen/logrus"
+	logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
+	"log/syslog"
     "os"
+	"strings"
 )
 
-func SetLogging(level string) {
-    // How do we know how we need to log?
+func SetLogging(level, path string) {
     logrus.SetFormatter(new(logrus.JSONFormatter))
     logrus.SetFormatter(new(logrus.TextFormatter))
 
-    // We probably want to set this as well through params
+	// Default to stderr
+	logrus.SetOutput(os.Stderr)
+
+	if path == "stdout" {
     logrus.SetOutput(os.Stdout)
 
+	} else if path == "stderr" {
+		logrus.SetOutput(os.Stderr)
 
-    switch (level) {
+	} else if strings.HasPrefix(path, "syslog") {
+		syslogHost := "localhost:514"
+
+		splits := strings.SplitN(path, ":", 2)
+		if len(splits) == 2 {
+			syslogHost = splits[1]
+		}
+
+		hook, err := logrus_syslog.NewSyslogHook("udp", syslogHost, syslog.LOG_INFO, "BitMaelum")
+		if err != nil {
+			logrus.Error("Unable to connect to syslog daemon. Falling back to stderr")
+			logrus.SetOutput(os.Stderr)
+		} else {
+			logrus.AddHook(hook)
+		}
+	} else {
+		// Default to a path
+		w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
+		if err != nil {
+			w = os.Stderr
+		}
+
+		logrus.SetOutput(w)
+	}
+
+	switch level {
     case "trace":
         logrus.SetLevel(logrus.TraceLevel)
-        break;
+		break
     case "debug":
         logrus.SetLevel(logrus.DebugLevel)
-        break;
+		break
     case "info":
         logrus.SetLevel(logrus.InfoLevel)
-        break;
+		break
     case "warning":
         logrus.SetLevel(logrus.WarnLevel)
-        break;
+		break
     case "error":
     default:
         logrus.SetLevel(logrus.ErrorLevel)
-        break;
+		break
     }
 
     logrus.Tracef("setting loglevel to '%s'", config.Server.Logging.Level)

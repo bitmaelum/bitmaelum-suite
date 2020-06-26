@@ -16,7 +16,6 @@ type Options struct {
 
 var opts Options
 
-
 func main() {
     core.ParseOptions(&opts)
     core.LoadClientConfig(opts.Config)

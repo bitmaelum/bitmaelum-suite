@@ -34,7 +34,6 @@ func navigate(dir int) {
 	app.SetFocus(panels[panelIdx])
 }
 
-
 func createLayout() {
 	newPrimitive := func(text string) tview.Primitive {
 		tmp := tview.NewTextView().
@@ -58,7 +57,6 @@ func createLayout() {
 		SetText("This is the text we want to display").
 		SetBorder(false).
 		SetBackgroundColor(tcell.ColorBlue)
-
 
 	grid := tview.NewGrid().
 		SetRows(0, 0, 1).
@@ -132,7 +130,7 @@ func main() {
 		}
 
 		return event
-	});
+	})
 
 	createLayout()
 	createWelcomeScreen()

@@ -1,6 +1,5 @@
 package messagebox
 
-
 // Structure of the .info.json file
 type MailBoxInfo struct {
     Name            string
@@ -12,4 +11,3 @@ type MailBoxInfo struct {
 type Flags struct {
     Flags []string  `json:"flags"`
 }
-

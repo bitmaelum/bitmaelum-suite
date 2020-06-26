@@ -52,4 +52,3 @@ func (s *Service) UploadInfo(acc core.AccountInfo, resolveAddress string) error 
         hex.EncodeToString(signature),
     )
 }
-

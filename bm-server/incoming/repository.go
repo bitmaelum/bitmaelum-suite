@@ -16,4 +16,3 @@ type Repository interface {
     Reader
     Writer
 }
-

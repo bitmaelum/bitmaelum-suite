@@ -24,7 +24,6 @@ type Repository interface {
     // Message boxes
     FetchListFromBox(addr core.HashAddress, box string, offset, limit int) ([]messagebox.MessageList, error)
 
-
     // Flags
     GetFlags(addr core.HashAddress, box string, id string) ([]string, error)
     SetFlag(addr core.HashAddress, box string, id string, flag string) error

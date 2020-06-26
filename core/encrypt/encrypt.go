@@ -34,7 +34,6 @@ func Decrypt(key interface{}, message []byte) ([]byte, error) {
 	return nil, errors.New("Unknown key type for signing")
 }
 
-
 func encryptRsa(key *rsa.PublicKey, message []byte) ([]byte, error) {
     return rsa.EncryptPKCS1v15(rand.Reader, key, message)
 }
@@ -42,4 +41,3 @@ func encryptRsa(key *rsa.PublicKey, message []byte) ([]byte, error) {
 func decryptRsa(key *rsa.PrivateKey, message []byte) ([]byte, error) {
     return rsa.DecryptPKCS1v15(rand.Reader, key, message)
 }
-

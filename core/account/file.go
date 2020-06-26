@@ -15,7 +15,6 @@ import (
     "time"
 )
 
-
 const (
     PubkeyFile = ".pubkeys.json"
     InfoFile = ".info.json"
@@ -25,7 +24,6 @@ const (
 type Pubkeys struct {
     PubKeys []string `json:"keys"`
 }
-
 
 type fileRepo struct {
     basePath string
@@ -346,7 +344,6 @@ func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag 
         _ = lock.Unlock()
     }()
 
-
     // Get flags
     flags, err := r.GetFlags(addr, box, id)
     if err != nil {
@@ -372,4 +369,3 @@ func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag 
 
     return r.store(addr, path.Join(box, id, FlagFile), data)
 }
-

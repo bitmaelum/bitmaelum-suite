@@ -23,7 +23,7 @@ func (r *ChainRepository) Add(repo Repository) error {
 
 // Resolve an address through the chained repos
 func (r *ChainRepository) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
-    for idx := range(r.repos) {
+	for idx := range r.repos {
         info, err := r.repos[idx].Resolve(addr)
         if err == nil {
             return info, nil
@@ -35,7 +35,7 @@ func (r *ChainRepository) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
 
 // Upload public key through the chained repos
 func (r *ChainRepository) Upload(addr core.HashAddress, pubKey, address, signature string) error {
-    for idx := range(r.repos) {
+	for idx := range r.repos {
         err := r.repos[idx].Upload(addr, pubKey, address, signature)
         if err != nil {
             return err

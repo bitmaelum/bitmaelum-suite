@@ -10,6 +10,7 @@ require (
 	github.com/go-redis/redis/v8 v8.0.0-beta.2
 	github.com/google/uuid v1.1.1
 	github.com/gookit/color v1.2.5
+	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/juju/fslock v0.0.0-20160525022230-4d5c94c67b4b
@@ -21,7 +22,6 @@ require (
 	github.com/mitchellh/mapstructure v1.3.1 // indirect
 	github.com/nightlyone/lockfile v1.0.0
 	github.com/olekukonko/tablewriter v0.0.4
-	github.com/opentracing/opentracing-go v1.1.1-0.20190913142402-a7454ce5950e
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/rivo/tview v0.0.0-20200528200248-fe953220389f
 	github.com/sirupsen/logrus v1.2.0

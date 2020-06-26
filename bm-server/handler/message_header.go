@@ -133,5 +133,3 @@ func needsProofOfWork(header message.Header) bool {
     // @TODO: We probably want to use different metrics to check if we need to do proof-of-work
     return rand.Intn(10) < 5
 }
-
-
