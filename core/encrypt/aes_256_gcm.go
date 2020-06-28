@@ -42,8 +42,7 @@ func EncryptMessage(key []byte, plaintext []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	nonce := make([]byte, aead.NonceSize())
-	_, err = io.ReadFull(rand.Reader, nonce)
+	nonce, err := nonceGenerator(aead.NonceSize())
 	if err != nil {
 		return nil, err
 	}
@@ -75,10 +74,7 @@ func DecryptMessage(key []byte, message []byte) ([]byte, error) {
 
 // Encrypts a catalog with a random key.
 func EncryptCatalog(catalog message.Catalog) ([]byte, []byte, error) {
-	var err error
-
-	catalogKey := make([]byte, 32)
-	_, err = rand.Read(catalogKey)
+	catalogKey, err := keyGenerator()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -89,4 +85,35 @@ func EncryptCatalog(catalog message.Catalog) ([]byte, []byte, error) {
 	}
 
 	return catalogKey, encode.Encode(ciphertext), nil
+}
+
+func DecryptCatalog(data, key []byte) (*message.Catalog, error) {
+	data, err := encode.Decode(data)
+	if err != nil {
+		return nil, err
+	}
+
+	catalog := &message.Catalog{}
+	err = DecryptJson(key, data, &catalog)
+	if err != nil {
+		return nil, err
+	}
+
+	return catalog, nil
+}
+
+// Generator to generate nonces for AEAD. Used so we can easily mock it in tests
+var nonceGenerator = func(size int) ([]byte, error) {
+	nonce := make([]byte, size)
+	_, err := io.ReadFull(rand.Reader, nonce)
+
+	return nonce, err
+}
+
+// Generator to generate keys for catalog encryption. Used so we can easily mock it in tests
+var keyGenerator = func() ([]byte, error) {
+	key := make([]byte, 32)
+	_, err := io.ReadFull(rand.Reader, key)
+
+	return key, err
 }

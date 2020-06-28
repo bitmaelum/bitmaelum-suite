@@ -5,7 +5,7 @@
 REPO="github.com/bitmaelum/bitmaelum-server"
 
 APPS="bm-server bm-client bm-config bm-client-ui"
-TOOLS="hash-address jwt proof-of-work readmail sendmail"
+TOOLS="hash-address jwt proof-of-work readmail"
 
 TARGET=${1:-all}
 
