@@ -1,15 +1,22 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/bitmaelum/bitmaelum-server/bm-client/account"
 	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/core/config"
+	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-server/core/message"
+	"io/ioutil"
+	"os"
 )
 
 type Options struct {
-	Config   string `short:"c" long:"config" description:"Configuration file" default:"./client-config.yml"`
+	Config   string `short:"c" long:"config" description:"Configuration file"`
 	Addr     string `short:"a" long:"address" description:"account"`
 	Password string `short:"p" long:"password" description:"Password to decrypt your account"`
-	Box      string `short:"b" long:"box" description:"message box"`
-	Id       string `short:"i" long:"id" description:"message id"`
+	Path     string `short:"" long:"path" description:"path to message"`
 }
 
 var opts Options
@@ -18,30 +25,96 @@ func main() {
 	core.ParseOptions(&opts)
 	core.LoadClientConfig(opts.Config)
 
-	//// Convert strings into addresses
-	//fromAddr, err := core.NewAddressFromString(opts.Addr)
-	//if err != nil {
-	//    log.Fatal(err)
-	//}
-	//
-	//var pwd = []byte(opts.Password)
+	fmt.Println(core.GetAsciiLogo())
 
-	//// Load our FROM account
-	//ai, err := account.LoadAccount(*fromAddr, pwd)
-	//if err != nil {
-	//    log.Fatal(err)
-	//}
+	// Unlock vault
+	err := account.UnlockVault(config.Client.Accounts.Path, []byte(opts.Password))
+	if err != nil {
+		fmt.Printf("Error while opening vault: %s", err)
+		fmt.Println("")
+		os.Exit(1)
+	}
 
-	//as := container.GetAccountService()
-	//mbi := as.FetchMessageBoxes(fromAddr.Hash(), opts.Box)
-	//if err != nil {
-	//    log.Fatal(err)
-	//}
 
-	//message, err := message.LoadMessage(fromAddr, opts.Id)
-	//if err != nil {
-	//    log.Fatal(err)
-	//}
+	addr, err := core.NewAddressFromString(opts.Addr)
+	if err != nil {
+		panic(err)
+	}
 
-	// Do things with message
+	ai, err := account.Vault.FindAccount(*addr)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Reading message for user %s (%s) (%s)\n", ai.Name, ai.Address, core.StringToHash(ai.Address))
+
+
+
+
+
+	data, err := ioutil.ReadFile(opts.Path + "/header.json")
+	if err != nil {
+		panic(err)
+	}
+
+	header := &message.Header{}
+	err = json.Unmarshal(data, header)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Reading message from: %s\n", header.From.Addr)
+	fmt.Printf("Reading message to: %s\n", header.To.Addr)
+
+
+
+
+
+
+	fmt.Printf("Decrypting catalog")
+	data, err = ioutil.ReadFile(opts.Path + "/catalog")
+	if err != nil {
+		panic(err)
+	}
+
+	privKey, err := encrypt.PEMToPrivKey([]byte(ai.PrivKey))
+	if err != nil {
+		panic(err)
+	}
+
+	decryptedKey, err := encrypt.Decrypt(privKey, header.Catalog.EncryptedKey)
+	if err != nil {
+		panic(err)
+	}
+
+	catalog, err := encrypt.DecryptCatalog(decryptedKey, data)
+	if err != nil {
+		panic(err)
+	}
+
+	s, _ := json.MarshalIndent(catalog, "", "  ")
+	fmt.Printf("%s", s)
+
+
+
+	// Read blocks
+	for _, block := range catalog.Blocks {
+		f, err := os.Open(opts.Path + "/" + block.Id)
+		if err != nil {
+			panic(err)
+		}
+
+		r, err := message.GetAesReader(block.Iv, block.Key, f)
+		if err != nil {
+			panic(err)
+		}
+
+		content, err := ioutil.ReadAll(r)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("\n----- START BLOCK (%s) %s --------\n", block.Type, block.Id)
+		fmt.Printf("%s", content)
+		fmt.Printf("\n----- END BLOCK %s --------\n", block.Id)
+	}
 }

@@ -36,7 +36,7 @@ func ComposeMessage(ai core.AccountInfo, to core.Address, subject string, b, a [
 	}
 
 	// Generate catalog
-	catalog, err := generateCatalog(ai, toInfo, subject, blocks, attachments)
+	catalog, err := generateCatalog(ai, to.Hash(), subject, blocks, attachments)
 	if err != nil {
 		return err
 	}
@@ -179,13 +179,13 @@ func generateHeader(ai core.AccountInfo, to *resolve.ResolveInfo, catalog []byte
 }
 
 // Generate a complete catalog file. Outputs catalog key and the encrypted catalog
-func generateCatalog(ai core.AccountInfo, to *resolve.ResolveInfo, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
+func generateCatalog(ai core.AccountInfo, to core.HashAddress, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
 	// Create catalog
 	cat := message.NewCatalog(&ai)
 
 	// @TODO: maybe these should be setters in Catalog?
-	cat.To.Address = to.Address
-	cat.To.Name = ""
+	cat.To.Address = to.String()
+	cat.To.Name = to.String()
 
 	cat.Flags = append(cat.Flags, "important")
 	cat.Labels = append(cat.Labels, "invoice", "sales", "seams-cms")

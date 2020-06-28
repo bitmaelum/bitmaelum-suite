@@ -124,12 +124,12 @@ func Test_EncryptDecryptCatalog(t *testing.T) {
 
 
 	// Decrypt again
-	cat2, err := DecryptCatalog(encCatalog, key)
+	cat2, err := DecryptCatalog(key, encCatalog)
 	assert.Nil(t, err)
 	assert.Equal(t, "1234", cat2.ThreadId)
 
 	// Validate that another key does not decrypt
 	key[0] ^= 80
-	_, err = DecryptCatalog(encCatalog, key)
+	_, err = DecryptCatalog(key, encCatalog)
 	assert.EqualError(t, err, "cipher: message authentication failed")
 }

@@ -87,7 +87,8 @@ func EncryptCatalog(catalog message.Catalog) ([]byte, []byte, error) {
 	return catalogKey, encode.Encode(ciphertext), nil
 }
 
-func DecryptCatalog(data, key []byte) (*message.Catalog, error) {
+// Decrypt a catalog with the given key
+func DecryptCatalog(key, data []byte) (*message.Catalog, error) {
 	data, err := encode.Decode(data)
 	if err != nil {
 		return nil, err

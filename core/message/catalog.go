@@ -19,7 +19,7 @@ type BlockType struct {
 	Encoding    string     `json:"encoding"`        // Encoding of the block in case it's encoded
 	Compression string     `json:"compression"`     // Compression used
 	Checksum    []Checksum `json:"checksum"`        // Checksums of the block
-	Reader      io.Reader  `json:"content"`         // Reader of the block data
+	Reader      io.Reader                           // Reader of the block data
 	Key         []byte     `json:"key"`             // Key for decryption
 	Iv          []byte     `json:"iv"`              // IV for decryption
 }
@@ -31,7 +31,7 @@ type AttachmentType struct {
 	Size        uint64     `json:"size"`            // Size of the attachment in bytes
 	Compression string     `json:"compression"`     // Compression used
 	Checksum    []Checksum `json:"checksum"`        // Checksums of the data
-	Reader      io.Reader  `json:"content"`         // Reader to the attachment data
+	Reader      io.Reader                           // Reader to the attachment data
 	Key         []byte     `json:"key"`             // Key for decryption
 	Iv          []byte     `json:"iv"`              // IV for decryption
 }
@@ -102,13 +102,13 @@ func (c *Catalog) AddBlock(entry Block) error {
 	}
 
 	// Generate key iv for this block
-	iv, key, err := generateIvAndKey()
+	iv, key, err := GenerateIvAndKey()
 	if err != nil {
 		return err
 	}
 
 	// Wrap reader with encryption reader
-	reader,err = getAesReader(iv, key, reader)
+	reader,err = GetAesReader(iv, key, reader)
 	if err != nil {
 		return err
 	}
@@ -156,13 +156,13 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 	}
 
 	// Generate Key and IV that we will use for encryption
-	iv, key, err := generateIvAndKey()
+	iv, key, err := GenerateIvAndKey()
 	if err != nil {
 		return err
 	}
 
 	// Wrap our reader with the encryption reader
-	reader,err = getAesReader(iv, key, reader)
+	reader,err = GetAesReader(iv, key, reader)
 	if err != nil {
 		return err
 	}
@@ -183,7 +183,11 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 	return nil
 }
 
-func generateIvAndKey() ([]byte, []byte, error) {
+
+
+// @TODO: This is not a good spot. We should store it in the encrypt page, but this gives us a import cycle
+// Generate a random IV and key
+func GenerateIvAndKey() ([]byte, []byte, error) {
 	iv := make([]byte, 16)
 	n, err := rand.Read(iv)
 	if n != 16 || err != nil {
@@ -199,12 +203,14 @@ func generateIvAndKey() ([]byte, []byte, error) {
 	return iv, key, nil
 }
 
-func getAesReader(iv []byte, key []byte, r io.Reader) (io.Reader, error) {
+// @TODO: This is not a good spot. We should store it in the encrypt page, but this gives us a import cycle
+// Returns a reader that automatically encrypts reader blocks through CFB stream
+func GetAesReader(iv []byte, key []byte, r io.Reader) (io.Reader, error) {
  	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return nil, err
 	}
 
-	stream := cipher.NewCFBDecrypter(block, iv)
+	stream := cipher.NewCFBEncrypter(block, iv)
 	return &cipher.StreamReader{S: stream, R: r}, err
 }
