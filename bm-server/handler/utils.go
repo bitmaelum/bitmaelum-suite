@@ -27,6 +27,13 @@ func JsonOut(w http.ResponseWriter, v interface{}) error {
 	return err
 }
 
+func ErrorOut(w http.ResponseWriter, code int, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(StatusError(msg))
+	return
+}
+
 // Return an ok status response
 func StatusOk(status string) *OutputResponse {
 	return &OutputResponse{

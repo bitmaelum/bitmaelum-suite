@@ -19,21 +19,19 @@ func PostMessageBody(w http.ResponseWriter, req *http.Request) {
 	// Check if the path is actually an UUID
 	_, err := uuid.Parse(path)
 	if err != nil {
-		sendBadRequest(w, err)
+		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Check if this UUID path is an live incoming path (and not yet expired)
 	info, err := is.GetIncomingPath(path)
 	if err != nil {
-		sendBadRequest(w, err)
+		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if info == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		_ = json.NewEncoder(w).Encode(StatusError("not found"))
+		ErrorOut(w, http.StatusNotFound, "not found")
 		return
 	}
 
@@ -61,23 +59,21 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
 	var input core.ProofOfWork
 	err := decoder.Decode(&input)
 	if err != nil {
-		sendBadRequest(w, err)
+		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Make sure the proof-of-work is completed and valid
 	pow := core.NewProofOfWork(input.Bits, []byte(info.Nonce), input.Proof)
 	if !pow.Validate() {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotAcceptable)
-		_ = json.NewEncoder(w).Encode(StatusError("proof-of-work cannot be validated"))
+		ErrorOut(w, http.StatusNotAcceptable, "incorrect proof of work")
 		return
 	}
 
 	// We can generate an accept path
 	path, err := is.GenerateAcceptResponsePath(info.Addr, info.Checksum)
 	if err != nil {
-		sendBadRequest(w, err)
+		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 

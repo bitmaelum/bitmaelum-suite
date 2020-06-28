@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"github.com/bitmaelum/bitmaelum-server/core/container"
+	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
 	"github.com/gorilla/mux"
 	"github.com/vtolstov/jwt-go"
 	"net/http"
@@ -17,8 +18,18 @@ type JwtToken struct{}
 func (*JwtToken) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		addr := core.HashAddress(mux.Vars(req)["addr"])
-		token, err := checkToken(req.Header.Get("Authorization"), addr)
+		if addr == "" {
+			http.Error(w, "Cannot authorize without address", http.StatusUnauthorized)
+			return
+		}
 
+		as := container.GetAccountService()
+		if ! as.AccountExists(addr) {
+			http.Error(w, "Address not found", http.StatusUnauthorized)
+			return
+		}
+
+		token, err := checkToken(req.Header.Get("Authorization"), addr)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -46,7 +57,12 @@ func checkToken(auth string, addr core.HashAddress) (*jwt.Token, error) {
 	as := container.GetAccountService()
 	keys := as.GetPublicKeys(addr)
 	for _, key := range keys {
-		token, err := core.ValidateJWTToken(tokenString, addr, key)
+		pubKey, err := encrypt.PEMToPubKey([]byte(key))
+		if err != nil {
+			continue
+		}
+
+		token, err := core.ValidateJWTToken(tokenString, addr, pubKey)
 		if err == nil {
 			return token, nil
 		}

@@ -23,6 +23,7 @@ func SetLogging(level, path string) {
 		logrus.SetOutput(os.Stderr)
 
 	} else if strings.HasPrefix(path, "syslog") {
+		// Default to localhost syslog daemon
 		syslogHost := "localhost:514"
 
 		splits := strings.SplitN(path, ":", 2)
@@ -30,7 +31,7 @@ func SetLogging(level, path string) {
 			syslogHost = splits[1]
 		}
 
-		hook, err := logrus_syslog.NewSyslogHook("udp", syslogHost, syslog.LOG_INFO, "BitMaelum")
+		hook, err := logrus_syslog.NewSyslogHook("udp", syslogHost, syslog.LOG_DAEMON, "BitMaelum")
 		if err != nil {
 			logrus.Error("Unable to connect to syslog daemon. Falling back to stderr")
 			logrus.SetOutput(os.Stderr)

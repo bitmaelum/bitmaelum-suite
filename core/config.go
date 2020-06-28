@@ -10,10 +10,10 @@ import (
  * Configuration is found the following way:
  *
  * 1. Check path is not empty and config found in path
- * 2. Check for config in current directory
- * 3. Check for config in directory ~/.bitmaelum
- * 4. Check for config in directory /etc/bitmaelum
- * 5. Error
+ * 2. Check for config (*-config.yml) in current directory
+ * 3. Check for config (*-config.yml) in directory ~/.bitmaelum
+ * 4. Check for config (*-config.yml) in directory /etc/bitmaelum
+ * 5. Error (or pass)
  */
 
 // Load client configuration from given path or panic if cannot load

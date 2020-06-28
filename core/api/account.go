@@ -45,5 +45,5 @@ func (api *Api) CreateAccount(ai core.AccountInfo, token string) error {
 			Proof: ai.Pow.Proof,
 		},
 	}
-	return api.Post("/account", input)
+	return api.PostJson("/account", input)
 }

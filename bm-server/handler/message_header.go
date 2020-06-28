@@ -52,7 +52,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 	var input message.Header
 	err = decoder.Decode(&input)
 	if err != nil {
-		sendBadRequest(w, err)
+		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -68,7 +68,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 		// Generate proof-of-work data
 		path, nonce, err := is.GeneratePowResponsePath(input.From.Addr, BITS_FOR_PROOF_OF_WORK, checksum[:])
 		if err != nil {
-			sendBadRequest(w, err)
+			ErrorOut(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -99,7 +99,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 	// No proof-of-work, generate accept path
 	path, err := is.GenerateAcceptResponsePath(input.From.Addr, checksum[:])
 	if err != nil {
-		sendBadRequest(w, err)
+		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -119,13 +119,6 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(ret)
-}
-
-// Send a bad request
-func sendBadRequest(w http.ResponseWriter, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
-	_ = json.NewEncoder(w).Encode(StatusError(err.Error()))
 }
 
 // Defines if we need to do a proof-of-work based on the incoming header message

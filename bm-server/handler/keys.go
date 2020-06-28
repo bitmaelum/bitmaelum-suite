@@ -24,9 +24,7 @@ func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	// Check if account exists
 	as := container.GetAccountService()
 	if !as.AccountExists(addr) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		_ = json.NewEncoder(w).Encode(StatusError("public key not found"))
+		ErrorOut(w, http.StatusNotFound, "public key not found")
 		return
 	}
 

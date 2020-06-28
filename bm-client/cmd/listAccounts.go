@@ -11,10 +11,14 @@ var listAccountsCmd = &cobra.Command{
 	Short:   "List your accounts",
 	Long:    `Displays a list of all your accounts currently available`,
 	Run: func(cmd *cobra.Command, args []string) {
-		handlers.ListAccounts()
+		handlers.ListAccounts(*displayKeys)
 	},
 }
 
+var displayKeys *bool
+
 func init() {
 	rootCmd.AddCommand(listAccountsCmd)
+
+	displayKeys = listAccountsCmd.Flags().BoolP("keys", "k", false, "Display private and public key")
 }

@@ -31,6 +31,7 @@ var rainbow256AsciiLogo = "\033[38;5;208m ____  _ _   __  __            _\n" +
 	"\033[38;5;214m   P r i v a c y   i s   y o u r s   a g a i n\n" +
 	"\033[0m"
 
+// Returns the monochrome version of the logo
 func GetMonochromeAsciiLogo() string {
 	return asciiLogo
 }

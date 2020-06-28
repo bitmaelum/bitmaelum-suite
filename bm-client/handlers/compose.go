@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/core/api"
 	"github.com/bitmaelum/bitmaelum-server/core/checksum"
 	"github.com/bitmaelum/bitmaelum-server/core/container"
 	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
@@ -35,56 +36,117 @@ func ComposeMessage(ai core.AccountInfo, to core.Address, subject string, b, a [
 	}
 
 	// Generate catalog
-	catalogKey, encryptedCatalog, err := generateCatalog(ai, toInfo, subject, blocks, attachments)
+	catalog, err := generateCatalog(ai, toInfo, subject, blocks, attachments)
 	if err != nil {
 		return err
 	}
 
-	// Generate header
+	// Encrypt catalog for upload
+	catalogKey, encryptedCatalog, err := encrypt.EncryptCatalog(*catalog)
+	if err != nil {
+		return err
+	}
+
+	// Generate header based on our encrypted catalog
 	header, err := generateHeader(ai, toInfo, encryptedCatalog, catalogKey)
 	if err != nil {
 		return err
 	}
 
-	msgUuid, err := writeMessageToDisk(header, encryptedCatalog)
-	fmt.Printf("Message stored in %s", msgUuid)
-	return err
+	msgUuid, err := uploadToServer(ai, header, encryptedCatalog, catalog)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Message uploaded in %s\n", msgUuid)
+
+	err = writeMessageToDisk(msgUuid, header, encryptedCatalog)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Message stored in %s\n", msgUuid)
+
+	return nil
 }
 
-func writeMessageToDisk(header interface{}, catalog []byte) (string, error) {
-	// Create message id and create temporary outbox
-	msgUuid, err := uuid.NewRandom()
+func uploadToServer(ai core.AccountInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) (string, error) {
+	// Upload message to server
+	messageId, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
 	}
-	err = os.MkdirAll(".out/"+msgUuid.String(), 0755)
+
+	addr := core.StringToHash(ai.Address)
+
+	client, err := api.CreateNewClient(&ai)
 	if err != nil {
 		return "", err
+	}
+
+	// Upload header and catalog
+	err = client.UploadHeader(addr, messageId.String(), header)
+	if err != nil {
+		_ = client.DeleteMessage(addr, messageId.String())
+		return "", err
+	}
+
+	err = client.UploadCatalog(addr, messageId.String(), encryptedCatalog)
+	if err != nil {
+		_ = client.DeleteMessage(addr, messageId.String())
+		return "", err
+	}
+
+	// Upload blocks & attachments
+	for _, block := range catalog.Blocks {
+		err = client.UploadBlock(addr, messageId.String(), block.Id, block.Reader)
+		if err != nil {
+			_ = client.DeleteMessage(addr, messageId.String())
+			return "", err
+		}
+	}
+	for _, attachment := range catalog.Attachments {
+		err = client.UploadBlock(addr, messageId.String(), attachment.Id, attachment.Reader)
+		if err != nil {
+			_ = client.DeleteMessage(addr, messageId.String())
+			return "", err
+		}
+	}
+
+	return messageId.String(), nil
+}
+
+// Write the given message to disk
+func writeMessageToDisk(msgUuid string, header interface{}, catalog []byte) error {
+	p := ".out/" + msgUuid
+
+	err := os.MkdirAll(p, 0755)
+	if err != nil {
+		return err
 	}
 
 	// Write catalog
-	err = ioutil.WriteFile(".out/"+msgUuid.String()+"/catalog.json.enc", catalog, 0600)
+	err = ioutil.WriteFile(p+"/catalog.json.enc", catalog, 0600)
 	if err != nil {
-		// @TODO: Remove out directory
-		return "", err
+		_ = os.RemoveAll(p)
+		return err
 	}
 
 	// Write header
 	data, err := json.MarshalIndent(header, "", "  ")
 	if err != nil {
-		// @TODO: Remove out directory
-		return "", fmt.Errorf("error trying to marshal header: %v", err)
+		_ = os.RemoveAll(p)
+		return fmt.Errorf("error trying to marshal header: %v", err)
 	}
 
-	err = ioutil.WriteFile(".out/"+msgUuid.String()+"/header.json", data, 0600)
+	err = ioutil.WriteFile(".out/"+msgUuid+"/header.json", data, 0600)
 	if err != nil {
-		// @TODO: Remove out directory
-		return "", err
+		_ = os.RemoveAll(p)
+		return err
 	}
 
-	return msgUuid.String(), nil
+	return nil
 }
 
+// Generate a header file based on the info provided
 func generateHeader(ai core.AccountInfo, to *resolve.ResolveInfo, catalog []byte, catalogKey []byte) (*message.Header, error) {
 	header := &message.Header{}
 
@@ -116,10 +178,12 @@ func generateHeader(ai core.AccountInfo, to *resolve.ResolveInfo, catalog []byte
 	return header, nil
 }
 
-func generateCatalog(ai core.AccountInfo, to *resolve.ResolveInfo, subject string, b []message.Block, a []message.Attachment) ([]byte, []byte, error) {
+// Generate a complete catalog file. Outputs catalog key and the encrypted catalog
+func generateCatalog(ai core.AccountInfo, to *resolve.ResolveInfo, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
 	// Create catalog
 	cat := message.NewCatalog(&ai)
 
+	// @TODO: maybe these should be setters in Catalog?
 	cat.To.Address = to.Address
 	cat.To.Name = ""
 
@@ -131,24 +195,20 @@ func generateCatalog(ai core.AccountInfo, to *resolve.ResolveInfo, subject strin
 	for _, block := range b {
 		err := cat.AddBlock(block)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 	for _, attachment := range a {
 		err := cat.AddAttachment(attachment)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
-	catalogKey, encCatalog, err := encrypt.EncryptCatalog(*cat)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return catalogKey, encCatalog, err
+	return cat, nil
 }
 
+// Generate message attachments based on the given paths to files
 func generateAttachments(a []string) ([]message.Attachment, error) {
 	// Parse attachments
 	var attachments []message.Attachment
@@ -172,6 +232,7 @@ func generateAttachments(a []string) ([]message.Attachment, error) {
 	return attachments, nil
 }
 
+// Generate message blocks based on the given strings
 func generateBlocks(b []string) ([]message.Block, error) {
 	// Parse blocks
 	var blocks []message.Block

@@ -6,17 +6,27 @@ import (
 	"os"
 )
 
-func ListAccounts() {
+func ListAccounts(displayKeys bool) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Address", "Name", "Organisation", "Server"})
+
+	headers := []string{"Address", "Name", "Organisation", "Server"}
+	if displayKeys {
+		headers = append(headers, "Private Key", "Public Key")
+	}
+	table.SetHeader(headers)
 
 	for _, acc := range account.Vault.Accounts {
-		table.Append([]string{
+		values := []string{
 			acc.Address,
 			acc.Name,
 			acc.Organisation,
 			acc.Server,
-		})
+		}
+		if displayKeys {
+			values = append(values, acc.PrivKey, acc.PubKey)
+		}
+
+		table.Append(values)
 	}
 	table.Render() // Send output
 }

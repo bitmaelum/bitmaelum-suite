@@ -22,5 +22,5 @@ var Version = semver.Version{
 
 func WriteVersionInfo(name string, w io.Writer) {
 	s := fmt.Sprintf("%s version %d.%d.%d\nBuilt: %s\nCommit: %s", name, VersionMajor, VersionMinor, VersionPatch, BuildDate, GitCommit)
-	w.Write([]byte(s))
+	_, _ = w.Write([]byte(s))
 }

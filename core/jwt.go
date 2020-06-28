@@ -16,6 +16,14 @@ type JwtClaims struct {
 	jwt.StandardClaims
 }
 
+
+/*
+ * I don't really like this. Suppose we get access to a single JWT token. We can use the same token for every
+ * single call in the next hour. Maybe we should limit each token for single-use (with a nonce that expires after
+ * one hour, which means that expiresAt expires too), or maybe even limit the token for a single operation (add
+ * request info?)
+ */
+
 // Generate a JWT token with the address and singed by the given private key
 func GenerateJWTToken(addr HashAddress, key crypto.PrivateKey) (string, error) {
 	claims := &jwt.StandardClaims{
@@ -32,7 +40,6 @@ func GenerateJWTToken(addr HashAddress, key crypto.PrivateKey) (string, error) {
 
 // Validate a JWT token with the given public key and address
 func ValidateJWTToken(tokenString string, addr HashAddress, key crypto.PublicKey) (*jwt.Token, error) {
-
 	kf := func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	}
@@ -45,17 +52,17 @@ func ValidateJWTToken(tokenString string, addr HashAddress, key crypto.PublicKey
 
 	// Make sure the token actually uses the correct signing method
 	switch key.(type) {
-	case *rsa.PrivateKey:
+	case *rsa.PublicKey:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")
 		}
-	case *ecdsa.PrivateKey:
+	case *ecdsa.PublicKey:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")
 		}
-	case ed25519.PrivateKey:
+	case ed25519.PublicKey:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")

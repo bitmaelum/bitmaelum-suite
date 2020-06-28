@@ -9,6 +9,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -88,7 +89,9 @@ func (api *Api) Get(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, errors.New("incorrect status code returned")
@@ -97,14 +100,24 @@ func (api *Api) Get(path string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-// Post to API
-func (api *Api) Post(path string, body interface{}) error {
-	bodyBytes, err := json.Marshal(body)
+// Post to API by single bytes
+func (api *Api) PostBytes(path string, body []byte) error {
+	return api.PostReader(path, bytes.NewBuffer(body))
+}
+
+// Post JSON to API
+func (api *Api) PostJson(path string, data interface{}) error {
+	b, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", api.account.Server+path, bytes.NewBuffer(bodyBytes))
+	return api.PostReader(path, bytes.NewBuffer(b))
+}
+
+// Post to Api through a reader
+func (api *Api) PostReader(path string, r io.Reader) error {
+	req, err := http.NewRequest("POST", api.account.Server+path, r)
 	if err != nil {
 		return err
 	}
@@ -116,11 +129,39 @@ func (api *Api) Post(path string, body interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return errors.New(fmt.Sprintf("incorrect status code returned (%d)", resp.StatusCode))
 	}
 
 	return nil
+}
+
+// Delete from API
+func (api *Api) Delete(path string) error {
+	req, err := http.NewRequest("DELETE", api.account.Server+path, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+api.jwt)
+
+	resp, err := api.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	// Success codes or 404 is good
+	if resp.StatusCode >= 200 && resp.StatusCode <= 299 || resp.StatusCode == 404 {
+		return nil
+	}
+
+	return errors.New(fmt.Sprintf("incorrect status code returned (%d)", resp.StatusCode))
 }

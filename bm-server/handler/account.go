@@ -3,6 +3,7 @@ package handler
 import (
 	"crypto/subtle"
 	"encoding/json"
+	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/container"
@@ -29,17 +30,13 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 
 	// Check proof of work first
 	if input.ProofOfWork.Bits < config.Server.Accounts.ProofOfWork {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(StatusErrorf("Proof of work must be at least %d bits", config.Server.Accounts.ProofOfWork))
+		ErrorOut(w, http.StatusBadRequest, fmt.Sprintf("Proof of work must be at least %d bits", config.Server.Accounts.ProofOfWork))
 		return
 	}
 
 	pow := core.NewProofOfWork(input.ProofOfWork.Bits, []byte(input.Addr), input.ProofOfWork.Proof)
 	if !pow.Validate() {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(StatusError("Proof of work incorrect"))
+		ErrorOut(w, http.StatusBadRequest, "incorrect proof of work")
 		return
 	}
 
@@ -47,31 +44,25 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	is := container.GetInviteService()
 	registeredToken, err := is.GetInvite(input.Addr)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(StatusError("No token found for this address."))
+		ErrorOut(w, http.StatusBadRequest, "token not found")
 		return
 	}
 	if subtle.ConstantTimeCompare([]byte(registeredToken), []byte(input.Token)) != 1 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(StatusError("Incorrect token found for this address."))
+		ErrorOut(w, http.StatusBadRequest, "incorrect token")
 		return
 	}
 
 	// Check if account exists
 	as := container.GetAccountService()
 	if as.AccountExists(input.Addr) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(StatusError("Account already exists."))
+		ErrorOut(w, http.StatusBadRequest, "account already exists")
 		return
 	}
 
 	// All clear. Create account
 	err = as.CreateAccount(input.Addr, input.PublicKey)
 	if err != nil {
-		sendBadRequest(w, err)
+		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
