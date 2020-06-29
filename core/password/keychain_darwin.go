@@ -1,4 +1,5 @@
 // +build darwin
+
 package password
 
 import (
@@ -7,22 +8,21 @@ import (
 	gokeychain "github.com/keybase/go-keychain"
 )
 
-var keychain = &OSXKeyChain{}
-
 const (
 	ACCESSGROUP string = "keychain.bitmaelum.nl"
 	SERVICE     string = "bitmaelum"
 )
-
-type OSXKeyChain struct {
-}
 
 var (
 	// Key not found
 	ErrorKeyNotFound = errors.New("key not found")
 )
 
-func (kc *OSXKeyChain) Fetch(addr core.Address) ([]byte, error) {
+func (kc *KeyChain) IsAvailable() bool {
+	return true
+}
+
+func (kc *KeyChain) Fetch(addr core.Address) ([]byte, error) {
 	query := gokeychain.NewItem()
 	query.SetSecClass(gokeychain.SecClassGenericPassword)
 	query.SetService(SERVICE)
@@ -40,7 +40,7 @@ func (kc *OSXKeyChain) Fetch(addr core.Address) ([]byte, error) {
 	}
 }
 
-func (kc *OSXKeyChain) Store(addr core.Address, key []byte) error {
+func (kc *KeyChain) Store(addr core.Address, key []byte) error {
 	item := gokeychain.NewItem()
 	item.SetSecClass(gokeychain.SecClassGenericPassword)
 	item.SetService(SERVICE)
