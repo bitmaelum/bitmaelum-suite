@@ -34,8 +34,10 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/vtolstov/jwt-go v3.2.1-0.20200120153335-1133da9615b7+incompatible
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200523222454-059865788121 // indirect
+	golang.org/x/tools v0.0.0-20200626171337-aa94e735be7f // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )

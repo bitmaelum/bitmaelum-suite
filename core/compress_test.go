@@ -18,7 +18,6 @@ func Test_Compress(t *testing.T) {
 	compressedBytes, _ := ioutil.ReadAll(ZlibCompress(r))
 	assert.Equal(t, 0, bytes.Compare(compressedBytes, dst))
 
-
 	r = bytes.NewBufferString(src1)
 	compressedBytes, _ = ioutil.ReadAll(ZlibCompress(r))
 	assert.Equal(t, 0, bytes.Compare(compressedBytes, dst1))

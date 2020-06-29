@@ -13,60 +13,60 @@ import (
 )
 
 type BlockType struct {
-	Id          string     `json:"id"`              // BLock identifier UUID
-	Type        string     `json:"type"`            // Type of the block. Can be anything message readers can parse.
-	Size        uint64     `json:"size"`            // Size of the block in bytes
-	Encoding    string     `json:"encoding"`        // Encoding of the block in case it's encoded
-	Compression string     `json:"compression"`     // Compression used
-	Checksum    []Checksum `json:"checksum"`        // Checksums of the block
-	Reader      io.Reader  `json:"-"`               // Reader of the block data
-	Key         []byte     `json:"key"`             // Key for decryption
-	Iv          []byte     `json:"iv"`              // IV for decryption
+	Id          string     `json:"id"`          // BLock identifier UUID
+	Type        string     `json:"type"`        // Type of the block. Can be anything message readers can parse.
+	Size        uint64     `json:"size"`        // Size of the block in bytes
+	Encoding    string     `json:"encoding"`    // Encoding of the block in case it's encoded
+	Compression string     `json:"compression"` // Compression used
+	Checksum    []Checksum `json:"checksum"`    // Checksums of the block
+	Reader      io.Reader  `json:"-"`           // Reader of the block data
+	Key         []byte     `json:"key"`         // Key for decryption
+	Iv          []byte     `json:"iv"`          // IV for decryption
 }
 
 type AttachmentType struct {
-	Id          string     `json:"id"`              // Attachment identifier UUID
-	MimeType    string     `json:"mimetype"`        // Mimetype
-	FileName    string     `json:"filename"`        // Filename
-	Size        uint64     `json:"size"`            // Size of the attachment in bytes
-	Compression string     `json:"compression"`     // Compression used
-	Checksum    []Checksum `json:"checksum"`        // Checksums of the data
-	Reader      io.Reader  `json:"-"`               // Reader to the attachment data
-	Key         []byte     `json:"key"`             // Key for decryption
-	Iv          []byte     `json:"iv"`              // IV for decryption
+	Id          string     `json:"id"`          // Attachment identifier UUID
+	MimeType    string     `json:"mimetype"`    // Mimetype
+	FileName    string     `json:"filename"`    // Filename
+	Size        uint64     `json:"size"`        // Size of the attachment in bytes
+	Compression string     `json:"compression"` // Compression used
+	Checksum    []Checksum `json:"checksum"`    // Checksums of the data
+	Reader      io.Reader  `json:"-"`           // Reader to the attachment data
+	Key         []byte     `json:"key"`         // Key for decryption
+	Iv          []byte     `json:"iv"`          // IV for decryption
 }
 
 type Catalog struct {
 	From struct {
-		Address      string           `json:"address"`              // BitMaelum address of the sender
-		Name         string           `json:"name"`                 // Name of the sender
-		Organisation string           `json:"organisation"`         // Organisation of the sender
-		ProofOfWork  core.ProofOfWork `json:"proof_of_work"`        // Sender's proof of work
-		PublicKey    string           `json:"public_key"`           // Public key of the sender
+		Address      string           `json:"address"`       // BitMaelum address of the sender
+		Name         string           `json:"name"`          // Name of the sender
+		Organisation string           `json:"organisation"`  // Organisation of the sender
+		ProofOfWork  core.ProofOfWork `json:"proof_of_work"` // Sender's proof of work
+		PublicKey    string           `json:"public_key"`    // Public key of the sender
 	} `json:"from"`
 	To struct {
-		Address string `json:"address"`                             // Address of the recipient
-		Name    string `json:"name"`                                // Name of the recipient
+		Address string `json:"address"` // Address of the recipient
+		Name    string `json:"name"`    // Name of the recipient
 	} `json:"to"`
-	CreatedAt time.Time `json:"created_at"`                         // Timestamp when the message was created
-	ThreadId  string    `json:"thread_id"`                          // Thread ID (and parent ID) in case this message was send in a thread
-	Subject   string    `json:"subject"`                            // Subject of the message
-	Flags     []string  `json:"flags"`                              // Flags of the message
-	Labels    []string  `json:"labels"`                             // Labels for this message
+	CreatedAt time.Time `json:"created_at"` // Timestamp when the message was created
+	ThreadId  string    `json:"thread_id"`  // Thread ID (and parent ID) in case this message was send in a thread
+	Subject   string    `json:"subject"`    // Subject of the message
+	Flags     []string  `json:"flags"`      // Flags of the message
+	Labels    []string  `json:"labels"`     // Labels for this message
 
-	Blocks      []BlockType      `json:"blocks"`                    // Message block info
-	Attachments []AttachmentType `json:"attachments"`               // Message attachment info
+	Blocks      []BlockType      `json:"blocks"`      // Message block info
+	Attachments []AttachmentType `json:"attachments"` // Message attachment info
 }
 
 type Attachment struct {
-	Path   string           // LOCAL path of the attachment. Needed for things like os.Stat()
-	Reader io.Reader        // Reader to the attachment file
+	Path   string    // LOCAL path of the attachment. Needed for things like os.Stat()
+	Reader io.Reader // Reader to the attachment file
 }
 
 type Block struct {
-	Type   string           // Type of the block (text, html, default, mobile etc)
-	Size   uint64           // Size of the block
-	Reader io.Reader        // Reader to the block data
+	Type   string    // Type of the block (text, html, default, mobile etc)
+	Size   uint64    // Size of the block
+	Reader io.Reader // Reader to the block data
 }
 
 // Initialises a new catalog. This catalog has to be filled with more info, blocks and attachments
@@ -108,7 +108,7 @@ func (c *Catalog) AddBlock(entry Block) error {
 	}
 
 	// Wrap reader with encryption reader
-	reader,err = GetAesEncryptorReader(iv, key, reader)
+	reader, err = GetAesEncryptorReader(iv, key, reader)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 	}
 
 	// Wrap our reader with the encryption reader
-	reader,err = GetAesEncryptorReader(iv, key, reader)
+	reader, err = GetAesEncryptorReader(iv, key, reader)
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 		Size:        uint64(stats.Size()),
 		Compression: compression,
 		Reader:      reader,
-		Checksum:    nil,   // To be filled in later
+		Checksum:    nil, // To be filled in later
 		Key:         key,
 		Iv:          iv,
 	}
@@ -182,8 +182,6 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 	c.Attachments = append(c.Attachments, *at)
 	return nil
 }
-
-
 
 // @TODO: This is not a good spot. We should store it in the encrypt page, but this gives us a import cycle
 // Generate a random IV and key
@@ -206,7 +204,7 @@ func GenerateIvAndKey() ([]byte, []byte, error) {
 // @TODO: This is not a good spot. We should store it in the encrypt page, but this gives us a import cycle
 // Returns a reader that automatically encrypts reader blocks through CFB stream
 func GetAesEncryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error) {
- 	block, err := aes.NewCipher(key[:])
+	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +214,7 @@ func GetAesEncryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error
 }
 
 func GetAesDecryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error) {
- 	block, err := aes.NewCipher(key[:])
+	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return nil, err
 	}

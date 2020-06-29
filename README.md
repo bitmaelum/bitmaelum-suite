@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/bitmaelum/bitmaelum-suite)](https://goreportcard.com/report/github.com/bitmaelum/bitmaelum-suite)         
+         
          ____  _ _   __  __            _                 
         |  _ \(_) | |  \/  |          | |                
         | |_) |_| |_| \  / | __ _  ___| |_   _ _ __ ___  

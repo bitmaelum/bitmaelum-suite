@@ -24,7 +24,7 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 		}
 
 		as := container.GetAccountService()
-		if ! as.AccountExists(addr) {
+		if !as.AccountExists(addr) {
 			http.Error(w, "Address not found", http.StatusUnauthorized)
 			return
 		}

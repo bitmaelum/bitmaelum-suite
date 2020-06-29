@@ -5,3 +5,12 @@ go:
   - "1.10"
   - 1.11.x
   - master
+
+before_install:
+  - cd ${TRAVIS_BUILD_DIR}
+  - go get github.com/golang/lint/golint
+
+before_script:
+  - go fmt -l ./...
+  - go vet -v ./...
+  - $HOME/gopath/bin/golint ./...

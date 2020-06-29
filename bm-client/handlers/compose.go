@@ -101,12 +101,11 @@ func uploadToServer(msgId string, ai core.AccountInfo, header *message.Header, e
 	// Wait until all are completed
 	if err := g.Wait(); err != nil {
 		_ = client.DeleteMessage(addr, msgId)
-	 	return err
+		return err
 	}
 
 	return nil
 }
-
 
 // Generate a header file based on the info provided
 func generateHeader(ai core.AccountInfo, toInfo *resolve.ResolveInfo, catalog []byte, catalogKey []byte) (*message.Header, error) {

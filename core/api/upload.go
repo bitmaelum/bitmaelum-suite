@@ -13,15 +13,15 @@ func (api *Api) UploadHeader(addr core.HashAddress, messageId string, header *me
 		return err
 	}
 
-	return api.PostBytes("/account/" + addr.String() + "/send/" + messageId + "/header", data)
+	return api.PostBytes("/account/"+addr.String()+"/send/"+messageId+"/header", data)
 }
 
 func (api *Api) UploadCatalog(addr core.HashAddress, messageId string, encryptedCatalog []byte) error {
-	return api.PostBytes("/account/" + addr.String() + "/send/" + messageId + "/catalog", encryptedCatalog)
+	return api.PostBytes("/account/"+addr.String()+"/send/"+messageId+"/catalog", encryptedCatalog)
 }
 
 func (api *Api) UploadBlock(addr core.HashAddress, messageId, blockId string, r io.Reader) error {
-	return api.PostReader("/account/" + addr.String() + "/send/" + messageId + "/block/" + blockId, r)
+	return api.PostReader("/account/"+addr.String()+"/send/"+messageId+"/block/"+blockId, r)
 }
 
 func (api *Api) DeleteMessage(addr core.HashAddress, messageId string) error {

@@ -189,7 +189,6 @@ func DeleteMessage(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
-
 func getOutgoingPath(uuid string, file string) (string, error) {
 	return homedir.Expand(path.Join(".outgoing", uuid, file))
 }

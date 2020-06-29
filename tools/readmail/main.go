@@ -35,7 +35,6 @@ func main() {
 		os.Exit(1)
 	}
 
-
 	addr, err := core.NewAddressFromString(opts.Addr)
 	if err != nil {
 		panic(err)
@@ -46,10 +45,6 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("Reading message for user %s (%s) (%s)\n", ai.Name, ai.Address, core.StringToHash(ai.Address))
-
-
-
-
 
 	data, err := ioutil.ReadFile(opts.Path + "/header.json")
 	if err != nil {
@@ -64,11 +59,6 @@ func main() {
 
 	fmt.Printf("Reading message from: %s\n", header.From.Addr)
 	fmt.Printf("Reading message to: %s\n", header.To.Addr)
-
-
-
-
-
 
 	fmt.Printf("Decrypting catalog")
 	data, err = ioutil.ReadFile(opts.Path + "/catalog")
@@ -93,8 +83,6 @@ func main() {
 
 	s, _ := json.MarshalIndent(catalog, "", "  ")
 	fmt.Printf("%s", s)
-
-
 
 	// Read, decrypt and display blocks
 	for _, block := range catalog.Blocks {

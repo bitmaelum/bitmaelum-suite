@@ -16,7 +16,6 @@ type JwtClaims struct {
 	jwt.StandardClaims
 }
 
-
 /*
  * I don't really like this. Suppose we get access to a single JWT token. We can use the same token for every
  * single call in the next hour. Maybe we should limit each token for single-use (with a nonce that expires after

@@ -61,7 +61,6 @@ func Test_Address(t *testing.T) {
 	assert.Equal(t, "joshua!", a.String())
 	assert.Equal(t, HashAddress("2f92571b5567b4557b94ac5701fc48e552ba9970d6dac89f7c2ebce92f1cd836"), a.Hash())
 
-
 	a, err = NewAddressFromString("j!")
 	assert.Nil(t, a)
 	assert.Error(t, err)
