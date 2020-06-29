@@ -8,7 +8,6 @@ import (
 	"syscall"
 )
 
-
 // FetchPassword tries to figure out the password of the given address. It can do so by checking
 // keychains and such, or when all fails, ask it from the user.
 func FetchPassword(addr *core.Address) ([]byte, error) {

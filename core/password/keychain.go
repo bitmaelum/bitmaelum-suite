@@ -1,5 +1,5 @@
 package password
 
-type KeyChain struct {}
+type KeyChain struct{}
 
 var keychain = &KeyChain{}
