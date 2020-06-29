@@ -4,8 +4,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/core"
 )
 
-// Get public key for given address on the mail server
-func (api *Api) GetPublicKey(addr core.HashAddress) (string, error) {
+// GetPublicKey gets public key for given address on the mail server
+func (api *API) GetPublicKey(addr core.HashAddress) (string, error) {
 	type PubKeyOutput struct {
 		PublicKey string `json:"public_key"`
 	}
@@ -19,8 +19,8 @@ func (api *Api) GetPublicKey(addr core.HashAddress) (string, error) {
 	return output.PublicKey, nil
 }
 
-// Create new account on server
-func (api *Api) CreateAccount(ai core.AccountInfo, token string) error {
+// CreateAccount creates new account on server
+func (api *API) CreateAccount(ai core.AccountInfo, token string) error {
 	type InputCreateAccount struct {
 		Addr        core.HashAddress `json:"address"`
 		Token       string           `json:"token"`
@@ -45,5 +45,5 @@ func (api *Api) CreateAccount(ai core.AccountInfo, token string) error {
 			Proof: ai.Pow.Proof,
 		},
 	}
-	return api.PostJson("/account", input)
+	return api.PostJSON("/account", input)
 }

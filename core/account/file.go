@@ -16,12 +16,13 @@ import (
 )
 
 const (
-	PubkeyFile = ".pubkeys.json"
-	InfoFile   = ".info.json"
-	FlagFile   = ".flags.json"
+	pubKeyFile = ".keys.json"
+	infoFile   = ".info.json"
+	flagFile   = ".flags.json"
 )
 
-type Pubkeys struct {
+// PubKeys holds a list of public keys
+type PubKeys struct {
 	PubKeys []string `json:"keys"`
 }
 
@@ -29,7 +30,7 @@ type fileRepo struct {
 	basePath string
 }
 
-// Return a new file repository
+// NewFileRepository returns a new file repository
 func NewFileRepository(basePath string) Repository {
 	return &fileRepo{
 		basePath: basePath,
@@ -52,7 +53,7 @@ func (r *fileRepo) Exists(addr core.HashAddress) bool {
 // Store the public key for this account
 func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
 	// Lock our keyfile for writing
-	lockfilePath := r.getPath(addr, PubkeyFile+".lock")
+	lockfilePath := r.getPath(addr, pubKeyFile+".lock")
 	lock, err := lockfile.New(lockfilePath)
 	if err != nil {
 		return err
@@ -68,8 +69,8 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
 	}()
 
 	// Read keys
-	pk := &Pubkeys{}
-	err = r.fetchJson(addr, PubkeyFile, pk)
+	pk := &PubKeys{}
+	err = r.fetchJSON(addr, pubKeyFile, pk)
 	if err != nil {
 		return err
 	}
@@ -84,13 +85,13 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
 	}
 
 	// And store
-	return r.store(addr, PubkeyFile, data)
+	return r.store(addr, pubKeyFile, data)
 }
 
 // Retrieve the public key for this account
 func (r *fileRepo) FetchPubKeys(addr core.HashAddress) ([]string, error) {
-	pk := &Pubkeys{}
-	err := r.fetchJson(addr, PubkeyFile, pk)
+	pk := &PubKeys{}
+	err := r.fetchJSON(addr, pubKeyFile, pk)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +112,7 @@ func (r *fileRepo) CreateBox(addr core.HashAddress, box, name, description strin
 	}
 
 	data, _ := json.MarshalIndent(mbi, "", " ")
-	return r.store(addr, path.Join(box, InfoFile), data)
+	return r.store(addr, path.Join(box, infoFile), data)
 }
 
 // Returns true when the given mailbox exists in this account
@@ -158,7 +159,7 @@ func (r *fileRepo) fetch(addr core.HashAddress, path string) ([]byte, error) {
 }
 
 // Retrieves a data structure based on JSON
-func (r *fileRepo) fetchJson(addr core.HashAddress, path string, v interface{}) error {
+func (r *fileRepo) fetchJSON(addr core.HashAddress, path string, v interface{}) error {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file %s", fullPath)
 
@@ -188,7 +189,7 @@ func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*messagebox.MailBo
 	mbi.Name = box
 
 	// Fetch information from .info file
-	err := r.fetchJson(addr, path.Join(box, InfoFile), mbi)
+	err := r.fetchJSON(addr, path.Join(box, infoFile), mbi)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +250,7 @@ func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, l
 		}
 
 		flags := &messagebox.Flags{}
-		_ = r.fetchJson(addr, path.Join(box, f.Name(), FlagFile), flags)
+		_ = r.fetchJSON(addr, path.Join(box, f.Name(), flagFile), flags)
 
 		msg := messagebox.MessageList{
 			Id:    f.Name(),
@@ -294,7 +295,7 @@ func (r *fileRepo) UnsetFlag(addr core.HashAddress, box string, id string, flag 
 // Get flags from the given message
 func (r *fileRepo) GetFlags(addr core.HashAddress, box string, id string) ([]string, error) {
 	flags := &messagebox.Flags{}
-	err := r.fetchJson(addr, path.Join(box, id, FlagFile), flags)
+	err := r.fetchJSON(addr, path.Join(box, id, flagFile), flags)
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +326,7 @@ func find(slice []string, item string) (int, error) {
 
 func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag string, addFlag bool) error {
 	// Lock our flags for writing
-	lockfilePath := r.getPath(addr, path.Join(box, id, FlagFile+".lock"))
+	lockfilePath := r.getPath(addr, path.Join(box, id, flagFile+".lock"))
 	lockfilePath, err := filepath.Abs(lockfilePath)
 	if err != nil {
 		return err
@@ -367,5 +368,5 @@ func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag 
 		return err
 	}
 
-	return r.store(addr, path.Join(box, id, FlagFile), data)
+	return r.store(addr, path.Join(box, id, flagFile), data)
 }

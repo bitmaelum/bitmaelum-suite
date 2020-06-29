@@ -5,6 +5,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/core/messagebox"
 )
 
+// Repository is an interface to manage accounts on a REMOTE machine (ie: server, not client side)
 type Repository interface {
 	// Account management
 	Create(addr core.HashAddress) error

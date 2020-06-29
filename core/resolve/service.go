@@ -7,28 +7,30 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
 )
 
+// Service represents a resolver service tied to a specific repository
 type Service struct {
 	repo Repository
 }
-
-type ResolveInfo struct {
+// Info is a structure returned by the external resolver system
+type Info struct {
 	Hash      string `json:"hash"`
 	PublicKey string `json:"public_key"`
 	Address   string `json:"address"`
 }
 
+// KeyRetrievalService initialises a key retrieval service.
 func KeyRetrievalService(repo Repository) *Service {
 	return &Service{
 		repo: repo,
 	}
 }
 
-// Resolve an address
-func (s *Service) Resolve(addr core.Address) (*ResolveInfo, error) {
+// Resolve resolves an address.
+func (s *Service) Resolve(addr core.Address) (*Info, error) {
 	return s.repo.Resolve(addr.Hash())
 }
 
-// Upload resolve information to a service
+// UploadInfo uploads resolve information to a service.
 func (s *Service) UploadInfo(acc core.AccountInfo, resolveAddress string) error {
 
 	// @TODO: We maybe should sign with a different algo? Otherwise we use the same one for all systems

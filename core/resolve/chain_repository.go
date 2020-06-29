@@ -5,11 +5,12 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/core"
 )
 
+// ChainRepository holds a list of multiple repositories which can all be tried to resolve addresses and keys
 type ChainRepository struct {
 	repos []Repository
 }
 
-// Return a new chain repository
+// NewChainRepository Return a new chain repository
 func NewChainRepository() *ChainRepository {
 	return &ChainRepository{}
 }

@@ -10,33 +10,35 @@ import (
 )
 
 type remoteRepo struct {
-	BaseUrl string
+	BaseURL string
 	client  *http.Client
 }
 
+// KeyUpload is a JSON structure we upload to a resolver server
 type KeyUpload struct {
 	PublicKey string `json:"public_key"`
 	Address   string `json:"address"`
 	Signature string `json:"signature"`
 }
 
+// KeyDownload is a JSON structure we download from a resolver server
 type KeyDownload struct {
 	Hash      string `json:"hash"`
 	PublicKey string `json:"public_key"`
 	Address   string `json:"address"`
 }
 
-// Create new remote resolve repository
-func NewRemoteRepository(baseUrl string) Repository {
+// NewRemoteRepository creates new remote resolve repository
+func NewRemoteRepository(baseURL string) Repository {
 	return &remoteRepo{
-		BaseUrl: baseUrl,
+		BaseURL: baseURL,
 		client:  &http.Client{},
 	}
 }
 
 // Resolve
-func (r *remoteRepo) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
-	response, err := r.client.Get(r.BaseUrl + "/" + addr.String())
+func (r *remoteRepo) Resolve(addr core.HashAddress) (*Info, error) {
+	response, err := r.client.Get(r.BaseURL + "/" + addr.String())
 	if err != nil {
 		return nil, errors.New("Error while retrieving key")
 	}
@@ -51,7 +53,7 @@ func (r *remoteRepo) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
 			return nil, errors.New("Error while retrieving key")
 		}
 
-		ri := &ResolveInfo{}
+		ri := &Info{}
 		err = json.Unmarshal(res, &ri)
 		if err != nil {
 			return nil, errors.New("Error while retrieving key")
@@ -75,7 +77,7 @@ func (r *remoteRepo) Upload(addr core.HashAddress, pubKey, address, signature st
 		return err
 	}
 
-	response, err := r.client.Post(r.BaseUrl+"/"+addr.String(), "application/json", bytes.NewBuffer(byteBuf))
+	response, err := r.client.Post(r.BaseURL+"/"+addr.String(), "application/json", bytes.NewBuffer(byteBuf))
 	if err != nil {
 		return err
 	}

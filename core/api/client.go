@@ -16,14 +16,15 @@ import (
 	"time"
 )
 
-type Api struct {
+// API is a structure to connect to the server for the given account
+type API struct {
 	account *core.AccountInfo
 	jwt     string
 	client  *http.Client
 }
 
-// Create a new mailserver API client
-func CreateNewClient(ai *core.AccountInfo) (*Api, error) {
+// CreateNewClient creates a new mailserver API client
+func CreateNewClient(ai *core.AccountInfo) (*API, error) {
 	// Create JWT token based on the private key of the user
 	privKey, err := encrypt.PEMToPrivKey([]byte(ai.PrivKey))
 	if err != nil {
@@ -48,7 +49,7 @@ func CreateNewClient(ai *core.AccountInfo) (*Api, error) {
 		ai.Server = "https://" + ai.Server
 	}
 
-	api := &Api{
+	api := &API{
 		account: ai,
 		jwt:     jwtToken,
 		client: &http.Client{
@@ -60,8 +61,8 @@ func CreateNewClient(ai *core.AccountInfo) (*Api, error) {
 	return api, nil
 }
 
-// Get JSON result from API
-func (api *Api) GetJSON(path string, v interface{}) error {
+// GetJSON gets JSON result from API
+func (api *API) GetJSON(path string, v interface{}) error {
 	body, err := api.Get(path)
 	if err != nil {
 		return err
@@ -75,8 +76,8 @@ func (api *Api) GetJSON(path string, v interface{}) error {
 	return nil
 }
 
-// Get raw bytes from API
-func (api *Api) Get(path string) ([]byte, error) {
+// Get gets raw bytes from API
+func (api *API) Get(path string) ([]byte, error) {
 	req, err := http.NewRequest("GET", api.account.Server+path, nil)
 	if err != nil {
 		return nil, err
@@ -100,13 +101,13 @@ func (api *Api) Get(path string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-// Post to API by single bytes
-func (api *Api) PostBytes(path string, body []byte) error {
+// PostBytes posts to API by single bytes
+func (api *API) PostBytes(path string, body []byte) error {
 	return api.PostReader(path, bytes.NewBuffer(body))
 }
 
-// Post JSON to API
-func (api *Api) PostJson(path string, data interface{}) error {
+// PostJSON posts JSON to API
+func (api *API) PostJSON(path string, data interface{}) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -115,8 +116,8 @@ func (api *Api) PostJson(path string, data interface{}) error {
 	return api.PostReader(path, bytes.NewBuffer(b))
 }
 
-// Post to Api through a reader
-func (api *Api) PostReader(path string, r io.Reader) error {
+// PostReader posts to API through a reader
+func (api *API) PostReader(path string, r io.Reader) error {
 	req, err := http.NewRequest("POST", api.account.Server+path, r)
 	if err != nil {
 		return err
@@ -134,14 +135,14 @@ func (api *Api) PostReader(path string, r io.Reader) error {
 	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return errors.New(fmt.Sprintf("incorrect status code returned (%d)", resp.StatusCode))
+		return fmt.Errorf("incorrect status code returned (%d)", resp.StatusCode)
 	}
 
 	return nil
 }
 
 // Delete from API
-func (api *Api) Delete(path string) error {
+func (api *API) Delete(path string) error {
 	req, err := http.NewRequest("DELETE", api.account.Server+path, nil)
 	if err != nil {
 		return err
@@ -163,5 +164,5 @@ func (api *Api) Delete(path string) error {
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("incorrect status code returned (%d)", resp.StatusCode))
+	return fmt.Errorf("incorrect status code returned (%d)", resp.StatusCode)
 }

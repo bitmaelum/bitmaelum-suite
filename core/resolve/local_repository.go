@@ -11,13 +11,15 @@ type localRepo struct {
 	as *account.Service
 }
 
+// NewLocalRepository intializes a local repository
 func NewLocalRepository(s *account.Service) Repository {
 	return &localRepo{
 		as: s,
 	}
 }
 
-func (r *localRepo) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
+// Resolve resolves a local address
+func (r *localRepo) Resolve(addr core.HashAddress) (*Info, error) {
 	logrus.Trace("local repository cache is not available.")
 
 	return nil, errors.New("key not found in local cache")

@@ -10,12 +10,12 @@ import (
 	"os"
 )
 
-type Options struct {
+type options struct {
 	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
 	Password string `short:"p" long:"password" description:"Vault password" default:""`
 }
 
-var opts Options
+var opts options
 
 func main() {
 	core.ParseOptions(&opts)

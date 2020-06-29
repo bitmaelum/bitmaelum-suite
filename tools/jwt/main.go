@@ -8,13 +8,13 @@ import (
 	"log"
 )
 
-type Options struct {
+type options struct {
 	Config   string `short:"c" long:"config" description:"Configuration file" default:"./client-config.yml"`
 	Addr     string `short:"a" long:"address" description:"account"`
 	Password string `short:"p" long:"password" description:"Password to decrypt your account"`
 }
 
-var opts Options
+var opts options
 
 func main() {
 	core.ParseOptions(&opts)
