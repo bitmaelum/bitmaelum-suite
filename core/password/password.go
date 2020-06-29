@@ -12,9 +12,7 @@ import (
 // FetchPassword tries to figure out the password of the given address. It can do so by checking
 // keychains and such, or when all fails, ask it from the user.
 func FetchPassword(addr *core.Address) ([]byte, error) {
-	// Check OSX keychain if available
-	if runtime.GOOS == "darwin" {
-		keychain := OSXKeyChain{}
+	if keychain != nil {
 		pwd, err := keychain.Fetch(*addr)
 		if err == nil {
 			return pwd, nil
@@ -30,9 +28,7 @@ func FetchPassword(addr *core.Address) ([]byte, error) {
 }
 
 func StorePassword(addr *core.Address, pwd []byte) error {
-	// Check OSX keychain if available
-	if runtime.GOOS == "darwin" {
-		keychain := OSXKeyChain{}
+	if keychain != nil {
 		_, err := keychain.Fetch(*addr)
 		if err != nil {
 			keychain := OSXKeyChain{}

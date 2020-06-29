@@ -4,8 +4,10 @@ package password
 import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/keybase/go-keychain"
+	gokeychain "github.com/keybase/go-keychain"
 )
+
+var keychain = &OSXKeyChain{}
 
 const (
 	ACCESSGROUP string = "keychain.bitmaelum.nl"
@@ -21,14 +23,14 @@ var (
 )
 
 func (kc *OSXKeyChain) Fetch(addr core.Address) ([]byte, error) {
-	query := keychain.NewItem()
-	query.SetSecClass(keychain.SecClassGenericPassword)
+	query := gokeychain.NewItem()
+	query.SetSecClass(gokeychain.SecClassGenericPassword)
 	query.SetService(SERVICE)
 	query.SetAccount(addr.String())
 	query.SetAccessGroup(ACCESSGROUP)
-	query.SetMatchLimit(keychain.MatchLimitOne)
+	query.SetMatchLimit(gokeychain.MatchLimitOne)
 	query.SetReturnData(true)
-	results, err := keychain.QueryItem(query)
+	results, err := gokeychain.QueryItem(query)
 	if err != nil {
 		return nil, err
 	} else if len(results) != 1 {
@@ -39,15 +41,15 @@ func (kc *OSXKeyChain) Fetch(addr core.Address) ([]byte, error) {
 }
 
 func (kc *OSXKeyChain) Store(addr core.Address, key []byte) error {
-	item := keychain.NewItem()
-	item.SetSecClass(keychain.SecClassGenericPassword)
+	item := gokeychain.NewItem()
+	item.SetSecClass(gokeychain.SecClassGenericPassword)
 	item.SetService(SERVICE)
 	item.SetAccount(addr.String())
 	item.SetLabel("")
 	item.SetAccessGroup(ACCESSGROUP)
 	item.SetData(key)
-	item.SetSynchronizable(keychain.SynchronizableNo)
-	item.SetAccessible(keychain.AccessibleAfterFirstUnlockThisDeviceOnly)
+	item.SetSynchronizable(gokeychain.SynchronizableNo)
+	item.SetAccessible(gokeychain.AccessibleAfterFirstUnlockThisDeviceOnly)
 
-	return keychain.AddItem(item)
+	return gokeychain.AddItem(item)
 }
