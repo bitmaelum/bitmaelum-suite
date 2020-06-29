@@ -41,3 +41,5 @@ require (
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )
+
+replace github.com/golang/lint latest => golang.org/x/lint latest
