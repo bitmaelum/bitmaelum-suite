@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"golang.org/x/crypto/ssh/terminal"
-	"runtime"
 	"syscall"
 )
 

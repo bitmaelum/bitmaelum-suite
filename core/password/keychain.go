@@ -6,6 +6,6 @@ type KeyChain interface {
 	// Fetch a key from the keychain
 	Fetch(addr core.Address) ([]byte, error)
 
-	// Fetch a key form the keychain
+	// Store a key in the keychain
 	Store(addr core.Address, key []byte) error
 }

@@ -7,7 +7,7 @@ import (
 	gokeychain "github.com/keybase/go-keychain"
 )
 
-var keychain = OSXKeyChain{}
+var keychain = &OSXKeyChain{}
 
 const (
 	ACCESSGROUP string = "keychain.bitmaelum.nl"
