@@ -5,7 +5,6 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-server/core/encode"
 	"github.com/bitmaelum/bitmaelum-server/core/message"
 	"io"
 )
@@ -84,18 +83,18 @@ func EncryptCatalog(catalog message.Catalog) ([]byte, []byte, error) {
 		return nil, nil, err
 	}
 
-	return catalogKey, encode.Encode(ciphertext), nil
+	return catalogKey, ciphertext, nil
 }
 
 // Decrypt a catalog with the given key
 func DecryptCatalog(key, data []byte) (*message.Catalog, error) {
-	data, err := encode.Decode(data)
-	if err != nil {
-		return nil, err
-	}
+	// data, err := encode.Decode(data)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	catalog := &message.Catalog{}
-	err = DecryptJson(key, data, &catalog)
+	err := DecryptJson(key, data, &catalog)
 	if err != nil {
 		return nil, err
 	}

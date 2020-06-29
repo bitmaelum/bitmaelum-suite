@@ -51,9 +51,16 @@ func Test_InvalidAddress(t *testing.T) {
 }
 
 func Test_Address(t *testing.T) {
-	a, err := NewAddressFromString("john@example!")
-	assert.NotNil(t, a)
+	a, err := NewAddressFromString("joshua@bitmaelum!")
 	assert.NoError(t, err)
+	assert.NotNil(t, a)
+	assert.Equal(t, "joshua@bitmaelum!", a.String())
+
+	a, err = NewAddressFromString("joshua!")
+	assert.NoError(t, err)
+	assert.Equal(t, "joshua!", a.String())
+	assert.Equal(t, HashAddress("2f92571b5567b4557b94ac5701fc48e552ba9970d6dac89f7c2ebce92f1cd836"), a.Hash())
+
 
 	a, err = NewAddressFromString("j!")
 	assert.Nil(t, a)

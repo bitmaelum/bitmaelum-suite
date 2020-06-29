@@ -96,14 +96,15 @@ func main() {
 
 
 
-	// Read blocks
+	// Read, decrypt and display blocks
 	for _, block := range catalog.Blocks {
 		f, err := os.Open(opts.Path + "/" + block.Id)
 		if err != nil {
 			panic(err)
 		}
+		defer f.Close()
 
-		r, err := message.GetAesReader(block.Iv, block.Key, f)
+		r, err := message.GetAesDecryptorReader(block.Iv, block.Key, f)
 		if err != nil {
 			panic(err)
 		}

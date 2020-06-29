@@ -13,6 +13,7 @@ one: privacy?
 
 BitMaelum (old Anglo-Saxon for "bit-by-bit") is an attempt. Instead of trying to figure out how to fix email, we are building a new email system from the ground up. This way, we can design the system to solve mail problems at its core.
 
+To read the current status of the project, check out [our status document](documentation/status.md).
 # Benefits
 We try to design a system that
 

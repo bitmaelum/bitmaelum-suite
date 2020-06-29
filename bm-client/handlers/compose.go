@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"github.com/bitmaelum/bitmaelum-server/core/api"
@@ -11,8 +10,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/core/message"
 	"github.com/bitmaelum/bitmaelum-server/core/resolve"
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -53,101 +52,64 @@ func ComposeMessage(ai core.AccountInfo, to core.Address, subject string, b, a [
 		return err
 	}
 
-	msgUuid, err := uploadToServer(ai, header, encryptedCatalog, catalog)
+	messageId, err := uuid.NewRandom()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Message uploaded in %s\n", msgUuid)
 
-	err = writeMessageToDisk(msgUuid, header, encryptedCatalog)
+	err = uploadToServer(messageId.String(), ai, header, encryptedCatalog, catalog)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Message stored in %s\n", msgUuid)
 
+	fmt.Printf("Outoging message created: %s\n", messageId.String())
 	return nil
 }
 
-func uploadToServer(ai core.AccountInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) (string, error) {
+func uploadToServer(msgId string, ai core.AccountInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
 	// Upload message to server
-	messageId, err := uuid.NewRandom()
-	if err != nil {
-		return "", err
-	}
-
 	addr := core.StringToHash(ai.Address)
 
 	client, err := api.CreateNewClient(&ai)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	// Upload header and catalog
-	err = client.UploadHeader(addr, messageId.String(), header)
-	if err != nil {
-		_ = client.DeleteMessage(addr, messageId.String())
-		return "", err
-	}
-
-	err = client.UploadCatalog(addr, messageId.String(), encryptedCatalog)
-	if err != nil {
-		_ = client.DeleteMessage(addr, messageId.String())
-		return "", err
-	}
-
-	// Upload blocks & attachments
+	// parallelize uploads
+	g := new(errgroup.Group)
+	g.Go(func() error {
+		return client.UploadHeader(addr, msgId, header)
+	})
+	g.Go(func() error {
+		return client.UploadCatalog(addr, msgId, encryptedCatalog)
+	})
 	for _, block := range catalog.Blocks {
-		err = client.UploadBlock(addr, messageId.String(), block.Id, block.Reader)
-		if err != nil {
-			_ = client.DeleteMessage(addr, messageId.String())
-			return "", err
-		}
+		// Store locally, otherwise the anonymous go function doesn't know which "block"
+		b := block
+		g.Go(func() error {
+			return client.UploadBlock(addr, msgId, b.Id, b.Reader)
+		})
 	}
 	for _, attachment := range catalog.Attachments {
-		err = client.UploadBlock(addr, messageId.String(), attachment.Id, attachment.Reader)
-		if err != nil {
-			_ = client.DeleteMessage(addr, messageId.String())
-			return "", err
-		}
+		// Store locally, otherwise the anonymous go function doesn't know which "attachment"
+		a := attachment
+		g.Go(func() error {
+			return client.UploadBlock(addr, msgId, a.Id, a.Reader)
+		})
 	}
 
-	return messageId.String(), nil
-}
-
-// Write the given message to disk
-func writeMessageToDisk(msgUuid string, header interface{}, catalog []byte) error {
-	p := ".out/" + msgUuid
-
-	err := os.MkdirAll(p, 0755)
-	if err != nil {
-		return err
-	}
-
-	// Write catalog
-	err = ioutil.WriteFile(p+"/catalog.json.enc", catalog, 0600)
-	if err != nil {
-		_ = os.RemoveAll(p)
-		return err
-	}
-
-	// Write header
-	data, err := json.MarshalIndent(header, "", "  ")
-	if err != nil {
-		_ = os.RemoveAll(p)
-		return fmt.Errorf("error trying to marshal header: %v", err)
-	}
-
-	err = ioutil.WriteFile(".out/"+msgUuid+"/header.json", data, 0600)
-	if err != nil {
-		_ = os.RemoveAll(p)
-		return err
+	// Wait until all are completed
+	if err := g.Wait(); err != nil {
+		_ = client.DeleteMessage(addr, msgId)
+	 	return err
 	}
 
 	return nil
 }
 
+
 // Generate a header file based on the info provided
-func generateHeader(ai core.AccountInfo, to *resolve.ResolveInfo, catalog []byte, catalogKey []byte) (*message.Header, error) {
+func generateHeader(ai core.AccountInfo, toInfo *resolve.ResolveInfo, catalog []byte, catalogKey []byte) (*message.Header, error) {
 	header := &message.Header{}
 
 	// We can add a multitude of checksums here.. whatever we like
@@ -158,7 +120,7 @@ func generateHeader(ai core.AccountInfo, to *resolve.ResolveInfo, catalog []byte
 	header.Catalog.Size = uint64(len(catalog))
 	header.Catalog.Crypto = "rsa+aes256gcm"
 
-	pubKey, err := encrypt.PEMToPubKey([]byte(to.PublicKey))
+	pubKey, err := encrypt.PEMToPubKey([]byte(toInfo.PublicKey))
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +130,7 @@ func generateHeader(ai core.AccountInfo, to *resolve.ResolveInfo, catalog []byte
 		return nil, err
 	}
 
-	header.To.Addr = core.StringToHash(to.Address)
+	header.To.Addr = core.HashAddress(toInfo.Hash)
 
 	header.From.Addr = core.StringToHash(ai.Address)
 	header.From.PublicKey = ai.PubKey
@@ -179,13 +141,13 @@ func generateHeader(ai core.AccountInfo, to *resolve.ResolveInfo, catalog []byte
 }
 
 // Generate a complete catalog file. Outputs catalog key and the encrypted catalog
-func generateCatalog(ai core.AccountInfo, to core.HashAddress, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
+func generateCatalog(ai core.AccountInfo, toAddr core.HashAddress, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
 	// Create catalog
 	cat := message.NewCatalog(&ai)
 
 	// @TODO: maybe these should be setters in Catalog?
-	cat.To.Address = to.String()
-	cat.To.Name = to.String()
+	cat.To.Address = toAddr.String()
+	cat.To.Name = toAddr.String()
 
 	cat.Flags = append(cat.Flags, "important")
 	cat.Labels = append(cat.Labels, "invoice", "sales", "seams-cms")
@@ -237,7 +199,7 @@ func generateBlocks(b []string) ([]message.Block, error) {
 	// Parse blocks
 	var blocks []message.Block
 	for _, block := range b {
-		split := strings.Split(block, ",")
+		split := strings.SplitN(block, ",", 2)
 		if len(split) <= 1 {
 			return nil, fmt.Errorf("please specify blocks in the format '<type>,<content>' or '<type>,file:<filename>'")
 		}

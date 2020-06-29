@@ -48,7 +48,7 @@ func NewAddressFromString(address string) (*Address, error) {
 	}
 
 	if !re.MatchString(strings.ToLower(address)) {
-		return nil, errors.New("incorrect format specified")
+		return nil, errors.New("incorrect address format specified")
 	}
 
 	matches := re.FindStringSubmatch(strings.ToLower(address))
@@ -61,7 +61,7 @@ func NewAddressFromString(address string) (*Address, error) {
 
 // Converts an address to a string
 func (a *Address) String() string {
-	if a.Org == "" {
+	if len(a.Org) == 0 {
 		return fmt.Sprintf("%s!", a.Local)
 	}
 

@@ -131,6 +131,13 @@ func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Create path if needed
+	err = os.MkdirAll(path.Dir(p), 0777)
+	if err != nil {
+		ErrorOut(w, http.StatusInternalServerError, "cannot create path")
+		return
+	}
+
 	// Copy body straight to block file
 	blockFile, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
