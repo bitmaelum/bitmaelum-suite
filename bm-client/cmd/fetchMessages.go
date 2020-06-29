@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +11,7 @@ var fetchMessagesCmd = &cobra.Command{
 	Short:   "Retrieves messages from your account(s)",
 	Long:    `Connects to the BitMaelum servers and fetches new emails that are not available on your local system.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("fetchMessages called witch %s and %s\n", *checkOnly, strings.Join(*addresses, " "))
+		fmt.Printf("fetchMessages called\n")
 	},
 }
 
