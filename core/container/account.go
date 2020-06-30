@@ -6,8 +6,8 @@ import (
 	"github.com/mitchellh/go-homedir"
 )
 
-var accountService *account.Service = nil
-var accountRepository *account.Repository = nil
+var accountService *account.Service
+var accountRepository *account.Repository
 
 // GetAccountService retrieves an account service
 func GetAccountService() *account.Service {

@@ -76,9 +76,11 @@ func Test_Address(t *testing.T) {
 	assert.Equal(t, "f454fe8d4b5017369f9e64861f0d471efe3cdcbdf45732f26b7a377c3e93d278", a.Hash().String())
 
 	a, err = NewAddressFromString("JOHN!")
+	assert.NoError(t, err)
 	assert.Equal(t, "john!", a.String())
 
 	a, err = NewAddressFromString("JOHN@ex!")
+	assert.NoError(t, err)
 	a.Org = ""
 	assert.Equal(t, "john!", a.String())
 

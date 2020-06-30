@@ -6,8 +6,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var incomingService *incoming.Service = nil
-var incomingRepository *incoming.Repository = nil
+var incomingService *incoming.Service
+var incomingRepository *incoming.Repository
 
 // GetIncomingService retrieves an incoming service
 func GetIncomingService() *incoming.Service {

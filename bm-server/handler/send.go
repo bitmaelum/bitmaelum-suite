@@ -40,6 +40,11 @@ func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 	}
 
 	data, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "cannot read body")
+		return
+	}
+
 	header := &message.Header{}
 	err = json.Unmarshal(data, &header)
 	if err != nil {

@@ -6,8 +6,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var inviteService *invite.Service = nil
-var inviteRepository *invite.Repository = nil
+var inviteService *invite.Service
+var inviteRepository *invite.Repository
 
 // GetInviteService retrieves an invitation service
 func GetInviteService() *invite.Service {

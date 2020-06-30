@@ -57,7 +57,7 @@ func (pow *ProofOfWork) Work() {
 	target = target.Lsh(target, uint(256-pow.Bits))
 
 	// Count from 0 to MAXINT
-	var counter uint64 = 0
+	var counter uint64
 	for counter < math.MaxInt64 {
 		// SHA256 the data
 		hash := sha256.Sum256(bytes.Join([][]byte{
@@ -94,7 +94,7 @@ func (pow *ProofOfWork) Validate() bool {
 	return hashInt.Cmp(target) == -1
 }
 
-// convert a large number to hexidecimal bytes
+// convert a large number to hexadecimal bytes
 func intToHex(n uint64) []byte {
 	return []byte(strconv.FormatUint(n, 16))
 }
