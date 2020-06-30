@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"golang.org/x/crypto/ssh/terminal"
-	"syscall"
+	"os"
 )
 
 // FetchPassword tries to figure out the password of the given address. It can do so by checking
@@ -20,7 +20,7 @@ func FetchPassword(addr *core.Address) ([]byte, error) {
 
 	// If all fails, ask from stdin
 	fmt.Printf("\U0001F511  Please enter your password for account '%s': ", addr.String())
-	p, e := terminal.ReadPassword(syscall.Stdin)
+	p, e := terminal.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Printf("\n")
 
 	return p, e
@@ -42,11 +42,11 @@ func StorePassword(addr *core.Address, pwd []byte) error {
 func AskDoublePassword() []byte {
 	for {
 		fmt.Printf("Please enter your vault password: ")
-		p1, _ := terminal.ReadPassword(syscall.Stdin)
+		p1, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Printf("\n")
 
 		fmt.Printf("Please retype your vault password: ")
-		p2, _ := terminal.ReadPassword(syscall.Stdin)
+		p2, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Printf("\n")
 
 		if bytes.Compare(p1, p2) == 0 {
@@ -60,7 +60,7 @@ func AskDoublePassword() []byte {
 // AskPassword will ask for a password (without confirmation) on the commandline
 func AskPassword() []byte {
 	fmt.Printf("Please enter your vault password: ")
-	p1, _ := terminal.ReadPassword(syscall.Stdin)
+	p1, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Printf("\n")
 
 	return p1
