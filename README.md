@@ -1,5 +1,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/bitmaelum/bitmaelum-suite)](https://goreportcard.com/report/github.com/bitmaelum/bitmaelum-suite)
-[![Build Status](https://travis-ci.org/bitmaelum/bitmaelum-suite.svg?branch=master)](https://travis-ci.org/bitmaelum/bitmaelum-suite)         
+[![Build Status](https://travis-ci.org/bitmaelum/bitmaelum-suite.svg?branch=master)](https://travis-ci.org/bitmaelum/bitmaelum-suite)
+![License](https://img.shields.io/github/license/bitmaelum/bitmaelum-suite)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/bitmaelum/bitmaelum-suite)         
          
          ____  _ _   __  __            _                 
         |  _ \(_) | |  \/  |          | |                
