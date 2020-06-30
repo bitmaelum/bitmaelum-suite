@@ -3,8 +3,6 @@ package core
 import (
 	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/sirupsen/logrus"
-	logrus_syslog "github.com/sirupsen/logrus/hooks/syslog"
-	"log/syslog"
 	"os"
 	"strings"
 )
@@ -32,7 +30,7 @@ func SetLogging(level, path string) {
 			syslogHost = splits[1]
 		}
 
-		hook, err := logrus_syslog.NewSyslogHook("udp", syslogHost, syslog.LOG_DAEMON, "BitMaelum")
+		hook, err := setupSyslogHook("udp", syslogHost)
 		if err != nil {
 			logrus.Error("Unable to connect to syslog daemon. Falling back to stderr")
 			logrus.SetOutput(os.Stderr)
