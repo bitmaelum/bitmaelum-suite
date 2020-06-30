@@ -10,25 +10,25 @@ APIs, client connectivity etc etc. This is all still very much work in progress.
 
 ## We are currently able to
 
- - Add and manage public keys on the main resolver service: resolver.bitmaelum.com
- - Run the message server with minimum capabilities
- - Generate accounts and save them to the server and main resolver through bm-client.
- - List accounts through bm-client
- - Compose email, and uploading to the mail-server through bm-client
- - Read email through utility
- - Setting status flags on the mail-server (@todo: do we want this on the server, and if so, unencrypted?)
+ - [X] Add and manage public keys on the main resolver service: resolver.bitmaelum.com
+ - [X] Run the message server with minimum capabilities
+ - [X] Generate accounts and save them to the server and main resolver through bm-client.
+ - [X] List accounts through bm-client
+ - [X] Compose email, and uploading to the mail-server through bm-client
+ - [X] Read email through utility
+ - [X] Setting status flags on the mail-server (@todo: do we want this on the server, and if so, unencrypted?)
  
 ## Next up in our todo
 
- - Send email that is uploaded to the mail-server to an actual destination mail-server.
- - Read mailboxes from accounts
+ - [] Send email that is uploaded to the mail-server to an actual destination mail-server.
+ - [] Read mailboxes from accounts
  
 
 ## Later
 
- - Deal with multiple recipients (multi-header uploads)
- - Mailing lists
- - Create a simple mail client UI (bm-client-ui is a start)
+ - [] Deal with multiple recipients (multi-header uploads)
+ - [] Mailing lists
+ - [] Create a simple mail client UI (bm-client-ui is a start)
 
 
 ## Much later

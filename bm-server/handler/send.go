@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/bitmaelum/bitmaelum-server/bm-server/foobar"
 	"github.com/bitmaelum/bitmaelum-server/core/message"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/go-homedir"
@@ -168,9 +169,19 @@ func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 
 // SendMessage is called whenever everything from a message has been uploaded and can be actually send
 func SendMessage(w http.ResponseWriter, req *http.Request) {
-	// Check how we want to send the message.
-	// Current mode: right now
-	// Or maybe: delayed
+	vars := mux.Vars(req)
+	uuid := vars["uuid"]
+
+	p, _ := getOutgoingPath(uuid, "")
+	_, err := os.Stat(p)
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "message not found")
+		return
+	}
+
+	// Send uuid to client processor
+	foobar.ProcessIncomingClientMessage(uuid)
+	// foobar.ClientCh <- uuid
 }
 
 // DeleteMessage is called whenever we want to completely remove a message by user request
