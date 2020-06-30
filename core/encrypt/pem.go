@@ -7,7 +7,7 @@ import (
 	"errors"
 )
 
-// Converts a PEM & PKCS8 encoded private key
+// PEMToPrivKey Converts a PEM & PKCS8 encoded private key
 func PEMToPrivKey(pemData []byte) (interface{}, error) {
 	block, _ := pem.Decode(pemData)
 	if block == nil {
@@ -17,7 +17,7 @@ func PEMToPrivKey(pemData []byte) (interface{}, error) {
 	return x509.ParsePKCS8PrivateKey(block.Bytes)
 }
 
-// Converts a PEM & PKCS8 encoded public key
+// PEMToPubKey Converts a PEM & PKCS8 encoded public key
 func PEMToPubKey(pemData []byte) (interface{}, error) {
 	block, _ := pem.Decode(pemData)
 	if block == nil {
@@ -27,7 +27,7 @@ func PEMToPubKey(pemData []byte) (interface{}, error) {
 	return x509.ParsePKIXPublicKey(block.Bytes)
 }
 
-// Convert a private key into PKCS8/PEM format
+// PrivKeyToPEM Convert a private key into PKCS8/PEM format
 func PrivKeyToPEM(key interface{}) (string, error) {
 	privBytes, err := x509.MarshalPKCS8PrivateKey(key)
 	if err != nil {
@@ -39,7 +39,7 @@ func PrivKeyToPEM(key interface{}) (string, error) {
 	return b.String(), err
 }
 
-// Convert a public key into PKCS8/PEM format
+// PubKeyToPEM Convert a public key into PKCS8/PEM format
 func PubKeyToPEM(key interface{}) (string, error) {
 	pubBytes, err := x509.MarshalPKIXPublicKey(key)
 	if err != nil {

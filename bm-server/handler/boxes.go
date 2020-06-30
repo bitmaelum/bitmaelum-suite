@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-// Create account handler
+// RetrieveBoxes retrieves all message boxes for the given account
 func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	addr := core.HashAddress(mux.Vars(req)["addr"])
 
@@ -27,10 +27,10 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 		Boxes:   boxes,
 	}
 
-	_ = JsonOut(w, output)
+	_ = JSONOut(w, output)
 }
 
-// Retrieves information about the given mailbox
+// RetrieveBox retrieves info about the given mailbox
 func RetrieveBox(w http.ResponseWriter, req *http.Request) {
 	addr := core.HashAddress(mux.Vars(req)["addr"])
 	name := mux.Vars(req)["box"]
@@ -41,7 +41,7 @@ func RetrieveBox(w http.ResponseWriter, req *http.Request) {
 	as := container.GetAccountService()
 	mail := as.FetchListFromBox(addr, name, offset, limit)
 
-	_ = JsonOut(w, mail)
+	_ = JSONOut(w, mail)
 }
 
 // Returns the given query key as integer, or returns the default value

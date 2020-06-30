@@ -25,12 +25,14 @@ import (
 // that has been done.
 //
 
+// ProofOfWork represents a proof-of-work which either can be completed or not
 type ProofOfWork struct {
 	Bits  int    `json:"bits"`
 	Proof uint64 `json:"proof,omitempty"`
 	Data  []byte `json:"data,omitempty"`
 }
 
+// NewProofOfWork generates a new ProofOfWork structure.
 func NewProofOfWork(bits int, data []byte, proof uint64) *ProofOfWork {
 	pow := &ProofOfWork{
 		Bits:  bits,
@@ -41,12 +43,12 @@ func NewProofOfWork(bits int, data []byte, proof uint64) *ProofOfWork {
 	return pow
 }
 
-// Returns true if this instance already has done proof-of-work
+// HasDoneWork returns true if this instance already has done proof-of-work
 func (pow *ProofOfWork) HasDoneWork() bool {
 	return pow.Proof > 0
 }
 
-// Actually do proof-of-work
+// Work actually does the proof-of-work
 func (pow *ProofOfWork) Work() {
 	var hashInt big.Int
 
@@ -70,13 +72,13 @@ func (pow *ProofOfWork) Work() {
 		}
 
 		// Higher, so we must do more work. Increase counter and try again
-		counter += 1
+		counter++
 	}
 
 	pow.Proof = counter
 }
 
-// Returns true when the given work can be validated against the proof
+// Validate returns true when the given work can be validated against the proof
 func (pow *ProofOfWork) Validate() bool {
 	var hashInt big.Int
 

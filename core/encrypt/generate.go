@@ -9,27 +9,28 @@ import (
 	"errors"
 )
 
-type KeyType int
+type keyType int
 
 const (
+	// KeyTypeRSA RSA key
 	KeyTypeRSA = iota
+	// KeyTypeECDSA Elliptic curve key
 	KeyTypeECDSA
+	// KeyTypeED25519 ED25519 key
 	KeyTypeED25519
 )
 
 var curveFunc = elliptic.P384
-var rsa_bits int = 2048
+var rsaBits int = 2048
 
-type JustAKey = interface{}
-
-// Generates a public/private keypair based on the given type
-func GenerateKeyPair(kt KeyType) (string, string, error) {
-	var privKey, pubKey JustAKey
+// GenerateKeyPair generates a public/private keypair based on the given type
+func GenerateKeyPair(kt keyType) (string, string, error) {
+	var privKey, pubKey interface{}
 
 	switch kt {
 	case KeyTypeRSA:
 		var err error
-		privKey, err = rsa.GenerateKey(rand.Reader, rsa_bits)
+		privKey, err = rsa.GenerateKey(rand.Reader, rsaBits)
 		if err != nil {
 			return "", "", err
 		}

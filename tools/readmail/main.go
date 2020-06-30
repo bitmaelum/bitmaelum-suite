@@ -25,7 +25,7 @@ func main() {
 	core.ParseOptions(&opts)
 	core.LoadClientConfig(opts.Config)
 
-	fmt.Println(core.GetAsciiLogo())
+	fmt.Println(core.GetASCIILogo())
 
 	// Unlock vault
 	err := account.UnlockVault(config.Client.Accounts.Path, []byte(opts.Password))
@@ -76,7 +76,7 @@ func main() {
 		panic(err)
 	}
 
-	catalog, err := encrypt.DecryptCatalog(decryptedKey, data)
+	catalog, err := encrypt.CatalogDecrypt(decryptedKey, data)
 	if err != nil {
 		panic(err)
 	}
@@ -86,13 +86,13 @@ func main() {
 
 	// Read, decrypt and display blocks
 	for _, block := range catalog.Blocks {
-		f, err := os.Open(opts.Path + "/" + block.Id)
+		f, err := os.Open(opts.Path + "/" + block.ID)
 		if err != nil {
 			panic(err)
 		}
 		defer f.Close()
 
-		r, err := message.GetAesDecryptorReader(block.Iv, block.Key, f)
+		r, err := message.GetAesDecryptorReader(block.IV, block.Key, f)
 		if err != nil {
 			panic(err)
 		}
@@ -102,8 +102,8 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Printf("\n----- START BLOCK (%s) %s --------\n", block.Type, block.Id)
+		fmt.Printf("\n----- START BLOCK (%s) %s --------\n", block.Type, block.ID)
 		fmt.Printf("%s", content)
-		fmt.Printf("\n----- END BLOCK %s --------\n", block.Id)
+		fmt.Printf("\n----- END BLOCK %s --------\n", block.ID)
 	}
 }

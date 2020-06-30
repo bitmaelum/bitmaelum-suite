@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+// ZlibCompress compresses a stream through zlib compression
 func ZlibCompress(r io.Reader) io.Reader {
 	zpr, zpw := io.Pipe()
 

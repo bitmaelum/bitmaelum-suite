@@ -12,6 +12,7 @@ var rootCmd = &cobra.Command{
 	Long:  `This tool allows you to easily manage certain aspects of your BitMaelum server and client.`,
 }
 
+// Execute runs the given command
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

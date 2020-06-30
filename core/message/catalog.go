@@ -12,8 +12,9 @@ import (
 	"time"
 )
 
+// BlockType represents a message block as used inside a catalog
 type BlockType struct {
-	Id          string     `json:"id"`          // BLock identifier UUID
+	ID          string     `json:"id"`          // BLock identifier UUID
 	Type        string     `json:"type"`        // Type of the block. Can be anything message readers can parse.
 	Size        uint64     `json:"size"`        // Size of the block in bytes
 	Encoding    string     `json:"encoding"`    // Encoding of the block in case it's encoded
@@ -21,11 +22,12 @@ type BlockType struct {
 	Checksum    []Checksum `json:"checksum"`    // Checksums of the block
 	Reader      io.Reader  `json:"-"`           // Reader of the block data
 	Key         []byte     `json:"key"`         // Key for decryption
-	Iv          []byte     `json:"iv"`          // IV for decryption
+	IV          []byte     `json:"iv"`          // IV for decryption
 }
 
+// AttachmentType represents a message attachment as used inside a catalog
 type AttachmentType struct {
-	Id          string     `json:"id"`          // Attachment identifier UUID
+	ID          string     `json:"id"`          // Attachment identifier UUID
 	MimeType    string     `json:"mimetype"`    // Mimetype
 	FileName    string     `json:"filename"`    // Filename
 	Size        uint64     `json:"size"`        // Size of the attachment in bytes
@@ -33,9 +35,11 @@ type AttachmentType struct {
 	Checksum    []Checksum `json:"checksum"`    // Checksums of the data
 	Reader      io.Reader  `json:"-"`           // Reader to the attachment data
 	Key         []byte     `json:"key"`         // Key for decryption
-	Iv          []byte     `json:"iv"`          // IV for decryption
+	IV          []byte     `json:"iv"`          // IV for decryption
 }
 
+// Catalog is the structure that represents a message catalog. This will hold all information about the
+// actual message, blocks and attachments.
 type Catalog struct {
 	From struct {
 		Address      string           `json:"address"`       // BitMaelum address of the sender
@@ -49,7 +53,7 @@ type Catalog struct {
 		Name    string `json:"name"`    // Name of the recipient
 	} `json:"to"`
 	CreatedAt time.Time `json:"created_at"` // Timestamp when the message was created
-	ThreadId  string    `json:"thread_id"`  // Thread ID (and parent ID) in case this message was send in a thread
+	ThreadID  string    `json:"thread_id"`  // Thread ID (and parent ID) in case this message was send in a thread
 	Subject   string    `json:"subject"`    // Subject of the message
 	Flags     []string  `json:"flags"`      // Flags of the message
 	Labels    []string  `json:"labels"`     // Labels for this message
@@ -58,18 +62,20 @@ type Catalog struct {
 	Attachments []AttachmentType `json:"attachments"` // Message attachment info
 }
 
+// Attachment represents an attachment and reader
 type Attachment struct {
 	Path   string    // LOCAL path of the attachment. Needed for things like os.Stat()
 	Reader io.Reader // Reader to the attachment file
 }
 
+// Block represents a block and reader
 type Block struct {
 	Type   string    // Type of the block (text, html, default, mobile etc)
 	Size   uint64    // Size of the block
 	Reader io.Reader // Reader to the block data
 }
 
-// Initialises a new catalog. This catalog has to be filled with more info, blocks and attachments
+// NewCatalog initialises a new catalog. This catalog has to be filled with more info, blocks and attachments
 func NewCatalog(ai *core.AccountInfo) *Catalog {
 	c := &Catalog{}
 
@@ -85,7 +91,7 @@ func NewCatalog(ai *core.AccountInfo) *Catalog {
 	return c
 }
 
-// Add a block to a catalog
+// AddBlock adds a block to a catalog
 func (c *Catalog) AddBlock(entry Block) error {
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -114,7 +120,7 @@ func (c *Catalog) AddBlock(entry Block) error {
 	}
 
 	bt := &BlockType{
-		Id:          id.String(),
+		ID:          id.String(),
 		Type:        entry.Type,
 		Size:        entry.Size,
 		Encoding:    "",
@@ -122,14 +128,14 @@ func (c *Catalog) AddBlock(entry Block) error {
 		Checksum:    nil,
 		Reader:      reader,
 		Key:         key,
-		Iv:          iv,
+		IV:          iv,
 	}
 
 	c.Blocks = append(c.Blocks, *bt)
 	return nil
 }
 
-// Add an attachment to a catalog
+// AddAttachment adds an attachment to a catalog
 func (c *Catalog) AddAttachment(entry Attachment) error {
 	stats, err := os.Stat(entry.Path)
 	if err != nil {
@@ -168,7 +174,7 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 	}
 
 	at := &AttachmentType{
-		Id:          id.String(),
+		ID:          id.String(),
 		MimeType:    mime.String(),
 		FileName:    entry.Path,
 		Size:        uint64(stats.Size()),
@@ -176,15 +182,15 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 		Reader:      reader,
 		Checksum:    nil, // To be filled in later
 		Key:         key,
-		Iv:          iv,
+		IV:          iv,
 	}
 
 	c.Attachments = append(c.Attachments, *at)
 	return nil
 }
 
+// GenerateIvAndKey generate a random IV and key
 // @TODO: This is not a good spot. We should store it in the encrypt page, but this gives us a import cycle
-// Generate a random IV and key
 func GenerateIvAndKey() ([]byte, []byte, error) {
 	iv := make([]byte, 16)
 	n, err := rand.Read(iv)
@@ -201,8 +207,8 @@ func GenerateIvAndKey() ([]byte, []byte, error) {
 	return iv, key, nil
 }
 
+// GetAesEncryptorReader returns a reader that automatically encrypts reader blocks through CFB stream
 // @TODO: This is not a good spot. We should store it in the encrypt page, but this gives us a import cycle
-// Returns a reader that automatically encrypts reader blocks through CFB stream
 func GetAesEncryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error) {
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -213,6 +219,7 @@ func GetAesEncryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error
 	return &cipher.StreamReader{S: stream, R: r}, err
 }
 
+// GetAesDecryptorReader returns a reader that automatically decrypts reader blocks through CFB stream
 func GetAesDecryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error) {
 	block, err := aes.NewCipher(key[:])
 	if err != nil {

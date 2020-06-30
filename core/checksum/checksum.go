@@ -11,7 +11,7 @@ import (
 
 // @TODO: Multi hash through http://marcio.io/2015/07/calculating-multiple-file-hashes-in-a-single-pass/
 
-// Return SHA1 checksum structure from data
+// Sha1 Return SHA1 checksum structure from data
 func Sha1(data []byte) message.Checksum {
 	hasher := sha1.New()
 	_, _ = hasher.Write([]byte(data))
@@ -22,7 +22,7 @@ func Sha1(data []byte) message.Checksum {
 	}
 }
 
-// Return SHA256 checksum structure from data
+// Sha256 Return SHA256 checksum structure from data
 func Sha256(data []byte) message.Checksum {
 	hasher := sha256.New()
 	_, _ = hasher.Write([]byte(data))
@@ -33,7 +33,7 @@ func Sha256(data []byte) message.Checksum {
 	}
 }
 
-// Return CRC32 checksum structure from data
+// Crc32 Return CRC32 checksum structure from data
 func Crc32(data []byte) message.Checksum {
 	hasher := crc32.NewIEEE()
 	_, _ = hasher.Write([]byte(data))
@@ -44,7 +44,7 @@ func Crc32(data []byte) message.Checksum {
 	}
 }
 
-// Return MD5 checksum structure from data
+// Md5 Return MD5 checksum structure from data
 func Md5(data []byte) message.Checksum {
 	hasher := md5.New()
 	_, _ = hasher.Write([]byte(data))

@@ -9,17 +9,18 @@ import (
 var inviteService *invite.Service = nil
 var inviteRepository *invite.Repository = nil
 
+// GetInviteService retrieves an invitation service
 func GetInviteService() *invite.Service {
 	if inviteService != nil {
 		return inviteService
 	}
 
-	repo := GetInviteRepository()
+	repo := getInviteRepository()
 	inviteService = invite.NewInviteService(*repo)
 	return inviteService
 }
 
-func GetInviteRepository() *invite.Repository {
+func getInviteRepository() *invite.Repository {
 	if inviteRepository != nil {
 		return inviteRepository
 	}

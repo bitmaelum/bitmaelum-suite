@@ -21,7 +21,7 @@ func Encrypt(key interface{}, message []byte) ([]byte, error) {
 	return nil, errors.New("Unknown key type for signing")
 }
 
-// Encrypt a message with the given key
+// Decrypt a message with the given key
 func Decrypt(key interface{}, message []byte) ([]byte, error) {
 	switch key.(type) {
 	case *rsa.PrivateKey:

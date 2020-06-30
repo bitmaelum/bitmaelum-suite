@@ -78,14 +78,14 @@ config:
             url: "https://resolver.bitmaelum.com"
 `
 
-// Generates a default client configuration
+// GenerateClientConfig Generates a default client configuration
 func GenerateClientConfig(w io.Writer) error {
 	_, err := w.Write([]byte(clientConfigTemplate))
 
 	return err
 }
 
-// Generates a default server configuration
+// GenerateServerConfig Generates a default server configuration
 func GenerateServerConfig(w io.Writer) error {
 	_, err := w.Write([]byte(serverConfigTemplate))
 

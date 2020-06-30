@@ -1,6 +1,6 @@
 package messagebox
 
-// Structure of the .info.json file
+// MailBoxInfo represents the .info.json file
 type MailBoxInfo struct {
 	Name        string
 	Description string `json:"description"`
@@ -8,6 +8,7 @@ type MailBoxInfo struct {
 	Total       int    `json:"total"`
 }
 
+// Flags represents the .flags.json file which holds all current flags for the given mailbox/message
 type Flags struct {
 	Flags []string `json:"flags"`
 }

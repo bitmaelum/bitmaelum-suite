@@ -11,6 +11,7 @@ import (
 	"os"
 )
 
+// CreateAccount creates a new account locally in the vault, stores it on the mailserver and pushes the public key to the resolver
 func CreateAccount(address, name, organisation, server, token string, passwd []byte) {
 	if !core.IsValidAddress(address) {
 		fmt.Printf("Not a valid address")

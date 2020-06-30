@@ -13,7 +13,7 @@ import (
 	"path"
 )
 
-// Uploading
+// UploadMessageHeader deals with uploading message headers
 func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
@@ -68,6 +68,7 @@ func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+// UploadMessageCatalog deals with uploading message catalogs
 func UploadMessageCatalog(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
@@ -113,6 +114,7 @@ func UploadMessageCatalog(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+// UploadMessageBlock deals with uploading message blocks
 func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
@@ -159,12 +161,14 @@ func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+// SendMessage is called whenever everything from a message has been uploaded and can be actually send
 func SendMessage(w http.ResponseWriter, req *http.Request) {
 	// Check how we want to send the message.
 	// Current mode: right now
 	// Or maybe: delayed
 }
 
+// DeleteMessage is called whenever we want to completely remove a message by user request
 func DeleteMessage(w http.ResponseWriter, req *http.Request) {
 	// Delete the message and contents
 	vars := mux.Vars(req)

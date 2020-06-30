@@ -8,15 +8,15 @@ import (
 	"net/http"
 )
 
-type OutputPublicKey struct {
+type outputPublicKey struct {
 	PublicKeys []string `json:"public_key"`
 }
 
-type InputPublicKey struct {
-	PublicKey string `json:"public_key"`
-}
+// type inputPublicKey struct {
+// 	PublicKey string `json:"public_key"`
+// }
 
-// Retrieve key handler
+// RetrieveKeys is the handler that will retrieve public keys directly from the mailserver
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	addr := core.HashAddress(vars["addr"])
@@ -29,7 +29,7 @@ func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Return public key
-	ret := OutputPublicKey{
+	ret := outputPublicKey{
 		PublicKeys: as.GetPublicKeys(addr),
 	}
 

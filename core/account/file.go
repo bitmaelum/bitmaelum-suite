@@ -253,7 +253,7 @@ func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, l
 		_ = r.fetchJSON(addr, path.Join(box, f.Name(), flagFile), flags)
 
 		msg := messagebox.MessageList{
-			Id:    f.Name(),
+			ID:    f.Name(),
 			Dt:    f.ModTime().Format(time.RFC3339),
 			Flags: flags.Flags,
 		}

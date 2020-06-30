@@ -6,9 +6,10 @@ import (
 	"time"
 )
 
+// Logger is a middleware that logs the timing of the given call
 type Logger struct{}
 
-// Logs the request time
+// Middleware Logs the request time
 func (*Logger) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		t := time.Now()

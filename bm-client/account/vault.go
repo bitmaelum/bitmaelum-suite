@@ -20,18 +20,20 @@ import (
 )
 
 const (
-	PbkdfIterations = 100002
+	pbkdfIterations = 100002
 )
 
+// Vault holds all our account information
 var Vault *VaultType // UnlockVault initializes this value
 
+// VaultType represents our vault
 type VaultType struct {
 	Accounts []core.AccountInfo
 	password []byte
 	path     string
 }
 
-type VaultJsonData struct {
+type vaultJSONData struct {
 	Data []byte `json:"data"`
 	Salt []byte `json:"salt"`
 	Iv   []byte `json:"iv"`
@@ -82,7 +84,7 @@ func (v *VaultType) unlockVault() error {
 		return err
 	}
 
-	vaultData := &VaultJsonData{}
+	vaultData := &vaultJSONData{}
 	err = json.Unmarshal(data, &vaultData)
 	if err != nil {
 		return err
@@ -96,7 +98,7 @@ func (v *VaultType) unlockVault() error {
 	}
 
 	// Generate key based on password
-	derivedAESKey := pbkdf2.Key(v.password, vaultData.Salt, PbkdfIterations, 32, sha256.New)
+	derivedAESKey := pbkdf2.Key(v.password, vaultData.Salt, pbkdfIterations, 32, sha256.New)
 	aes256, err := aes.NewCipher(derivedAESKey)
 	if err != nil {
 		return err
@@ -118,7 +120,7 @@ func (v *VaultType) unlockVault() error {
 	return nil
 }
 
-// Locks the vault by removing the password and account data
+// Lock Locks the vault by removing the password and account data
 func (v *VaultType) Lock() {
 	v.password = nil
 	v.Accounts = nil
@@ -129,7 +131,7 @@ func (v *VaultType) Add(account core.AccountInfo) {
 	v.Accounts = append(v.Accounts, account)
 }
 
-// Add adds a new account to the vault
+// Remove the given account from the vault
 func (v *VaultType) Remove(address core.Address) {
 	k := 0
 	for _, acc := range v.Accounts {
@@ -155,7 +157,7 @@ func (v *VaultType) Save() error {
 	}
 
 	// Generate key based on password
-	derivedAESKey := pbkdf2.Key(v.password, salt, PbkdfIterations, 32, sha256.New)
+	derivedAESKey := pbkdf2.Key(v.password, salt, pbkdfIterations, 32, sha256.New)
 	aes256, err := aes.NewCipher(derivedAESKey)
 	if err != nil {
 		return err
@@ -183,7 +185,7 @@ func (v *VaultType) Save() error {
 	hash.Write(cipherText)
 
 	// Generate the vault structure for disk
-	data, err := json.MarshalIndent(&VaultJsonData{
+	data, err := json.MarshalIndent(&vaultJSONData{
 		Data: cipherText,
 		Salt: salt,
 		Iv:   iv,

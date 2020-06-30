@@ -12,12 +12,14 @@ type redisRepo struct {
 	client *redis.Client
 }
 
+// NewRedisRepository initializes a new repository
 func NewRedisRepository(opts *redis.Options) Repository {
 	return &redisRepo{
 		client: redis.NewClient(opts),
 	}
 }
 
+// CreateInvite generate a new invitation and stores this in redis
 func (r *redisRepo) CreateInvite(addr core.HashAddress, expiry time.Duration) (string, error) {
 	buff := make([]byte, 32)
 	_, err := rand.Read(buff)
@@ -34,10 +36,12 @@ func (r *redisRepo) CreateInvite(addr core.HashAddress, expiry time.Duration) (s
 	return token, nil
 }
 
+// GetInvite retrieves an invite from redis
 func (r *redisRepo) GetInvite(addr core.HashAddress) (string, error) {
 	return r.client.Get(r.client.Context(), "invite."+addr.String()).Result()
 }
 
+// RemoveInvite deletes an invite from redis
 func (r *redisRepo) RemoveInvite(addr core.HashAddress) error {
 	return r.client.Del(r.client.Context(), "invite."+addr.String()).Err()
 }

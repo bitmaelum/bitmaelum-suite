@@ -2,17 +2,18 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 )
 
+// OutputResponse is a generic output response
 type OutputResponse struct {
 	Error  bool   `json:"error,omitempty"`
 	Status string `json:"status"`
 }
 
-func JsonOut(w http.ResponseWriter, v interface{}) error {
+// JSONOut outputs the given data structure to JSON
+func JSONOut(w http.ResponseWriter, v interface{}) error {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -27,6 +28,7 @@ func JsonOut(w http.ResponseWriter, v interface{}) error {
 	return err
 }
 
+// ErrorOut outputs an error
 func ErrorOut(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -34,14 +36,14 @@ func ErrorOut(w http.ResponseWriter, code int, msg string) {
 	return
 }
 
-// Return an ok status response
+// StatusOk Return an ok status response
 func StatusOk(status string) *OutputResponse {
 	return &OutputResponse{
 		Status: status,
 	}
 }
 
-// Return an error status response
+// StatusError Return an error status response
 func StatusError(status string) *OutputResponse {
 	return &OutputResponse{
 		Error:  true,
@@ -49,15 +51,7 @@ func StatusError(status string) *OutputResponse {
 	}
 }
 
-// Return an error status response
-func StatusErrorf(status string, args ...interface{}) *OutputResponse {
-	return &OutputResponse{
-		Error:  true,
-		Status: fmt.Sprintf(status, args...),
-	}
-}
-
-// Decode a JSON body or write/return an error
+// DecodeBody decodes a JSON body or write/return an error if an error occurs
 func DecodeBody(w http.ResponseWriter, body io.ReadCloser, v interface{}) error {
 	decoder := json.NewDecoder(body)
 	err := decoder.Decode(v)

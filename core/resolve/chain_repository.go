@@ -23,7 +23,7 @@ func (r *ChainRepository) Add(repo Repository) error {
 }
 
 // Resolve an address through the chained repos
-func (r *ChainRepository) Resolve(addr core.HashAddress) (*ResolveInfo, error) {
+func (r *ChainRepository) Resolve(addr core.HashAddress) (*Info, error) {
 	for idx := range r.repos {
 		info, err := r.repos[idx].Resolve(addr)
 		if err == nil {

@@ -20,6 +20,7 @@ func (c commandSorterByPosition) Less(i, j int) bool {
 	return si < sj
 }
 
+// SelectAndRun checks the current commandline and runs the given command
 func SelectAndRun(cmd *cobra.Command, args []string) {
 	// Add all non-hidden commands (gets rid of "help")
 	var items []*cobra.Command

@@ -5,13 +5,15 @@ import (
 	"io/ioutil"
 )
 
+// Server keeps all server configuration settings
 var Server ServerConfig = ServerConfig{}
 
 // Basically, our config is inside the "config" section. So we load the whole file and only store the Cfg section
-type WrappedServerConfig struct {
+type wrappedServerConfig struct {
 	Cfg ServerConfig `yaml:"config"`
 }
 
+// ServerConfig is the representation of the server configuration
 type ServerConfig struct {
 	Logging struct {
 		Level   string `yaml:"log_level"`
@@ -47,19 +49,19 @@ type ServerConfig struct {
 		} `yaml:"local"`
 
 		Remote struct {
-			Url string `yaml:"url"`
+			URL string `yaml:"url"`
 		} `yaml:"remote"`
 	} `yaml:"resolver"`
 }
 
-// Load server configuration
+// LoadConfig loads the server configuration from the given path
 func (c *ServerConfig) LoadConfig(configPath string) error {
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return err
 	}
 
-	var lc WrappedServerConfig = WrappedServerConfig{}
+	var lc wrappedServerConfig = wrappedServerConfig{}
 	err = yaml.Unmarshal(data, &lc)
 	if err != nil {
 		return err

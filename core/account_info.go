@@ -1,5 +1,6 @@
 package core
 
+// AccountInfo represents client account information
 type AccountInfo struct {
 	Address string `json:"address"` // The address of the account
 

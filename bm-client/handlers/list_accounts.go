@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// ListAccounts displays the current accounts available in the vault
 func ListAccounts(displayKeys bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 

@@ -4,6 +4,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/core"
 )
 
+// Header represents a message header
 type Header struct {
 	From struct {
 		Addr        core.HashAddress `json:"address"`
@@ -21,6 +22,7 @@ type Header struct {
 	} `json:"catalog"`
 }
 
+// Checksum holds a checksum which consists of the checksum hash value, and the given type of the checksum
 type Checksum struct {
 	Hash  string `json:"hash"`
 	Value string `json:"value"`

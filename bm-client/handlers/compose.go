@@ -16,6 +16,7 @@ import (
 	"strings"
 )
 
+// ComposeMessage composes a new message from the given account Info to the "to" with given subject, blocks and attachments
 func ComposeMessage(ai core.AccountInfo, to core.Address, subject string, b, a []string) error {
 	// Resolve public key for our recipient
 	resolver := container.GetResolveService()
@@ -41,7 +42,7 @@ func ComposeMessage(ai core.AccountInfo, to core.Address, subject string, b, a [
 	}
 
 	// Encrypt catalog for upload
-	catalogKey, encryptedCatalog, err := encrypt.EncryptCatalog(*catalog)
+	catalogKey, encryptedCatalog, err := encrypt.CatalogEncrypt(*catalog)
 	if err != nil {
 		return err
 	}
@@ -52,21 +53,21 @@ func ComposeMessage(ai core.AccountInfo, to core.Address, subject string, b, a [
 		return err
 	}
 
-	messageId, err := uuid.NewRandom()
+	messageID, err := uuid.NewRandom()
 	if err != nil {
 		return err
 	}
 
-	err = uploadToServer(messageId.String(), ai, header, encryptedCatalog, catalog)
+	err = uploadToServer(messageID.String(), ai, header, encryptedCatalog, catalog)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Outoging message created: %s\n", messageId.String())
+	fmt.Printf("Outoging message created: %s\n", messageID.String())
 	return nil
 }
 
-func uploadToServer(msgId string, ai core.AccountInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
+func uploadToServer(msgID string, ai core.AccountInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
 	// Upload message to server
 	addr := core.StringToHash(ai.Address)
 
@@ -78,29 +79,29 @@ func uploadToServer(msgId string, ai core.AccountInfo, header *message.Header, e
 	// parallelize uploads
 	g := new(errgroup.Group)
 	g.Go(func() error {
-		return client.UploadHeader(addr, msgId, header)
+		return client.UploadHeader(addr, msgID, header)
 	})
 	g.Go(func() error {
-		return client.UploadCatalog(addr, msgId, encryptedCatalog)
+		return client.UploadCatalog(addr, msgID, encryptedCatalog)
 	})
 	for _, block := range catalog.Blocks {
 		// Store locally, otherwise the anonymous go function doesn't know which "block"
 		b := block
 		g.Go(func() error {
-			return client.UploadBlock(addr, msgId, b.Id, b.Reader)
+			return client.UploadBlock(addr, msgID, b.ID, b.Reader)
 		})
 	}
 	for _, attachment := range catalog.Attachments {
 		// Store locally, otherwise the anonymous go function doesn't know which "attachment"
 		a := attachment
 		g.Go(func() error {
-			return client.UploadBlock(addr, msgId, a.Id, a.Reader)
+			return client.UploadBlock(addr, msgID, a.ID, a.Reader)
 		})
 	}
 
 	// Wait until all are completed
 	if err := g.Wait(); err != nil {
-		_ = client.DeleteMessage(addr, msgId)
+		_ = client.DeleteMessage(addr, msgID)
 		return err
 	}
 
@@ -108,7 +109,7 @@ func uploadToServer(msgId string, ai core.AccountInfo, header *message.Header, e
 }
 
 // Generate a header file based on the info provided
-func generateHeader(ai core.AccountInfo, toInfo *resolve.ResolveInfo, catalog []byte, catalogKey []byte) (*message.Header, error) {
+func generateHeader(ai core.AccountInfo, toInfo *resolve.Info, catalog []byte, catalogKey []byte) (*message.Header, error) {
 	header := &message.Header{}
 
 	// We can add a multitude of checksums here.. whatever we like
@@ -151,7 +152,7 @@ func generateCatalog(ai core.AccountInfo, toAddr core.HashAddress, subject strin
 	cat.Flags = append(cat.Flags, "important")
 	cat.Labels = append(cat.Labels, "invoice", "sales", "seams-cms")
 	cat.Subject = subject
-	cat.ThreadId = ""
+	cat.ThreadID = ""
 
 	for _, block := range b {
 		err := cat.AddBlock(block)

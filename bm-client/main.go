@@ -26,7 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(core.GetAsciiLogo())
+	fmt.Println(core.GetASCIILogo())
 	core.LoadClientConfig(opts.Config)
 
 	if opts.Password == "" {

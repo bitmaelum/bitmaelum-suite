@@ -11,6 +11,7 @@ import (
 type Service struct {
 	repo Repository
 }
+
 // Info is a structure returned by the external resolver system
 type Info struct {
 	Hash      string `json:"hash"`

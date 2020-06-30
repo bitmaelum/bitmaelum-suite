@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// SetLogging will set the correct level and log path
 func SetLogging(level, path string) {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 	logrus.SetFormatter(new(logrus.TextFormatter))

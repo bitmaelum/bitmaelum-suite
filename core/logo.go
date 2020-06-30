@@ -11,7 +11,7 @@ var asciiLogo = " ____  _ _   __  __            _\n" +
 	"\n" +
 	"   P r i v a c y   i s   y o u r s   a g a i n\n"
 
-var rainbowAsciiLogo = "\033[31m ____  _ _   __  __            _\n" +
+var rainbowASCIILogo = "\033[31m ____  _ _   __  __            _\n" +
 	"\033[32m|  _ \\(_) | |  \\/  |          | |\n" +
 	"\033[33m| |_) |_| |_| \\  / | __ _  ___| |_   _ _ __ ___\n" +
 	"\033[34m|  _ <| | __| |\\/| |/ _` |/ _ \\ | | | | '_ ` _ \\\n" +
@@ -21,7 +21,7 @@ var rainbowAsciiLogo = "\033[31m ____  _ _   __  __            _\n" +
 	"\033[37m   P r i v a c y   i s   y o u r s   a g a i n\n" +
 	"\033[0m"
 
-var rainbow256AsciiLogo = "\033[38;5;208m ____  _ _   __  __            _\n" +
+var rainbow256ASCIILogo = "\033[38;5;208m ____  _ _   __  __            _\n" +
 	"\033[38;5;209m|  _ \\(_) | |  \\/  |          | |\n" +
 	"\033[38;5;210m| |_) |_| |_| \\  / | __ _  ___| |_   _ _ __ ___\n" +
 	"\033[38;5;211m|  _ <| | __| |\\/| |/ _` |/ _ \\ | | | | '_ ` _ \\\n" +
@@ -31,21 +31,21 @@ var rainbow256AsciiLogo = "\033[38;5;208m ____  _ _   __  __            _\n" +
 	"\033[38;5;214m   P r i v a c y   i s   y o u r s   a g a i n\n" +
 	"\033[0m"
 
-// Returns the monochrome version of the logo
-func GetMonochromeAsciiLogo() string {
+// GetMonochromeASCIILogo returns the monochrome version of the logo
+func GetMonochromeASCIILogo() string {
 	return asciiLogo
 }
 
-// Returns ASCII logo with or without colors depending on your console settings
-func GetAsciiLogo() string {
+// GetASCIILogo returns ASCII logo with or without colors depending on your console settings
+func GetASCIILogo() string {
 	// Ooh. Nice and shiny terminal! Display a cool colorscheme
 	if color.IsSupport256Color() || color.IsSupportTrueColor() {
-		return rainbow256AsciiLogo
+		return rainbow256ASCIILogo
 	}
 
 	// A fresh rainbow color made out of the standard 16 ANSI colors
 	if color.IsSupportColor() {
-		return rainbowAsciiLogo
+		return rainbowASCIILogo
 	}
 
 	// No color. Lame :/

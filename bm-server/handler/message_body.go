@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//
+// PostMessageBody in progress
 func PostMessageBody(w http.ResponseWriter, req *http.Request) {
 	is := container.GetIncomingService()
 	path := mux.Vars(req)["addr"]
@@ -37,10 +37,10 @@ func PostMessageBody(w http.ResponseWriter, req *http.Request) {
 
 	// Handle either accept response path or proof-of-work response path
 	switch info.Type {
-	case incoming.ACCEPT:
+	case incoming.Accept:
 		handleAccept(w, req, info)
 		return
-	case incoming.PROOF_OF_WORK:
+	case incoming.ProofOfWork:
 		handlePow(w, req, info)
 		return
 	}
@@ -51,7 +51,7 @@ func PostMessageBody(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewEncoder(w).Encode(StatusError("unknown incoming type for this request"))
 }
 
-func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.IncomingInfoType) {
+func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.InfoType) {
 	is := container.GetIncomingService()
 	decoder := json.NewDecoder(req.Body)
 
@@ -83,7 +83,7 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
 
 	ret := OutputHeaderType{
 		Error:       false,
-		Status:      BODY_ACCEPT,
+		Status:      bodyAccept,
 		Description: "Accepting body for this header",
 		BodyAccept: &BodyAcceptType{
 			Path:    "/incoming/" + path,
@@ -95,6 +95,6 @@ func handlePow(w http.ResponseWriter, req *http.Request, info *incoming.Incoming
 	_ = json.NewEncoder(w).Encode(ret)
 }
 
-func handleAccept(w http.ResponseWriter, req *http.Request, info *incoming.IncomingInfoType) {
+func handleAccept(w http.ResponseWriter, req *http.Request, info *incoming.InfoType) {
 
 }

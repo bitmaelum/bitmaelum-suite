@@ -5,13 +5,15 @@ import (
 	"io/ioutil"
 )
 
+// Client keeps all client configuration settings
 var Client ClientConfig = ClientConfig{}
 
 // Basically, our config is inside the "config" section. So we load the whole file and only store the Cfg section
-type WrappedClientConfig struct {
+type wrappedClientConfig struct {
 	Cfg ClientConfig `yaml:"config"`
 }
 
+// ClientConfig is the representation of the client configuration
 type ClientConfig struct {
 	Accounts struct {
 		Path        string `yaml:"path"`
@@ -32,19 +34,19 @@ type ClientConfig struct {
 		} `yaml:"local"`
 
 		Remote struct {
-			Url string `yaml:"url"`
+			URL string `yaml:"url"`
 		} `yaml:"remote"`
 	} `yaml:"resolver"`
 }
 
-// Load client configuration
+// LoadConfig loads the client configuration from the given path
 func (c *ClientConfig) LoadConfig(configPath string) error {
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return err
 	}
 
-	var lc WrappedClientConfig = WrappedClientConfig{}
+	var lc wrappedClientConfig = wrappedClientConfig{}
 	err = yaml.Unmarshal(data, &lc)
 	if err != nil {
 		return err

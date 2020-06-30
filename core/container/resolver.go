@@ -15,6 +15,7 @@ var dhtKeysRepository *resolve.Repository = nil
 
 var chainKeysRepository *resolve.ChainRepository = nil
 
+// GetResolveService retrieves a resolver service
 func GetResolveService() *resolve.Service {
 	if resolveService != nil {
 		return resolveService
@@ -52,7 +53,7 @@ func getRemoteRepository() *resolve.Repository {
 		return remoteKeysRepository
 	}
 
-	repo := resolve.NewRemoteRepository(config.Client.Resolver.Remote.Url)
+	repo := resolve.NewRemoteRepository(config.Client.Resolver.Remote.URL)
 	remoteKeysRepository = &repo
 	return remoteKeysRepository
 }

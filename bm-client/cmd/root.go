@@ -12,6 +12,7 @@ var rootCmd = &cobra.Command{
 	Long:  `This client allows you to manage accounts, read and compose mail.`,
 }
 
+// Execute runs the given command
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

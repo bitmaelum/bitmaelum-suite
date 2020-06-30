@@ -1,7 +1,8 @@
 package messagebox
 
+// MessageList is a message list
 type MessageList struct {
-	Id    string   `json:"id"`
+	ID    string   `json:"id"`
 	Dt    string   `json:"datetime"`
 	Flags []string `json:"flags"`
 }

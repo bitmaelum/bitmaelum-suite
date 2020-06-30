@@ -9,17 +9,18 @@ import (
 var incomingService *incoming.Service = nil
 var incomingRepository *incoming.Repository = nil
 
+// GetIncomingService retrieves an incoming service
 func GetIncomingService() *incoming.Service {
 	if incomingService != nil {
 		return incomingService
 	}
 
-	repo := GetIncomingRepository()
+	repo := getIncomingRepository()
 	incomingService = incoming.NewIncomingService(*repo)
 	return incomingService
 }
 
-func GetIncomingRepository() *incoming.Repository {
+func getIncomingRepository() *incoming.Repository {
 	if incomingRepository != nil {
 		return incomingRepository
 	}

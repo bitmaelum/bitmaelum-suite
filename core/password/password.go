@@ -26,6 +26,7 @@ func FetchPassword(addr *core.Address) ([]byte, error) {
 	return p, e
 }
 
+// StorePassword will store the given password into the keychain if possible
 func StorePassword(addr *core.Address, pwd []byte) error {
 	if keychain.IsAvailable() {
 		_, err := keychain.Fetch(*addr)
@@ -37,6 +38,7 @@ func StorePassword(addr *core.Address, pwd []byte) error {
 	return nil
 }
 
+// AskDoublePassword will ask for a password (and confirmation) on the commandline
 func AskDoublePassword() []byte {
 	for {
 		fmt.Printf("Please enter your vault password: ")
@@ -55,6 +57,7 @@ func AskDoublePassword() []byte {
 	}
 }
 
+// AskPassword will ask for a password (without confirmation) on the commandline
 func AskPassword() []byte {
 	fmt.Printf("Please enter your vault password: ")
 	p1, _ := terminal.ReadPassword(syscall.Stdin)

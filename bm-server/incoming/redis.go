@@ -9,6 +9,7 @@ type redisRepo struct {
 	client *redis.Client
 }
 
+// NewRedisRepository create a new redis repository
 func NewRedisRepository(opts *redis.Options) Repository {
 	return &redisRepo{
 		client: redis.NewClient(opts),

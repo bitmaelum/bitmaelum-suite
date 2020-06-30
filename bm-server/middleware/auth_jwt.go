@@ -12,9 +12,13 @@ import (
 	"strings"
 )
 
+// JwtToken is a middleware that automatically verifies given JWT token
 type JwtToken struct{}
 
-// JWT token authentication
+type claimsContext string
+type addressContext string
+
+// Middleware JWT token authentication
 func (*JwtToken) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		addr := core.HashAddress(mux.Vars(req)["addr"])
@@ -36,8 +40,8 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 		}
 
 		ctx := req.Context()
-		ctx = context.WithValue(ctx, "claims", token.Claims)
-		ctx = context.WithValue(ctx, "address", token.Claims.(*jwt.StandardClaims).Subject)
+		ctx = context.WithValue(ctx, claimsContext("claims"), token.Claims)
+		ctx = context.WithValue(ctx, addressContext("address"), token.Claims.(*jwt.StandardClaims).Subject)
 
 		next.ServeHTTP(w, req.WithContext(ctx))
 	})

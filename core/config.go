@@ -16,7 +16,7 @@ import (
  * 5. Error (or pass)
  */
 
-// Load client configuration from given path or panic if cannot load
+// LoadClientConfig loads client configuration from given path or panic if cannot load
 func LoadClientConfig(path string) {
 	loaded := LoadClientConfigOrPass(path)
 	if !loaded {
@@ -24,7 +24,7 @@ func LoadClientConfig(path string) {
 	}
 }
 
-// Load server configuration from given path or panic if cannot load
+// LoadServerConfig loads server configuration from given path or panic if cannot load
 func LoadServerConfig(path string) {
 	loaded := LoadServerConfigOrPass(path)
 	if !loaded {
@@ -32,7 +32,7 @@ func LoadServerConfig(path string) {
 	}
 }
 
-// Load client configuration, but return false if not able
+// LoadClientConfigOrPass loads client configuration, but return false if not able
 func LoadClientConfigOrPass(path string) bool {
 	var err error
 
@@ -56,7 +56,7 @@ func LoadClientConfigOrPass(path string) bool {
 	return false
 }
 
-// Load client configuration, but return false if not able
+// LoadServerConfigOrPass loads client configuration, but return false if not able
 func LoadServerConfigOrPass(path string) bool {
 	var err error
 

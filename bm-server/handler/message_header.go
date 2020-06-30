@@ -13,11 +13,12 @@ import (
 )
 
 const (
-	PROOF_OF_WORK          string = "proof_of_work"
-	BODY_ACCEPT            string = "body_accept"
-	BITS_FOR_PROOF_OF_WORK int    = 22
+	proofOfWork        string = "proof_of_work"
+	bodyAccept         string = "body_accept"
+	bitsForProofOfWork int    = 22
 )
 
+// ProofOfWorkType structure
 type ProofOfWorkType struct {
 	Bits    int    `json:"bits"`
 	Nonce   string `json:"nonce"`
@@ -25,11 +26,13 @@ type ProofOfWorkType struct {
 	Timeout string `json:"timeout"`
 }
 
+// BodyAcceptType structure
 type BodyAcceptType struct {
 	Path    string `json:"path"`
 	Timeout string `json:"timeout"`
 }
 
+// OutputHeaderType structure
 type OutputHeaderType struct {
 	Error       bool             `json:"error"`
 	Status      string           `json:"status"`
@@ -38,7 +41,7 @@ type OutputHeaderType struct {
 	BodyAccept  *BodyAcceptType  `json:"body_accept,omitempty"`
 }
 
-// Handler when a message header is posted
+// PostMessageHeader Handler when a message header is posted
 func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 	is := container.GetIncomingService()
 
@@ -66,7 +69,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 	// Check if we need proof of work.
 	if needsProofOfWork(input) {
 		// Generate proof-of-work data
-		path, nonce, err := is.GeneratePowResponsePath(input.From.Addr, BITS_FOR_PROOF_OF_WORK, checksum[:])
+		path, nonce, err := is.GeneratePowResponsePath(input.From.Addr, bitsForProofOfWork, checksum[:])
 		if err != nil {
 			ErrorOut(w, http.StatusBadRequest, err.Error())
 			return
@@ -77,7 +80,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 		to.Add(time.Minute * 30)
 
 		pow := &ProofOfWorkType{
-			Bits:    BITS_FOR_PROOF_OF_WORK,
+			Bits:    bitsForProofOfWork,
 			Nonce:   nonce,
 			Path:    "/incoming/" + path,
 			Timeout: to.Format(time.RFC3339),
@@ -85,7 +88,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 
 		ret := OutputHeaderType{
 			Error:       false,
-			Status:      PROOF_OF_WORK,
+			Status:      proofOfWork,
 			Description: "A proof of work is needed before we will accept this message",
 			ProofOfWork: pow,
 		}
@@ -109,7 +112,7 @@ func PostMessageHeader(w http.ResponseWriter, req *http.Request) {
 
 	ret := OutputHeaderType{
 		Error:       false,
-		Status:      BODY_ACCEPT,
+		Status:      bodyAccept,
 		Description: "Accepting body for this header",
 		BodyAccept: &BodyAcceptType{
 			Path:    "/incoming/" + path,

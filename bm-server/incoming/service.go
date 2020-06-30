@@ -10,15 +10,19 @@ import (
 )
 
 const (
-	PROOF_OF_WORK string = "pow"
-	ACCEPT        string = "accept"
+	// ProofOfWork constant
+	ProofOfWork string = "pow"
+	// Accept constant
+	Accept string = "accept"
 )
 
+// Service representing an incoming service
 type Service struct {
 	repo Repository
 }
 
-type IncomingInfoType struct {
+// InfoType is a structure
+type InfoType struct {
 	Type     string           `json:"type"`
 	Addr     core.HashAddress `json:"address"`
 	Nonce    string           `json:"nonce,omitempty"`
@@ -26,17 +30,17 @@ type IncomingInfoType struct {
 	Checksum []byte           `json:"checksum"`
 }
 
-// Create new incoming service
+// NewIncomingService Create new incoming service
 func NewIncomingService(repo Repository) *Service {
 	return &Service{
 		repo: repo,
 	}
 }
 
-// Generate an accept response path
+// GenerateAcceptResponsePath generates an accept response path
 func (is *Service) GenerateAcceptResponsePath(addr core.HashAddress, checksum []byte) (string, error) {
-	data := &IncomingInfoType{
-		Type:     ACCEPT,
+	data := &InfoType{
+		Type:     Accept,
 		Addr:     addr,
 		Checksum: checksum,
 	}
@@ -55,7 +59,7 @@ func (is *Service) GenerateAcceptResponsePath(addr core.HashAddress, checksum []
 	return path, nil
 }
 
-// Generate an proof-of-work response
+// GeneratePowResponsePath generates an proof-of-work response
 func (is *Service) GeneratePowResponsePath(addr core.HashAddress, bits int, checksum []byte) (string, string, error) {
 	rnd := make([]byte, 32)
 	_, err := rand.Read(rnd)
@@ -64,8 +68,8 @@ func (is *Service) GeneratePowResponsePath(addr core.HashAddress, bits int, chec
 	}
 	nonce := base64.StdEncoding.EncodeToString(rnd)
 
-	data := &IncomingInfoType{
-		Type:     PROOF_OF_WORK,
+	data := &InfoType{
+		Type:     ProofOfWork,
 		Addr:     addr,
 		Nonce:    nonce,
 		Bits:     bits,
@@ -86,7 +90,7 @@ func (is *Service) GeneratePowResponsePath(addr core.HashAddress, bits int, chec
 	return path, nonce, nil
 }
 
-// Remove an incoming path
+// RemovePath removes an incoming path
 func (is *Service) RemovePath(path string) error {
 	_ = is.repo.Remove(path)
 
@@ -103,8 +107,8 @@ func (is *Service) generatePath() (string, error) {
 	return path.String(), nil
 }
 
-// Get incoming info
-func (is *Service) GetIncomingPath(path string) (*IncomingInfoType, error) {
+// GetIncomingPath gets incoming info
+func (is *Service) GetIncomingPath(path string) (*InfoType, error) {
 	found, err := is.repo.Has(path)
 	if err != nil {
 		return nil, err
@@ -117,7 +121,7 @@ func (is *Service) GetIncomingPath(path string) (*IncomingInfoType, error) {
 		return nil, err
 	}
 
-	incomingInfo := IncomingInfoType{}
+	incomingInfo := InfoType{}
 	err = json.Unmarshal(data, &incomingInfo)
 	if err != nil {
 		return nil, err

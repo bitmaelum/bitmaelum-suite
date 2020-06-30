@@ -18,6 +18,7 @@ as a proof-of-concept to demonstrate that it should be easy to use.`,
 	Run: SelectAndRun,
 }
 
+// Execute runs the current command
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

@@ -9,17 +9,18 @@ import (
 var accountService *account.Service = nil
 var accountRepository *account.Repository = nil
 
+// GetAccountService retrieves an account service
 func GetAccountService() *account.Service {
 	if accountService != nil {
 		return accountService
 	}
 
-	repo := GetAccountRepository()
-	accountService = account.AccountService(*repo)
+	repo := getAccountRepository()
+	accountService = account.NewService(*repo)
 	return accountService
 }
 
-func GetAccountRepository() *account.Repository {
+func getAccountRepository() *account.Repository {
 	if accountRepository != nil {
 		return accountRepository
 	}

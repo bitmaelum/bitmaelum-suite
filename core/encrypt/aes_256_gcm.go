@@ -9,19 +9,19 @@ import (
 	"io"
 )
 
-// Encrypt json data with AES256
-func EncryptJson(key []byte, data interface{}) ([]byte, error) {
+// JSONEncrypt encrypts a structure that is marshalled to JSON
+func JSONEncrypt(key []byte, data interface{}) ([]byte, error) {
 	plaintext, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 
-	return EncryptMessage(key, plaintext)
+	return MessageEncrypt(key, plaintext)
 }
 
-// Decrypt AES256 data back into json data
-func DecryptJson(key []byte, ciphertext []byte, v interface{}) error {
-	plaintext, err := DecryptMessage(key, ciphertext)
+// JSONDecrypt decrypts data back from a encrypted marshalled JSON structure
+func JSONDecrypt(key []byte, ciphertext []byte, v interface{}) error {
+	plaintext, err := MessageDecrypt(key, ciphertext)
 	if err != nil {
 		return err
 	}
@@ -29,8 +29,8 @@ func DecryptJson(key []byte, ciphertext []byte, v interface{}) error {
 	return json.Unmarshal(plaintext, &v)
 }
 
-// Encrypt a binary message
-func EncryptMessage(key []byte, plaintext []byte) ([]byte, error) {
+// MessageEncrypt encrypts a binary message
+func MessageEncrypt(key []byte, plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return nil, err
@@ -49,8 +49,8 @@ func EncryptMessage(key []byte, plaintext []byte) ([]byte, error) {
 	return append(nonce, aead.Seal(nil, nonce, plaintext, nil)...), nil
 }
 
-// Decrypt a binary message
-func DecryptMessage(key []byte, message []byte) ([]byte, error) {
+// MessageDecrypt decrypts a binary message
+func MessageDecrypt(key []byte, message []byte) ([]byte, error) {
 	// Key should be 32byte (256bit)
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -71,14 +71,14 @@ func DecryptMessage(key []byte, message []byte) ([]byte, error) {
 	return aead.Open(nil, nonce, ciphertext, nil)
 }
 
-// Encrypts a catalog with a random key.
-func EncryptCatalog(catalog message.Catalog) ([]byte, []byte, error) {
+// CatalogEncrypt encrypts a catalog with a random key.
+func CatalogEncrypt(catalog message.Catalog) ([]byte, []byte, error) {
 	catalogKey, err := keyGenerator()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	ciphertext, err := EncryptJson(catalogKey, catalog)
+	ciphertext, err := JSONEncrypt(catalogKey, catalog)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -86,15 +86,15 @@ func EncryptCatalog(catalog message.Catalog) ([]byte, []byte, error) {
 	return catalogKey, ciphertext, nil
 }
 
-// Decrypt a catalog with the given key
-func DecryptCatalog(key, data []byte) (*message.Catalog, error) {
+// CatalogDecrypt decrypts a catalog with the given key
+func CatalogDecrypt(key, data []byte) (*message.Catalog, error) {
 	// data, err := encode.Decode(data)
 	// if err != nil {
 	// 	return nil, err
 	// }
 
 	catalog := &message.Catalog{}
-	err := DecryptJson(key, data, &catalog)
+	err := JSONDecrypt(key, data, &catalog)
 	if err != nil {
 		return nil, err
 	}

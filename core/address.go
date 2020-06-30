@@ -11,38 +11,38 @@ import (
 
 const (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
-	ADDRESS_REGEX string = "(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$"
+	addressRegex string = "(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$"
 )
 
-// SHA256'd address
+// HashAddress is a SHA256'd address
 type HashAddress string
 
-// Cast an hash address to string
+// String casts an hash address to string
 func (ha HashAddress) String() string {
 	return string(ha)
 }
 
-// An actual address
+// Address represents a bitMaelum address
 type Address struct {
 	Local string
 	Org   string
 }
 
-// Actual hash function
+// StringToHash converts a string to a hash address
 func StringToHash(address string) HashAddress {
 	sum := sha256.Sum256([]byte(address))
 	return HashAddress(hex.EncodeToString(sum[:]))
 }
 
-// Return true when the given string is a valid address
+// IsValidAddress returns true when the given string is a valid BitMaelum address
 func IsValidAddress(address string) bool {
 	_, err := NewAddressFromString(address)
 	return err == nil
 }
 
-// Returns a valid address structure
+// NewAddressFromString returns a valid address structure based on the given address
 func NewAddressFromString(address string) (*Address, error) {
-	re := regexp.MustCompile(ADDRESS_REGEX)
+	re := regexp.MustCompile(addressRegex)
 	if re == nil {
 		return nil, errors.New("cannot compile regex")
 	}
@@ -59,7 +59,7 @@ func NewAddressFromString(address string) (*Address, error) {
 	}, nil
 }
 
-// Converts an address to a string
+// String converts an address to a string
 func (a *Address) String() string {
 	if len(a.Org) == 0 {
 		return fmt.Sprintf("%s!", a.Local)
@@ -68,12 +68,12 @@ func (a *Address) String() string {
 	return fmt.Sprintf("%s@%s!", a.Local, a.Org)
 }
 
-// Converts an address to a hashed value
+// Hash converts an address to a hashed value
 func (a *Address) Hash() HashAddress {
 	return StringToHash(a.String())
 }
 
-// Converts an address to []byte
+// Bytes converts an address to []byte
 func (a *Address) Bytes() []byte {
 	return []byte(a.String())
 }

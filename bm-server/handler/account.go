@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type InputCreateAccount struct {
+type inputCreateAccount struct {
 	Addr        core.HashAddress `json:"address"`
 	Token       string           `json:"token"`
 	PublicKey   string           `json:"public_key"`
@@ -20,9 +20,9 @@ type InputCreateAccount struct {
 	} `json:"proof_of_work"`
 }
 
-// Create account handler
+// CreateAccount will create a new account
 func CreateAccount(w http.ResponseWriter, req *http.Request) {
-	var input InputCreateAccount
+	var input inputCreateAccount
 	err := DecodeBody(w, req.Body, &input)
 	if err != nil {
 		return
@@ -74,7 +74,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewEncoder(w).Encode(StatusOk("BitMaelum account has been successfully created."))
 }
 
-// Retrieve account information
+// RetrieveAccount retrieves account information
 func RetrieveAccount(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

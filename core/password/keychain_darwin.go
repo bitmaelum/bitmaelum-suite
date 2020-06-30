@@ -9,25 +9,27 @@ import (
 )
 
 const (
-	ACCESSGROUP string = "keychain.bitmaelum.nl"
-	SERVICE     string = "bitmaelum"
+	accessGroup string = "keychain.bitmaelum.nl"
+	service     string = "bitmaelum"
 )
 
 var (
-	// Key not found
+	// ErrorKeyNotFound is returned when a key could not be found in the keychain
 	ErrorKeyNotFound = errors.New("key not found")
 )
 
+// IsAvailable returns true when a keychain is available
 func (kc *KeyChain) IsAvailable() bool {
 	return true
 }
 
+// Fetch returns a key/password for the given address
 func (kc *KeyChain) Fetch(addr core.Address) ([]byte, error) {
 	query := gokeychain.NewItem()
 	query.SetSecClass(gokeychain.SecClassGenericPassword)
-	query.SetService(SERVICE)
+	query.SetService(service)
 	query.SetAccount(addr.String())
-	query.SetAccessGroup(ACCESSGROUP)
+	query.SetAccessGroup(accessGroup)
 	query.SetMatchLimit(gokeychain.MatchLimitOne)
 	query.SetReturnData(true)
 	results, err := gokeychain.QueryItem(query)
@@ -40,13 +42,14 @@ func (kc *KeyChain) Fetch(addr core.Address) ([]byte, error) {
 	}
 }
 
+// Store stores a key/password for the given address in the keychain/vault
 func (kc *KeyChain) Store(addr core.Address, key []byte) error {
 	item := gokeychain.NewItem()
 	item.SetSecClass(gokeychain.SecClassGenericPassword)
-	item.SetService(SERVICE)
+	item.SetService(service)
 	item.SetAccount(addr.String())
 	item.SetLabel("")
-	item.SetAccessGroup(ACCESSGROUP)
+	item.SetAccessGroup(accessGroup)
 	item.SetData(key)
 	item.SetSynchronizable(gokeychain.SynchronizableNo)
 	item.SetAccessible(gokeychain.AccessibleAfterFirstUnlockThisDeviceOnly)
