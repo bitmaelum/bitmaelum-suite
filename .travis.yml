@@ -17,3 +17,9 @@ before_script:
   - gofmt -l .
   - go vet ./...
   - $HOME/gopath/bin/golint ./...
+
+script:
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

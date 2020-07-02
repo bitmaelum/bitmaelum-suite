@@ -1,8 +1,9 @@
-package foobar
+package message
+
+// Functions for message that are uploaded from clients
 
 import (
 	"github.com/bitmaelum/bitmaelum-server/core/container"
-	"github.com/bitmaelum/bitmaelum-server/core/message"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,14 +22,14 @@ func process(uuid string) {
 	// defer unsetProcessingList(uuid)
 
 	// Fetch header
-	header, err := message.GetMessageHeader(uuid)
+	header, err := GetMessageHeader(uuid)
 	if err != nil {
 		return
 	}
 
 	// 1. Move message to processing area
 	logrus.Debugf("moving message %s to processing queue", uuid)
-	err = message.MoveIncomingMessageToProcessingQueue(uuid)
+	err = MoveIncomingMessageToProcessingQueue(uuid)
 	if err != nil {
 		logrus.Errorf("cannot move message %s to processing queue", uuid)
 		return
