@@ -44,7 +44,7 @@ func GenerateKeyPair(kt keyType) (string, string, error) {
 		pubKey = privKey.(*ecdsa.PrivateKey).Public()
 	case KeyTypeED25519:
 		var err error
-		privKey, pubKey, err = ed25519.GenerateKey(rand.Reader)
+		pubKey, privKey, err = ed25519.GenerateKey(rand.Reader)
 		if err != nil {
 			return "", "", err
 		}
