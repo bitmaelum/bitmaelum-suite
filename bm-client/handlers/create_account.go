@@ -21,7 +21,7 @@ func CreateAccount(address, name, organisation, server, token string, passwd []b
 
 	addr, _ := core.NewAddressFromString(address)
 	ks := container.GetResolveService()
-	_, err := ks.Resolve(*addr)
+	_, err := ks.Resolve(addr.Hash())
 	if err == nil {
 		fmt.Printf("It seems that this address is already in use. Please specify another address.")
 		fmt.Println("")

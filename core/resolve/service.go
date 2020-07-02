@@ -4,7 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
+	"net/url"
+	"strings"
 )
 
 // Service represents a resolver service tied to a specific repository
@@ -26,9 +29,41 @@ func KeyRetrievalService(repo Repository) *Service {
 	}
 }
 
+// IsLocal returns true when the resolve address of the info is our own server address
+func (info *Info) IsLocal() bool {
+	localHost, localPort, err := getHostPort(config.Server.Server.Name)
+	if err != nil {
+		return false
+	}
+	infoHost, infoPort, err := getHostPort(info.Address)
+	if err != nil {
+		return false
+	}
+
+	return localHost == infoHost && localPort == infoPort
+}
+
+func getHostPort(hostport string) (string, string, error) {
+	// We need schema otherwise url.Parse does not work
+	if ! strings.HasPrefix(hostport, "http://") && ! strings.HasPrefix(hostport, "https://") {
+		hostport = "https://" + hostport
+	}
+
+	info, err := url.Parse(hostport)
+	if err != nil {
+		return "", "", err
+	}
+
+	if info.Port() == "" {
+		info.Host = info.Host + ":2424"
+	}
+
+	return info.Hostname(), info.Port(), nil
+}
+
 // Resolve resolves an address.
-func (s *Service) Resolve(addr core.Address) (*Info, error) {
-	return s.repo.Resolve(addr.Hash())
+func (s *Service) Resolve(addr core.HashAddress) (*Info, error) {
+	return s.repo.Resolve(addr)
 }
 
 // UploadInfo uploads resolve information to a service.

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/bm-server/foobar"
 	"github.com/bitmaelum/bitmaelum-server/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-server/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-server/core"
@@ -76,8 +75,6 @@ func main() {
 		handler = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, mainRouter)
 	}
 
-	// Setup functions and channels for doing stuff
-	foobar.InitClientIncoming()
 
 	host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
 	logrus.Tracef("listenAndServeTLS on '%s'", host)

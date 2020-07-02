@@ -29,6 +29,7 @@ type ServerConfig struct {
 	} `yaml:"accounts"`
 
 	Server struct {
+		Name string `yaml:"hostname"`
 		Host string `yaml:"host"`
 		Port int    `yaml:"port"`
 	} `yaml:"server"`

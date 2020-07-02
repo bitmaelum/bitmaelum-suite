@@ -2,16 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/bm-server/foobar"
 	"github.com/bitmaelum/bitmaelum-server/core/message"
 	"github.com/gorilla/mux"
-	"github.com/mitchellh/go-homedir"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path"
 )
 
 // UploadMessageHeader deals with uploading message headers
@@ -19,58 +15,29 @@ func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
 
-	p, err := getOutgoingPath(uuid, "header.json")
-	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "header path not found")
-		return
-	}
-
-	// @TODO: When we send message to multiple users, we have multiple headers.
-	// Check if header is already present
-	_, err = os.Stat(p)
-	if err == nil {
+	// Did we already upload the header?
+	if message.IncomingPathExists(uuid, "header.json") {
 		ErrorOut(w, http.StatusConflict, "header already uploaded")
 		return
 	}
 
-	// Create path first
-	err = os.MkdirAll(path.Dir(p), 0777)
+	// Read header from request body
+	header, err := readHeaderFromBody(req.Body)
 	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "cannot create path")
+		ErrorOut(w, http.StatusBadRequest, "incorrect header structure")
 		return
 	}
 
-	data, err := ioutil.ReadAll(req.Body)
+	// Save request
+	err = message.StoreMessageHeader(uuid, header)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "cannot read body")
-		return
-	}
-
-	header := &message.Header{}
-	err = json.Unmarshal(data, &header)
-	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect header format")
-		return
-	}
-
-	// Copy body straight to catalog file
-	headerFile, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
-	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "cannot save header")
-		return
-	}
-
-	headerLen, err := headerFile.Write(data)
-	if err != nil {
-		// Something went wrong, remove the file just in case something was already written
-		_ = os.Remove(p)
-		ErrorOut(w, http.StatusInternalServerError, "cannot save header")
+		ErrorOut(w, http.StatusInternalServerError, "error while storing message header")
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk(fmt.Sprintf("saved header of %d bytes", headerLen)))
+	_ = json.NewEncoder(w).Encode(StatusOk("header saved"))
 	return
 }
 
@@ -79,44 +46,21 @@ func UploadMessageCatalog(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
 
-	p, err := getOutgoingPath(uuid, "catalog")
-	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "catalog path not found")
-		return
-	}
-
-	// Check if catalog is already present
-	_, err = os.Stat(p)
-	if err == nil {
+	// Did we already upload the header?
+	if message.IncomingPathExists(uuid, "catalog") {
 		ErrorOut(w, http.StatusConflict, "catalog already uploaded")
 		return
 	}
 
-	// Create path first
-	err = os.MkdirAll(path.Dir(p), 0777)
+	err := message.StoreCatalog(uuid, req.Body)
 	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "cannot create path")
-		return
-	}
-
-	// Copy body straight to catalog file
-	catFile, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
-	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "cannot save catalog")
-		return
-	}
-
-	blockLen, err := io.Copy(catFile, req.Body)
-	if err != nil {
-		// Something went wrong, remove the file just in case something was already written
-		_ = os.Remove(p)
-		ErrorOut(w, http.StatusInternalServerError, "cannot save catalog")
+		ErrorOut(w, http.StatusInternalServerError, "error while storing message header")
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk(fmt.Sprintf("saved catalog of %d bytes", blockLen)))
+	_ = json.NewEncoder(w).Encode(StatusOk("saved catalog"))
 	return
 }
 
@@ -126,44 +70,21 @@ func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 	uuid := vars["uuid"]
 	id := vars["id"]
 
-	p, err := getOutgoingPath(uuid, id)
-	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "path not found")
-		return
-	}
-
-	// Check if block is already present
-	_, err = os.Stat(p)
-	if err == nil {
+	// Did we already upload the header?
+	if message.IncomingPathExists(uuid, id) {
 		ErrorOut(w, http.StatusConflict, "block already uploaded")
 		return
 	}
 
-	// Create path if needed
-	err = os.MkdirAll(path.Dir(p), 0777)
+	err := message.StoreBlock(uuid, id, req.Body)
 	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "cannot create path")
-		return
-	}
-
-	// Copy body straight to block file
-	blockFile, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
-	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "cannot save block")
-		return
-	}
-
-	blockLen, err := io.Copy(blockFile, req.Body)
-	if err != nil {
-		// Something went wrong, remove the file just in case something was already written
-		_ = os.Remove(p)
-		ErrorOut(w, http.StatusInternalServerError, "cannot save block")
+		ErrorOut(w, http.StatusInternalServerError, "error while storing message block")
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk(fmt.Sprintf("saved block of %d bytes", blockLen)))
+	_ = json.NewEncoder(w).Encode(StatusOk("saved message block"))
 	return
 }
 
@@ -172,16 +93,13 @@ func SendMessage(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
 
-	p, _ := getOutgoingPath(uuid, "")
-	_, err := os.Stat(p)
-	if err != nil {
+	if ! message.IncomingPathExists(uuid, "") {
 		ErrorOut(w, http.StatusNotFound, "message not found")
 		return
 	}
 
 	// Send uuid to client processor
 	foobar.ProcessIncomingClientMessage(uuid)
-	// foobar.ClientCh <- uuid
 }
 
 // DeleteMessage is called whenever we want to completely remove a message by user request
@@ -190,14 +108,12 @@ func DeleteMessage(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
 
-	p, _ := getOutgoingPath(uuid, "")
-	_, err := os.Stat(p)
-	if err != nil {
+	if ! message.IncomingPathExists(uuid, "") {
 		ErrorOut(w, http.StatusNotFound, "message not found")
 		return
 	}
 
-	err = os.RemoveAll(p)
+	err := message.RemoveMessage(uuid)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while deleting outgoing message")
 		return
@@ -209,6 +125,19 @@ func DeleteMessage(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
-func getOutgoingPath(uuid string, file string) (string, error) {
-	return homedir.Expand(path.Join(".outgoing", uuid, file))
+
+
+func readHeaderFromBody(body io.ReadCloser) (*message.Header, error) {
+	data, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
+
+	header := &message.Header{}
+	err = json.Unmarshal(data, &header)
+	if err != nil {
+		return nil, err
+	}
+
+	return header, nil
 }

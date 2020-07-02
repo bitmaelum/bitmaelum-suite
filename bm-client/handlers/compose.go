@@ -20,7 +20,7 @@ import (
 func ComposeMessage(ai core.AccountInfo, to core.Address, subject string, b, a []string) error {
 	// Resolve public key for our recipient
 	resolver := container.GetResolveService()
-	toInfo, err := resolver.Resolve(to)
+	toInfo, err := resolver.Resolve(to.Hash())
 	if err != nil {
 		return fmt.Errorf("cannot retrieve public key for '%s'", to.String())
 	}

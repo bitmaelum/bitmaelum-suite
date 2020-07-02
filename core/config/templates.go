@@ -53,6 +53,9 @@ config:
         # Path to our message accounts
         path: ~/.messagedb
     server:
+		# Hostname and port as this server is known on the internet
+		hostname: localhost:2424
+
         # Address where to listen. Use 0.0.0.0 for all interfaces
         host: 127.0.0.1
 
