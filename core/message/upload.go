@@ -11,8 +11,8 @@ import (
 )
 
 // GetMessageHeader Returns a marshalled message header
-func GetMessageHeader(uuid string) (*Header, error) {
-	p, err := getUploadPath(uuid, "header.json")
+func GetMessageHeader(section, uuid string) (*Header, error) {
+	p, err := getPath(section, uuid, "header.json")
 	if err != nil {
 		return nil, err
 	}
