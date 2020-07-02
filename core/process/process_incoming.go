@@ -1,14 +1,15 @@
-package message
+package process
 
 // Functions for message that are uploaded from clients
 
 import (
 	"github.com/bitmaelum/bitmaelum-server/core/container"
+	"github.com/bitmaelum/bitmaelum-server/core/message"
 	"github.com/sirupsen/logrus"
 )
 
-// ProcessIncomingClientMessage processes a new message send from a client via a go function
-func ProcessIncomingClientMessage(uuid string) {
+// IncomingClientMessage processes a new message send from a client via a go function
+func IncomingClientMessage(uuid string) {
 	logrus.Debugf("processing incoming message %s", uuid)
 	go process(uuid)
 }
@@ -22,14 +23,14 @@ func process(uuid string) {
 	// defer unsetProcessingList(uuid)
 
 	// Fetch header
-	header, err := GetMessageHeader(uuid)
+	header, err := message.GetMessageHeader(uuid)
 	if err != nil {
 		return
 	}
 
 	// 1. Move message to processing area
 	logrus.Debugf("moving message %s to processing queue", uuid)
-	err = MoveIncomingMessageToProcessingQueue(uuid)
+	err = message.MoveIncomingMessageToProcessingQueue(uuid)
 	if err != nil {
 		logrus.Errorf("cannot move message %s to processing queue", uuid)
 		return

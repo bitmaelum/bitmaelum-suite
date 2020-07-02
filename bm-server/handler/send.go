@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-server/bm-server/foobar"
 	"github.com/bitmaelum/bitmaelum-server/core/message"
+	"github.com/bitmaelum/bitmaelum-server/core/process"
 	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
@@ -99,7 +99,7 @@ func SendMessage(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Send uuid to client processor
-	foobar.ProcessIncomingClientMessage(uuid)
+	process.IncomingClientMessage(uuid)
 }
 
 // DeleteMessage is called whenever we want to completely remove a message by user request
