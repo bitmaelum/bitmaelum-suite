@@ -1,18 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-server/bm-server/middleware"
+	"github.com/bitmaelum/bitmaelum-server/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
-	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 type options struct {
@@ -66,8 +70,8 @@ func main() {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.SendMessage).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteMessage).Methods("DELETE")
 
-	cfp, _ := homedir.Expand(config.Server.TLS.CertFile)
-	kfp, _ := homedir.Expand(config.Server.TLS.KeyFile)
+	certFilePath, _ := homedir.Expand(config.Server.TLS.CertFile)
+	KeyFilePath, _ := homedir.Expand(config.Server.TLS.KeyFile)
 
 	// Wrap our router in Apache combined logging if needed
 	var handler http.Handler = mainRouter
@@ -75,11 +79,73 @@ func main() {
 		handler = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, mainRouter)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
+	logrus.Tracef("Starting processing queues")
+	go processQueues(ctx, cancel)
+
 	host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
-	logrus.Tracef("listenAndServeTLS on '%s'", host)
-	err := http.ListenAndServeTLS(host, cfp, kfp, handler)
-	if err != nil {
-		log.Fatal("listenAndServe: ", err)
+	logrus.Tracef("Starting BitMaelum HTTP service on '%s'", host)
+	go runHttpService(ctx, cancel, host, certFilePath, KeyFilePath, handler)
+
+	// Clean up process queues
+	logrus.Tracef("Waiting until context is done")
+	<-ctx.Done()
+	logrus.Tracef("Context is done. Exiting")
+}
+
+func runHttpService(ctx context.Context, cancel context.CancelFunc, addr string, certFilePath string, keyFilePath string, h http.Handler) {
+	srv := &http.Server{Addr: addr, Handler: h}
+
+	go func() {
+		err := srv.ListenAndServeTLS(certFilePath, keyFilePath)
+		if err != nil {
+			// Cancel context on error
+			cancel()
+		}
+	}()
+
+	logrus.Info("HTTP Server up and running")
+
+	// Wait until the context is done
+	for {
+		logrus.Info("Waiting for HTTP server to stop...")
+		select {
+		case <-ctx.Done():
+			logrus.Info("Shutting down the HTTP server...")
+			_ = srv.Close()
+			return
+		}
+	}
+}
+
+func processQueues(ctx context.Context, cancel context.CancelFunc) {
+	ticker := time.NewTicker(5 * time.Second)
+
+	sigChannel := make(chan os.Signal, 1)
+	signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
+
+	for {
+		select {
+		case uuid := <- processor.UploadChannel:
+			fmt.Println("upload message", uuid)
+		case uuid := <- processor.OutgoingChannel:
+			fmt.Println("outgoing message", uuid)
+		case uuid := <- processor.IncomingChannel:
+			fmt.Println("incoming message", uuid)
+		case t := <-ticker.C:
+			fmt.Println("ticker fired at", t)
+		case s := <-sigChannel:
+			fmt.Println("signal received", s)
+			cancel()
+		case <-ctx.Done():
+			logrus.Info("Shutting down the processing queues...")
+			time.Sleep(1 * time.Second)
+			return
+		default:
+			time.Sleep(1 * time.Second)
+			fmt.Println("no activity")
+		}
 	}
 }
 

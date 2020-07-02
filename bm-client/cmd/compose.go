@@ -15,6 +15,7 @@ import (
 
 var composeCmd = &cobra.Command{
 	Use:   "compose",
+	Aliases: []string{"write", "send"},
 	Short: "Compose a new message",
 	Long:  `This command will allow you to compose a new message and send it through your BitMaelum server`,
 	Run: func(cmd *cobra.Command, args []string) {
