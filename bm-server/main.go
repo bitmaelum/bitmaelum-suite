@@ -75,7 +75,6 @@ func main() {
 		handler = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, mainRouter)
 	}
 
-
 	host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
 	logrus.Tracef("listenAndServeTLS on '%s'", host)
 	err := http.ListenAndServeTLS(host, cfp, kfp, handler)

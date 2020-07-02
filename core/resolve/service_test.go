@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-
 func Test_IsLocal(t *testing.T) {
 	info := &Info{
 		Hash:      "12345",

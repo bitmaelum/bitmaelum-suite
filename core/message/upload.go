@@ -10,7 +10,6 @@ import (
 	"path"
 )
 
-
 // GetMessageHeader Returns a marshalled message header
 func GetMessageHeader(uuid string) (*Header, error) {
 	p, err := getUploadPath(uuid, "header.json")
@@ -70,7 +69,6 @@ func StoreBlock(uuid, blockID string, r io.Reader) error {
 
 	return nil
 }
-
 
 // StoreCatalog stores a catalog to disk
 func StoreCatalog(uuid string, r io.Reader) error {

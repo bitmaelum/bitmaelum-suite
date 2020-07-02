@@ -93,7 +93,7 @@ func SendMessage(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
 
-	if ! message.IncomingPathExists(uuid, "") {
+	if !message.IncomingPathExists(uuid, "") {
 		ErrorOut(w, http.StatusNotFound, "message not found")
 		return
 	}
@@ -108,7 +108,7 @@ func DeleteMessage(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
 
-	if ! message.IncomingPathExists(uuid, "") {
+	if !message.IncomingPathExists(uuid, "") {
 		ErrorOut(w, http.StatusNotFound, "message not found")
 		return
 	}
@@ -124,8 +124,6 @@ func DeleteMessage(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewEncoder(w).Encode(StatusOk("message removed"))
 	return
 }
-
-
 
 func readHeaderFromBody(body io.ReadCloser) (*message.Header, error) {
 	data, err := ioutil.ReadAll(body)

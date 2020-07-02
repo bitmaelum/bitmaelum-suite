@@ -45,7 +45,7 @@ func (info *Info) IsLocal() bool {
 
 func getHostPort(hostport string) (string, string, error) {
 	// We need schema otherwise url.Parse does not work
-	if ! strings.HasPrefix(hostport, "http://") && ! strings.HasPrefix(hostport, "https://") {
+	if !strings.HasPrefix(hostport, "http://") && !strings.HasPrefix(hostport, "https://") {
 		hostport = "https://" + hostport
 	}
 

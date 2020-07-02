@@ -34,7 +34,6 @@ func process(uuid string) {
 		return
 	}
 
-
 	// 2. Check header for address and get server
 	logrus.Debugf("resolving info for %s", header.To.Addr)
 
@@ -51,7 +50,6 @@ func process(uuid string) {
 		// Do stuff locally
 		logrus.Debugf("Message %s can be transferred locally to %s", uuid, res.Hash)
 	}
-
 
 	logrus.Debugf("Server to send message to is %s ", res.Address)
 	// 3. Communicate with server and send message

@@ -8,13 +8,13 @@ import (
 
 const (
 	// UploadPath Path where message are uploaded from a client
-	UploadPath          string = ".upload"
+	UploadPath string = ".upload"
 
 	// ProcessQueuePath Path where messages are moved while processing for outgoing
-	ProcessQueuePath    string = ".processing"
+	ProcessQueuePath string = ".processing"
 
 	// IncomingPath Path where incoming messages are stored
-	IncomingPath        string = ".incoming"
+	IncomingPath string = ".incoming"
 )
 
 func getUploadPath(uuid, file string) (string, error) {
@@ -61,4 +61,3 @@ func IncomingPathExists(uuid, file string) bool {
 	_, err = os.Stat(p)
 	return err == nil
 }
-
