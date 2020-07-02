@@ -14,7 +14,13 @@ func PEMToPrivKey(pemData []byte) (interface{}, error) {
 		return nil, errors.New("PEM decoding failed")
 	}
 
-	return x509.ParsePKCS8PrivateKey(block.Bytes)
+	// Check both versions
+	b, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return x509.ParsePKCS1PrivateKey(block.Bytes)
+	}
+
+	return b, nil
 }
 
 // PEMToPubKey Converts a PEM & PKCS8 encoded public key
