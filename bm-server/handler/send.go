@@ -24,7 +24,7 @@ func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 	// Read header from request body
 	header, err := readHeaderFromBody(req.Body)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect header structure")
+		ErrorOut(w, http.StatusBadRequest, "invalid header")
 		return
 	}
 
@@ -93,14 +93,13 @@ func SendMessage(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	uuid := vars["uuid"]
 
-	if !message.IncomingPathExists(uuid, "") {
+	if !message.UploadPathExists(uuid, "") {
 		ErrorOut(w, http.StatusNotFound, "message not found")
 		return
 	}
 
-	// Send uuid to client processor
-	//process.IncomingClientMessage(uuid)
-	processor.IncomingChannel <- uuid
+	// queue the message for processing
+	processor.QueueUploadMessage(uuid)
 }
 
 // DeleteMessage is called whenever we want to completely remove a message by user request

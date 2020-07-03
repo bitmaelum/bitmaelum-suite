@@ -134,6 +134,10 @@ func processQueues(ctx context.Context, cancel context.CancelFunc) {
 	sigChannel := make(chan os.Signal, 1)
 	signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
 
+	processor.UploadChannel = make(chan string)
+	processor.OutgoingChannel = make(chan string)
+	processor.IncomingChannel = make(chan string)
+
 	for {
 		select {
 		case uuid := <-processor.UploadChannel:
@@ -151,10 +155,8 @@ func processQueues(ctx context.Context, cancel context.CancelFunc) {
 			logrus.Info("Shutting down the processing queues...")
 			time.Sleep(1 * time.Second)
 			return
-		default:
-			time.Sleep(1 * time.Second)
-			fmt.Println("no activity")
 		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
