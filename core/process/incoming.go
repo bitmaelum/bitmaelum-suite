@@ -6,7 +6,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/core/container"
 	"github.com/bitmaelum/bitmaelum-server/core/message"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 // IncomingClientMessage processes a new message send from a client via a go function
@@ -18,14 +17,14 @@ func IncomingClientMessage(uuid string) {
 func processIncoming(uuid string) {
 	// 1. Move message to processing area
 	logrus.Debugf("moving message %s to processing queue", uuid)
-	err = message.MoveIncomingMessageToProcessingQueue(uuid)
+	err := message.MoveIncomingMessageToProcessingQueue(uuid)
 	if err != nil {
 		logrus.Errorf("cannot move message %s to processing queue", uuid)
 		return
 	}
 
 	// Fetch header
-	header, err := message.GetMessageHeader(message.ProcessQueuePath, uuid)
+	header, err := message.GetMessageHeader(message.SectionProcessQueue, uuid)
 	if err != nil {
 		return
 	}
@@ -49,11 +48,11 @@ func processIncoming(uuid string) {
 
 	// 3. Communicate with server and send message
 	logrus.Debugf("Server to send message to is %s ", res.Address)
-	err = ServerUpload(uuid, res.Address)
-	if err != nil {
-		// Schedule retry because we could not send the message
-		ScheduleRetry(uuid)
-	}
+	// err = ServerUpload(uuid, res.Address)
+	// if err != nil {
+	// 	// Schedule retry because we could not send the message
+	// 	ScheduleRetry(uuid)
+	// }
 
 	// 4. Remove message from processing area
 }

@@ -34,16 +34,16 @@ const (
 type Section int
 
 const (
-	// SectionUpload
+	// SectionUpload uploading message
 	SectionUpload = iota
-	// SectionProcessQueue
+	// SectionProcessQueue outgoing message to other mailserver
 	SectionProcessQueue
-	// SectionIncoming
+	// SectionIncoming incoming message from other mailserver
 	SectionIncoming
 )
 
 func getPath(section Section, uuid, file string) (string, error) {
-	switch (section) {
+	switch section {
 	case SectionUpload:
 		return homedir.Expand(path.Join(UploadPath, uuid, file))
 	case SectionProcessQueue:

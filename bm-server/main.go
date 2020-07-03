@@ -37,6 +37,22 @@ func main() {
 	core.LoadServerConfig(opts.Config)
 	core.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
 
+	ctx, cancel := context.WithCancel(context.Background())
+
+	logrus.Tracef("Starting processing queues")
+	go processQueues(ctx, cancel)
+
+	host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
+	logrus.Tracef("Starting BitMaelum HTTP service on '%s'", host)
+	go runHTTPService(ctx, cancel, host)
+
+	// Clean up process queues
+	logrus.Tracef("Waiting until context is done")
+	<-ctx.Done()
+	logrus.Tracef("Context is done. Exiting")
+}
+
+func setupRouter() *mux.Router {
 	logger := &middleware.Logger{}
 	tracer := &middleware.Tracer{}
 	jwt := &middleware.JwtToken{}
@@ -70,33 +86,26 @@ func main() {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.SendMessage).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteMessage).Methods("DELETE")
 
-	certFilePath, _ := homedir.Expand(config.Server.TLS.CertFile)
-	KeyFilePath, _ := homedir.Expand(config.Server.TLS.KeyFile)
-
-	// Wrap our router in Apache combined logging if needed
-	var handler http.Handler = mainRouter
-	if config.Server.Logging.ApacheLogging == true {
-		handler = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, mainRouter)
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	logrus.Tracef("Starting processing queues")
-	go processQueues(ctx, cancel)
-
-	host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
-	logrus.Tracef("Starting BitMaelum HTTP service on '%s'", host)
-	go runHttpService(ctx, cancel, host, certFilePath, KeyFilePath, handler)
-
-	// Clean up process queues
-	logrus.Tracef("Waiting until context is done")
-	<-ctx.Done()
-	logrus.Tracef("Context is done. Exiting")
+	return mainRouter
 }
 
-func runHttpService(ctx context.Context, cancel context.CancelFunc, addr string, certFilePath string, keyFilePath string, h http.Handler) {
-	srv := &http.Server{Addr: addr, Handler: h}
+func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string) {
+	router := setupRouter()
 
+	// Fetch TLS certificate and key
+	certFilePath, _ := homedir.Expand(config.Server.TLS.CertFile)
+	keyFilePath, _ := homedir.Expand(config.Server.TLS.KeyFile)
+
+	// Wrap our router in Apache combined logging if needed
+	var handler http.Handler = router
+	if config.Server.Logging.ApacheLogging == true {
+		handler = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, router)
+	}
+
+	// Setup HTTP server
+	srv := &http.Server{Addr: addr, Handler: handler}
+
+	// Start serving TLS in go routine
 	go func() {
 		err := srv.ListenAndServeTLS(certFilePath, keyFilePath)
 		if err != nil {
@@ -127,11 +136,11 @@ func processQueues(ctx context.Context, cancel context.CancelFunc) {
 
 	for {
 		select {
-		case uuid := <- processor.UploadChannel:
+		case uuid := <-processor.UploadChannel:
 			fmt.Println("upload message", uuid)
-		case uuid := <- processor.OutgoingChannel:
+		case uuid := <-processor.OutgoingChannel:
 			fmt.Println("outgoing message", uuid)
-		case uuid := <- processor.IncomingChannel:
+		case uuid := <-processor.IncomingChannel:
 			fmt.Println("incoming message", uuid)
 		case t := <-ticker.C:
 			fmt.Println("ticker fired at", t)
