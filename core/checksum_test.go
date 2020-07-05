@@ -1,11 +1,12 @@
 package core
 
 import (
+	"github.com/bitmaelum/bitmaelum-server/internal/message"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func Test_EncodeDecde(t *testing.T) {
+func Test_Checksum(t *testing.T) {
 	var c message.Checksum
 
 	c = Sha1([]byte("foobar"))

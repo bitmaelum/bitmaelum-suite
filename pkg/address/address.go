@@ -47,6 +47,7 @@ func New(address string) (*Address, error) {
 	}, nil
 }
 
+// NewHash generates a hashaddress based on the given string
 func NewHash(address string) (*HashAddress, error) {
 	a, err := New(address)
 	if err != nil {

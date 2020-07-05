@@ -24,7 +24,7 @@ const (
 	pbkdfIterations = 100002
 )
 
-// VaultType represents our vault
+// Vault defines our vault with path and password. Only the accounts should be exported
 type Vault struct {
 	Accounts []account.Info
 	password []byte
@@ -113,12 +113,12 @@ func (v *Vault) unlockVault() error {
 	return nil
 }
 
-// Add adds a new account to the vault
+// AddAccount adds a new account to the vault
 func (v *Vault) AddAccount(account account.Info) {
 	v.Accounts = append(v.Accounts, account)
 }
 
-// Remove the given account from the vault
+// RemoveAccount removes the given account from the vault
 func (v *Vault) RemoveAccount(addr address.Address) {
 	k := 0
 	for _, acc := range v.Accounts {
@@ -182,7 +182,7 @@ func (v *Vault) Save() error {
 	return writeFileData(v.path, data, 0600)
 }
 
-// FindAccount tries to find the given address and returns the account from the vault
+// GetAccountInfo tries to find the given address and returns the account from the vault
 func (v *Vault) GetAccountInfo(addr address.Address) (*account.Info, error) {
 	for _, acc := range v.Accounts {
 		if acc.Address == addr.String() {
@@ -200,7 +200,7 @@ func (v *Vault) HasAccount(addr address.Address) bool {
 	return err == nil
 }
 
-// safeWrite writes data by safely writing to a temp file first
+// writeFileData writes data by safely writing to a temp file first
 func writeFileData(path string, data []byte, perm os.FileMode) error {
 	// Lock the file first. Make sure we are the only one working on it
 	lock := fslock.New(path + ".lock")
@@ -223,6 +223,7 @@ func writeFileData(path string, data []byte, perm os.FileMode) error {
 	return err
 }
 
+// Read file data
 func readFileData(p string) ([]byte, error) {
 	// Lock vault for reading
 	lock := fslock.New(p + ".lock")

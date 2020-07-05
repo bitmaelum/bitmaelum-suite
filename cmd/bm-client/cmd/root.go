@@ -13,7 +13,7 @@ var rootCmd = &cobra.Command{
 	Long:  `This client allows you to manage accounts, read and compose mail.`,
 }
 
-// Injected by main
+// Vault is the main vault that can be used by everything in the cmd package. It's injected by main()
 var Vault vault.Vault
 
 // Execute runs the given command
