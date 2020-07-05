@@ -17,7 +17,7 @@ type wrappedServerConfig struct {
 type ServerConfig struct {
 	Logging struct {
 		Level   string `yaml:"log_level"`
-		LogPath string `yaml:"log_path" default:"-"`
+		LogPath string `yaml:"log_path" default:"stdout"`
 
 		ApacheLogging bool   `yaml:"apache_log" default:"false"`
 		ApacheLogPath string `yaml:"apache_log_path"`

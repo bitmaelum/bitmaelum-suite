@@ -11,28 +11,21 @@ import (
 // IncomingClientMessage processes a new message send from a client via a go function
 func IncomingClientMessage(uuid string) {
 	logrus.Debugf("processing incoming message %s", uuid)
-	go process(uuid)
+	go processIncoming(uuid)
 }
 
-func process(uuid string) {
-	// // Check if we are already processing the uuid
-	// if ! checkAndSetProcessingList(uuid) {
-	// 	return
-	// }
-	// // Remove from processing list when completed
-	// defer unsetProcessingList(uuid)
-
-	// Fetch header
-	header, err := message.GetMessageHeader(uuid)
+func processIncoming(uuid string) {
+	// 1. Move message to processing area
+	logrus.Debugf("moving message %s to processing queue", uuid)
+	err := message.MoveIncomingMessageToProcessingQueue(uuid)
 	if err != nil {
+		logrus.Errorf("cannot move message %s to processing queue", uuid)
 		return
 	}
 
-	// 1. Move message to processing area
-	logrus.Debugf("moving message %s to processing queue", uuid)
-	err = message.MoveIncomingMessageToProcessingQueue(uuid)
+	// Fetch header
+	header, err := message.GetMessageHeader(message.SectionProcessQueue, uuid)
 	if err != nil {
-		logrus.Errorf("cannot move message %s to processing queue", uuid)
 		return
 	}
 
@@ -53,9 +46,13 @@ func process(uuid string) {
 		logrus.Debugf("Message %s can be transferred locally to %s", uuid, res.Hash)
 	}
 
-	logrus.Debugf("Server to send message to is %s ", res.Address)
 	// 3. Communicate with server and send message
-	//    3.1 If not able, move to retry queue
-	//    3.2. After X time, move message to sender that the mail could not be send
+	logrus.Debugf("Server to send message to is %s ", res.Address)
+	// err = ServerUpload(uuid, res.Address)
+	// if err != nil {
+	// 	// Schedule retry because we could not send the message
+	// 	ScheduleRetry(uuid)
+	// }
+
 	// 4. Remove message from processing area
 }

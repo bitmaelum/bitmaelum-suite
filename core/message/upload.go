@@ -11,8 +11,8 @@ import (
 )
 
 // GetMessageHeader Returns a marshalled message header
-func GetMessageHeader(uuid string) (*Header, error) {
-	p, err := getUploadPath(uuid, "header.json")
+func GetMessageHeader(section Section, uuid string) (*Header, error) {
+	p, err := getPath(section, uuid, "header.json")
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func GetMessageHeader(uuid string) (*Header, error) {
 
 // RemoveMessage removes a complete message (header, catalog, blocks etc)
 func RemoveMessage(uuid string) error {
-	p, err := getUploadPath(uuid, "")
+	p, err := getPath(SectionUpload, uuid, "")
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func RemoveMessage(uuid string) error {
 
 // StoreBlock stores a message block to disk
 func StoreBlock(uuid, blockID string, r io.Reader) error {
-	p, err := getUploadPath(uuid, blockID)
+	p, err := getPath(SectionUpload, uuid, blockID)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func StoreBlock(uuid, blockID string, r io.Reader) error {
 
 // StoreCatalog stores a catalog to disk
 func StoreCatalog(uuid string, r io.Reader) error {
-	p, err := getUploadPath(uuid, "catalog")
+	p, err := getPath(SectionUpload, uuid, "catalog")
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func StoreCatalog(uuid string, r io.Reader) error {
 
 // StoreMessageHeader stores a message header to disk
 func StoreMessageHeader(uuid string, header *Header) error {
-	p, err := getUploadPath(uuid, "header.json")
+	p, err := getPath(SectionUpload, uuid, "header.json")
 	if err != nil {
 		return err
 	}
@@ -136,12 +136,12 @@ func StoreMessageHeader(uuid string, header *Header) error {
 
 // MoveIncomingMessageToProcessingQueue moves a message from incoming to processing
 func MoveIncomingMessageToProcessingQueue(uuid string) error {
-	oldPath, err := getIncomingPath(uuid, "")
+	oldPath, err := getPath(SectionUpload, uuid, "")
 	if err != nil {
 		return err
 	}
 
-	newPath, err := getProcessQueuePath(uuid, "")
+	newPath, err := getPath(SectionProcessQueue, uuid, "")
 	if err != nil {
 		return err
 	}

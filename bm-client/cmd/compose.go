@@ -14,9 +14,10 @@ import (
 )
 
 var composeCmd = &cobra.Command{
-	Use:   "compose",
-	Short: "Compose a new message",
-	Long:  `This command will allow you to compose a new message and send it through your BitMaelum server`,
+	Use:     "compose",
+	Aliases: []string{"write", "send"},
+	Short:   "Compose a new message",
+	Long:    `This command will allow you to compose a new message and send it through your BitMaelum server`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		fromAddr, err := core.NewAddressFromString(*from)
@@ -37,7 +38,8 @@ var composeCmd = &cobra.Command{
 		if len(*blocks) == 0 {
 			var block string
 
-			if *editor {
+			// Check if we have set $EDITOR so we can use this as our editor
+			if hasEditorConfigured() {
 				block, err = useRegularEditor()
 			} else {
 				// fall back to stdEditor
@@ -85,6 +87,11 @@ func findEditorPath() (string, error) {
 	return "", errors.New("cannot find editor")
 }
 
+func hasEditorConfigured() bool {
+	_, err := findEditorPath()
+	return err == nil
+}
+
 func useRegularEditor() (string, error) {
 	p, err := findEditorPath()
 	if err != nil {
@@ -95,7 +102,9 @@ func useRegularEditor() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		_ = os.Remove(tmpFile.Name())
+	}()
 
 	c := exec.Command(p, tmpFile.Name())
 	c.Stdin = os.Stdin
@@ -124,7 +133,6 @@ func useStdinEditor() (string, error) {
 
 var from, to, subject *string
 var blocks, attachments *[]string
-var editor *bool
 
 func init() {
 	rootCmd.AddCommand(composeCmd)
@@ -134,7 +142,6 @@ func init() {
 	subject = composeCmd.Flags().StringP("subject", "s", "", "Subject of the message")
 	blocks = composeCmd.Flags().StringArrayP("blocks", "b", []string{}, "Message blocks")
 	attachments = composeCmd.Flags().StringArrayP("attachment", "a", []string{}, "Attachments")
-	editor = composeCmd.Flags().BoolP("editor", "e", false, "Use the preconfigured $EDITOR")
 
 	_ = composeCmd.MarkFlagRequired("from")
 	_ = composeCmd.MarkFlagRequired("to")
