@@ -3,14 +3,14 @@ package password
 import (
 	"bytes"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
 )
 
 // FetchPassword tries to figure out the password of the given address. It can do so by checking
 // keychains and such, or when all fails, ask it from the user.
-func FetchPassword(addr *core.Address) ([]byte, error) {
+func FetchPassword(addr *address.Address) ([]byte, error) {
 	if keychain.IsAvailable() {
 		pwd, err := keychain.Fetch(*addr)
 		if err == nil {
@@ -27,7 +27,7 @@ func FetchPassword(addr *core.Address) ([]byte, error) {
 }
 
 // StorePassword will store the given password into the keychain if possible
-func StorePassword(addr *core.Address, pwd []byte) error {
+func StorePassword(addr *address.Address, pwd []byte) error {
 	if keychain.IsAvailable() {
 		_, err := keychain.Fetch(*addr)
 		if err != nil {

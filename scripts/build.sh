@@ -19,7 +19,7 @@ printf "Compiling ["
 
 for APP in $APPS; do
   if [[ ${TARGET} == "all" || ${TARGET} == $APP ]] ; then
-    go build -ldflags "${GO_BUILD_FLAGS}" -o release/${APP} ${REPO}/${APP}
+    go build -ldflags "${GO_BUILD_FLAGS}" -o release/${APP} ${REPO}/cmd/${APP}
   fi
   printf "."
 done

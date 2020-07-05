@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/core"
+	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
 	"os"
 	"strconv"
 )
@@ -17,8 +17,8 @@ func main() {
 	data := os.Args[2]
 
 	fmt.Printf("Working on %d bits proof...\n", bits)
-	pow := core.NewProofOfWork(bits, []byte(data), 0)
+	work := pow.New(bits, []byte(data), 0)
 
-	pow.Work()
-	fmt.Printf("Proof: %d\n", pow.Proof)
+	work.Work()
+	fmt.Printf("Proof: %d\n", work.Proof)
 }

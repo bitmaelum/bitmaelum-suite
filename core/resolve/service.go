@@ -3,9 +3,10 @@ package resolve
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-server/internal/account"
+	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"net/url"
 	"strings"
 )
@@ -62,15 +63,15 @@ func getHostPort(hostport string) (string, string, error) {
 }
 
 // Resolve resolves an address.
-func (s *Service) Resolve(addr core.HashAddress) (*Info, error) {
+func (s *Service) Resolve(addr address.HashAddress) (*Info, error) {
 	return s.repo.Resolve(addr)
 }
 
 // UploadInfo uploads resolve information to a service.
-func (s *Service) UploadInfo(acc core.AccountInfo, resolveAddress string) error {
+func (s *Service) UploadInfo(info account.Info, resolveAddress string) error {
 
 	// @TODO: We maybe should sign with a different algo? Otherwise we use the same one for all systems
-	privKey, err := encrypt.PEMToPrivKey([]byte(acc.PrivKey))
+	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
 	if err != nil {
 		return err
 	}
@@ -82,10 +83,15 @@ func (s *Service) UploadInfo(acc core.AccountInfo, resolveAddress string) error 
 		return err
 	}
 
+	h, err := address.NewHash(info.Address)
+	if err != nil {
+		return err
+	}
+
 	// And upload
 	return s.repo.Upload(
-		core.StringToHash(acc.Address),
-		string(acc.PubKey),
+		*h,
+		string(info.PubKey),
 		resolveAddress,
 		hex.EncodeToString(signature),
 	)

@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/bm-client/account"
 	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/container"
 	"github.com/bitmaelum/bitmaelum-server/core/password"
 	"os"

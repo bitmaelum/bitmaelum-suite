@@ -1,7 +1,7 @@
 package invite
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"time"
 )
 
@@ -18,16 +18,16 @@ func NewInviteService(repo Repository) *Service {
 }
 
 // CreateInvite creates a new invitation in the repository
-func (s *Service) CreateInvite(addr core.HashAddress, expiry time.Duration) (string, error) {
+func (s *Service) CreateInvite(addr address.HashAddress, expiry time.Duration) (string, error) {
 	return s.repo.CreateInvite(addr, expiry)
 }
 
 // GetInvite retrieves an invitation from the repository
-func (s *Service) GetInvite(addr core.HashAddress) (string, error) {
+func (s *Service) GetInvite(addr address.HashAddress) (string, error) {
 	return s.repo.GetInvite(addr)
 }
 
 // RemoveInvite deletes an invitation from the repository
-func (s *Service) RemoveInvite(addr core.HashAddress) error {
+func (s *Service) RemoveInvite(addr address.HashAddress) error {
 	return s.repo.RemoveInvite(addr)
 }

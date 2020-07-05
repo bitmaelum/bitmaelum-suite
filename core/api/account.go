@@ -1,11 +1,13 @@
 package api
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/internal/account"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
 )
 
 // GetPublicKey gets public key for given address on the mail server
-func (api *API) GetPublicKey(addr core.HashAddress) (string, error) {
+func (api *API) GetPublicKey(addr address.HashAddress) (string, error) {
 	type PubKeyOutput struct {
 		PublicKey string `json:"public_key"`
 	}
@@ -20,30 +22,21 @@ func (api *API) GetPublicKey(addr core.HashAddress) (string, error) {
 }
 
 // CreateAccount creates new account on server
-func (api *API) CreateAccount(ai core.AccountInfo, token string) error {
+func (api *API) CreateAccount(info account.Info, token string) error {
 	type InputCreateAccount struct {
-		Addr        core.HashAddress `json:"address"`
+		Addr        address.HashAddress `json:"address"`
 		Token       string           `json:"token"`
 		PublicKey   string           `json:"public_key"`
-		ProofOfWork struct {
-			Bits  int    `json:"bits"`
-			Proof uint64 `json:"proof"`
-		} `json:"proof_of_work"`
+		ProofOfWork pow.ProofOfWork  `json:"proof_of_work"`
 	}
 
-	addr, _ := core.NewAddressFromString(ai.Address)
+	addr, _ := address.New(info.Address)
 
 	input := &InputCreateAccount{
 		Addr:      addr.Hash(),
 		Token:     token,
-		PublicKey: ai.PubKey,
-		ProofOfWork: struct {
-			Bits  int    `json:"bits"`
-			Proof uint64 `json:"proof"`
-		}{
-			Bits:  ai.Pow.Bits,
-			Proof: ai.Pow.Proof,
-		},
+		PublicKey: info.PubKey,
+		ProofOfWork: info.Pow,
 	}
 	return api.PostJSON("/account", input)
 }

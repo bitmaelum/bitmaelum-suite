@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"os"
 	"strings"
 )
@@ -11,17 +11,19 @@ import (
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	var address string
 	for {
 		fmt.Print("\U0001F4E8 Enter address: ")
-		address, _ = reader.ReadString('\n')
-		address = strings.Trim(address, "\n")
+		addr, _ := reader.ReadString('\n')
+		addr = strings.Trim(addr, "\n")
 
-		if address == "" {
+		if addr == "" {
 			break
 		}
 
-		hash := core.StringToHash(address)
+		hash, err := address.NewHash(addr)
+		if err != nil {
+			panic(err)
+		}
 		fmt.Printf("%s\n", hash.String())
 	}
 }
