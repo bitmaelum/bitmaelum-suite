@@ -27,9 +27,9 @@ type jwtClaims struct {
 // GenerateJWTToken generates a JWT token with the address and singed by the given private key
 func GenerateJWTToken(addr address.HashAddress, key crypto.PrivateKey) (string, error) {
 	claims := &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(time.Hour * time.Duration(1)).Unix(),
-		IssuedAt:  time.Now().Unix(),
-		NotBefore: time.Now().Unix(),
+		ExpiresAt: jwt.TimeFunc().Add(time.Hour * time.Duration(1)).Unix(),
+		IssuedAt:  jwt.TimeFunc().Unix(),
+		NotBefore: jwt.TimeFunc().Unix(),
 		Subject:   addr.String(),
 	}
 
@@ -41,6 +41,10 @@ func GenerateJWTToken(addr address.HashAddress, key crypto.PrivateKey) (string, 
 // ValidateJWTToken validates a JWT token with the given public key and address
 func ValidateJWTToken(tokenString string, addr address.HashAddress, key crypto.PublicKey) (*jwt.Token, error) {
 	kf := func(token *jwt.Token) (interface{}, error) {
+		// Make sure we signed with RS256
+		if token.Method != jwt.SigningMethodRS256 {
+			return nil, errors.New("incorrect signing method")
+		}
 		return key, nil
 	}
 
