@@ -1,6 +1,10 @@
 package core
 
-import "github.com/gookit/color"
+import (
+	"github.com/gookit/color"
+	"os"
+	"runtime"
+)
 
 var asciiLogo = " ____  _ _   __  __            _\n" +
 	"|  _ \\(_) | |  \\/  |          | |\n" +
@@ -39,7 +43,7 @@ func GetMonochromeASCIILogo() string {
 // GetASCIILogo returns ASCII logo with or without colors depending on your console settings
 func GetASCIILogo() string {
 	// Ooh. Nice and shiny terminal! Display a cool colorscheme
-	if color.IsSupport256Color() || color.IsSupportTrueColor() {
+	if color.IsSupport256Color() || color.IsSupportTrueColor() || isPowerShell() {
 		return rainbow256ASCIILogo
 	}
 
@@ -50,5 +54,9 @@ func GetASCIILogo() string {
 
 	// No color. Lame :/
 	return asciiLogo
+}
 
+// isPowerShell returns true when detecting Windows/Powershell.. All bets are off with terminal/console I guess
+func isPowerShell() bool {
+	return os.Getenv("WT_SESSION") != "" && runtime.GOOS == "windows"
 }

@@ -129,6 +129,7 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 		err := srv.ListenAndServeTLS(certFilePath, keyFilePath)
 		if err != nil {
 			// Cancel context on error
+			// @TODO: We should not have cancel here I think, but I don't know a better way to do this.
 			cancel()
 		}
 	}()
