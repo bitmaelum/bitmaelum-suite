@@ -26,8 +26,8 @@ type API struct {
 	client  *http.Client
 }
 
-// CreateNewClient creates a new mailserver API client
-func CreateNewClient(info *account.Info) (*API, error) {
+// New creates a new BitMaelum server API client
+func New(info *account.Info) (*API, error) {
 	// Create JWT token based on the private key of the user
 	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
 	if err != nil {

@@ -19,5 +19,4 @@ func TestLogo(t *testing.T) {
 	_ = os.Setenv("COLORTERM", "")
 	_ = os.Setenv("TERM", "linux")
 	assert.NotContains(t, GetASCIILogo(), "\033[")
-
 }

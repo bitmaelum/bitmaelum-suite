@@ -5,15 +5,13 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/internal/config"
 )
 
-var resolveService *resolve.Service
-
-var localKeysRepository *resolve.Repository
-
-var remoteKeysRepository *resolve.Repository
-
-var dhtKeysRepository *resolve.Repository
-
-var chainKeysRepository *resolve.ChainRepository
+var (
+	resolveService       *resolve.Service
+	localKeysRepository  *resolve.Repository
+	remoteKeysRepository *resolve.Repository
+	dhtKeysRepository    *resolve.Repository
+	chainKeysRepository  *resolve.ChainRepository
+)
 
 // GetResolveService retrieves a resolver service
 func GetResolveService() *resolve.Service {

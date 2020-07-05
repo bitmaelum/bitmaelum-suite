@@ -41,10 +41,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-
 	// Wait for signals and cancel context
 	logrus.Tracef("Starting signal notifications")
-	go func(){
+	go func() {
 		// Capture INT and TERM signals
 		sigChannel := make(chan os.Signal, 1)
 		signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
@@ -148,7 +147,7 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	}
 }
 
-func processQueues(ctx context.Context, ) {
+func processQueues(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Second)
 
 	processor.UploadChannel = make(chan string)

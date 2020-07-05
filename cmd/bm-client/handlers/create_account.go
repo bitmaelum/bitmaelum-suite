@@ -64,7 +64,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 		os.Exit(1)
 	}
 
-	client, err := api.CreateNewClient(&info)
+	client, err := api.New(&info)
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		vault.RemoveAccount(*addr)
