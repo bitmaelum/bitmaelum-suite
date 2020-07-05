@@ -22,7 +22,7 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	boxes := as.FetchMessageBoxes(*haddr, "*")
 
 	type MailBoxListOutput struct {
-		Address string                   `json:"address"`
+		Address string             `json:"address"`
 		Boxes   []core.MailBoxInfo `json:"boxes"`
 	}
 

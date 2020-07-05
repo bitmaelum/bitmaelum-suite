@@ -51,7 +51,7 @@ func CreateNewClient(info *account.Info) (*API, error) {
 	// If no port is present in the server, we assume port 2424
 	_, _, err = net.SplitHostPort(info.Server)
 	if err != nil {
-		info.Server += ":2424";
+		info.Server += ":2424"
 	}
 
 	if !strings.HasPrefix(info.Server, "https://") {

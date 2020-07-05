@@ -7,8 +7,8 @@ import pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
 type Header struct {
 	From struct {
 		Addr        address.HashAddress `json:"address"`
-		PublicKey   string      `json:"public_key"`
-		ProofOfWork pow.ProofOfWork `json:"proof_of_work"`
+		PublicKey   string              `json:"public_key"`
+		ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
 	} `json:"from"`
 	To struct {
 		Addr address.HashAddress `json:"address"`

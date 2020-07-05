@@ -23,11 +23,11 @@ type Service struct {
 
 // InfoType is a structure
 type InfoType struct {
-	Type     string           `json:"type"`
+	Type     string              `json:"type"`
 	Addr     address.HashAddress `json:"address"`
-	Nonce    string           `json:"nonce,omitempty"`
-	Bits     int              `json:"bits,omitempty"`
-	Checksum []byte           `json:"checksum"`
+	Nonce    string              `json:"nonce,omitempty"`
+	Bits     int                 `json:"bits,omitempty"`
+	Checksum []byte              `json:"checksum"`
 }
 
 // NewIncomingService Create new incoming service

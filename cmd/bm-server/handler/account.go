@@ -13,8 +13,8 @@ import (
 
 type inputCreateAccount struct {
 	Addr        address.HashAddress `json:"address"`
-	Token       string           `json:"token"`
-	PublicKey   string           `json:"public_key"`
+	Token       string              `json:"token"`
+	PublicKey   string              `json:"public_key"`
 	ProofOfWork struct {
 		Bits  int    `json:"bits"`
 		Proof uint64 `json:"proof"`

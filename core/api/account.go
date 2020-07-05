@@ -25,17 +25,17 @@ func (api *API) GetPublicKey(addr address.HashAddress) (string, error) {
 func (api *API) CreateAccount(info account.Info, token string) error {
 	type InputCreateAccount struct {
 		Addr        address.HashAddress `json:"address"`
-		Token       string           `json:"token"`
-		PublicKey   string           `json:"public_key"`
-		ProofOfWork pow.ProofOfWork  `json:"proof_of_work"`
+		Token       string              `json:"token"`
+		PublicKey   string              `json:"public_key"`
+		ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
 	}
 
 	addr, _ := address.New(info.Address)
 
 	input := &InputCreateAccount{
-		Addr:      addr.Hash(),
-		Token:     token,
-		PublicKey: info.PubKey,
+		Addr:        addr.Hash(),
+		Token:       token,
+		PublicKey:   info.PubKey,
 		ProofOfWork: info.Pow,
 	}
 	return api.PostJSON("/account", input)
