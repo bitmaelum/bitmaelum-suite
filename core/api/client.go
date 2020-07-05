@@ -7,10 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-server/internal/account"
+	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -18,19 +21,23 @@ import (
 
 // API is a structure to connect to the server for the given account
 type API struct {
-	account *core.AccountInfo
+	account *account.Info
 	jwt     string
 	client  *http.Client
 }
 
 // CreateNewClient creates a new mailserver API client
-func CreateNewClient(ai *core.AccountInfo) (*API, error) {
+func CreateNewClient(info *account.Info) (*API, error) {
 	// Create JWT token based on the private key of the user
-	privKey, err := encrypt.PEMToPrivKey([]byte(ai.PrivKey))
+	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
 	if err != nil {
 		return nil, err
 	}
-	jwtToken, err := core.GenerateJWTToken(core.StringToHash(ai.Address), privKey)
+	hash, err := address.NewHash(info.Address)
+	if err != nil {
+		return nil, err
+	}
+	jwtToken, err := core.GenerateJWTToken(*hash, privKey)
 	if err != nil {
 		return nil, err
 	}
@@ -42,15 +49,17 @@ func CreateNewClient(ai *core.AccountInfo) (*API, error) {
 	}
 
 	// If no port is present in the server, we assume port 2424
-	if !strings.Contains(ai.Server, ":") {
-		ai.Server = ai.Server + ":2424"
+	_, _, err = net.SplitHostPort(info.Server)
+	if err != nil {
+		info.Server += ":2424"
 	}
-	if !strings.HasPrefix(ai.Server, "https://") {
-		ai.Server = "https://" + ai.Server
+
+	if !strings.HasPrefix(info.Server, "https://") {
+		info.Server = "https://" + info.Server
 	}
 
 	api := &API{
-		account: ai,
+		account: info,
 		jwt:     jwtToken,
 		client: &http.Client{
 			Transport: tr,

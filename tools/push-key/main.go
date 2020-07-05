@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/bm-client/account"
+	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/vault"
 	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/container"
 	"github.com/bitmaelum/bitmaelum-server/core/password"
+	"github.com/bitmaelum/bitmaelum-server/internal/config"
 	"os"
 )
 
@@ -19,14 +19,14 @@ var opts options
 
 func main() {
 	core.ParseOptions(&opts)
-	core.LoadClientConfig(opts.Config)
+	config.LoadClientConfig(opts.Config)
 
 	if opts.Password == "" {
 		opts.Password = string(password.AskPassword())
 	}
 
 	// Unlock vault
-	err := account.UnlockVault(config.Client.Accounts.Path, []byte(opts.Password))
+	accountVault, err := vault.New(config.Client.Accounts.Path, []byte(opts.Password))
 	if err != nil {
 		fmt.Printf("Error while opening vault: %s", err)
 		fmt.Println("")
@@ -34,9 +34,9 @@ func main() {
 	}
 
 	rs := container.GetResolveService()
-	for i, acc := range account.Vault.Accounts {
-		account.Vault.Accounts[i].Server = "bitmaelum.ngrok.io:443"
-		account.Vault.Save()
+	for i, acc := range accountVault.Accounts {
+		accountVault.Accounts[i].Server = "bitmaelum.ngrok.io:443"
+		accountVault.Save()
 
 		err = rs.UploadInfo(acc, acc.Server)
 		if err != nil {

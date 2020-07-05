@@ -2,7 +2,7 @@ package resolve
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,12 +14,12 @@ func NewDHTRepository() Repository {
 	return &dhtRepo{}
 }
 
-func (r *dhtRepo) Resolve(addr core.HashAddress) (*Info, error) {
+func (r *dhtRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	logrus.Trace("DHT is not implemented yet")
 
 	return nil, errors.New("key not found in DHT")
 }
 
-func (r *dhtRepo) Upload(addr core.HashAddress, pubKey, address, signature string) error {
+func (r *dhtRepo) Upload(addr address.HashAddress, pubKey, address, signature string) error {
 	return nil
 }

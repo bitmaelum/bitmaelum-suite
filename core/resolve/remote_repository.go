@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"io/ioutil"
 	"net/http"
 )
@@ -37,7 +37,7 @@ func NewRemoteRepository(baseURL string) Repository {
 }
 
 // Resolve
-func (r *remoteRepo) Resolve(addr core.HashAddress) (*Info, error) {
+func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	response, err := r.client.Get(r.BaseURL + "/" + addr.String())
 	if err != nil {
 		return nil, errors.New("Error while retrieving key")
@@ -65,7 +65,7 @@ func (r *remoteRepo) Resolve(addr core.HashAddress) (*Info, error) {
 	return nil, errors.New("Error while retrieving key")
 }
 
-func (r *remoteRepo) Upload(addr core.HashAddress, pubKey, address, signature string) error {
+func (r *remoteRepo) Upload(addr address.HashAddress, pubKey, address, signature string) error {
 	data := &KeyUpload{
 		PublicKey: pubKey,
 		Address:   address,

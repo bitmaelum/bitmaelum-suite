@@ -2,8 +2,8 @@ package resolve
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/core"
 	"github.com/bitmaelum/bitmaelum-server/core/account"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,12 +19,12 @@ func NewLocalRepository(s *account.Service) Repository {
 }
 
 // Resolve resolves a local address
-func (r *localRepo) Resolve(addr core.HashAddress) (*Info, error) {
+func (r *localRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	logrus.Trace("local repository cache is not available.")
 
 	return nil, errors.New("key not found in local cache")
 }
 
-func (r *localRepo) Upload(addr core.HashAddress, pubKey, address, signature string) error {
+func (r *localRepo) Upload(addr address.HashAddress, pubKey, address, signature string) error {
 	return nil
 }

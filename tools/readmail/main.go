@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/bm-client/account"
+	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/vault"
 	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
-	"github.com/bitmaelum/bitmaelum-server/core/message"
+	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-server/internal/message"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"io/ioutil"
 	"os"
 )
@@ -23,28 +24,32 @@ var opts options
 
 func main() {
 	core.ParseOptions(&opts)
-	core.LoadClientConfig(opts.Config)
+	config.LoadClientConfig(opts.Config)
 
 	fmt.Println(core.GetASCIILogo())
 
 	// Unlock vault
-	err := account.UnlockVault(config.Client.Accounts.Path, []byte(opts.Password))
+	accountVault, err := vault.New(config.Client.Accounts.Path, []byte(opts.Password))
 	if err != nil {
 		fmt.Printf("Error while opening vault: %s", err)
 		fmt.Println("")
 		os.Exit(1)
 	}
 
-	addr, err := core.NewAddressFromString(opts.Addr)
+	addr, err := address.New(opts.Addr)
 	if err != nil {
 		panic(err)
 	}
 
-	ai, err := account.Vault.FindAccount(*addr)
+	info, err := accountVault.GetAccountInfo(*addr)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Reading message for user %s (%s) (%s)\n", ai.Name, ai.Address, core.StringToHash(ai.Address))
+	hash, err := address.NewHash(info.Address)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Reading message for user %s (%s) (%s)\n", info.Name, info.Address, hash.String())
 
 	data, err := ioutil.ReadFile(opts.Path + "/header.json")
 	if err != nil {
@@ -66,7 +71,7 @@ func main() {
 		panic(err)
 	}
 
-	privKey, err := encrypt.PEMToPrivKey([]byte(ai.PrivKey))
+	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
 	if err != nil {
 		panic(err)
 	}
@@ -90,15 +95,16 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		defer f.Close()
 
 		r, err := message.GetAesDecryptorReader(block.IV, block.Key, f)
 		if err != nil {
+			f.Close()
 			panic(err)
 		}
 
 		content, err := ioutil.ReadAll(r)
 		if err != nil {
+			f.Close()
 			panic(err)
 		}
 

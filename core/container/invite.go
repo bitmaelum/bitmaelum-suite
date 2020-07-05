@@ -1,8 +1,8 @@
 package container
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core/config"
 	"github.com/bitmaelum/bitmaelum-server/core/invite"
+	"github.com/bitmaelum/bitmaelum-server/internal/config"
 	"github.com/go-redis/redis/v8"
 )
 

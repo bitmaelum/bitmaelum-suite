@@ -2,7 +2,7 @@ package resolve
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 )
 
 // ChainRepository holds a list of multiple repositories which can all be tried to resolve addresses and keys
@@ -23,7 +23,7 @@ func (r *ChainRepository) Add(repo Repository) error {
 }
 
 // Resolve an address through the chained repos
-func (r *ChainRepository) Resolve(addr core.HashAddress) (*Info, error) {
+func (r *ChainRepository) Resolve(addr address.HashAddress) (*Info, error) {
 	for idx := range r.repos {
 		info, err := r.repos[idx].Resolve(addr)
 		if err == nil {
@@ -35,7 +35,7 @@ func (r *ChainRepository) Resolve(addr core.HashAddress) (*Info, error) {
 }
 
 // Upload public key through the chained repos
-func (r *ChainRepository) Upload(addr core.HashAddress, pubKey, address, signature string) error {
+func (r *ChainRepository) Upload(addr address.HashAddress, pubKey, address, signature string) error {
 	for idx := range r.repos {
 		err := r.repos[idx].Upload(addr, pubKey, address, signature)
 		if err != nil {

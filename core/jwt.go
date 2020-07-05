@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"crypto/subtle"
 	"errors"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"github.com/vtolstov/jwt-go"
 	"time"
 )
@@ -24,7 +25,7 @@ type jwtClaims struct {
  */
 
 // GenerateJWTToken generates a JWT token with the address and singed by the given private key
-func GenerateJWTToken(addr HashAddress, key crypto.PrivateKey) (string, error) {
+func GenerateJWTToken(addr address.HashAddress, key crypto.PrivateKey) (string, error) {
 	claims := &jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(time.Hour * time.Duration(1)).Unix(),
 		IssuedAt:  time.Now().Unix(),
@@ -38,7 +39,7 @@ func GenerateJWTToken(addr HashAddress, key crypto.PrivateKey) (string, error) {
 }
 
 // ValidateJWTToken validates a JWT token with the given public key and address
-func ValidateJWTToken(tokenString string, addr HashAddress, key crypto.PublicKey) (*jwt.Token, error) {
+func ValidateJWTToken(tokenString string, addr address.HashAddress, key crypto.PublicKey) (*jwt.Token, error) {
 	kf := func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	}

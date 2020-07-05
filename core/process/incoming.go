@@ -4,7 +4,7 @@ package process
 
 import (
 	"github.com/bitmaelum/bitmaelum-server/core/container"
-	"github.com/bitmaelum/bitmaelum-server/core/message"
+	"github.com/bitmaelum/bitmaelum-server/internal/message"
 	"github.com/sirupsen/logrus"
 )
 

@@ -2,7 +2,7 @@ package container
 
 import (
 	"github.com/bitmaelum/bitmaelum-server/core/account"
-	"github.com/bitmaelum/bitmaelum-server/core/config"
+	"github.com/bitmaelum/bitmaelum-server/internal/config"
 	"github.com/mitchellh/go-homedir"
 )
 

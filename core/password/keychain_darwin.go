@@ -4,7 +4,7 @@ package password
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	gokeychain "github.com/keybase/go-keychain"
 )
 
@@ -24,7 +24,7 @@ func (kc *KeyChain) IsAvailable() bool {
 }
 
 // Fetch returns a key/password for the given address
-func (kc *KeyChain) Fetch(addr core.Address) ([]byte, error) {
+func (kc *KeyChain) Fetch(addr address.Address) ([]byte, error) {
 	query := gokeychain.NewItem()
 	query.SetSecClass(gokeychain.SecClassGenericPassword)
 	query.SetService(service)
@@ -43,7 +43,7 @@ func (kc *KeyChain) Fetch(addr core.Address) ([]byte, error) {
 }
 
 // Store stores a key/password for the given address in the keychain/vault
-func (kc *KeyChain) Store(addr core.Address, key []byte) error {
+func (kc *KeyChain) Store(addr address.Address, key []byte) error {
 	item := gokeychain.NewItem()
 	item.SetSecClass(gokeychain.SecClassGenericPassword)
 	item.SetService(service)

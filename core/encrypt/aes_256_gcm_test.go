@@ -1,8 +1,8 @@
 package encrypt
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/message"
+	"github.com/bitmaelum/bitmaelum-server/internal/message"
+	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -81,11 +81,11 @@ func Test_EncryptDecryptMessage(t *testing.T) {
 func Test_EncryptDecryptCatalog(t *testing.T) {
 	cat := &message.Catalog{
 		From: struct {
-			Address      string           `json:"address"`
-			Name         string           `json:"name"`
-			Organisation string           `json:"organisation"`
-			ProofOfWork  core.ProofOfWork `json:"proof_of_work"`
-			PublicKey    string           `json:"public_key"`
+			Address      string          `json:"address"`
+			Name         string          `json:"name"`
+			Organisation string          `json:"organisation"`
+			ProofOfWork  pow.ProofOfWork `json:"proof_of_work"`
+			PublicKey    string          `json:"public_key"`
 		}{
 			Address:      "bitmaelum!",
 			Name:         "Test user",

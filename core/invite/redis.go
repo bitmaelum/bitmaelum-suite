@@ -3,7 +3,7 @@ package invite
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"github.com/go-redis/redis/v8"
 	"time"
 )
@@ -20,7 +20,7 @@ func NewRedisRepository(opts *redis.Options) Repository {
 }
 
 // CreateInvite generate a new invitation and stores this in redis
-func (r *redisRepo) CreateInvite(addr core.HashAddress, expiry time.Duration) (string, error) {
+func (r *redisRepo) CreateInvite(addr address.HashAddress, expiry time.Duration) (string, error) {
 	buff := make([]byte, 32)
 	_, err := rand.Read(buff)
 	if err != nil {
@@ -37,11 +37,11 @@ func (r *redisRepo) CreateInvite(addr core.HashAddress, expiry time.Duration) (s
 }
 
 // GetInvite retrieves an invite from redis
-func (r *redisRepo) GetInvite(addr core.HashAddress) (string, error) {
+func (r *redisRepo) GetInvite(addr address.HashAddress) (string, error) {
 	return r.client.Get(r.client.Context(), "invite."+addr.String()).Result()
 }
 
 // RemoveInvite deletes an invite from redis
-func (r *redisRepo) RemoveInvite(addr core.HashAddress) error {
+func (r *redisRepo) RemoveInvite(addr address.HashAddress) error {
 	return r.client.Del(r.client.Context(), "invite."+addr.String()).Err()
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/messagebox"
+	"github.com/bitmaelum/bitmaelum-server/pkg/address"
 	"github.com/nightlyone/lockfile"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -38,7 +38,7 @@ func NewFileRepository(basePath string) Repository {
 }
 
 // Create a new account for this address
-func (r *fileRepo) Create(addr core.HashAddress) error {
+func (r *fileRepo) Create(addr address.HashAddress) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 
@@ -46,12 +46,12 @@ func (r *fileRepo) Create(addr core.HashAddress) error {
 }
 
 // Returns true when the given account for this address exists
-func (r *fileRepo) Exists(addr core.HashAddress) bool {
+func (r *fileRepo) Exists(addr address.HashAddress) bool {
 	return r.pathExists(addr, "")
 }
 
 // Store the public key for this account
-func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
+func (r *fileRepo) StorePubKey(addr address.HashAddress, key string) error {
 	// Lock our keyfile for writing
 	lockfilePath := r.getPath(addr, pubKeyFile+".lock")
 	lock, err := lockfile.New(lockfilePath)
@@ -89,7 +89,7 @@ func (r *fileRepo) StorePubKey(addr core.HashAddress, key string) error {
 }
 
 // Retrieve the public key for this account
-func (r *fileRepo) FetchPubKeys(addr core.HashAddress) ([]string, error) {
+func (r *fileRepo) FetchPubKeys(addr address.HashAddress) ([]string, error) {
 	pk := &PubKeys{}
 	err := r.fetchJSON(addr, pubKeyFile, pk)
 	if err != nil {
@@ -100,12 +100,12 @@ func (r *fileRepo) FetchPubKeys(addr core.HashAddress) ([]string, error) {
 }
 
 // Create a new mailbox in this account
-func (r *fileRepo) CreateBox(addr core.HashAddress, box, name, description string, quota int) error {
+func (r *fileRepo) CreateBox(addr address.HashAddress, box, name, description string, quota int) error {
 	fullPath := r.getPath(addr, box)
 
 	_ = os.MkdirAll(fullPath, 0700)
 
-	mbi := messagebox.MailBoxInfo{
+	mbi := core.MailBoxInfo{
 		Name:        name,
 		Description: description,
 		Quota:       quota,
@@ -116,18 +116,18 @@ func (r *fileRepo) CreateBox(addr core.HashAddress, box, name, description strin
 }
 
 // Returns true when the given mailbox exists in this account
-func (r *fileRepo) ExistsBox(addr core.HashAddress, box string) bool {
+func (r *fileRepo) ExistsBox(addr address.HashAddress, box string) bool {
 	return r.pathExists(addr, box)
 }
 
 // Delete a given mailbox in the account
-func (r *fileRepo) DeleteBox(addr core.HashAddress, box string) error {
+func (r *fileRepo) DeleteBox(addr address.HashAddress, box string) error {
 	// @TODO: not yet implemented
 	return errors.New("not implemented yet")
 }
 
 // Store data on the given account path
-func (r *fileRepo) store(addr core.HashAddress, path string, data []byte) error {
+func (r *fileRepo) store(addr address.HashAddress, path string, data []byte) error {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("storing file on %s", fullPath)
 
@@ -135,7 +135,7 @@ func (r *fileRepo) store(addr core.HashAddress, path string, data []byte) error 
 }
 
 // Check if path in account exists
-func (r *fileRepo) pathExists(addr core.HashAddress, path string) bool {
+func (r *fileRepo) pathExists(addr address.HashAddress, path string) bool {
 	fullPath := r.getPath(addr, path)
 	_, err := os.Stat(fullPath)
 
@@ -143,7 +143,7 @@ func (r *fileRepo) pathExists(addr core.HashAddress, path string) bool {
 }
 
 // Delete path in account
-func (r *fileRepo) delete(addr core.HashAddress, path string) error {
+func (r *fileRepo) delete(addr address.HashAddress, path string) error {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("deleting file %s", fullPath)
 
@@ -151,7 +151,7 @@ func (r *fileRepo) delete(addr core.HashAddress, path string) error {
 }
 
 // Retrieve data on path in account
-func (r *fileRepo) fetch(addr core.HashAddress, path string) ([]byte, error) {
+func (r *fileRepo) fetch(addr address.HashAddress, path string) ([]byte, error) {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file %s", fullPath)
 
@@ -159,7 +159,7 @@ func (r *fileRepo) fetch(addr core.HashAddress, path string) ([]byte, error) {
 }
 
 // Retrieves a data structure based on JSON
-func (r *fileRepo) fetchJSON(addr core.HashAddress, path string, v interface{}) error {
+func (r *fileRepo) fetchJSON(addr address.HashAddress, path string, v interface{}) error {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file %s", fullPath)
 
@@ -176,7 +176,7 @@ func (r *fileRepo) fetchJSON(addr core.HashAddress, path string, v interface{}) 
 }
 
 // Generate the path in account
-func (r *fileRepo) getPath(addr core.HashAddress, suffix string) string {
+func (r *fileRepo) getPath(addr address.HashAddress, suffix string) string {
 	strAddr := strings.ToLower(addr.String())
 	suffix = strings.ToLower(suffix)
 
@@ -184,8 +184,8 @@ func (r *fileRepo) getPath(addr core.HashAddress, suffix string) string {
 }
 
 // Retrieve a single mailbox
-func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*messagebox.MailBoxInfo, error) {
-	mbi := &messagebox.MailBoxInfo{}
+func (r *fileRepo) GetBox(addr address.HashAddress, box string) (*core.MailBoxInfo, error) {
+	mbi := &core.MailBoxInfo{}
 	mbi.Name = box
 
 	// Fetch information from .info file
@@ -210,8 +210,8 @@ func (r *fileRepo) GetBox(addr core.HashAddress, box string) (*messagebox.MailBo
 }
 
 // Search for mailboxes. Use glob-patterns for querying
-func (r *fileRepo) FindBox(addr core.HashAddress, query string) ([]messagebox.MailBoxInfo, error) {
-	var list []messagebox.MailBoxInfo
+func (r *fileRepo) FindBox(addr address.HashAddress, query string) ([]core.MailBoxInfo, error) {
+	var list []core.MailBoxInfo
 
 	files, err := ioutil.ReadDir(r.getPath(addr, ""))
 	if err != nil {
@@ -236,8 +236,8 @@ func (r *fileRepo) FindBox(addr core.HashAddress, query string) ([]messagebox.Ma
 }
 
 // Query messages inside mailbox
-func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, limit int) ([]messagebox.MessageList, error) {
-	var list []messagebox.MessageList
+func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box string, offset, limit int) ([]core.MessageList, error) {
+	var list []core.MessageList
 
 	files, err := ioutil.ReadDir(r.getPath(addr, box))
 	if err != nil {
@@ -249,10 +249,10 @@ func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, l
 			continue
 		}
 
-		flags := &messagebox.Flags{}
+		flags := &core.Flags{}
 		_ = r.fetchJSON(addr, path.Join(box, f.Name(), flagFile), flags)
 
-		msg := messagebox.MessageList{
+		msg := core.MessageList{
 			ID:    f.Name(),
 			Dt:    f.ModTime().Format(time.RFC3339),
 			Flags: flags.Flags,
@@ -265,7 +265,7 @@ func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, l
 }
 
 //// Fetch specific mail
-//func (r *fileRepo) GetMessageInfo(addr core.HashAddress, box string, msgUuid string) (*messagebox.MessageInfo, error) {
+//func (r *fileRepo) GetMessageInfo(addr address.HashAddress, box string, msgUuid string) (*core.MessageInfo, error) {
 //
 //    c := &message.Catalog{}
 //    err := r.fetchJson(addr, path.Join(box, msgUuid, "catalog.json"), c)
@@ -273,28 +273,28 @@ func (r *fileRepo) FetchListFromBox(addr core.HashAddress, box string, offset, l
 //        return nil, err
 //    }
 //
-//    f := &messagebox.Flags{}
+//    f := &core.Flags{}
 //    _ = r.fetchJson(addr, path.Join(box, msgUuid, FlagFile), f)
 //
-//    return &messagebox.MessageInfo{
+//    return &core.MessageInfo{
 //        Flags:   *f,
 //        Catalog: *c,
 //    }, nil
 //}
 
 // Set flag from the given message
-func (r *fileRepo) SetFlag(addr core.HashAddress, box string, id string, flag string) error {
+func (r *fileRepo) SetFlag(addr address.HashAddress, box string, id string, flag string) error {
 	return r.writeFlag(addr, box, id, flag, true)
 }
 
 // Unset flag from the given message
-func (r *fileRepo) UnsetFlag(addr core.HashAddress, box string, id string, flag string) error {
+func (r *fileRepo) UnsetFlag(addr address.HashAddress, box string, id string, flag string) error {
 	return r.writeFlag(addr, box, id, flag, false)
 }
 
 // Get flags from the given message
-func (r *fileRepo) GetFlags(addr core.HashAddress, box string, id string) ([]string, error) {
-	flags := &messagebox.Flags{}
+func (r *fileRepo) GetFlags(addr address.HashAddress, box string, id string) ([]string, error) {
+	flags := &core.Flags{}
 	err := r.fetchJSON(addr, path.Join(box, id, flagFile), flags)
 	if err != nil {
 		return nil, err
@@ -324,7 +324,7 @@ func find(slice []string, item string) (int, error) {
 	return 0, errors.New("not found")
 }
 
-func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag string, addFlag bool) error {
+func (r *fileRepo) writeFlag(addr address.HashAddress, box string, id string, flag string, addFlag bool) error {
 	// Lock our flags for writing
 	lockfilePath := r.getPath(addr, path.Join(box, id, flagFile+".lock"))
 	lockfilePath, err := filepath.Abs(lockfilePath)
@@ -360,7 +360,7 @@ func (r *fileRepo) writeFlag(addr core.HashAddress, box string, id string, flag 
 	}
 
 	// Save flags back
-	ft := &messagebox.Flags{
+	ft := &core.Flags{
 		Flags: flags,
 	}
 	data, err := json.MarshalIndent(ft, "", "  ")
