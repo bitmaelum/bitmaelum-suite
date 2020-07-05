@@ -37,17 +37,36 @@ func main() {
 	config.LoadServerConfig(opts.Config)
 	core.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
 
+	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
+
+	// Wait for signals and cancel context
+	logrus.Tracef("Starting signal notifications")
+	go func(){
+		// Capture INT and TERM signals
+		sigChannel := make(chan os.Signal, 1)
+		signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
+
+		select {
+		case s := <-sigChannel:
+			logrus.Print("signal received", s)
+			cancel()
+		}
+	}()
+
+	// Start queues
 	logrus.Tracef("Starting processing queues")
-	go processQueues(ctx, cancel)
+	go processQueues(ctx)
 
+	// Start HTTP server
 	host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
 	logrus.Tracef("Starting BitMaelum HTTP service on '%s'", host)
 	go runHTTPService(ctx, cancel, host)
 
 	// Clean up process queues
-	logrus.Tracef("Waiting until context is done")
+	logrus.Tracef("Waiting until context tells us it's done")
 	<-ctx.Done()
 	logrus.Tracef("Context is done. Exiting")
 }
@@ -128,11 +147,8 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	}
 }
 
-func processQueues(ctx context.Context, cancel context.CancelFunc) {
+func processQueues(ctx context.Context, ) {
 	ticker := time.NewTicker(5 * time.Second)
-
-	sigChannel := make(chan os.Signal, 1)
-	signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
 
 	processor.UploadChannel = make(chan string)
 	processor.OutgoingChannel = make(chan string)
@@ -148,9 +164,6 @@ func processQueues(ctx context.Context, cancel context.CancelFunc) {
 			fmt.Println("incoming message", uuid)
 		case t := <-ticker.C:
 			fmt.Println("ticker fired at", t)
-		case s := <-sigChannel:
-			fmt.Println("signal received", s)
-			cancel()
 		case <-ctx.Done():
 			logrus.Info("Shutting down the processing queues...")
 			time.Sleep(1 * time.Second)
