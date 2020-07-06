@@ -75,7 +75,7 @@ func uploadToServer(msgID string, info account.Info, header *message.Header, enc
 		return err
 	}
 
-	client, err := api.CreateNewClient(&info)
+	client, err := api.New(&info)
 	if err != nil {
 		return err
 	}

@@ -20,15 +20,15 @@ APIs, client connectivity etc etc. This is all still very much work in progress.
  
 ## Next up in our todo
 
- - [] Send email that is uploaded to the mail-server to an actual destination mail-server.
- - [] Read mailboxes from accounts
+ - [ ] Send email that is uploaded to the mail-server to an actual destination mail-server (or itself)
+ - [ ] Read messages in your mailboxes from bm-client
  
 
 ## Later
 
- - [] Deal with multiple recipients (multi-header uploads)
- - [] Mailing lists
- - [] Create a simple mail client UI (bm-client-ui is a start)
+ - [ ] Deal with multiple recipients (multi-header uploads)
+ - [ ] Mailing lists
+ - [ ] Create a simple mail client UI (bm-client-ui is a start)
 
 
 ## Much later
