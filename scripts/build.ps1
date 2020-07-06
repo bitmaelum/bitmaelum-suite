@@ -12,7 +12,7 @@ $COMMIT=git rev-parse HEAD
 $PKG=go list ./core
 $GO_BUILD_FLAGS="-X '$PKG.BuildDate=$BUILD_DATE' -X '$PKG.GitCommit=$COMMIT'"
 
-Write-Host -NoNewLine "Compiling [" 
+Write-Host -NoNewLine "Compiling ["
 
 foreach ($app in $APPS)
 {
