@@ -7,7 +7,7 @@ import (
 	"crypto/rsa"
 	"crypto/subtle"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/vtolstov/jwt-go"
 	"time"
 )

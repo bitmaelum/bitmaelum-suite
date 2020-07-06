@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-server/internal/message"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"io"
 )
 

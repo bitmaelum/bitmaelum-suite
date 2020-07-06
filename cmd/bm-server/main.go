@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-server/handler"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-server/middleware"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-server/processor"
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
+	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/go-homedir"
@@ -41,10 +41,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-
 	// Wait for signals and cancel context
 	logrus.Tracef("Starting signal notifications")
-	go func(){
+	go func() {
 		// Capture INT and TERM signals
 		sigChannel := make(chan os.Signal, 1)
 		signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
@@ -148,7 +147,7 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	}
 }
 
-func processQueues(ctx context.Context, ) {
+func processQueues(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Second)
 
 	processor.UploadChannel = make(chan string)

@@ -2,8 +2,8 @@ package resolve
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/core/account"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/core/account"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 )
 

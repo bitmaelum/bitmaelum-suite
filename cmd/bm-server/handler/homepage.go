@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core"
+	"github.com/bitmaelum/bitmaelum-suite/core"
 	"net/http"
 	"strings"
 )

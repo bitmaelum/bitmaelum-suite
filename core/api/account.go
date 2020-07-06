@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/internal/account"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
-	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
 // GetPublicKey gets public key for given address on the mail server

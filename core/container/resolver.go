@@ -1,8 +1,8 @@
 package container
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core/resolve"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/core/resolve"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 )
 
 var resolveService *resolve.Service

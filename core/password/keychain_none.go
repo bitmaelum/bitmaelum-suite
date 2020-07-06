@@ -3,7 +3,7 @@
 package password
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 // IsAvailable returns true when a keychain is available

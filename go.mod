@@ -1,4 +1,4 @@
-module github.com/bitmaelum/bitmaelum-server
+module github.com/bitmaelum/bitmaelum-suite
 
 go 1.13
 

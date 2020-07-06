@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-server/processor"
-	"github.com/bitmaelum/bitmaelum-server/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"

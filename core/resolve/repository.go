@@ -1,7 +1,7 @@
 package resolve
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 // Repository is the interface to manage address resolving

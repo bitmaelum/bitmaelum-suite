@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
-	"github.com/bitmaelum/bitmaelum-server/internal/message"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
+	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"io/ioutil"
 	"os"
 )

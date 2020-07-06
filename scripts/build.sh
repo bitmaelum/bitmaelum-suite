@@ -2,7 +2,7 @@
 
 # This should be a Makefile I guess
 
-REPO="github.com/bitmaelum/bitmaelum-server"
+REPO="github.com/bitmaelum/bitmaelum-suite"
 
 APPS="bm-server bm-client bm-config bm-client-ui"
 TOOLS="hash-address jwt proof-of-work readmail"
@@ -18,14 +18,14 @@ GO_BUILD_FLAGS="-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMI
 printf "Compiling ["
 
 for APP in $APPS; do
-  if [[ ${TARGET} == "all" || ${TARGET} == $APP ]] ; then
+  if [ "${TARGET}" = "all" ] || [ "${TARGET}" = "$APP" ] ; then
     go build -ldflags "${GO_BUILD_FLAGS}" -o release/${APP} ${REPO}/cmd/${APP}
   fi
   printf "."
 done
 
 for TOOL in $TOOLS; do
-  if [[ ${TARGET} == "all" || ${TARGET} == $TOOL ]] ; then
+  if [ "${TARGET}" = "all" ] || [ "${TARGET}" = "$TOOL" ] ; then
     go build -ldflags "${GO_BUILD_FLAGS}" -o release/${TOOL} ${REPO}/tools/${TOOL}
   fi
   printf "."

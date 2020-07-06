@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/spf13/cobra"
 )
 

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/vault"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
 	"github.com/olekukonko/tablewriter"
 	"os"
 )

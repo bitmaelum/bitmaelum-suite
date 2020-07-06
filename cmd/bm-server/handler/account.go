@@ -4,10 +4,10 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/core/container"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
-	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+	"github.com/bitmaelum/bitmaelum-suite/core/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"net/http"
 )
 
