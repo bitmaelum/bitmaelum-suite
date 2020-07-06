@@ -28,7 +28,7 @@ var composeCmd = &cobra.Command{
 			panic(err)
 		}
 
-		toAddr, err := address.New(*to)
+		toAddr, err := address.NewHash(*to)
 		if err != nil {
 			panic(err)
 		}

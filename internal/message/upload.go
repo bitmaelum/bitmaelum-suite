@@ -134,9 +134,9 @@ func StoreMessageHeader(uuid string, header *Header) error {
 	return nil
 }
 
-// MoveIncomingMessageToProcessingQueue moves a message from incoming to processing
-func MoveIncomingMessageToProcessingQueue(uuid string) error {
-	oldPath, err := getPath(SectionUpload, uuid, "")
+// MoveToProcessing moves a message from incoming to processing
+func MoveToProcessing(section Section, uuid string) error {
+	oldPath, err := getPath(section, uuid, "")
 	if err != nil {
 		return err
 	}

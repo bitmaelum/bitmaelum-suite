@@ -8,6 +8,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-server/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-server/core"
 	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-server/internal/message"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/go-homedir"
@@ -85,8 +86,8 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
 	//publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
 	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
-	publicRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
-	publicRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
+	// publicRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
+	// publicRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
 
 	//Routes that need to be authenticated
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
@@ -115,13 +116,13 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	keyFilePath, _ := homedir.Expand(config.Server.TLS.KeyFile)
 
 	// Wrap our router in Apache combined logging if needed
-	var handler http.Handler = router
+	var h http.Handler = router
 	if config.Server.Logging.ApacheLogging == true {
-		handler = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, router)
+		h = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, router)
 	}
 
 	// Setup HTTP server
-	srv := &http.Server{Addr: addr, Handler: handler}
+	srv := &http.Server{Addr: addr, Handler: h}
 
 	// Start serving TLS in go routine
 	go func() {
@@ -137,7 +138,6 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 
 	// Wait until the context is done
 	for {
-		logrus.Info("Waiting for HTTP server to stop...")
 		select {
 		case <-ctx.Done():
 			logrus.Info("Shutting down the HTTP server...")
@@ -156,12 +156,15 @@ func processQueues(ctx context.Context) {
 
 	for {
 		select {
-		case uuid := <-processor.UploadChannel:
-			fmt.Println("upload message", uuid)
-		case uuid := <-processor.OutgoingChannel:
-			fmt.Println("outgoing message", uuid)
-		case uuid := <-processor.IncomingChannel:
-			fmt.Println("incoming message", uuid)
+		case msgId := <-processor.UploadChannel:
+			fmt.Println("upload message", msgId)
+			message.MoveToProcessing(message.SectionIncoming, msgId)
+			go processor.ProcessMessage(msgId)
+			// Move message to processing queue
+		case msgId := <-processor.OutgoingChannel:
+			fmt.Println("outgoing message", msgId)
+		case msgId := <-processor.IncomingChannel:
+			fmt.Println("incoming message", msgId)
 		case t := <-ticker.C:
 			fmt.Println("ticker fired at", t)
 		case <-ctx.Done():

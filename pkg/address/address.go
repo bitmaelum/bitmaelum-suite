@@ -47,7 +47,7 @@ func New(address string) (*Address, error) {
 	}, nil
 }
 
-// NewHash generates a hashaddress based on the given string
+// NewHash generates a hashaddress based on the given email string
 func NewHash(address string) (*HashAddress, error) {
 	a, err := New(address)
 	if err != nil {
@@ -55,6 +55,12 @@ func NewHash(address string) (*HashAddress, error) {
 	}
 
 	h := a.Hash()
+	return &h, nil
+}
+
+// NewHashFromHash generates a hash address based on the given string hash
+func NewHashFromHash(hash string) (*HashAddress, error) {
+	h := HashAddress(hash)
 	return &h, nil
 }
 

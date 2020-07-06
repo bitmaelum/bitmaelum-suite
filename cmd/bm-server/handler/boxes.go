@@ -11,7 +11,7 @@ import (
 
 // RetrieveBoxes retrieves all message boxes for the given account
 func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHash(mux.Vars(req)["addr"])
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		// @TODO: Return error
 		return
@@ -36,7 +36,7 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 
 // RetrieveBox retrieves info about the given mailbox
 func RetrieveBox(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHash(mux.Vars(req)["addr"])
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		// @TODO: Return error
 		return

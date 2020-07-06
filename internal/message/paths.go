@@ -36,16 +36,20 @@ type Section int
 const (
 	// SectionUpload uploading message
 	SectionUpload = iota
-	// SectionProcessQueue outgoing message to other mailserver
+	// SectionProcessQueue processes a message
 	SectionProcessQueue
+	// SectionRetry messages that have to be retried at a later stadium
+	SectionRetry
 	// SectionIncoming incoming message from other mailserver
 	SectionIncoming
 )
 
-func getPath(section Section, uuid, file string) (string, error) {
+func GetPath(section Section, uuid, file string) (string, error) {
 	switch section {
 	case SectionUpload:
 		return homedir.Expand(path.Join(UploadPath, uuid, file))
+	case SectionRetry:
+		return homedir.Expand(path.Join(RetryPath, uuid, file))
 	case SectionProcessQueue:
 		return homedir.Expand(path.Join(ProcessQueuePath, uuid, file))
 	case SectionIncoming:
@@ -57,7 +61,7 @@ func getPath(section Section, uuid, file string) (string, error) {
 
 // UploadPathExists returns true when the upload path for the given message/file exists
 func UploadPathExists(uuid, file string) bool {
-	p, err := getPath(SectionUpload, uuid, file)
+	p, err := GetPath(SectionUpload, uuid, file)
 	if err != nil {
 		return false
 	}
@@ -68,7 +72,7 @@ func UploadPathExists(uuid, file string) bool {
 
 // ProcessQueuePathExists returns true when the processing path for the given message/file exists
 func ProcessQueuePathExists(uuid, file string) bool {
-	p, err := getPath(SectionProcessQueue, uuid, file)
+	p, err := GetPath(SectionProcessQueue, uuid, file)
 	if err != nil {
 		return false
 	}
@@ -79,7 +83,7 @@ func ProcessQueuePathExists(uuid, file string) bool {
 
 // IncomingPathExists returns true when the incoming path for the given message/file exists
 func IncomingPathExists(uuid, file string) bool {
-	p, err := getPath(SectionIncoming, uuid, file)
+	p, err := GetPath(SectionIncoming, uuid, file)
 	if err != nil {
 		return false
 	}

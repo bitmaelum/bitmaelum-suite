@@ -9,7 +9,7 @@ import (
 
 // GetFlags Get flags from message
 func GetFlags(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHash(mux.Vars(req)["addr"])
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		// @TODO: Return error
 		return
@@ -26,7 +26,7 @@ func GetFlags(w http.ResponseWriter, req *http.Request) {
 
 // SetFlag Set flags for message
 func SetFlag(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHash(mux.Vars(req)["addr"])
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		// @TODO: Return error
 		return
@@ -44,7 +44,7 @@ func SetFlag(w http.ResponseWriter, req *http.Request) {
 
 // UnsetFlag Unset flags for message
 func UnsetFlag(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHash(mux.Vars(req)["addr"])
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		// @TODO: Return error
 		return

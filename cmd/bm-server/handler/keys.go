@@ -18,7 +18,7 @@ type outputPublicKey struct {
 
 // RetrieveKeys is the handler that will retrieve public keys directly from the mailserver
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHash(mux.Vars(req)["addr"])
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		// @TODO: Return error
 		return

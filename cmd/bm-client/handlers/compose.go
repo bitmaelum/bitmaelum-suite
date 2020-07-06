@@ -18,10 +18,10 @@ import (
 )
 
 // ComposeMessage composes a new message from the given account Info to the "to" with given subject, blocks and attachments
-func ComposeMessage(info account.Info, toAddr address.Address, subject string, b, a []string) error {
+func ComposeMessage(info account.Info, toAddr address.HashAddress, subject string, b, a []string) error {
 	// Resolve public key for our recipient
 	resolver := container.GetResolveService()
-	toInfo, err := resolver.Resolve(toAddr.Hash())
+	toInfo, err := resolver.Resolve(toAddr)
 	if err != nil {
 		return fmt.Errorf("cannot retrieve public key for '%s'", toAddr.String())
 	}
@@ -37,7 +37,7 @@ func ComposeMessage(info account.Info, toAddr address.Address, subject string, b
 	}
 
 	// Generate catalog
-	catalog, err := generateCatalog(info, toAddr.Hash(), subject, blocks, attachments)
+	catalog, err := generateCatalog(info, toAddr, subject, blocks, attachments)
 	if err != nil {
 		return err
 	}
@@ -59,12 +59,13 @@ func ComposeMessage(info account.Info, toAddr address.Address, subject string, b
 		return err
 	}
 
+	fmt.Printf("Outgoing message created: %s\n", messageID.String())
+	fmt.Printf("Sending message to : %s\n", info.Server)
+
 	err = uploadToServer(messageID.String(), info, header, encryptedCatalog, catalog)
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("Outoging message created: %s\n", messageID.String())
 	return nil
 }
 
@@ -109,6 +110,9 @@ func uploadToServer(msgID string, info account.Info, header *message.Header, enc
 		return err
 	}
 
+	// All done, mark upload as completed
+	client.UploadComplete(*addr, msgID)
+
 	return nil
 }
 
@@ -134,13 +138,9 @@ func generateHeader(info account.Info, toInfo *resolve.Info, catalog []byte, cat
 		return nil, err
 	}
 
-	h, err := address.NewHash(toInfo.Hash)
-	if err != nil {
-		return nil, err
-	}
-	header.To.Addr = *h
+	header.To.Addr = address.HashAddress(toInfo.Hash)
 
-	h, err = address.NewHash(info.Address)
+	h, err := address.NewHash(info.Address)
 	if err != nil {
 		return nil, err
 	}
