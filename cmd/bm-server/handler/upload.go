@@ -13,10 +13,10 @@ import (
 // UploadMessageHeader deals with uploading message headers
 func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	uuid := vars["uuid"]
+	msgID := vars["msgid"]
 
 	// Did we already upload the header?
-	if message.IncomingPathExists(uuid, "header.json") {
+	if message.IncomingPathExists(msgID, "header.json") {
 		ErrorOut(w, http.StatusConflict, "header already uploaded")
 		return
 	}
@@ -29,7 +29,7 @@ func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Save request
-	err = message.StoreMessageHeader(uuid, header)
+	err = message.StoreHeader(msgID, header)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while storing message header")
 		return
@@ -44,15 +44,15 @@ func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 // UploadMessageCatalog deals with uploading message catalogs
 func UploadMessageCatalog(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	uuid := vars["uuid"]
+	msgID := vars["msgid"]
 
 	// Did we already upload the header?
-	if message.IncomingPathExists(uuid, "catalog") {
+	if message.IncomingPathExists(msgID, "catalog") {
 		ErrorOut(w, http.StatusConflict, "catalog already uploaded")
 		return
 	}
 
-	err := message.StoreCatalog(uuid, req.Body)
+	err := message.StoreCatalog(msgID, req.Body)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while storing message header")
 		return
@@ -67,16 +67,16 @@ func UploadMessageCatalog(w http.ResponseWriter, req *http.Request) {
 // UploadMessageBlock deals with uploading message blocks
 func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	uuid := vars["uuid"]
+	msgID := vars["msgid"]
 	id := vars["id"]
 
 	// Did we already upload the header?
-	if message.IncomingPathExists(uuid, id) {
+	if message.IncomingPathExists(msgID, id) {
 		ErrorOut(w, http.StatusConflict, "block already uploaded")
 		return
 	}
 
-	err := message.StoreBlock(uuid, id, req.Body)
+	err := message.StoreBlock(msgID, id, req.Body)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while storing message block")
 		return
@@ -91,29 +91,29 @@ func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 // SendMessage is called whenever everything from a message has been uploaded and can be actually send
 func SendMessage(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	uuid := vars["uuid"]
+	msgID := vars["msgid"]
 
-	if !message.UploadPathExists(uuid, "") {
+	if !message.UploadPathExists(msgID, "") {
 		ErrorOut(w, http.StatusNotFound, "message not found")
 		return
 	}
 
 	// queue the message for processing
-	processor.QueueUploadMessage(uuid)
+	processor.QueueUploadMessage(msgID)
 }
 
 // DeleteMessage is called whenever we want to completely remove a message by user request
 func DeleteMessage(w http.ResponseWriter, req *http.Request) {
 	// Delete the message and contents
 	vars := mux.Vars(req)
-	uuid := vars["uuid"]
+	msgID := vars["msgid"]
 
-	if !message.IncomingPathExists(uuid, "") {
+	if !message.IncomingPathExists(msgID, "") {
 		ErrorOut(w, http.StatusNotFound, "message not found")
 		return
 	}
 
-	err := message.RemoveMessage(uuid)
+	err := message.RemoveMessage(message.SectionUpload, msgID)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while deleting outgoing message")
 		return

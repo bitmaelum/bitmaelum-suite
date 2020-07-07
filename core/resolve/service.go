@@ -18,9 +18,9 @@ type Service struct {
 
 // Info is a structure returned by the external resolver system
 type Info struct {
-	Hash      string `json:"hash"`
-	PublicKey string `json:"public_key"`
-	Address   string `json:"address"`
+	Hash      string `json:"hash"`       // Hash of the email address
+	PublicKey string `json:"public_key"` // Public key of the user
+	Server    string `json:"server"`     // Server where this email address resides
 }
 
 // KeyRetrievalService initialises a key retrieval service.
@@ -36,7 +36,7 @@ func (info *Info) IsLocal() bool {
 	if err != nil {
 		return false
 	}
-	infoHost, infoPort, err := getHostPort(info.Address)
+	infoHost, infoPort, err := getHostPort(info.Server)
 	if err != nil {
 		return false
 	}

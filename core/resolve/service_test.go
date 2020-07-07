@@ -10,7 +10,7 @@ func Test_IsLocal(t *testing.T) {
 	info := &Info{
 		Hash:      "12345",
 		PublicKey: "FOOBAR",
-		Address:   "my.host:2424",
+		Server:    "my.host:2424",
 	}
 
 	config.Server.Server.Name = "my.host:2424"

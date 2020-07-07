@@ -99,11 +99,11 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flags", handler.GetFlags).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.SetFlag).Methods("PUT")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.UnsetFlag).Methods("DELETE")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/header", handler.UploadMessageHeader).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/catalog", handler.UploadMessageCatalog).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/block/{id}", handler.UploadMessageBlock).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.SendMessage).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteMessage).Methods("DELETE")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/header", handler.UploadMessageHeader).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/catalog", handler.UploadMessageCatalog).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/block/{id}", handler.UploadMessageBlock).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.SendMessage).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteMessage).Methods("DELETE")
 
 	return mainRouter
 }
@@ -156,23 +156,28 @@ func processQueues(ctx context.Context) {
 
 	for {
 		select {
-		case msgId := <-processor.UploadChannel:
-			fmt.Println("upload message", msgId)
-			message.MoveToProcessing(message.SectionIncoming, msgId)
-			go processor.ProcessMessage(msgId)
-			// Move message to processing queue
-		case msgId := <-processor.OutgoingChannel:
-			fmt.Println("outgoing message", msgId)
-		case msgId := <-processor.IncomingChannel:
-			fmt.Println("incoming message", msgId)
+		case msgID := <-processor.UploadChannel:
+			logrus.Debugf("Message %s uploaded. Processing", msgID)
+			message.MoveMessage(message.SectionUpload, message.SectionProcessQueue, msgID)
+			go processor.ProcessMessage(msgID)
+
+		case msgID := <-processor.OutgoingChannel:
+			fmt.Println("outgoing message", msgID)
+
+		case msgID := <-processor.IncomingChannel:
+			fmt.Println("incoming message", msgID)
+
 		case t := <-ticker.C:
 			fmt.Println("ticker fired at", t)
+			// _ = processor.ProcessRetryQueue()
+
 		case <-ctx.Done():
 			logrus.Info("Shutting down the processing queues...")
-			time.Sleep(1 * time.Second)
 			return
 		}
-		time.Sleep(1 * time.Second)
+
+		// // Do we need this?
+		// time.Sleep(1 * time.Second)
 	}
 }
 

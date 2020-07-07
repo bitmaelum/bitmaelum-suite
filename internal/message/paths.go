@@ -44,24 +44,25 @@ const (
 	SectionIncoming
 )
 
-func GetPath(section Section, uuid, file string) (string, error) {
+// GetPath will return the actual path based on the section, messageID and file inside the message
+func GetPath(section Section, msgID, file string) (string, error) {
 	switch section {
 	case SectionUpload:
-		return homedir.Expand(path.Join(UploadPath, uuid, file))
+		return homedir.Expand(path.Join(UploadPath, msgID, file))
 	case SectionRetry:
-		return homedir.Expand(path.Join(RetryPath, uuid, file))
+		return homedir.Expand(path.Join(RetryPath, msgID, file))
 	case SectionProcessQueue:
-		return homedir.Expand(path.Join(ProcessQueuePath, uuid, file))
+		return homedir.Expand(path.Join(ProcessQueuePath, msgID, file))
 	case SectionIncoming:
-		return homedir.Expand(path.Join(IncomingPath, uuid, file))
+		return homedir.Expand(path.Join(IncomingPath, msgID, file))
 	default:
 		return "", errors.New("unknown section")
 	}
 }
 
 // UploadPathExists returns true when the upload path for the given message/file exists
-func UploadPathExists(uuid, file string) bool {
-	p, err := GetPath(SectionUpload, uuid, file)
+func UploadPathExists(msgID, file string) bool {
+	p, err := GetPath(SectionUpload, msgID, file)
 	if err != nil {
 		return false
 	}
@@ -71,8 +72,8 @@ func UploadPathExists(uuid, file string) bool {
 }
 
 // ProcessQueuePathExists returns true when the processing path for the given message/file exists
-func ProcessQueuePathExists(uuid, file string) bool {
-	p, err := GetPath(SectionProcessQueue, uuid, file)
+func ProcessQueuePathExists(msgID, file string) bool {
+	p, err := GetPath(SectionProcessQueue, msgID, file)
 	if err != nil {
 		return false
 	}
@@ -82,8 +83,8 @@ func ProcessQueuePathExists(uuid, file string) bool {
 }
 
 // IncomingPathExists returns true when the incoming path for the given message/file exists
-func IncomingPathExists(uuid, file string) bool {
-	p, err := GetPath(SectionIncoming, uuid, file)
+func IncomingPathExists(msgID, file string) bool {
+	p, err := GetPath(SectionIncoming, msgID, file)
 	if err != nil {
 		return false
 	}

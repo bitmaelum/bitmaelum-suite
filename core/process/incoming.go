@@ -2,11 +2,7 @@ package process
 
 // Functions for message that are uploaded from clients
 
-import (
-	"github.com/bitmaelum/bitmaelum-suite/core/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/sirupsen/logrus"
-)
+/*
 
 // IncomingClientMessage processes a new message send from a client via a go function
 func IncomingClientMessage(uuid string) {
@@ -56,3 +52,4 @@ func processIncoming(uuid string) {
 
 	// 4. Remove message from processing area
 }
+*/

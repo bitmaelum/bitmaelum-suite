@@ -37,8 +37,8 @@ func (api *API) DeleteMessage(addr address.HashAddress, messageID string) error 
 	return api.Delete(url)
 }
 
-// UploadComplete signals the mailserver that all blocks (and headers) have been uploaded and can start processing
-func (api *API) UploadComplete(addr address.HashAddress, messageID string) error {
+// CompleteUpload signals the mailserver that all blocks (and headers) have been uploaded and can start processing
+func (api *API) CompleteUpload(addr address.HashAddress, messageID string) error {
 	url := fmt.Sprintf("/account/%s/send/%s", addr.String(), messageID)
 	return api.PostBytes(url, []byte{})
 }

@@ -12,19 +12,19 @@ var (
 )
 
 // QueueIncomingMessage queues message on the incoming channel
-func QueueIncomingMessage(uuid string) {
-	logrus.Tracef("queueing uuid message from incoming: %s", uuid)
-	IncomingChannel <- uuid
+func QueueIncomingMessage(msgID string) {
+	logrus.Tracef("queueing msgID message from incoming: %s", msgID)
+	IncomingChannel <- msgID
 }
 
 // QueueOutgoingMessage queues message on the outgoing channel
-func QueueOutgoingMessage(uuid string) {
-	logrus.Tracef("queueing uuid message from upload: %s", uuid)
-	OutgoingChannel <- uuid
+func QueueOutgoingMessage(msgID string) {
+	logrus.Tracef("queueing msgID message from upload: %s", msgID)
+	OutgoingChannel <- msgID
 }
 
 // QueueUploadMessage queues message on the uploaded channel
-func QueueUploadMessage(uuid string) {
-	logrus.Tracef("queueing uuid message from upload: %s", uuid)
-	UploadChannel <- uuid
+func QueueUploadMessage(msgID string) {
+	logrus.Tracef("queueing msgID message from upload: %s", msgID)
+	UploadChannel <- msgID
 }

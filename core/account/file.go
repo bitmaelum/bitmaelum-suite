@@ -264,24 +264,6 @@ func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box string, offset
 	return list, nil
 }
 
-//// Fetch specific mail
-//func (r *fileRepo) GetMessageInfo(addr address.HashAddress, box string, msgUuid string) (*core.MessageInfo, error) {
-//
-//    c := &message.Catalog{}
-//    err := r.fetchJson(addr, path.Join(box, msgUuid, "catalog.json"), c)
-//    if err != nil {
-//        return nil, err
-//    }
-//
-//    f := &core.Flags{}
-//    _ = r.fetchJson(addr, path.Join(box, msgUuid, FlagFile), f)
-//
-//    return &core.MessageInfo{
-//        Flags:   *f,
-//        Catalog: *c,
-//    }, nil
-//}
-
 // Set flag from the given message
 func (r *fileRepo) SetFlag(addr address.HashAddress, box string, id string, flag string) error {
 	return r.writeFlag(addr, box, id, flag, true)

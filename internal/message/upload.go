@@ -11,8 +11,8 @@ import (
 )
 
 // GetMessageHeader Returns a marshalled message header
-func GetMessageHeader(section Section, uuid string) (*Header, error) {
-	p, err := getPath(section, uuid, "header.json")
+func GetMessageHeader(section Section, msgID string) (*Header, error) {
+	p, err := GetPath(section, msgID, "header.json")
 	if err != nil {
 		return nil, err
 	}
@@ -32,8 +32,8 @@ func GetMessageHeader(section Section, uuid string) (*Header, error) {
 }
 
 // RemoveMessage removes a complete message (header, catalog, blocks etc)
-func RemoveMessage(uuid string) error {
-	p, err := getPath(SectionUpload, uuid, "")
+func RemoveMessage(section Section, msgID string) error {
+	p, err := GetPath(section, msgID, "")
 	if err != nil {
 		return err
 	}
@@ -42,8 +42,8 @@ func RemoveMessage(uuid string) error {
 }
 
 // StoreBlock stores a message block to disk
-func StoreBlock(uuid, blockID string, r io.Reader) error {
-	p, err := getPath(SectionUpload, uuid, blockID)
+func StoreBlock(msgID, blockID string, r io.Reader) error {
+	p, err := GetPath(SectionUpload, msgID, blockID)
 	if err != nil {
 		return err
 	}
@@ -71,8 +71,8 @@ func StoreBlock(uuid, blockID string, r io.Reader) error {
 }
 
 // StoreCatalog stores a catalog to disk
-func StoreCatalog(uuid string, r io.Reader) error {
-	p, err := getPath(SectionUpload, uuid, "catalog")
+func StoreCatalog(msgID string, r io.Reader) error {
+	p, err := GetPath(SectionUpload, msgID, "catalog")
 	if err != nil {
 		return err
 	}
@@ -99,9 +99,9 @@ func StoreCatalog(uuid string, r io.Reader) error {
 	return nil
 }
 
-// StoreMessageHeader stores a message header to disk
-func StoreMessageHeader(uuid string, header *Header) error {
-	p, err := getPath(SectionUpload, uuid, "header.json")
+// StoreHeader stores a message header to disk
+func StoreHeader(msgID string, header *Header) error {
+	p, err := GetPath(SectionUpload, msgID, "header.json")
 	if err != nil {
 		return err
 	}
@@ -134,14 +134,14 @@ func StoreMessageHeader(uuid string, header *Header) error {
 	return nil
 }
 
-// MoveToProcessing moves a message from incoming to processing
-func MoveToProcessing(section Section, uuid string) error {
-	oldPath, err := getPath(section, uuid, "")
+// MoveMessage moves a message from a section to another section
+func MoveMessage(fromSection Section, toSection Section, msgID string) error {
+	oldPath, err := GetPath(fromSection, msgID, "")
 	if err != nil {
 		return err
 	}
 
-	newPath, err := getPath(SectionProcessQueue, uuid, "")
+	newPath, err := GetPath(toSection, msgID, "")
 	if err != nil {
 		return err
 	}

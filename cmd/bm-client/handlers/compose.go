@@ -54,15 +54,15 @@ func ComposeMessage(info account.Info, toAddr address.HashAddress, subject strin
 		return err
 	}
 
-	messageID, err := uuid.NewRandom()
+	msgID, err := uuid.NewRandom()
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Outgoing message created: %s\n", messageID.String())
+	fmt.Printf("Outgoing message created: %s\n", msgID.String())
 	fmt.Printf("Sending message to : %s\n", info.Server)
 
-	err = uploadToServer(messageID.String(), info, header, encryptedCatalog, catalog)
+	err = uploadToServer(msgID.String(), info, header, encryptedCatalog, catalog)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func uploadToServer(msgID string, info account.Info, header *message.Header, enc
 	}
 
 	// All done, mark upload as completed
-	client.UploadComplete(*addr, msgID)
+	client.CompleteUpload(*addr, msgID)
 
 	return nil
 }
