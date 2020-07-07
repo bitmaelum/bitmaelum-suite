@@ -10,12 +10,12 @@ import (
 
 var (
 	fatal bool = false
-	hook *test.Hook
+	hook  *test.Hook
 )
 
 func TestLoadClientConfig(t *testing.T) {
 	// Failed loading
-    LoadClientConfig("/foo/bar")
+	LoadClientConfig("/foo/bar")
 	assert.True(t, fatal)
 	assert.Len(t, hook.Entries, 1)
 	assert.Equal(t, "cannot load client configuration", hook.Entries[0].Message)

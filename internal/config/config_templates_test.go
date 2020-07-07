@@ -17,7 +17,6 @@ func TestTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "trace", Server.Logging.Level)
 
-
 	err = GenerateClientConfig(&buf)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, buf.String())
