@@ -3,9 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/handlers"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"

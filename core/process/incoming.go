@@ -3,8 +3,8 @@ package process
 // Functions for message that are uploaded from clients
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core/container"
-	"github.com/bitmaelum/bitmaelum-server/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/core/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/sirupsen/logrus"
 )
 

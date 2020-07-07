@@ -1,8 +1,8 @@
 package encrypt
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/internal/message"
-	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

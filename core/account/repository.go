@@ -1,8 +1,8 @@
 package account
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 // Repository is an interface to manage accounts on a REMOTE machine (ie: server, not client side)

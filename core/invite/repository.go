@@ -1,7 +1,7 @@
 package invite
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"time"
 )
 

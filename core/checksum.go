@@ -5,7 +5,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/bitmaelum/bitmaelum-server/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"hash/crc32"
 )
 

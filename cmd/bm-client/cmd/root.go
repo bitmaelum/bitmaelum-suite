@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/vault"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
 	"github.com/spf13/cobra"
 	"os"
 )

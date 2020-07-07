@@ -2,8 +2,8 @@ package account
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 // Service is an account service that generates accounts on the REMOTE side (thus not client side)

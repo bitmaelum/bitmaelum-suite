@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/stretchr/testify/assert"
 	"github.com/vtolstov/jwt-go"
 	"io/ioutil"

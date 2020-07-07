@@ -4,7 +4,7 @@ package password
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	gokeychain "github.com/keybase/go-keychain"
 )
 

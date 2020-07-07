@@ -1,9 +1,9 @@
 package message
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/internal/account"
-	"github.com/bitmaelum/bitmaelum-server/internal/compress"
-	core "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
+	core "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"io"

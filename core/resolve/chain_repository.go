@@ -2,7 +2,7 @@ package resolve
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 // ChainRepository holds a list of multiple repositories which can all be tried to resolve addresses and keys

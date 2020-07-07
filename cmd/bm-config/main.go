@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-config/cmd"
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/cmd"
+	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"os"
 )
 

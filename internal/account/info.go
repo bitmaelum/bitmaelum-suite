@@ -1,6 +1,6 @@
 package account
 
-import pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+import pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 
 // Info represents client account information
 type Info struct {

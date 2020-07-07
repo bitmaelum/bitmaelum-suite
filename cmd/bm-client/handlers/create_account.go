@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-server/core/api"
-	"github.com/bitmaelum/bitmaelum-server/core/container"
-	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
-	"github.com/bitmaelum/bitmaelum-server/internal/account"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
-	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
+	"github.com/bitmaelum/bitmaelum-suite/core/api"
+	"github.com/bitmaelum/bitmaelum-suite/core/container"
+	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"os"
 )
 

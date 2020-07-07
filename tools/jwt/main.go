@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-server/core"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
+	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"log"
 )
 
