@@ -89,7 +89,7 @@ func setupRouter() *mux.Router {
 	// publicRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
 	// publicRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
 
-	//Routes that need to be authenticated
+	// Routes that need to be authenticated
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
 	authRouter.Use(jwt.Middleware)
 	authRouter.Use(logger.Middleware)
@@ -158,7 +158,11 @@ func processQueues(ctx context.Context) {
 		select {
 		case msgID := <-processor.UploadChannel:
 			logrus.Debugf("Message %s uploaded. Processing", msgID)
-			message.MoveMessage(message.SectionUpload, message.SectionProcessQueue, msgID)
+			err := message.MoveMessage(message.SectionUpload, message.SectionProcessQueue, msgID)
+			if err != nil {
+				continue
+			}
+
 			go processor.ProcessMessage(msgID)
 
 		case msgID := <-processor.OutgoingChannel:

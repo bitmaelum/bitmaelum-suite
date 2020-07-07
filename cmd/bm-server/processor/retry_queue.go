@@ -46,7 +46,7 @@ func ProcessRetryQueue() error {
 	return nil
 }
 
-// MoveToRetryQueue moves a message (back) to retry queue
+// MoveToRetryQueue moves a message (back) to retry queue and update retry info
 func MoveToRetryQueue(msgID string) {
 	info, err := message.GetRetryInfo(message.SectionProcessQueue, msgID)
 	if err == nil {
