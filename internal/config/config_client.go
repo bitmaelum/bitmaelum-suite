@@ -2,6 +2,7 @@ package config
 
 import (
 	"gopkg.in/yaml.v2"
+	"io"
 	"io/ioutil"
 )
 
@@ -40,8 +41,8 @@ type ClientConfig struct {
 }
 
 // LoadConfig loads the client configuration from the given path
-func (c *ClientConfig) LoadConfig(configPath string) error {
-	data, err := ioutil.ReadFile(configPath)
+func (c *ClientConfig) LoadConfig(r io.Reader) error {
+	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return err
 	}

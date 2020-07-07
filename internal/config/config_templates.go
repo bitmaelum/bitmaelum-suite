@@ -2,8 +2,7 @@ package config
 
 import "io"
 
-const clientConfigTemplate string = `
-# BitMaelum Client Configuration Template. Edit for your own needs.
+const clientConfigTemplate string = `# BitMaelum Client Configuration Template. Edit for your own needs.
 config:
     accounts:
         # where are our accounts stored?
@@ -25,8 +24,7 @@ config:
             url: "https://resolver.bitmaelum.com"
 `
 
-const serverConfigTemplate string = `
-# BitMaelum Server Configuration Template. Edit for your own needs.
+const serverConfigTemplate string = `# BitMaelum Server Configuration Template. Edit for your own needs.
 config:
     # Logging of information
     logging:
@@ -44,17 +42,17 @@ config:
         # Log apache-style HTTP combined log 
         apache_log: true
         # Path to apache logfile
-        apache_log_path: ./bitmaelum.apache.log
+        apache_log_path: "./bitmaelum.apache.log"
 
     accounts:
         # How many bits of proof-of-work must an account have to be able to register here
         proof_of_work: 22
     
         # Path to our message accounts
-        path: ~/.messagedb
+        path: "~/.messagedb"
     server:
-		# Hostname and port as this server is known on the internet
-		hostname: localhost:2424
+        # Hostname and port as this server is known on the internet
+        hostname: localhost:2424
 
         # Address where to listen. Use 0.0.0.0 for all interfaces
         host: 127.0.0.1
@@ -65,8 +63,8 @@ config:
         # Certification and key for running on HTTPS. This should be a valid certificate via LetEncrypt 
         # for instance.
         # You can use self-signed certificates is you want
-        certfile: ~/.bitmaelum/certs/server.crt
-        keyfile: ~/.bitmaelum/certs/server.key
+        certfile: "~/.bitmaelum/certs/server.crt"
+        keyfile: "~/.bitmaelum/certs/server.key"
     redis:
         # Redis host where we store information
         host: 127.0.0.1:6379

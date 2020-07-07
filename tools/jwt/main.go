@@ -6,7 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/core"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"log"
+	"github.com/sirupsen/logrus"
 )
 
 type options struct {
@@ -24,18 +24,18 @@ func main() {
 	// Convert strings into addresses
 	fromAddr, err := address.New(opts.Addr)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	// Load account
 	accountVault, err := vault.New(config.Client.Accounts.Path, []byte(opts.Password))
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	info, err := accountVault.GetAccountInfo(*fromAddr)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	fmt.Println("PRIV:")
@@ -47,14 +47,14 @@ func main() {
 
 	ts, err := core.GenerateJWTToken(fromAddr.Hash(), info.PrivKey)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	fmt.Println(ts)
 
 	token, err := core.ValidateJWTToken(ts, fromAddr.Hash(), info.PubKey)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	fmt.Printf("%#v\n", token.Claims)

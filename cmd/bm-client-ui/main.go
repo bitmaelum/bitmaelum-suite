@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-	"log"
+	"github.com/sirupsen/logrus"
 )
 
 var app *tview.Application
@@ -138,6 +138,6 @@ func main() {
 	pages.SwitchToPage("welcome")
 
 	if err := app.SetRoot(pages, true).SetFocus(pages).Run(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }

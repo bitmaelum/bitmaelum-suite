@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/manifoldco/promptui"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -73,7 +73,7 @@ func SelectAndRun(cmd *cobra.Command, args []string) {
 		idx, _, err := prompt.Run()
 		if err != nil {
 			if err != promptui.ErrInterrupt {
-				log.Fatal(err)
+				logrus.Fatal(err)
 			}
 			continue
 		}

@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
-	"log"
 	"os"
 )
 
@@ -40,17 +40,17 @@ This command creates default templates that you can use as a starting point.`,
 func createFile(path string, configTemplate func(w io.Writer) error) {
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
-		log.Fatalf("Error while creating file: %v", err)
+		logrus.Fatalf("Error while creating file: %v", err)
 	}
 
 	err = configTemplate(f)
 	if err != nil {
-		log.Fatalf("Error while creating file: %v", err)
+		logrus.Fatalf("Error while creating file: %v", err)
 	}
 
 	err = f.Close()
 	if err != nil {
-		log.Fatalf("Error while closing file: %v", err)
+		logrus.Fatalf("Error while closing file: %v", err)
 	}
 }
 

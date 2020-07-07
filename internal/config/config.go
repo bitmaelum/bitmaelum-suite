@@ -2,7 +2,9 @@ package config
 
 import (
 	"github.com/mitchellh/go-homedir"
-	"log"
+	"github.com/sirupsen/logrus"
+	"io"
+	"os"
 )
 
 /**
@@ -17,9 +19,10 @@ import (
 
 // LoadClientConfig loads client configuration from given path or panic if cannot load
 func LoadClientConfig(path string) {
+
 	loaded := LoadClientConfigOrPass(path)
 	if !loaded {
-		log.Fatalf("cannot load client configuration")
+		logrus.Fatalf("cannot load client configuration")
 	}
 }
 
@@ -27,7 +30,7 @@ func LoadClientConfig(path string) {
 func LoadServerConfig(path string) {
 	loaded := LoadServerConfigOrPass(path)
 	if !loaded {
-		log.Fatal("cannot load server configuration")
+		logrus.Fatal("cannot load server configuration")
 	}
 }
 
@@ -80,7 +83,13 @@ func LoadServerConfigOrPass(path string) bool {
 }
 
 // Expands the given path and loads the configuration
-func readConfigPath(path string, loader func(string) error) error {
+func readConfigPath(path string, loader func(r io.Reader) error) error {
 	p, _ := homedir.Expand(path)
-	return loader(p)
+
+	f, err := os.Open(p)
+	if err != nil {
+		return err
+	}
+
+	return loader(f)
 }

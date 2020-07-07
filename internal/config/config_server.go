@@ -2,6 +2,7 @@ package config
 
 import (
 	"gopkg.in/yaml.v2"
+	"io"
 	"io/ioutil"
 )
 
@@ -56,8 +57,8 @@ type ServerConfig struct {
 }
 
 // LoadConfig loads the server configuration from the given path
-func (c *ServerConfig) LoadConfig(configPath string) error {
-	data, err := ioutil.ReadFile(configPath)
+func (c *ServerConfig) LoadConfig(r io.Reader) error {
+	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return err
 	}
