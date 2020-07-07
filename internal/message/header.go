@@ -1,7 +1,7 @@
 package message
 
-import "github.com/bitmaelum/bitmaelum-server/pkg/address"
-import pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+import "github.com/bitmaelum/bitmaelum-suite/pkg/address"
+import pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 
 // Header represents a message header
 type Header struct {

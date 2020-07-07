@@ -5,7 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-server/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"io"
 )
 

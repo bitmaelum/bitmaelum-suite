@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/spf13/cobra"
 	"io"
 	"log"

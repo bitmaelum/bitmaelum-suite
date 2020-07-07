@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-server/cmd/bm-server/incoming"
-	"github.com/bitmaelum/bitmaelum-server/core/container"
-	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/incoming"
+	"github.com/bitmaelum/bitmaelum-suite/core/container"
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"

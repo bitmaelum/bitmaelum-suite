@@ -3,10 +3,10 @@ package resolve
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/bitmaelum/bitmaelum-server/core/encrypt"
-	"github.com/bitmaelum/bitmaelum-server/internal/account"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"net/url"
 	"strings"
 )

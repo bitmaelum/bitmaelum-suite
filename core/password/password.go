@@ -3,7 +3,7 @@ package password
 import (
 	"bytes"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
 )

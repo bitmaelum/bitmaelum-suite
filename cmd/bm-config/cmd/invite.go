@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-server/core/container"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/core/container"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
 	"time"
 )

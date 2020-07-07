@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	pow "github.com/bitmaelum/bitmaelum-server/pkg/proofofwork"
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"os"
 	"strconv"
 )

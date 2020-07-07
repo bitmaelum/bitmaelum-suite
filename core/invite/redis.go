@@ -3,7 +3,7 @@ package invite
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"github.com/bitmaelum/bitmaelum-server/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/go-redis/redis/v8"
 	"time"
 )

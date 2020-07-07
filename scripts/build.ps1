@@ -2,7 +2,7 @@ param(
   [string]$target="all"
 )
 
-$REPO="github.com/bitmaelum/bitmaelum-server"
+$REPO="github.com/bitmaelum/bitmaelum-suite"
 
 $APPS="bm-server","bm-client","bm-config","bm-client-ui"
 $TOOLS="hash-address","jwt","proof-of-work","readmail"

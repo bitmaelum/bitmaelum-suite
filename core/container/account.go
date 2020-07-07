@@ -1,8 +1,8 @@
 package container
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/core/account"
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/core/account"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/mitchellh/go-homedir"
 )
 

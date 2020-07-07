@@ -1,7 +1,7 @@
 package resolve
 
 import (
-	"github.com/bitmaelum/bitmaelum-server/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
