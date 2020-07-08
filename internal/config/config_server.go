@@ -25,9 +25,15 @@ type ServerConfig struct {
 	} `yaml:"logging"`
 
 	Accounts struct {
-		Path        string `yaml:"path"`
-		ProofOfWork int    `yaml:"proof_of_work"`
+		ProofOfWork int `yaml:"proof_of_work"`
 	} `yaml:"accounts"`
+
+	Paths struct {
+		Processing string `yaml:"processing"`
+		Retry      string `yaml:"retry"`
+		Incoming   string `yaml:"incoming"`
+		Accounts   string `yaml:"accounts"`
+	} `yaml:"paths"`
 
 	Server struct {
 		Name string `yaml:"hostname"`

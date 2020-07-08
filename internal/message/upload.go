@@ -43,7 +43,7 @@ func RemoveMessage(section Section, msgID string) error {
 
 // StoreBlock stores a message block to disk
 func StoreBlock(msgID, blockID string, r io.Reader) error {
-	p, err := GetPath(SectionUpload, msgID, blockID)
+	p, err := GetPath(SectionIncoming, msgID, blockID)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func StoreBlock(msgID, blockID string, r io.Reader) error {
 
 // StoreCatalog stores a catalog to disk
 func StoreCatalog(msgID string, r io.Reader) error {
-	p, err := GetPath(SectionUpload, msgID, "catalog")
+	p, err := GetPath(SectionIncoming, msgID, "catalog")
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func StoreCatalog(msgID string, r io.Reader) error {
 
 // StoreHeader stores a message header to disk
 func StoreHeader(msgID string, header *Header) error {
-	p, err := GetPath(SectionUpload, msgID, "header.json")
+	p, err := GetPath(SectionIncoming, msgID, "header.json")
 	if err != nil {
 		return err
 	}

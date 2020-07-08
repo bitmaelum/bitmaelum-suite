@@ -102,7 +102,7 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/header", handler.UploadMessageHeader).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/catalog", handler.UploadMessageCatalog).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/block/{id}", handler.UploadMessageBlock).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.SendMessage).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.CompleteMessage).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteMessage).Methods("DELETE")
 
 	return mainRouter
@@ -150,30 +150,22 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 func processQueues(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Second)
 
-	processor.UploadChannel = make(chan string)
-	processor.OutgoingChannel = make(chan string)
 	processor.IncomingChannel = make(chan string)
 
 	for {
 		select {
-		case msgID := <-processor.UploadChannel:
+		case msgID := <-processor.IncomingChannel:
 			logrus.Debugf("Message %s uploaded. Processing", msgID)
-			err := message.MoveMessage(message.SectionUpload, message.SectionProcessQueue, msgID)
+			err := message.MoveMessage(message.SectionIncoming, message.SectionProcessQueue, msgID)
 			if err != nil {
 				continue
 			}
 
 			go processor.ProcessMessage(msgID)
 
-		case msgID := <-processor.OutgoingChannel:
-			fmt.Println("outgoing message", msgID)
-
-		case msgID := <-processor.IncomingChannel:
-			fmt.Println("incoming message", msgID)
-
 		case t := <-ticker.C:
 			fmt.Println("ticker fired at", t)
-			// _ = processor.ProcessRetryQueue()
+			_ = processor.ProcessRetryQueue()
 
 		case <-ctx.Done():
 			logrus.Info("Shutting down the processing queues...")
@@ -185,6 +177,7 @@ func processQueues(ctx context.Context) {
 	}
 }
 
+// wrapWithApacheLogging wraps a router with a apache logger handler
 func wrapWithApacheLogging(path string, router *mux.Router) http.Handler {
 	w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
 	if err != nil {

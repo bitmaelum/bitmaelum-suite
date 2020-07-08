@@ -88,18 +88,19 @@ func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
-// SendMessage is called whenever everything from a message has been uploaded and can be actually send
-func SendMessage(w http.ResponseWriter, req *http.Request) {
+// CompleteMessage is called whenever everything from a message has been uploaded and can be actually send
+func CompleteMessage(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	msgID := vars["msgid"]
 
-	if !message.UploadPathExists(msgID, "") {
+	// @TODO: How do we know if all data is send over? Maybe we should add all files to the header so we can verify?
+	if !message.IncomingPathExists(msgID, "header.json") || !message.IncomingPathExists(msgID, "catalog") {
 		ErrorOut(w, http.StatusNotFound, "message not found")
 		return
 	}
 
 	// queue the message for processing
-	processor.QueueUploadMessage(msgID)
+	processor.QueueIncomingMessage(msgID)
 }
 
 // DeleteMessage is called whenever we want to completely remove a message by user request
@@ -113,7 +114,7 @@ func DeleteMessage(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := message.RemoveMessage(message.SectionUpload, msgID)
+	err := message.RemoveMessage(message.SectionIncoming, msgID)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while deleting outgoing message")
 		return

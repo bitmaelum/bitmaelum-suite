@@ -19,6 +19,9 @@ type JwtToken struct{}
 type claimsContext string
 type addressContext string
 
+// ErrTokenNotValidated is returend when the token could not be validated (for any reason)
+var ErrTokenNotValidated = errors.New("token could not be validated")
+
 // Middleware JWT token authentication
 func (*JwtToken) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -51,11 +54,11 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 // Check if the authorization contains a valid JWT token for the given address
 func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 	if auth == "" {
-		return nil, errors.New("token could not be validated")
+		return nil, ErrTokenNotValidated
 	}
 
 	if len(auth) <= 6 || strings.ToUpper(auth[0:7]) != "BEARER " {
-		return nil, errors.New("token could not be validated")
+		return nil, ErrTokenNotValidated
 	}
 	tokenString := auth[7:]
 
@@ -73,5 +76,5 @@ func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 		}
 	}
 
-	return nil, errors.New("token could not be validated")
+	return nil, ErrTokenNotValidated
 }

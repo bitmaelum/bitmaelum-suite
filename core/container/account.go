@@ -25,7 +25,7 @@ func getAccountRepository() *account.Repository {
 		return accountRepository
 	}
 
-	p, _ := homedir.Expand(config.Server.Accounts.Path)
+	p, _ := homedir.Expand(config.Server.Paths.Accounts)
 	repo := account.NewFileRepository(p)
 	accountRepository = &repo
 	return accountRepository

@@ -48,8 +48,18 @@ config:
         # How many bits of proof-of-work must an account have to be able to register here
         proof_of_work: 22
     
-        # Path to our message accounts
-        path: "~/.messagedb"
+    paths:
+        # Path to store messages currently being processed (transient storage)
+        processing: ~/.bitmaelum/processing
+           
+        # Path to store messages that have to be retried later (transient storage)
+        retry: ~/.bitmaelum/retry
+
+        # Path to store incoming messages (transient storage)        
+        incoming: ~/.bitmaelum/incoming
+
+        # Path to our message accounts (persistent storage)
+        accounts: ~/.bitmaelum/messagedb
     server:
         # Hostname and port as this server is known on the internet
         hostname: localhost:2424

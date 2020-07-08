@@ -9,16 +9,14 @@ import (
 )
 
 var (
-	fatal bool = false
+	fatal = false
 	hook  *test.Hook
 )
 
 func TestLoadClientConfig(t *testing.T) {
 	// Failed loading
-	LoadClientConfig("/foo/bar")
-	assert.True(t, fatal)
-	assert.Len(t, hook.Entries, 1)
-	assert.Equal(t, "cannot load client configuration", hook.Entries[0].Message)
+	err := readConfigPath("/foo/bar", Client.LoadConfig)
+	assert.EqualError(t, err, "open /foo/bar: no such file or directory")
 }
 
 func init() {

@@ -19,7 +19,6 @@ import (
 
 // LoadClientConfig loads client configuration from given path or panic if cannot load
 func LoadClientConfig(path string) {
-
 	loaded := LoadClientConfigOrPass(path)
 	if !loaded {
 		logrus.Fatalf("cannot load client configuration")
