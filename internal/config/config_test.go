@@ -16,7 +16,7 @@ var (
 func TestLoadClientConfig(t *testing.T) {
 	// Failed loading
 	err := readConfigPath("/foo/bar", Client.LoadConfig)
-	assert.EqualError(t, err, "open /foo/bar")
+	assert.Error(t, err)
 }
 
 func init() {
