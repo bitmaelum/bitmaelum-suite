@@ -81,8 +81,8 @@ func (pow *ProofOfWork) Work() {
 	pow.Proof = counter
 }
 
-// Validate returns true when the given work can be validated against the proof
-func (pow *ProofOfWork) Validate() bool {
+// IsValid returns true when the given work can be validated against the proof
+func (pow *ProofOfWork) IsValid() bool {
 	var hashInt big.Int
 
 	hash := sha256.Sum256(bytes.Join([][]byte{

@@ -10,6 +10,9 @@ import (
 	"net/http"
 )
 
+// Upload is when a CLIENT sends a message to the SERVER. This is an authenticated action so there is no need for
+// any proof-of-work in this case. The client can only send to the server holding their account.
+
 // UploadMessageHeader deals with uploading message headers
 func UploadMessageHeader(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
@@ -88,8 +91,8 @@ func UploadMessageBlock(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
-// CompleteMessage is called whenever everything from a message has been uploaded and can be actually send
-func CompleteMessage(w http.ResponseWriter, req *http.Request) {
+// CompleteUpload is called whenever everything from a message has been uploaded and can be actually send
+func CompleteUpload(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	msgID := vars["msgid"]
 
@@ -104,7 +107,7 @@ func CompleteMessage(w http.ResponseWriter, req *http.Request) {
 }
 
 // DeleteMessage is called whenever we want to completely remove a message by user request
-func DeleteMessage(w http.ResponseWriter, req *http.Request) {
+func DeleteUpload(w http.ResponseWriter, req *http.Request) {
 	// Delete the message and contents
 	vars := mux.Vars(req)
 	msgID := vars["msgid"]

@@ -43,18 +43,7 @@ func main() {
 	defer cancel()
 
 	// Wait for signals and cancel context
-	logrus.Tracef("Starting signal notifications")
-	go func() {
-		// Capture INT and TERM signals
-		sigChannel := make(chan os.Signal, 1)
-		signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
-
-		select {
-		case s := <-sigChannel:
-			logrus.Print("signal received", s)
-			cancel()
-		}
-	}()
+	setupSignals(cancel)
 
 	// Start queues
 	logrus.Tracef("Starting processing queues")
@@ -71,6 +60,21 @@ func main() {
 	logrus.Tracef("Context is done. Exiting")
 }
 
+func setupSignals(cancel context.CancelFunc) {
+	logrus.Tracef("Starting signal notifications")
+	go func() {
+		// Capture INT and TERM signals
+		sigChannel := make(chan os.Signal, 1)
+		signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
+
+		select {
+		case s := <-sigChannel:
+			logrus.Tracef("signal %s received", s)
+			cancel()
+		}
+	}()
+}
+
 func setupRouter() *mux.Router {
 	logger := &middleware.Logger{}
 	tracer := &middleware.Tracer{}
@@ -84,8 +88,16 @@ func setupRouter() *mux.Router {
 	publicRouter.Use(tracer.Middleware)
 	publicRouter.HandleFunc("/", handler.HomePage).Methods("GET")
 	publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
-	//publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
 	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
+
+	publicRouter.HandleFunc("/incoming", handler.IncomingMessageRequest).Methods("POST")
+	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/header", handler.IncomingMessageHeader).Methods("POST")
+	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/catalog", handler.IncomingMessageCatalog).Methods("POST")
+	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/block/{id}", handler.IncomingMessageBlock).Methods("POST")
+	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.CompleteIncoming).Methods("POST")
+	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteIncoming).Methods("DELETE")
+
+	//publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
 	// publicRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
 	// publicRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
 
@@ -102,8 +114,8 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/header", handler.UploadMessageHeader).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/catalog", handler.UploadMessageCatalog).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/block/{id}", handler.UploadMessageBlock).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.CompleteMessage).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteMessage).Methods("DELETE")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.CompleteUpload).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteUpload).Methods("DELETE")
 
 	return mainRouter
 }
@@ -156,7 +168,7 @@ func processQueues(ctx context.Context) {
 		select {
 		case msgID := <-processor.IncomingChannel:
 			logrus.Debugf("Message %s uploaded. Processing", msgID)
-			err := message.MoveMessage(message.SectionIncoming, message.SectionProcessQueue, msgID)
+			err := message.MoveMessage(message.SectionIncoming, message.SectionProcessing, msgID)
 			if err != nil {
 				continue
 			}
@@ -171,9 +183,6 @@ func processQueues(ctx context.Context) {
 			logrus.Info("Shutting down the processing queues...")
 			return
 		}
-
-		// // Do we need this?
-		// time.Sleep(1 * time.Second)
 	}
 }
 

@@ -23,8 +23,8 @@ type Section int
 const (
 	// SectionIncoming uploading message
 	SectionIncoming = iota
-	// SectionProcessQueue processes a message
-	SectionProcessQueue
+	// SectionProcessing processes a message
+	SectionProcessing
 	// SectionRetry messages that have to be retried at a later stadium
 	SectionRetry
 )
@@ -36,7 +36,7 @@ func GetPath(section Section, msgID, file string) (string, error) {
 		return homedir.Expand(path.Join(config.Server.Paths.Incoming, msgID, file))
 	case SectionRetry:
 		return homedir.Expand(path.Join(config.Server.Paths.Retry, msgID, file))
-	case SectionProcessQueue:
+	case SectionProcessing:
 		return homedir.Expand(path.Join(config.Server.Paths.Processing, msgID, file))
 	default:
 		return "", errors.New("unknown section")
@@ -56,7 +56,7 @@ func IncomingPathExists(msgID, file string) bool {
 
 // ProcessQueuePathExists returns true when the processing path for the given message/file exists
 func ProcessQueuePathExists(msgID, file string) bool {
-	p, err := GetPath(SectionProcessQueue, msgID, file)
+	p, err := GetPath(SectionProcessing, msgID, file)
 	if err != nil {
 		return false
 	}

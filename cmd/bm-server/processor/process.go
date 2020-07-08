@@ -16,7 +16,7 @@ func ProcessMessage(msgID string) {
 	logrus.Debugf("processing message %s", msgID)
 
 	// Check header and get recipient
-	header, err := message.GetMessageHeader(message.SectionProcessQueue, msgID)
+	header, err := message.GetMessageHeader(message.SectionProcessing, msgID)
 	if err != nil {
 		// cannot read header.. Let's move to retry queue
 		MoveToRetryQueue(msgID)

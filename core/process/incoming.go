@@ -20,7 +20,7 @@ func processIncoming(uuid string) {
 	}
 
 	// Fetch header
-	header, err := message.GetMessageHeader(message.SectionProcessQueue, uuid)
+	header, err := message.GetMessageHeader(message.SectionProcessing, uuid)
 	if err != nil {
 		return
 	}

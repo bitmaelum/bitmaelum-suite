@@ -26,7 +26,7 @@ func ProcessRetryQueue() error {
 
 			// Message has been retried over 10 times. It's not gonna happen.
 			logrus.Errorf("Message %s stuck in retry queue for too long. Giving up.", info.MsgID)
-			err := message.RemoveMessage(message.SectionProcessQueue, info.MsgID)
+			err := message.RemoveMessage(message.SectionProcessing, info.MsgID)
 			if err != nil {
 				logrus.Warnf("Cannot remove message %s from the process queue.", info.MsgID)
 				continue
@@ -34,7 +34,7 @@ func ProcessRetryQueue() error {
 		}
 
 		if canRetryNow(info) {
-			err := message.MoveMessage(message.SectionRetry, message.SectionProcessQueue, info.MsgID)
+			err := message.MoveMessage(message.SectionRetry, message.SectionProcessing, info.MsgID)
 			if err != nil {
 				continue
 			}
@@ -48,7 +48,7 @@ func ProcessRetryQueue() error {
 
 // MoveToRetryQueue moves a message (back) to retry queue and update retry info
 func MoveToRetryQueue(msgID string) {
-	info, err := message.GetRetryInfo(message.SectionProcessQueue, msgID)
+	info, err := message.GetRetryInfo(message.SectionProcessing, msgID)
 	if err == nil {
 		info.Retries++
 		info.LastRetriedAt = time.Now()
@@ -57,12 +57,12 @@ func MoveToRetryQueue(msgID string) {
 		info = message.NewRetryInfo()
 	}
 
-	err = message.StoreRetryInfo(message.SectionProcessQueue, msgID, *info)
+	err = message.StoreRetryInfo(message.SectionProcessing, msgID, *info)
 	if err != nil {
 		logrus.Warnf("Cannot store retry information for message %s.", msgID)
 	}
 
-	err = message.MoveMessage(message.SectionProcessQueue, message.SectionRetry, info.MsgID)
+	err = message.MoveMessage(message.SectionProcessing, message.SectionRetry, info.MsgID)
 	if err != nil {
 		// can't move the message?
 		logrus.Warnf("Cannot move message %s from processing to retry queue.", msgID)
