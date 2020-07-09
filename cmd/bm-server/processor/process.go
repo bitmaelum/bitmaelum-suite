@@ -2,7 +2,9 @@ package processor
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
+	"github.com/bitmaelum/bitmaelum-suite/core/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,7 +39,7 @@ func ProcessMessage(msgID string) {
 		// Do stuff locally
 		logrus.Debugf("Message %s can be transferred locally to %s", msgID, res.Hash)
 
-		err := DeliverLocal(res, msgID)
+		err := deliverLocal(res, msgID)
 		if err != nil {
 			logrus.Errorf("cannot deliver message %s locally to %s. Retrying.", msgID, header.To.Addr)
 			MoveToRetryQueue(msgID)
@@ -46,10 +48,28 @@ func ProcessMessage(msgID string) {
 	}
 
 	// Otherwise, send to outgoing server
-	logrus.Debugf("Message %s is remove, transferring to %s", msgID, res.Server)
-	err = DeliverRemote(res, msgID)
+	logrus.Debugf("Message %s is remote, transferring to %s", msgID, res.Server)
+	err = deliverRemote(res, msgID)
 	if err != nil {
 		logrus.Errorf("cannot deliver message %s remotely to %s. Retrying.", msgID, header.To.Addr)
 		MoveToRetryQueue(msgID)
 	}
+}
+
+// deliverLocal moves a message to a local mailbox
+func deliverLocal(info *resolve.Info, msgID string) error {
+	// Deliver mail to local user's inbox
+	as := container.GetAccountService()
+	err := as.Deliver(msgID, address.HashAddress(info.Hash))
+	if err != nil {
+		// Something went wrong.. let's try and move the message back to the retry queue
+		MoveToRetryQueue(msgID)
+	}
+
+	return nil
+}
+
+// deliverRemote uploads a message to a remote mail server
+func deliverRemote(info *resolve.Info, msgID string) error {
+	return nil
 }

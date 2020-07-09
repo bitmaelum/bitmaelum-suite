@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/core"
-	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"io"
 	"io/ioutil"
@@ -37,7 +37,7 @@ func New(info *account.Info) (*API, error) {
 	if err != nil {
 		return nil, err
 	}
-	jwtToken, err := core.GenerateJWTToken(*hash, privKey)
+	jwtToken, err := internal.GenerateJWTToken(*hash, privKey)
 	if err != nil {
 		return nil, err
 	}

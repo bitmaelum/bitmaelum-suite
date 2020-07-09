@@ -1,6 +1,6 @@
 // +build windows
 
-package core
+package internal
 
 import (
 	"errors"

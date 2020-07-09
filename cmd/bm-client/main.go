@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/cmd"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-suite/core"
-	"github.com/bitmaelum/bitmaelum-suite/core/password"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/password"
 	"os"
 )
 
@@ -19,14 +19,14 @@ type options struct {
 var opts options
 
 func main() {
-	core.ParseOptions(&opts)
+	internal.ParseOptions(&opts)
 	if opts.Version {
-		core.WriteVersionInfo("BitMaelum Client", os.Stdout)
+		internal.WriteVersionInfo("BitMaelum Client", os.Stdout)
 		fmt.Println()
 		os.Exit(1)
 	}
 
-	fmt.Println(core.GetASCIILogo())
+	fmt.Println(internal.GetASCIILogo())
 	config.LoadClientConfig(opts.Config)
 
 	if opts.Password == "" {

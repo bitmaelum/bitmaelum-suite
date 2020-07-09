@@ -8,7 +8,7 @@ import (
 
 var powService storage.Storable
 
-// GetIncomingService retrieves an incoming service
+// GetProofOfWorkService retrieves an incoming service
 func GetProofOfWorkService() storage.Storable {
 	if powService != nil {
 		return powService

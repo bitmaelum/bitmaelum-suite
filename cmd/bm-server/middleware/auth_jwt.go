@@ -3,9 +3,9 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/core"
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
-	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"github.com/vtolstov/jwt-go"
@@ -70,7 +70,7 @@ func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 			continue
 		}
 
-		token, err := core.ValidateJWTToken(tokenString, addr, pubKey)
+		token, err := internal.ValidateJWTToken(tokenString, addr, pubKey)
 		if err == nil {
 			return token, nil
 		}

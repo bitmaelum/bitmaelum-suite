@@ -6,7 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
-	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/gorilla/handlers"
@@ -28,15 +28,15 @@ type options struct {
 var opts options
 
 func main() {
-	core.ParseOptions(&opts)
+	internal.ParseOptions(&opts)
 	if opts.Version {
-		core.WriteVersionInfo("BitMaelum Server", os.Stdout)
+		internal.WriteVersionInfo("BitMaelum Server", os.Stdout)
 		fmt.Println()
 		os.Exit(1)
 	}
 
 	config.LoadServerConfig(opts.Config)
-	core.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
+	internal.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
 
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
@@ -45,9 +45,9 @@ func main() {
 	// Wait for signals and cancel context
 	setupSignals(cancel)
 
-	// Start queues
-	logrus.Tracef("Starting processing queues")
-	go processQueues(ctx)
+	// Start main loop processors
+	logrus.Tracef("Starting main loop")
+	go mainLoop(ctx)
 
 	// Start HTTP server
 	host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
@@ -159,26 +159,29 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	}
 }
 
-func processQueues(ctx context.Context) {
+func mainLoop(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Second)
-
 	processor.IncomingChannel = make(chan string)
 
 	for {
 		select {
+		// Process incoming message
 		case msgID := <-processor.IncomingChannel:
 			logrus.Debugf("Message %s uploaded. Processing", msgID)
 			err := message.MoveMessage(message.SectionIncoming, message.SectionProcessing, msgID)
 			if err != nil {
+				logrus.Tracef("issue while trying to move the message %s", err)
 				continue
 			}
-
 			go processor.ProcessMessage(msgID)
 
-		case t := <-ticker.C:
-			fmt.Println("ticker fired at", t)
-			_ = processor.ProcessRetryQueue()
+		// Process heartbeat ticker
+		case <-ticker.C:
+			processor.ProcessRetryQueue()
+			processor.ProcessStuckIncomingMessages()
+			processor.ProcessStuckProcessingMessages()
 
+		// Context is done (signal send)
 		case <-ctx.Done():
 			logrus.Info("Shutting down the processing queues...")
 			return

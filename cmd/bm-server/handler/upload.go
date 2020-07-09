@@ -106,7 +106,7 @@ func CompleteUpload(w http.ResponseWriter, req *http.Request) {
 	processor.QueueIncomingMessage(msgID)
 }
 
-// DeleteMessage is called whenever we want to completely remove a message by user request
+// DeleteUpload is called whenever we want to completely remove a message by user request
 func DeleteUpload(w http.ResponseWriter, req *http.Request) {
 	// Delete the message and contents
 	vars := mux.Vars(req)

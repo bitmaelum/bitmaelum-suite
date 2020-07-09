@@ -1,7 +1,7 @@
 package account
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
@@ -19,11 +19,14 @@ type Repository interface {
 	CreateBox(addr address.HashAddress, box, name, description string, quota int) error
 	ExistsBox(addr address.HashAddress, box string) bool
 	DeleteBox(addr address.HashAddress, box string) error
-	GetBox(addr address.HashAddress, box string) (*core.MailBoxInfo, error)
-	FindBox(addr address.HashAddress, query string) ([]core.MailBoxInfo, error)
+	GetBox(addr address.HashAddress, box string) (*message.MailBoxInfo, error)
+	FindBox(addr address.HashAddress, query string) ([]message.MailBoxInfo, error)
+
+	SendToBox(addr address.HashAddress, box, msgID string) error
+	MoveToBox(addr address.HashAddress, srcBox, dstBox, msgID string) error
 
 	// Message boxes
-	FetchListFromBox(addr address.HashAddress, box string, offset, limit int) ([]core.MessageList, error)
+	FetchListFromBox(addr address.HashAddress, box string, offset, limit int) ([]message.List, error)
 
 	// Flags
 	GetFlags(addr address.HashAddress, box string, id string) ([]string, error)

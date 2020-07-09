@@ -10,7 +10,7 @@ type redisStorage struct {
 	client *redis.Client
 }
 
-// NewRedis create a new redis storage repository
+// NewRedis creates a new redis storage repository
 func NewRedis(opts *redis.Options) Storable {
 	return &redisStorage{
 		client: redis.NewClient(opts),
@@ -33,7 +33,18 @@ func (r *redisStorage) Retrieve(challenge string) (*ProofOfWork, error) {
 }
 
 func (r *redisStorage) Store(pow *ProofOfWork) error {
-	return r.client.Set(r.client.Context(), pow.Challenge, pow, pow.Expires.Sub(time.Now())).Err()
+	// pow.Expires is an absolute time, we need delta time for redis
+	var expiry time.Duration = 0
+	if pow.Expires.Unix() > 0 {
+		expiry = pow.Expires.Sub(time.Now())
+	}
+
+	data, err := json.Marshal(pow)
+	if err != nil {
+		return err
+	}
+
+	return r.client.Set(r.client.Context(), pow.Challenge, data, expiry).Err()
 }
 
 func (r *redisStorage) Remove(challenge string) error {

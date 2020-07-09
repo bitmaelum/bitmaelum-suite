@@ -1,4 +1,4 @@
-package core
+package internal
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
