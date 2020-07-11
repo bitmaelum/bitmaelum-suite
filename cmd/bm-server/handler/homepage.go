@@ -1,7 +1,9 @@
 package handler
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/core"
+	"fmt"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"net/http"
 	"strings"
 )
@@ -17,7 +19,10 @@ func HomePage(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 
-	logo := core.GetMonochromeASCIILogo()
+	host := fmt.Sprintf("<<< %s >>>", config.Server.Server.Name)
+	host = fmt.Sprintf("%*s ", (49+len(host))/2, host)
+	logo := internal.GetMonochromeASCIILogo() + "\n\n" + host + "\n\n"
+
 	if htmlVersion {
 		logo = strings.Replace(logo, "\n", "<br>", -1)
 		_, _ = w.Write([]byte("<pre>" + logo + "</pre>"))

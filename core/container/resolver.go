@@ -5,12 +5,15 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 )
 
+// We can have multiple resolvers to resolve a single address. We could resolve locally, remotely through resolver-services, or through DHT.
+// We chain them all together with the ChainRepository
+
 var (
-	resolveService       *resolve.Service
-	localKeysRepository  *resolve.Repository
-	remoteKeysRepository *resolve.Repository
-	dhtKeysRepository    *resolve.Repository
-	chainKeysRepository  *resolve.ChainRepository
+	resolveService           *resolve.Service
+	localResolverRepository  *resolve.Repository
+	remoteResolverRepository *resolve.Repository
+	dhtResolverRepository    *resolve.Repository
+	chainResolverRepository  *resolve.ChainRepository
 )
 
 // GetResolveService retrieves a resolver service
@@ -28,40 +31,40 @@ func GetResolveService() *resolve.Service {
 }
 
 func getChainRepository() *resolve.ChainRepository {
-	if chainKeysRepository != nil {
-		return chainKeysRepository
+	if chainResolverRepository != nil {
+		return chainResolverRepository
 	}
 
-	chainKeysRepository = resolve.NewChainRepository()
-	return chainKeysRepository
+	chainResolverRepository = resolve.NewChainRepository()
+	return chainResolverRepository
 }
 
 func getLocalRepository() *resolve.Repository {
-	if localKeysRepository != nil {
-		return localKeysRepository
+	if localResolverRepository != nil {
+		return localResolverRepository
 	}
 
 	repo := resolve.NewLocalRepository(GetAccountService())
-	localKeysRepository = &repo
-	return localKeysRepository
+	localResolverRepository = &repo
+	return localResolverRepository
 }
 
 func getRemoteRepository() *resolve.Repository {
-	if remoteKeysRepository != nil {
-		return remoteKeysRepository
+	if remoteResolverRepository != nil {
+		return remoteResolverRepository
 	}
 
-	repo := resolve.NewRemoteRepository(config.Client.Resolver.Remote.URL)
-	remoteKeysRepository = &repo
-	return remoteKeysRepository
+	repo := resolve.NewRemoteRepository(config.Server.Resolver.Remote.URL)
+	remoteResolverRepository = &repo
+	return remoteResolverRepository
 }
 
 func getDhtRepository() *resolve.Repository {
-	if dhtKeysRepository != nil {
-		return dhtKeysRepository
+	if dhtResolverRepository != nil {
+		return dhtResolverRepository
 	}
 
 	repo := resolve.NewDHTRepository()
-	dhtKeysRepository = &repo
-	return dhtKeysRepository
+	dhtResolverRepository = &repo
+	return dhtResolverRepository
 }

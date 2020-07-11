@@ -12,12 +12,13 @@ const (
 )
 
 // ProcessRetryQueue will process all mails found in the retry queue or removes them when they are expired
-func ProcessRetryQueue() error {
+func ProcessRetryQueue() {
 	logrus.Debugf("scanning retry queue for action")
 
+	// Get retry info from all messages found in the retry queue
 	retryQueue, err := message.GetRetryInfoFromQueue()
 	if err != nil {
-		return err
+		return
 	}
 
 	for _, info := range retryQueue {
@@ -42,19 +43,18 @@ func ProcessRetryQueue() error {
 			go ProcessMessage(info.MsgID)
 		}
 	}
-
-	return nil
 }
 
 // MoveToRetryQueue moves a message (back) to retry queue and update retry info
 func MoveToRetryQueue(msgID string) {
+	// Create or update retry information for this message
 	info, err := message.GetRetryInfo(message.SectionProcessing, msgID)
 	if err == nil {
 		info.Retries++
 		info.LastRetriedAt = time.Now()
 		info.RetryAt = time.Now().Add(getNextRetryDuration(info.Retries))
 	} else {
-		info = message.NewRetryInfo()
+		info = message.NewRetryInfo(msgID)
 	}
 
 	err = message.StoreRetryInfo(message.SectionProcessing, msgID, *info)
@@ -62,6 +62,7 @@ func MoveToRetryQueue(msgID string) {
 		logrus.Warnf("Cannot store retry information for message %s.", msgID)
 	}
 
+	// Move the message to the retry queue
 	err = message.MoveMessage(message.SectionProcessing, message.SectionRetry, info.MsgID)
 	if err != nil {
 		// can't move the message?
@@ -80,15 +81,15 @@ func canRetryNow(info message.RetryInfo) bool {
 
 // calculateNextRetryTime will return the next time a message can be retried again
 func getNextRetryDuration(retries int) (d time.Duration) {
-	// @TODO: These duration should be configurable. Something like this in config: "5:1 17:5 25:30 30:60"
-
-	/*
+	/* @TODO: These duration should be configurable:
+	 *
 	 * config:
 	 *   retries: [
 	 *     { count:  5, hold:  1 },
 	 *     { count: 17, hold:  5 },
 	 *     { count: 25, hold: 30 },
-	 *     { count: 30, hold: 60 },
+	 *     { count: 30, hold: 60 }
+	 *   ]
 	 */
 
 	d = 0

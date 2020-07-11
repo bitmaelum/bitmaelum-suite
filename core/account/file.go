@@ -3,7 +3,7 @@ package account
 import (
 	"encoding/json"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/nightlyone/lockfile"
 	"github.com/sirupsen/logrus"
@@ -105,7 +105,7 @@ func (r *fileRepo) CreateBox(addr address.HashAddress, box, name, description st
 
 	_ = os.MkdirAll(fullPath, 0700)
 
-	mbi := core.MailBoxInfo{
+	mbi := message.MailBoxInfo{
 		Name:        name,
 		Description: description,
 		Quota:       quota,
@@ -184,8 +184,8 @@ func (r *fileRepo) getPath(addr address.HashAddress, suffix string) string {
 }
 
 // Retrieve a single mailbox
-func (r *fileRepo) GetBox(addr address.HashAddress, box string) (*core.MailBoxInfo, error) {
-	mbi := &core.MailBoxInfo{}
+func (r *fileRepo) GetBox(addr address.HashAddress, box string) (*message.MailBoxInfo, error) {
+	mbi := &message.MailBoxInfo{}
 	mbi.Name = box
 
 	// Fetch information from .info file
@@ -210,8 +210,8 @@ func (r *fileRepo) GetBox(addr address.HashAddress, box string) (*core.MailBoxIn
 }
 
 // Search for mailboxes. Use glob-patterns for querying
-func (r *fileRepo) FindBox(addr address.HashAddress, query string) ([]core.MailBoxInfo, error) {
-	var list []core.MailBoxInfo
+func (r *fileRepo) FindBox(addr address.HashAddress, query string) ([]message.MailBoxInfo, error) {
+	var list []message.MailBoxInfo
 
 	files, err := ioutil.ReadDir(r.getPath(addr, ""))
 	if err != nil {
@@ -236,8 +236,8 @@ func (r *fileRepo) FindBox(addr address.HashAddress, query string) ([]core.MailB
 }
 
 // Query messages inside mailbox
-func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box string, offset, limit int) ([]core.MessageList, error) {
-	var list []core.MessageList
+func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box string, offset, limit int) ([]message.List, error) {
+	var list []message.List
 
 	files, err := ioutil.ReadDir(r.getPath(addr, box))
 	if err != nil {
@@ -249,10 +249,10 @@ func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box string, offset
 			continue
 		}
 
-		flags := &core.Flags{}
+		flags := &message.Flags{}
 		_ = r.fetchJSON(addr, path.Join(box, f.Name(), flagFile), flags)
 
-		msg := core.MessageList{
+		msg := message.List{
 			ID:    f.Name(),
 			Dt:    f.ModTime().Format(time.RFC3339),
 			Flags: flags.Flags,
@@ -276,7 +276,7 @@ func (r *fileRepo) UnsetFlag(addr address.HashAddress, box string, id string, fl
 
 // Get flags from the given message
 func (r *fileRepo) GetFlags(addr address.HashAddress, box string, id string) ([]string, error) {
-	flags := &core.Flags{}
+	flags := &message.Flags{}
 	err := r.fetchJSON(addr, path.Join(box, id, flagFile), flags)
 	if err != nil {
 		return nil, err
@@ -342,7 +342,7 @@ func (r *fileRepo) writeFlag(addr address.HashAddress, box string, id string, fl
 	}
 
 	// Save flags back
-	ft := &core.Flags{
+	ft := &message.Flags{
 		Flags: flags,
 	}
 	data, err := json.MarshalIndent(ft, "", "  ")
@@ -351,4 +351,23 @@ func (r *fileRepo) writeFlag(addr address.HashAddress, box string, id string, fl
 	}
 
 	return r.store(addr, path.Join(box, id, flagFile), data)
+}
+
+func (r *fileRepo) MoveToBox(addr address.HashAddress, srcBox, dstBox, msgID string) error {
+	srcPath := r.getPath(addr, path.Join(srcBox, msgID))
+	dstPath := r.getPath(addr, path.Join(dstBox, msgID))
+
+	return os.Rename(srcPath, dstPath)
+}
+
+// Send a message to specific inbox
+func (r *fileRepo) SendToBox(addr address.HashAddress, box, msgID string) error {
+	srcPath, err := message.GetPath(message.SectionProcessing, msgID, "")
+	if err != nil {
+		return err
+	}
+
+	dstPath := r.getPath(addr, path.Join(box, msgID))
+
+	return os.Rename(srcPath, dstPath)
 }

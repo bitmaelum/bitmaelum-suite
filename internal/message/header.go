@@ -1,7 +1,12 @@
 package message
 
-import "github.com/bitmaelum/bitmaelum-suite/pkg/address"
+import (
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+)
 import pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+
+// ChecksumList is a list of key/value pairs of checksums. ie: ["sha1"] = "123456abcde"
+type ChecksumList map[string]string
 
 // Header represents a message header
 type Header struct {
@@ -14,10 +19,10 @@ type Header struct {
 		Addr address.HashAddress `json:"address"`
 	} `json:"to"`
 	Catalog struct {
-		Size         uint64     `json:"size"`
-		Checksum     []Checksum `json:"checksum"`
-		Crypto       string     `json:"crypto"`
-		EncryptedKey []byte     `json:"encrypted_key"`
+		Size         uint64       `json:"size"`
+		Checksum     ChecksumList `json:"checksum"`
+		Crypto       string       `json:"crypto"`
+		EncryptedKey []byte       `json:"encrypted_key"`
 	} `json:"catalog"`
 }
 

@@ -3,36 +3,30 @@ package storage
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/google/uuid"
 	"io"
 	"time"
 )
 
+// ProofOfWork is the structure that keeps information about proof-of-work done for incoming messages. It connects
+// the proof-of-work with a message ID which can be used for uploading.
 type ProofOfWork struct {
-	Challenge   string      `json:"challenge"`
-	Bits        int         `json:"bits"`
-	Nonce       uint64      `json:"nonce"`
-	Expires     time.Time   `json:"expires"`
-	MsgID       string      `json:"msg_id"`
-	Valid       bool        `json:"valid"`
+	Challenge string    `json:"challenge"`
+	Bits      int       `json:"bits"`
+	Proof     uint64    `json:"proof"`
+	Expires   time.Time `json:"expires"`
+	MsgID     string    `json:"msg_id"`
+	Valid     bool      `json:"valid"`
 }
 
-func (pow *ProofOfWork) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(pow)
-}
-func (pow *ProofOfWork) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, pow)
-}
-
-
+// Storable interface is the main interface to store and retrieve proof-of-work
 type Storable interface {
-	// Retrieves the given challenge and returns it's proof of work info
+	// Retrieve retrieves the given challenge from the storage and returns its proof-of-work info
 	Retrieve(challenge string) (*ProofOfWork, error)
-	// Stores the given proof of work
+	// Store stores the given proof of work in the storage
 	Store(pow *ProofOfWork) error
-	// Removes the given challenge
+	// Remove removes the given challenge from the storage
 	Remove(challenge string) error
 }
 

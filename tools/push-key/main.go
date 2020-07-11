@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-suite/core"
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
-	"github.com/bitmaelum/bitmaelum-suite/core/password"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/password"
 	"os"
 )
 
@@ -18,8 +18,9 @@ type options struct {
 var opts options
 
 func main() {
-	core.ParseOptions(&opts)
+	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
+	config.LoadServerConfig(opts.Config)
 
 	if opts.Password == "" {
 		opts.Password = string(password.AskPassword())
@@ -34,9 +35,9 @@ func main() {
 	}
 
 	rs := container.GetResolveService()
-	for i, acc := range accountVault.Accounts {
-		accountVault.Accounts[i].Server = "bitmaelum.ngrok.io:443"
-		accountVault.Save()
+	for _, acc := range accountVault.Accounts {
+		// accountVault.Accounts[i].Server = "bitmaelum.ngrok.io:443"
+		// accountVault.Save()
 
 		err = rs.UploadInfo(acc, acc.Server)
 		if err != nil {

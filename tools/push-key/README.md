@@ -1,5 +1,3 @@
-# Tool: hash-address
+# Tool: push-key
 
-Converts a message address to its hash. 
-
-Not directly useful as this can also be done with a simple `sha256sum` command. 
+Pushes keys to the resolve server, in case we missed it.

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
@@ -18,7 +18,7 @@ type options struct {
 var opts options
 
 func main() {
-	core.ParseOptions(&opts)
+	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
 
 	// Convert strings into addresses
@@ -45,14 +45,14 @@ func main() {
 	fmt.Printf("%s\n", info.PubKey)
 	fmt.Println("")
 
-	ts, err := core.GenerateJWTToken(fromAddr.Hash(), info.PrivKey)
+	ts, err := internal.GenerateJWTToken(fromAddr.Hash(), info.PrivKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	fmt.Println(ts)
 
-	token, err := core.ValidateJWTToken(ts, fromAddr.Hash(), info.PubKey)
+	token, err := internal.ValidateJWTToken(ts, fromAddr.Hash(), info.PubKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}

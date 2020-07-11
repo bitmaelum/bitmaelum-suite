@@ -33,7 +33,8 @@ server. Only the specified address can register the account`,
 
 		token, err = is.CreateInvite(addr.Hash(), time.Duration(d)*24*time.Hour)
 		if err != nil {
-			fmt.Printf("error while inviting address")
+			fmt.Printf("error while inviting address: %s", err)
+			return
 		}
 
 		fmt.Printf("'%s' is allowed to register on our server in the next %d days.\n", addr.String(), d)

@@ -1,7 +1,7 @@
-package core
+package internal
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/stretchr/testify/assert"
 	"github.com/vtolstov/jwt-go"

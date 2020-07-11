@@ -2,10 +2,13 @@ param(
   [string]$target="all"
 )
 
+GOOS=windows
+GOARCH=amd64
+
 $REPO="github.com/bitmaelum/bitmaelum-suite"
 
 $APPS="bm-server","bm-client","bm-config","bm-client-ui"
-$TOOLS="hash-address","jwt","proof-of-work","readmail"
+$TOOLS="hash-address","jwt","proof-of-work","readmail","push-key"
 
 $BUILD_DATE=Get-Date
 $COMMIT=git rev-parse HEAD
