@@ -12,8 +12,8 @@ $TOOLS="hash-address","jwt","proof-of-work","readmail","push-key"
 
 $BUILD_DATE=Get-Date
 $COMMIT=git rev-parse HEAD
-$PKG=go list ./core
-$GO_BUILD_FLAGS="-X '$PKG.BuildDate=$BUILD_DATE' -X '$PKG.GitCommit=$COMMIT'"
+$PKG=go list ./internal
+$GO_BUILD_FLAGS="-X '$PKG.buildDate=$BUILD_DATE' -X '$PKG.gitCommit=$COMMIT'"
 
 Write-Host -NoNewLine "Compiling ["
 

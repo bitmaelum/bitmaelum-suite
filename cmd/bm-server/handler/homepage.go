@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -22,6 +23,10 @@ func HomePage(w http.ResponseWriter, req *http.Request) {
 	host := fmt.Sprintf("<<< %s >>>", config.Server.Server.Name)
 	host = fmt.Sprintf("%*s ", (49+len(host))/2, host)
 	logo := internal.GetMonochromeASCIILogo() + "\n\n" + host + "\n\n"
+
+	var version bytes.Buffer
+	internal.WriteVersionInfo("BitMealum-Server", &version)
+	logo = logo + "\n\n" + version.String()
 
 	if htmlVersion {
 		logo = strings.Replace(logo, "\n", "<br>", -1)
