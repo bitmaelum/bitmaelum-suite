@@ -10,9 +10,8 @@ import (
 
 const (
 	service string = "bitmaelum"
-	user string = "vault"
+	user    string = "vault"
 )
-
 
 // StorePassword will store the given password into the keychain if possible
 func StorePassword(pwd string) error {

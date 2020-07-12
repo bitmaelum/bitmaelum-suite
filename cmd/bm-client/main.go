@@ -43,7 +43,7 @@ func main() {
 	}
 
 	// If the password was correct and not already read from the vault, store it in the vault
-	if ! fromVault {
+	if !fromVault {
 		_ = password.StorePassword(opts.Password)
 	}
 
