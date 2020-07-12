@@ -3,39 +3,20 @@ package password
 import (
 	"bytes"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/zalando/go-keyring"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
 )
 
-// FetchPassword tries to figure out the password of the given address. It can do so by checking
-// keychains and such, or when all fails, ask it from the user.
-func FetchPassword(addr *address.Address) ([]byte, error) {
-	if keychain.IsAvailable() {
-		pwd, err := keychain.Fetch(*addr)
-		if err == nil {
-			return pwd, nil
-		}
-	}
+const (
+	service string = "bitmaelum"
+	user string = "vault"
+)
 
-	// If all fails, ask from stdin
-	fmt.Printf("\U0001F511  Please enter your password for account '%s': ", addr.String())
-	p, e := terminal.ReadPassword(int(os.Stdin.Fd()))
-	fmt.Printf("\n")
-
-	return p, e
-}
 
 // StorePassword will store the given password into the keychain if possible
-func StorePassword(addr *address.Address, pwd []byte) error {
-	if keychain.IsAvailable() {
-		_, err := keychain.Fetch(*addr)
-		if err != nil {
-			return keychain.Store(*addr, pwd)
-		}
-	}
-
-	return nil
+func StorePassword(pwd string) error {
+	return keyring.Set(service, user, pwd)
 }
 
 // AskDoublePassword will ask for a password (and confirmation) on the commandline
@@ -58,10 +39,15 @@ func AskDoublePassword() []byte {
 }
 
 // AskPassword will ask for a password (without confirmation) on the commandline
-func AskPassword() []byte {
+func AskPassword() (string, bool) {
+	pwd, err := keyring.Get(service, user)
+	if err == nil {
+		return pwd, true
+	}
+
 	fmt.Printf("Please enter your vault password: ")
-	p1, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
+	b, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Printf("\n")
 
-	return p1
+	return string(b), false
 }

@@ -29,8 +29,9 @@ func main() {
 	fmt.Println(internal.GetASCIILogo())
 	config.LoadClientConfig(opts.Config)
 
+	fromVault := false
 	if opts.Password == "" {
-		opts.Password = string(password.AskPassword())
+		opts.Password, fromVault = password.AskPassword()
 	}
 
 	// Unlock vault
@@ -39,6 +40,11 @@ func main() {
 		fmt.Printf("Error while opening vault: %s", err)
 		fmt.Println("")
 		os.Exit(1)
+	}
+
+	// If the password was correct and not already read from the vault, store it in the vault
+	if ! fromVault {
+		_ = password.StorePassword(opts.Password)
 	}
 
 	// We inject our vault into the cmd, so all commands and handlers know about the vault. It doesn't
