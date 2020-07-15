@@ -3,6 +3,7 @@ package internal
 import (
 	"bytes"
 	"fmt"
+	"github.com/coreos/go-semver/semver"
 	"io"
 	"strings"
 )
@@ -16,11 +17,11 @@ const (
 var buildDate, gitCommit string
 
 // // Version is a structure with the current version of the software
-// var Version = semver.Version{
-// 	Major: versionMajor,
-// 	Minor: versionMinor,
-// 	Patch: versionPatch,
-// }
+var Version = semver.Version{
+	Major: versionMajor,
+	Minor: versionMinor,
+	Patch: versionPatch,
+}
 
 // WriteVersionInfo writes a string with all version information
 func WriteVersionInfo(name string, w io.Writer) {
