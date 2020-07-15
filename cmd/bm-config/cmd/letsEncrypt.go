@@ -171,7 +171,6 @@ func saveCertFiles(certPem string, keyPem string) error {
 	}
 	fmt.Println("ok")
 
-
 	fmt.Printf("   - Writing new cert file %s: ", config.Server.Server.CertFile)
 	newPath, _ = homedir.Expand(config.Server.Server.CertFile)
 	err = ioutil.WriteFile(newPath, []byte(certPem), 0600)
@@ -315,8 +314,8 @@ func finalizeOrder(order *acme.Order, domain string, privCertKey crypto.Signer) 
 }
 
 func authorize(order *acme.Order) (*acme.Order, error) {
-	for _, authzUrl := range order.AuthzURLs {
-		auth, err := acmeClient.GetAuthorization(ctx, authzUrl)
+	for _, authzURL := range order.AuthzURLs {
+		auth, err := acmeClient.GetAuthorization(ctx, authzURL)
 		if err != nil {
 			continue
 		}

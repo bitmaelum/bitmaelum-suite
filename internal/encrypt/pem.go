@@ -57,7 +57,7 @@ func PubKeyToPEM(key interface{}) (string, error) {
 	return b.String(), err
 }
 
-
+// CertToPEM converts a x509 certificate to PEM format
 func CertToPEM(cert x509.Certificate) (string, error) {
 	var b bytes.Buffer
 	err := pem.Encode(&b, &pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})

@@ -70,7 +70,7 @@ func setupSignals(cancel context.CancelFunc) {
 		signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP)
 
 		for {
-			s := <- sigChannel
+			s := <-sigChannel
 			switch s {
 			case syscall.SIGHUP:
 				// @TODO: Should finish all queues. Rereads config files and certs, restart queues or something
@@ -132,8 +132,8 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	router := setupRouter()
 
 	// Fetch TLS certificate and key
-	certFilePath, _ := homedir.Expand(config.Server.TLS.CertFile)
-	keyFilePath, _ := homedir.Expand(config.Server.TLS.KeyFile)
+	certFilePath, _ := homedir.Expand(config.Server.Server.CertFile)
+	keyFilePath, _ := homedir.Expand(config.Server.Server.KeyFile)
 
 	// Wrap our router in Apache combined logging if needed
 	var h http.Handler = router

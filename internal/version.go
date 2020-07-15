@@ -16,7 +16,7 @@ const (
 
 var buildDate, gitCommit string
 
-// // Version is a structure with the current version of the software
+// Version is a structure with the current version of the software
 var Version = semver.Version{
 	Major: versionMajor,
 	Minor: versionMinor,
