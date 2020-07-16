@@ -7,7 +7,6 @@ import (
 )
 
 var accountService *account.Service
-var accountRepository *account.Repository
 
 // GetAccountService retrieves an account service
 func GetAccountService() *account.Service {
@@ -15,18 +14,9 @@ func GetAccountService() *account.Service {
 		return accountService
 	}
 
-	repo := getAccountRepository()
-	accountService = account.NewService(*repo)
-	return accountService
-}
-
-func getAccountRepository() *account.Repository {
-	if accountRepository != nil {
-		return accountRepository
-	}
-
 	p, _ := homedir.Expand(config.Server.Paths.Accounts)
 	repo := account.NewFileRepository(p)
-	accountRepository = &repo
-	return accountRepository
+
+	accountService = account.NewService(repo)
+	return accountService
 }

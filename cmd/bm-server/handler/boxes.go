@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/core"
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -22,8 +22,8 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	boxes := as.FetchMessageBoxes(*haddr, "*")
 
 	type MailBoxListOutput struct {
-		Address string             `json:"address"`
-		Boxes   []core.MailBoxInfo `json:"boxes"`
+		Address string                `json:"address"`
+		Boxes   []message.MailBoxInfo `json:"boxes"`
 	}
 
 	output := &MailBoxListOutput{

@@ -4,6 +4,7 @@ package message
 
 import (
 	"encoding/json"
+	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
@@ -146,5 +147,19 @@ func MoveMessage(fromSection Section, toSection Section, msgID string) error {
 		return err
 	}
 
-	return os.Rename(oldPath, newPath)
+	err = os.Rename(oldPath, newPath)
+	if err != nil {
+		logrus.Trace("os.Rename() errored. Let's try and create the path first")
+
+		// Maybe path does not exist yet. Try and create
+		err = os.MkdirAll(path.Dir(newPath), 0755)
+		if err != nil {
+			return err
+		}
+
+		// Try again, and fail if needed
+		return os.Rename(oldPath, newPath)
+	}
+
+	return nil
 }

@@ -1,0 +1,13 @@
+version: '3'
+services:
+    redis:
+        image: redis
+    bitmaelum:
+        build: .
+        image: bitmaelum-suite
+        links:
+            - redis
+        ports:
+            - 2425:2424
+        volumes:
+            - ./server2root:/bitmaelum

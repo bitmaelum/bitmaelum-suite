@@ -15,11 +15,12 @@ type RetryInfo struct {
 }
 
 // NewRetryInfo returns a new retry info structure
-func NewRetryInfo() *RetryInfo {
+func NewRetryInfo(msgID string) *RetryInfo {
 	return &RetryInfo{
 		RetryAt:       time.Now().Add(60 * time.Second),
 		LastRetriedAt: time.Now(),
 		Retries:       0,
+		MsgID:         msgID,
 	}
 }
 

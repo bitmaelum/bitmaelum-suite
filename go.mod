@@ -27,7 +27,6 @@ require (
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/rivo/tview v0.0.0-20200528200248-fe953220389f
 	github.com/sirupsen/logrus v1.2.0
-	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/cobra v1.0.0
@@ -36,6 +35,7 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.5.1
 	github.com/vtolstov/jwt-go v3.2.1-0.20200120153335-1133da9615b7+incompatible
+	github.com/zalando/go-keyring v0.1.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-suite/core"
-	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"io/ioutil"
@@ -23,10 +23,10 @@ type options struct {
 var opts options
 
 func main() {
-	core.ParseOptions(&opts)
+	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
 
-	fmt.Println(core.GetASCIILogo())
+	fmt.Println(internal.GetASCIILogo())
 
 	// Unlock vault
 	accountVault, err := vault.New(config.Client.Accounts.Path, []byte(opts.Password))

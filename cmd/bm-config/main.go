@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/cmd"
-	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"os"
 )
@@ -16,14 +16,14 @@ type options struct {
 var opts options
 
 func main() {
-	core.ParseOptions(&opts)
+	internal.ParseOptions(&opts)
 	if opts.Version {
-		core.WriteVersionInfo("BitMaelum Server", os.Stdout)
+		internal.WriteVersionInfo("BitMaelum Server", os.Stdout)
 		fmt.Println()
 		os.Exit(1)
 	}
 
-	fmt.Println(core.GetASCIILogo())
+	fmt.Println(internal.GetASCIILogo())
 
 	config.LoadClientConfigOrPass(opts.Config)
 	config.LoadServerConfigOrPass(opts.Config)

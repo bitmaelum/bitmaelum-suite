@@ -53,7 +53,17 @@ func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 			return nil, errors.New("Error while retrieving key")
 		}
 
-		ri := &Info{}
+		kd := &KeyDownload{}
+		err = json.Unmarshal(res, &kd)
+		if err != nil {
+			return nil, errors.New("Error while retrieving key")
+		}
+
+		ri := &Info{
+			Hash:      kd.Hash,
+			PublicKey: kd.PublicKey,
+			Server:    kd.Address,
+		}
 		err = json.Unmarshal(res, &ri)
 		if err != nil {
 			return nil, errors.New("Error while retrieving key")

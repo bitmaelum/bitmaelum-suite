@@ -3,9 +3,9 @@ package resolve
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"net/url"
 	"strings"
@@ -32,6 +32,7 @@ func KeyRetrievalService(repo Repository) *Service {
 
 // IsLocal returns true when the resolve address of the info is our own server address
 func (info *Info) IsLocal() bool {
+	// @TODO: Local is when the address is known on the server. It should not care about names and such
 	localHost, localPort, err := getHostPort(config.Server.Server.Name)
 	if err != nil {
 		return false

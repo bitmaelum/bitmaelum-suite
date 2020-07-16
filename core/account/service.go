@@ -2,7 +2,7 @@ package account
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/core"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
@@ -42,6 +42,11 @@ func (s *Service) AccountExists(addr address.HashAddress) bool {
 	return s.repo.Exists(addr)
 }
 
+// Deliver delivers a message (found in the processing queue) to the inbox of the given account
+func (s *Service) Deliver(msgID string, addr address.HashAddress) error {
+	return s.repo.SendToBox(addr, "inbox", msgID)
+}
+
 // GetPublicKeys retrieves the public keys for given address
 func (s *Service) GetPublicKeys(addr address.HashAddress) []string {
 	if !s.repo.Exists(addr) {
@@ -57,20 +62,20 @@ func (s *Service) GetPublicKeys(addr address.HashAddress) []string {
 }
 
 // FetchMessageBoxes retrieves the message boxes based on the given query
-func (s *Service) FetchMessageBoxes(addr address.HashAddress, query string) []core.MailBoxInfo {
+func (s *Service) FetchMessageBoxes(addr address.HashAddress, query string) []message.MailBoxInfo {
 	list, err := s.repo.FindBox(addr, query)
 	if err != nil {
-		return []core.MailBoxInfo{}
+		return []message.MailBoxInfo{}
 	}
 
 	return list
 }
 
 // FetchListFromBox retrieves a list of message boxes
-func (s *Service) FetchListFromBox(addr address.HashAddress, box string, offset int, limit int) []core.MessageList {
+func (s *Service) FetchListFromBox(addr address.HashAddress, box string, offset int, limit int) []message.List {
 	list, err := s.repo.FetchListFromBox(addr, box, offset, limit)
 	if err != nil {
-		return []core.MessageList{}
+		return []message.List{}
 	}
 
 	return list

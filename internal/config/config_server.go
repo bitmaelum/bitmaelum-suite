@@ -36,15 +36,20 @@ type ServerConfig struct {
 	} `yaml:"paths"`
 
 	Server struct {
-		Name string `yaml:"hostname"`
-		Host string `yaml:"host"`
-		Port int    `yaml:"port"`
-	} `yaml:"server"`
-
-	TLS struct {
+		Name     string `yaml:"hostname"`
+		Host     string `yaml:"host"`
+		Port     int    `yaml:"port"`
 		CertFile string `yaml:"certfile"`
 		KeyFile  string `yaml:"keyfile"`
-	} `yaml:"tls"`
+	} `yaml:"server"`
+
+	Acme struct {
+		Enabled         bool   `yaml:"enabled"`
+		Domain          string `yaml:"domain"`
+		Path            string `yaml:"path"`
+		Email           string `yaml:"email"`
+		RenewBeforeDays string `yaml:"renew_days"`
+	} `yaml:"acme"`
 
 	Redis struct {
 		Host string `yaml:"host"`

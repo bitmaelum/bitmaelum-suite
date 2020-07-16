@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/core"
-	"github.com/bitmaelum/bitmaelum-suite/core/api"
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
-	"github.com/bitmaelum/bitmaelum-suite/core/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/core/resolve"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/google/uuid"
@@ -111,9 +112,7 @@ func uploadToServer(msgID string, info account.Info, header *message.Header, enc
 	}
 
 	// All done, mark upload as completed
-	client.CompleteUpload(*addr, msgID)
-
-	return nil
+	return client.CompleteUpload(*addr, msgID)
 }
 
 // Generate a header file based on the info provided
@@ -121,10 +120,12 @@ func generateHeader(info account.Info, toInfo *resolve.Info, catalog []byte, cat
 	header := &message.Header{}
 
 	// We can add a multitude of checksums here.. whatever we like
-	header.Catalog.Checksum = append(header.Catalog.Checksum, core.Sha256(catalog))
-	header.Catalog.Checksum = append(header.Catalog.Checksum, core.Sha1(catalog))
-	header.Catalog.Checksum = append(header.Catalog.Checksum, core.Crc32(catalog))
-	header.Catalog.Checksum = append(header.Catalog.Checksum, core.Md5(catalog))
+	r := bytes.NewBuffer(catalog)
+	var err error
+	header.Catalog.Checksum, err = internal.CalculateChecksums(r)
+	if err != nil {
+		return nil, err
+	}
 	header.Catalog.Size = uint64(len(catalog))
 	header.Catalog.Crypto = "rsa+aes256gcm"
 

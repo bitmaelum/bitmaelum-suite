@@ -3,6 +3,7 @@
 [![codecov](https://codecov.io/gh/bitmaelum/bitmaelum-suite/branch/master/graph/badge.svg)](https://codecov.io/gh/bitmaelum/bitmaelum-suite)
 ![License](https://img.shields.io/github/license/bitmaelum/bitmaelum-suite)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/bitmaelum/bitmaelum-suite)         
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4122/badge)](https://bestpractices.coreinfrastructure.org/projects/4122)
          
          ____  _ _   __  __            _                 
         |  _ \(_) | |  \/  |          | |                
