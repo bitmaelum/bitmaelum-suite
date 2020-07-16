@@ -12,8 +12,8 @@ TARGET=${1:-all}
 # Generate commit / date variables we will inject in our code
 BUILD_DATE=`date`
 COMMIT=`git rev-parse HEAD`
-PKG=`go list ./core`
-GO_BUILD_FLAGS="-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMIT}'"
+PKG=`go list ./internal`
+GO_BUILD_FLAGS="-X '${PKG}.buildDate=${BUILD_DATE}' -X '${PKG}.gitCommit=${COMMIT}'"
 
 printf "Compiling ["
 

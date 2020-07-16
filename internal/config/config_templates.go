@@ -60,20 +60,39 @@ config:
 
         # Path to our message accounts (persistent storage)
         accounts: ~/.bitmaelum/messagedb
+
+    acme:
+        # When enabled, we can use LetsEncrypt to fetch valid SSL/TLS certificates. Note that certificate generation
+        # does not happen automatically, but must be done manually with the help of the "bm-config" tool.
+        enabled: false
+
+        # Domain that we want to register (should be the same as your Server.Hostname)
+        domain: localhost
+
+        # Path to store our acme/LetsEncrypt settings and cache (persistent storage)
+        path: ~/.bitmaelum/acme
+
+        # The email address to register your LetsEncrypt account to. Important domain information
+        # will be send to this address.
+        email: info@example.org
+
+        # The number of days before expiration of your certificate before we can renew with bm-config
+        renew_days: 30
+
     server:
-        # Hostname and port as this server is known on the internet
+        # Hostname and port as this server is known on the internet in <host>:<port> setting. When 
+        # no port is specified, port 2424 is used as default.
         hostname: localhost:2424
 
         # Address where to listen. Use 0.0.0.0 for all interfaces
         host: 127.0.0.1
 
-        # Default port to listen on
+        # Default port to listen on.
         port: 2424
-    tls:
-        # Certification and key for running on HTTPS. This should be a valid certificate via LetEncrypt 
-        # for instance.
-        # You can use self-signed certificates is you want
-        certfile: "~/.bitmaelum/certs/server.crt"
+
+        # Certification and key for running on HTTPS. This should be a valid certificate 
+        # via sLetEncrypt for instance or you can use self-signed certificates if you want
+        certfile: "~/.bitmaelum/certs/server.cert"
         keyfile: "~/.bitmaelum/certs/server.key"
     redis:
         # Redis host where we store information

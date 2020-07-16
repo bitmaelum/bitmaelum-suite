@@ -38,6 +38,8 @@ func main() {
 	config.LoadServerConfig(opts.Config)
 	internal.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
 
+	logrus.Info("Starting " + internal.VersionString("bm-server"))
+
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -65,12 +67,18 @@ func setupSignals(cancel context.CancelFunc) {
 	go func() {
 		// Capture INT and TERM signals
 		sigChannel := make(chan os.Signal, 1)
-		signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(sigChannel, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP)
 
-		select {
-		case s := <-sigChannel:
-			logrus.Tracef("signal %s received", s)
-			cancel()
+		for {
+			s := <-sigChannel
+			switch s {
+			case syscall.SIGHUP:
+				// @TODO: Should finish all queues. Rereads config files and certs, restart queues or something
+				logrus.Info("SIGHUP received")
+			default:
+				logrus.Infof("Signal %s received. Terminating.", s)
+				cancel()
+			}
 		}
 	}()
 }
@@ -124,8 +132,8 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	router := setupRouter()
 
 	// Fetch TLS certificate and key
-	certFilePath, _ := homedir.Expand(config.Server.TLS.CertFile)
-	keyFilePath, _ := homedir.Expand(config.Server.TLS.KeyFile)
+	certFilePath, _ := homedir.Expand(config.Server.Server.CertFile)
+	keyFilePath, _ := homedir.Expand(config.Server.Server.KeyFile)
 
 	// Wrap our router in Apache combined logging if needed
 	var h http.Handler = router
@@ -140,6 +148,7 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	go func() {
 		err := srv.ListenAndServeTLS(certFilePath, keyFilePath)
 		if err != nil {
+			logrus.Warn("HTTP server stopped: ", err)
 			// Cancel context on error
 			// @TODO: We should not have cancel here I think, but I don't know a better way to do this.
 			cancel()
