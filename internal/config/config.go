@@ -24,7 +24,7 @@ var errNotFound = errors.New("cannot find config file")
 func LoadClientConfig(path string) {
 	err := LoadClientConfigOrPass(path)
 	if err != nil {
-		logrus.Fatalf("cannot load client configuration: ", err)
+		logrus.Fatalf("cannot load client configuration: %s", err)
 	}
 }
 
@@ -32,7 +32,7 @@ func LoadClientConfig(path string) {
 func LoadServerConfig(path string) {
 	err := LoadServerConfigOrPass(path)
 	if err != nil {
-		logrus.Fatal("cannot load server configuration: ", err)
+		logrus.Fatalf("cannot load server configuration: %s", err)
 	}
 }
 
