@@ -90,6 +90,9 @@ config:
         # Default port to listen on.
         port: 2424
 
+        # Display additional version information on the server's root endpoint
+        verbose_info: false
+
         # Certification and key for running on HTTPS. This should be a valid certificate 
         # via sLetEncrypt for instance or you can use self-signed certificates if you want
         certfile: "~/.bitmaelum/certs/server.cert"

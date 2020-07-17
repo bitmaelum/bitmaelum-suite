@@ -11,7 +11,6 @@ import (
 var (
 	resolveService           *resolve.Service
 	localResolverRepository  *resolve.Repository
-	remoteResolverRepository *resolve.Repository
 	dhtResolverRepository    *resolve.Repository
 	chainResolverRepository  *resolve.ChainRepository
 )
@@ -24,8 +23,12 @@ func GetResolveService() *resolve.Service {
 
 	repo := getChainRepository()
 	_ = repo.Add(*getLocalRepository())
-	_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL))
-	_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL))
+	if config.Client.Resolver.Remote.URL != "" {
+		_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL))
+	}
+	if config.Server.Resolver.Remote.URL != "" {
+		_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL))
+	}
 	_ = repo.Add(*getDhtRepository())
 
 	return resolve.KeyRetrievalService(repo)

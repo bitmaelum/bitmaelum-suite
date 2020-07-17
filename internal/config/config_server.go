@@ -37,11 +37,12 @@ type ServerConfig struct {
 	} `yaml:"paths"`
 
 	Server struct {
-		Name     string `yaml:"hostname"`
-		Host     string `yaml:"host"`
-		Port     int    `yaml:"port"`
-		CertFile string `yaml:"certfile"`
-		KeyFile  string `yaml:"keyfile"`
+		Name        string `yaml:"hostname"`
+		Host        string `yaml:"host"`
+		Port        int    `yaml:"port"`
+		CertFile    string `yaml:"certfile"`
+		KeyFile     string `yaml:"keyfile"`
+		VerboseInfo bool   `yaml:"verbose_info"`
 	} `yaml:"server"`
 
 	Acme struct {
