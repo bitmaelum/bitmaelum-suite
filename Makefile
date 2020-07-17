@@ -93,8 +93,7 @@ info:
 cross-info:
 	$(info Cross building BitMaelum apps and tools)
 
-## Build all cross-platform binaries
-build-all: cross-info $(PLATFORMS)
+build-all: cross-info $(PLATFORMS) ## Build all cross-platform binaries
 
 build: info $(APPS) $(TOOLS) ## Build default platform binaries
 

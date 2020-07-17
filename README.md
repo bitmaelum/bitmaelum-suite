@@ -22,6 +22,8 @@ BitMaelum (old Anglo-Saxon for "bit-by-bit") is an attempt. Instead of trying to
 
 To read the current status of the project, check out [our status document](docs/status.md).
 
+To build and test BitMealum, check out [build document](docs/build.md).
+
 # Benefits
 We try to design a system that:
 

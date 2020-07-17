@@ -1,11 +1,14 @@
 package config
 
 import (
+	"errors"
 	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 )
+
+var errNotFound = errors.New("cannot find config file")
 
 /**
  * Configuration is found the following way:
@@ -19,66 +22,76 @@ import (
 
 // LoadClientConfig loads client configuration from given path or panic if cannot load
 func LoadClientConfig(path string) {
-	loaded := LoadClientConfigOrPass(path)
-	if !loaded {
-		logrus.Fatalf("cannot load client configuration")
+	err := LoadClientConfigOrPass(path)
+	if err != nil {
+		logrus.Fatalf("cannot load client configuration: ", err)
 	}
 }
 
 // LoadServerConfig loads server configuration from given path or panic if cannot load
 func LoadServerConfig(path string) {
-	loaded := LoadServerConfigOrPass(path)
-	if !loaded {
-		logrus.Fatal("cannot load server configuration")
+	err := LoadServerConfigOrPass(path)
+	if err != nil {
+		logrus.Fatal("cannot load server configuration: ", err)
 	}
 }
 
 // LoadClientConfigOrPass loads client configuration, but return false if not able
-func LoadClientConfigOrPass(path string) bool {
+func LoadClientConfigOrPass(path string) error {
 	var err error
 
 	if path != "" {
 		err = readConfigPath(path, Client.LoadConfig)
-		if err == nil {
-			return true
+		if err == nil || err != errNotFound {
+			return err
 		}
 	}
 
+	err = readConfigPath("./client-config.yml", Client.LoadConfig)
+	if err == nil || err != errNotFound {
+		return err
+	}
+
 	err = readConfigPath("~/.bitmaelum/client-config.yml", Client.LoadConfig)
-	if err == nil {
-		return true
+	if err == nil || err != errNotFound {
+		return err
 	}
 
 	err = readConfigPath("/etc/bitmaelum/client-config.yml", Client.LoadConfig)
-	if err == nil {
-		return true
+	if err == nil || err != errNotFound {
+		return err
 	}
 
-	return false
+	return errors.New("cannot find client-config.yml")
 }
 
 // LoadServerConfigOrPass loads client configuration, but return false if not able
-func LoadServerConfigOrPass(path string) bool {
+func LoadServerConfigOrPass(path string) error {
 	var err error
 
 	if path != "" {
 		err = readConfigPath(path, Server.LoadConfig)
-		if err == nil {
-			return true
+		if err == nil || err != errNotFound {
+			return err
 		}
 	}
 
+	err = readConfigPath("./server-config.yml", Server.LoadConfig)
+	if err == nil || err != errNotFound {
+		return err
+	}
+
 	err = readConfigPath("~/.bitmaelum/server-config.yml", Server.LoadConfig)
-	if err == nil {
-		return true
+	if err == nil || err != errNotFound {
+		return err
 	}
 
 	err = readConfigPath("/etc/bitmaelum/server-config.yml", Server.LoadConfig)
-	if err == nil {
-		return true
+	if err == nil || err != errNotFound {
+		return err
 	}
 
-	return false
+	return errors.New("cannot find server-config.yml")
 }
 
 // Expands the given path and loads the configuration
@@ -87,7 +100,7 @@ func readConfigPath(path string, loader func(r io.Reader) error) error {
 
 	f, err := os.Open(p)
 	if err != nil {
-		return err
+		return errNotFound
 	}
 
 	return loader(f)
