@@ -6,7 +6,7 @@ REPO="github.com/bitmaelum/bitmaelum-suite"
 
 # Our defined apps and tools
 APPS := bm-server bm-client bm-config bm-client-ui
-TOOLS := hash-address jwt proof-of-work readmail push-key
+TOOLS := hash-address jwt proof-of-work readmail push-key resolve
 
 CROSS_APPS := $(foreach app,$(APPS),cross-$(app))
 CROSS_TOOLS := $(foreach tool,$(TOOLS),cross-$(tool))
