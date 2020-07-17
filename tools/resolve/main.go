@@ -10,8 +10,8 @@ import (
 )
 
 type options struct {
-	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
-	Address  string `short:"a" long:"address" description:"Address to resolve"`
+	Config  string `short:"c" long:"config" description:"Path to your configuration file"`
+	Address string `short:"a" long:"address" description:"Address to resolve"`
 }
 
 var opts options

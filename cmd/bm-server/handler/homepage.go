@@ -20,6 +20,7 @@ func HomePage(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 
+	logo := internal.GetMonochromeASCIILogo()
 	if config.Server.Server.VerboseInfo {
 		host := fmt.Sprintf("<<< %s >>>", config.Server.Server.Name)
 		host = fmt.Sprintf("%*s ", (49+len(host))/2, host)

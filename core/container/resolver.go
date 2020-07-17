@@ -9,10 +9,10 @@ import (
 // We chain them all together with the ChainRepository
 
 var (
-	resolveService           *resolve.Service
-	localResolverRepository  *resolve.Repository
-	dhtResolverRepository    *resolve.Repository
-	chainResolverRepository  *resolve.ChainRepository
+	resolveService          *resolve.Service
+	localResolverRepository *resolve.Repository
+	dhtResolverRepository   *resolve.Repository
+	chainResolverRepository *resolve.ChainRepository
 )
 
 // GetResolveService retrieves a resolver service

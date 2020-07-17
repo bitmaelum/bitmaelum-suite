@@ -38,10 +38,9 @@ config:
 
         # Default port to listen on
         port: 2424
-    tls:
-        # Certification and key for running on HTTPS. This should be a valid certificate via LetEncrypt 
-        # for instance.
-        # You can use self-signed certificates is you want
+
+        verbose_info: true
+
         certfile: /bitmaelum/certs/server.cert
         keyfile: /bitmaelum/certs/server.key
     redis:

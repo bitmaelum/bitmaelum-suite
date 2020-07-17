@@ -47,13 +47,13 @@ $(GO_LINT_BIN):
 
 
 test: $(GO_LINT_BIN) ## Runs all tests for the whole repository
-	$(info Check format)
+	echo "Check format"
 	gofmt -l .
-	$(info Check vet)
+	echo "Check vet"
 	go vet ./...
-	$(info Check lint)
+	echo "Check lint"
 	$(GO_LINT_BIN) ./...
-	$(info Check unit tests)
+	echo "Check unit tests"
 	go test ./...
 
 clean: ## Clean releases
