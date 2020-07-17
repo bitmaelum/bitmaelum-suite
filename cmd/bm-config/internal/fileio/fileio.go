@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
 	"os"
 	"path"
@@ -21,8 +20,8 @@ func SaveCertFiles(certPem string, keyPem string) error {
 		err     error
 	)
 
-	newPath, _ = homedir.Expand(fmt.Sprintf("%s.%03d", config.Server.Server.CertFile, suffix))
-	oldPath, _ = homedir.Expand(config.Server.Server.CertFile)
+	newPath = fmt.Sprintf("%s.%03d", config.Server.Server.CertFile, suffix)
+	oldPath = config.Server.Server.CertFile
 	_, err = os.Stat(oldPath)
 	if err == nil {
 		fmt.Printf("   - moving old cert file to %s: ", newPath)
@@ -33,8 +32,8 @@ func SaveCertFiles(certPem string, keyPem string) error {
 		fmt.Println("ok")
 	}
 
-	newPath, _ = homedir.Expand(fmt.Sprintf("%s.%03d", config.Server.Server.KeyFile, suffix))
-	oldPath, _ = homedir.Expand(config.Server.Server.KeyFile)
+	newPath = fmt.Sprintf("%s.%03d", config.Server.Server.KeyFile, suffix)
+	oldPath = config.Server.Server.KeyFile
 	_, err = os.Stat(oldPath)
 	if err == nil {
 		fmt.Printf("   - moving old key file to %s: ", newPath)
@@ -46,7 +45,7 @@ func SaveCertFiles(certPem string, keyPem string) error {
 	}
 
 	fmt.Printf("   - Writing new cert file %s: ", config.Server.Server.CertFile)
-	newPath, _ = homedir.Expand(config.Server.Server.CertFile)
+	newPath = config.Server.Server.CertFile
 	err = ioutil.WriteFile(newPath, []byte(certPem), 0600)
 	if err != nil {
 		return err
@@ -54,7 +53,7 @@ func SaveCertFiles(certPem string, keyPem string) error {
 	fmt.Println("ok")
 
 	fmt.Printf("   - Writing new key file %s: ", config.Server.Server.CertFile)
-	newPath, _ = homedir.Expand(config.Server.Server.KeyFile)
+	newPath = config.Server.Server.KeyFile
 	err = ioutil.WriteFile(newPath, []byte(keyPem), 0600)
 	if err != nil {
 		return err
@@ -72,7 +71,7 @@ func findHighestSuffix(files ...string) int {
 	for {
 		var found = false
 		for _, file := range files {
-			p, _ := homedir.Expand(fmt.Sprintf("%s.%03d", file, suffix))
+			p := fmt.Sprintf("%s.%03d", file, suffix)
 			_, err1 := os.Stat(p)
 			if err1 == nil {
 				found = true
@@ -90,11 +89,6 @@ func findHighestSuffix(files ...string) int {
 
 // LoadFile loads and unmarshals a given file
 func LoadFile(p string, v interface{}) error {
-	p, err := homedir.Expand(p)
-	if err != nil {
-		return err
-	}
-
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
 		return err
@@ -110,10 +104,6 @@ func SaveFile(p string, v interface{}) error {
 		return err
 	}
 
-	p, err = homedir.Expand(p)
-	if err != nil {
-		return err
-	}
 	err = os.MkdirAll(path.Dir(p), 755)
 	if err != nil {
 		return err

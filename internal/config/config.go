@@ -18,6 +18,8 @@ var errNotFound = errors.New("cannot find config file")
  * 3. Check for config (*-config.yml) in directory ~/.bitmaelum
  * 4. Check for config (*-config.yml) in directory /etc/bitmaelum
  * 5. Error (or pass)
+ *
+ * Config assumes that all paths are expanded with homedir.Expand
  */
 
 // LoadClientConfig loads client configuration from given path or panic if cannot load

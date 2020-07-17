@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
@@ -83,6 +84,18 @@ func (c *ServerConfig) LoadConfig(r io.Reader) error {
 	// We only care about the Cfg section. This keeps our "config:" section in the yaml file but we can still use
 	// config.Server.Logger.Level instead of config.Server.Cfg.Logger.Level
 	*c = lc.Cfg
+
+	// Expand homedirs in configuration
+	c.Logging.LogPath, _ = homedir.Expand(c.Logging.LogPath)
+	c.Logging.ApacheLogPath, _ = homedir.Expand(c.Logging.ApacheLogPath)
+	c.Paths.Processing, _ = homedir.Expand(c.Paths.Processing)
+	c.Paths.Retry, _ = homedir.Expand(c.Paths.Retry)
+	c.Paths.Incoming, _ = homedir.Expand(c.Paths.Incoming)
+	c.Paths.Accounts, _ = homedir.Expand(c.Paths.Accounts)
+	c.Acme.Path, _ = homedir.Expand(c.Acme.Path)
+	c.Resolver.Local.Path, _ = homedir.Expand(c.Resolver.Local.Path)
+	c.Server.CertFile, _ = homedir.Expand(c.Server.CertFile)
+	c.Server.KeyFile, _ = homedir.Expand(c.Server.KeyFile)
 
 	return nil
 }

@@ -3,7 +3,6 @@ package message
 import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/mitchellh/go-homedir"
 	"os"
 	"path"
 )
@@ -33,11 +32,11 @@ const (
 func GetPath(section Section, msgID, file string) (string, error) {
 	switch section {
 	case SectionIncoming:
-		return homedir.Expand(path.Join(config.Server.Paths.Incoming, msgID, file))
+		return path.Join(config.Server.Paths.Incoming, msgID, file), nil
 	case SectionRetry:
-		return homedir.Expand(path.Join(config.Server.Paths.Retry, msgID, file))
+		return path.Join(config.Server.Paths.Retry, msgID, file), nil
 	case SectionProcessing:
-		return homedir.Expand(path.Join(config.Server.Paths.Processing, msgID, file))
+		return path.Join(config.Server.Paths.Processing, msgID, file), nil
 	default:
 		return "", errors.New("unknown section")
 	}

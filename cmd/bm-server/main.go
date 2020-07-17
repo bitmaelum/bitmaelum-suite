@@ -11,7 +11,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/mitchellh/go-homedir"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -131,10 +130,6 @@ func setupRouter() *mux.Router {
 func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string) {
 	router := setupRouter()
 
-	// Fetch TLS certificate and key
-	certFilePath, _ := homedir.Expand(config.Server.Server.CertFile)
-	keyFilePath, _ := homedir.Expand(config.Server.Server.KeyFile)
-
 	// Wrap our router in Apache combined logging if needed
 	var h http.Handler = router
 	if config.Server.Logging.ApacheLogging == true {
@@ -146,7 +141,7 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 
 	// Start serving TLS in go routine
 	go func() {
-		err := srv.ListenAndServeTLS(certFilePath, keyFilePath)
+		err := srv.ListenAndServeTLS(config.Server.Server.CertFile, config.Server.Server.KeyFile)
 		if err != nil {
 			logrus.Warn("HTTP server stopped: ", err)
 			// Cancel context on error

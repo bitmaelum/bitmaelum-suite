@@ -15,7 +15,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal/fileio"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
-	"github.com/mitchellh/go-homedir"
 	"golang.org/x/crypto/acme"
 	"io/ioutil"
 	"net"
@@ -113,11 +112,6 @@ func (le *LetsEncrypt) CheckRenewal(cert *x509.Certificate, days int) bool {
 
 // LoadCertificate loads a certificate from the given path or returns nil when no certificate is found.
 func (le *LetsEncrypt) LoadCertificate(p string) *x509.Certificate {
-	p, err := homedir.Expand(p)
-	if err != nil {
-		return nil
-	}
-
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
 		return nil
@@ -233,7 +227,6 @@ func (le *LetsEncrypt) SaveAccount(dir string) error {
 	}
 
 	// Make sure directory exists before writing
-	dir, _ = homedir.Expand(dir)
 	_ = os.MkdirAll(dir, 0777)
 
 	// @TODO: What happens if we mix staging and production.. or different accounts?

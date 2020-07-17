@@ -3,7 +3,6 @@ package container
 import (
 	"github.com/bitmaelum/bitmaelum-suite/core/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/mitchellh/go-homedir"
 )
 
 var accountService *account.Service
@@ -14,8 +13,7 @@ func GetAccountService() *account.Service {
 		return accountService
 	}
 
-	p, _ := homedir.Expand(config.Server.Paths.Accounts)
-	repo := account.NewFileRepository(p)
+	repo := account.NewFileRepository(config.Server.Paths.Accounts)
 
 	accountService = account.NewService(repo)
 	return accountService

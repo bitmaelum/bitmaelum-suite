@@ -12,7 +12,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/juju/fslock"
-	"github.com/mitchellh/go-homedir"
 	"golang.org/x/crypto/pbkdf2"
 	"io"
 	"io/ioutil"
@@ -33,10 +32,7 @@ type Vault struct {
 
 // New instantiates a new vault
 func New(p string, pwd []byte) (*Vault, error) {
-	p, err := homedir.Expand(p)
-	if err != nil {
-		return nil, err
-	}
+	var err error
 
 	v := &Vault{
 		Accounts: []account.Info{},
