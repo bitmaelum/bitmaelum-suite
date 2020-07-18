@@ -24,7 +24,7 @@ func HomePage(w http.ResponseWriter, req *http.Request) {
 	if config.Server.Server.VerboseInfo {
 		host := fmt.Sprintf("<<< %s >>>", config.Server.Server.Name)
 		host = fmt.Sprintf("%*s ", (49+len(host))/2, host)
-		logo := internal.GetMonochromeASCIILogo() + "\n\n" + host + "\n\n"
+		logo = internal.GetMonochromeASCIILogo() + "\n\n" + host + "\n\n"
 
 		var version bytes.Buffer
 		internal.WriteVersionInfo("BitMealum-Server", &version)
