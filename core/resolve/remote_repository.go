@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 )
@@ -40,23 +41,26 @@ func NewRemoteRepository(baseURL string) Repository {
 func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	response, err := r.client.Get(r.BaseURL + "/" + addr.String())
 	if err != nil {
-		return nil, errors.New("Error while retrieving key")
+		logrus.Debugf("cannot get response from remote resolver: %s", err)
+		return nil, errKeyNotFound
 	}
 
 	if response.StatusCode == 404 {
-		return nil, errors.New("Key not found")
+		return nil, errKeyNotFound
 	}
 
 	if response.StatusCode == 200 {
 		res, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			return nil, errors.New("Error while retrieving key")
+			logrus.Debugf("cannot get body response from remote resolver: %s", err)
+			return nil, errKeyNotFound
 		}
 
 		kd := &KeyDownload{}
 		err = json.Unmarshal(res, &kd)
 		if err != nil {
-			return nil, errors.New("Error while retrieving key")
+			logrus.Debugf("cannot unmarshal resolve body: %s", err)
+			return nil, errKeyNotFound
 		}
 
 		ri := &Info{
@@ -66,13 +70,14 @@ func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 		}
 		err = json.Unmarshal(res, &ri)
 		if err != nil {
-			return nil, errors.New("Error while retrieving key")
+			logrus.Debugf("cannot unmarshal resolve body: %s", err)
+			return nil, errKeyNotFound
 		}
 
 		return ri, nil
 	}
 
-	return nil, errors.New("Error while retrieving key")
+	return nil, errKeyNotFound
 }
 
 func (r *remoteRepo) Upload(addr address.HashAddress, pubKey, address, signature string) error {

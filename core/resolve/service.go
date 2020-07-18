@@ -7,6 +7,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/sirupsen/logrus"
 	"net/url"
 	"strings"
 )
@@ -65,7 +66,13 @@ func getHostPort(hostport string) (string, string, error) {
 
 // Resolve resolves an address.
 func (s *Service) Resolve(addr address.HashAddress) (*Info, error) {
-	return s.repo.Resolve(addr)
+	logrus.Debugf("Resolving %s", addr.String())
+	info, err := s.repo.Resolve(addr)
+	if err != nil {
+		logrus.Debugf("Error while resolving %s: %s", addr.String(), err)
+	}
+
+	return info, err
 }
 
 // UploadInfo uploads resolve information to a service.

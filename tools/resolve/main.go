@@ -32,5 +32,6 @@ func main() {
 	}
 
 	fmt.Printf("BitMaelum address '%s' resolves to %s\n", opts.Address, info.Server)
+	fmt.Printf("Hash: %s\n", info.Hash)
 	fmt.Printf("Public key:\n%s\n", info.PublicKey)
 }

@@ -1,7 +1,6 @@
 package resolve
 
 import (
-	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
@@ -31,7 +30,7 @@ func (r *ChainRepository) Resolve(addr address.HashAddress) (*Info, error) {
 		}
 	}
 
-	return nil, errors.New("Resolve info not found")
+	return nil, errKeyNotFound
 }
 
 // Upload public key through the chained repos

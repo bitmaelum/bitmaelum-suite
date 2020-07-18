@@ -1,9 +1,7 @@
 package resolve
 
 import (
-	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/sirupsen/logrus"
 )
 
 type dhtRepo struct {
@@ -15,9 +13,7 @@ func NewDHTRepository() Repository {
 }
 
 func (r *dhtRepo) Resolve(addr address.HashAddress) (*Info, error) {
-	logrus.Trace("DHT is not implemented yet")
-
-	return nil, errors.New("key not found in DHT")
+	return nil, errKeyNotFound
 }
 
 func (r *dhtRepo) Upload(addr address.HashAddress, pubKey, address, signature string) error {
