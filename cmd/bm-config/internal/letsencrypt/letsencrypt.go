@@ -20,7 +20,7 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -230,7 +230,7 @@ func (le *LetsEncrypt) SaveAccount(dir string) error {
 	_ = os.MkdirAll(dir, 0777)
 
 	// @TODO: What happens if we mix staging and production.. or different accounts?
-	err := fileio.SaveFile(path.Join(dir, "account.json"), le.Account)
+	err := fileio.SaveFile(filepath.Join(dir, "account.json"), le.Account)
 	if err != nil {
 		return err
 	}
@@ -241,7 +241,7 @@ func (le *LetsEncrypt) SaveAccount(dir string) error {
 		return err
 	}
 
-	return fileio.SaveFile(path.Join(dir, "key.json"), s)
+	return fileio.SaveFile(filepath.Join(dir, "key.json"), s)
 }
 
 // StartHTTPServer will start the HTTP server in the background which is called by LetsEncrypt for validating orders.
@@ -287,14 +287,14 @@ func (le *LetsEncrypt) AuthorizeOrder(domain string) (*acme.Order, error) {
 // getAccountFromAcmeDir will return saved account information and private key from our acme directory.
 func getAccountFromAcmeDir(dir string) (crypto.Signer, *acme.Account, error) {
 	acc := &acme.Account{}
-	err := fileio.LoadFile(path.Join(dir, "account.json"), &acc)
+	err := fileio.LoadFile(filepath.Join(dir, "account.json"), &acc)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// can't marshal ecdsa.PrivKey to JSON (go 1.16+ probably)
 	var data string
-	err = fileio.LoadFile(path.Join(dir, "key.json"), &data)
+	err = fileio.LoadFile(filepath.Join(dir, "key.json"), &data)
 	if err != nil {
 		return nil, nil, err
 	}

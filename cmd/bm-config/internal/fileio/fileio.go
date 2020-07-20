@@ -6,7 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 // SaveCertFiles saves the given cert and key PEM strings into the configured cert and key file. Old files are backed
@@ -104,7 +104,7 @@ func SaveFile(p string, v interface{}) error {
 		return err
 	}
 
-	err = os.MkdirAll(path.Dir(p), 755)
+	err = os.MkdirAll(filepath.Dir(p), 755)
 	if err != nil {
 		return err
 	}

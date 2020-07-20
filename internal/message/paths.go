@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 /*
@@ -32,11 +32,11 @@ const (
 func GetPath(section Section, msgID, file string) (string, error) {
 	switch section {
 	case SectionIncoming:
-		return path.Join(config.Server.Paths.Incoming, msgID, file), nil
+		return filepath.Join(config.Server.Paths.Incoming, msgID, file), nil
 	case SectionRetry:
-		return path.Join(config.Server.Paths.Retry, msgID, file), nil
+		return filepath.Join(config.Server.Paths.Retry, msgID, file), nil
 	case SectionProcessing:
-		return path.Join(config.Server.Paths.Processing, msgID, file), nil
+		return filepath.Join(config.Server.Paths.Processing, msgID, file), nil
 	default:
 		return "", errors.New("unknown section")
 	}

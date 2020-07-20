@@ -99,12 +99,12 @@ func (is *Service) RemovePath(path string) error {
 
 // Generates a new incoming path for either proof-of-work or accept responses
 func (is *Service) generatePath() (string, error) {
-	path, err := uuid.NewRandom()
+	p, err := uuid.NewRandom()
 	if err != nil {
 		return "", err
 	}
 
-	return path.String(), nil
+	return p.String(), nil
 }
 
 // GetIncomingPath gets incoming info

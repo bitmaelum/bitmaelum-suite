@@ -53,7 +53,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 	fmt.Printf("done.\n")
 
 	fmt.Printf("* Doing some work to let people know this is not a fake account: ")
-	proof := pow.New(config.Client.Accounts.ProofOfWork, []byte(addr.Hash()), 0)
+	proof := pow.New(config.Client.Accounts.ProofOfWork, addr.Hash().String(), 0)
 	proof.Work()
 	fmt.Printf("done.\n")
 
@@ -78,7 +78,10 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 	fmt.Printf("done\n")
 
 	fmt.Printf("* Sending your account information to the server: ")
-	client, err := api.New(&info)
+	client, err := api.NewAuthenticated(&info, api.ClientOpts{
+		Host:          info.Server,
+		AllowInsecure: config.Client.Server.AllowInsecure,
+	})
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		vault.RemoveAccount(*addr)

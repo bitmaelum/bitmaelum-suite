@@ -35,7 +35,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	work := pow.New(input.ProofOfWork.Bits, []byte(input.Addr), input.ProofOfWork.Proof)
+	work := pow.New(input.ProofOfWork.Bits, input.Addr.String(), input.ProofOfWork.Proof)
 	if !work.IsValid() {
 		ErrorOut(w, http.StatusBadRequest, "incorrect proof of work")
 		return

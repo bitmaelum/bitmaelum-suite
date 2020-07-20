@@ -8,6 +8,13 @@ os:
 go:
   - 1.13.x
   - 1.14.x
+  - master
+
+jobs:
+  allow_failures:
+    # Master is not available on windows?
+    - os: windows
+      go: master
 
 before_install:
   - cd ${TRAVIS_BUILD_DIR}

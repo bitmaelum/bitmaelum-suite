@@ -4,12 +4,22 @@ package message
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
+	"regexp"
 )
+
+const uuidv4Regex = "/[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}/"
+
+// FileType is a simple message-id => path combination
+type FileType struct {
+	ID   string
+	Path string
+}
 
 // GetMessageHeader Returns a marshalled message header
 func GetMessageHeader(section Section, msgID string) (*Header, error) {
@@ -32,6 +42,45 @@ func GetMessageHeader(section Section, msgID string) (*Header, error) {
 	return header, nil
 }
 
+// GetFiles returns all blocks and attachments for the given message ID
+func GetFiles(section Section, msgID string) ([]FileType, error) {
+	p, err := GetPath(section, msgID, "")
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := ioutil.ReadDir(p)
+	if err != nil {
+		return nil, err
+	}
+
+	re := regexp.MustCompile(uuidv4Regex)
+	if re == nil {
+		return nil, errors.New("cannot compile regex")
+	}
+
+	var ret []FileType
+
+	for _, fi := range files {
+		// skip dirs, "header.json" and "catalog"
+		if fi.IsDir() || fi.Name() == "header.json" || fi.Name() == "catalog" {
+			continue
+		}
+
+		// Only accept UUIDv4 filenames
+		if !re.MatchString(fi.Name()) {
+			continue
+		}
+
+		ret = append(ret, FileType{
+			ID:   fi.Name(),
+			Path: filepath.Join(p, fi.Name()),
+		})
+	}
+
+	return ret, nil
+}
+
 // RemoveMessage removes a complete message (header, catalog, blocks etc)
 func RemoveMessage(section Section, msgID string) error {
 	p, err := GetPath(section, msgID, "")
@@ -50,13 +99,13 @@ func StoreBlock(msgID, blockID string, r io.Reader) error {
 	}
 
 	// Create path if needed
-	err = os.MkdirAll(path.Dir(p), 0777)
+	err = os.MkdirAll(filepath.Dir(p), 0777)
 	if err != nil {
 		return err
 	}
 
 	// Copy body straight to block file
-	blockFile, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	blockFile, err := os.Create(p)
 	if err != nil {
 		return err
 	}
@@ -79,13 +128,13 @@ func StoreCatalog(msgID string, r io.Reader) error {
 	}
 
 	// Create path if needed
-	err = os.MkdirAll(path.Dir(p), 0777)
+	err = os.MkdirAll(filepath.Dir(p), 0777)
 	if err != nil {
 		return err
 	}
 
 	// Copy body straight to catalog file
-	catFile, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	catFile, err := os.Create(p)
 	if err != nil {
 		return err
 	}
@@ -108,13 +157,13 @@ func StoreHeader(msgID string, header *Header) error {
 	}
 
 	// Create path if needed
-	err = os.MkdirAll(path.Dir(p), 0777)
+	err = os.MkdirAll(filepath.Dir(p), 0777)
 	if err != nil {
 		return err
 	}
 
 	// Copy body straight to catalog file
-	headerFile, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	headerFile, err := os.Create(p)
 	if err != nil {
 		return err
 	}
@@ -152,7 +201,7 @@ func MoveMessage(fromSection Section, toSection Section, msgID string) error {
 		logrus.Trace("os.Rename() errored. Let's try and create the path first")
 
 		// Maybe path does not exist yet. Try and create
-		err = os.MkdirAll(path.Dir(newPath), 0755)
+		err = os.MkdirAll(filepath.Dir(newPath), 0755)
 		if err != nil {
 			return err
 		}

@@ -40,6 +40,7 @@ config:
         port: 2424
 
         verbose_info: true
+        allow_insecure: true
 
         certfile: /bitmaelum/certs/server.cert
         keyfile: /bitmaelum/certs/server.key

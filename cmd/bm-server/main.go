@@ -97,16 +97,13 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
 	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
 
-	publicRouter.HandleFunc("/incoming", handler.IncomingMessageRequest).Methods("POST")
-	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/header", handler.IncomingMessageHeader).Methods("POST")
-	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/catalog", handler.IncomingMessageCatalog).Methods("POST")
-	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/block/{id}", handler.IncomingMessageBlock).Methods("POST")
-	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.CompleteIncoming).Methods("POST")
-	publicRouter.HandleFunc("/incoming/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteIncoming).Methods("DELETE")
-
-	//publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}", handler.RetrieveAccount).Methods("GET")
-	// publicRouter.HandleFunc("/incoming", handler.PostMessageHeader).Methods("POST")
-	// publicRouter.HandleFunc("/incoming/{addr:[A-Za-z0-9]{64}}", handler.PostMessageBody).Methods("POST")
+	// Server to server message upload
+	publicRouter.HandleFunc("/ticket", handler.GetLocalTicket).Methods("POST")
+	publicRouter.HandleFunc("/incoming/header", handler.IncomingMessageHeader).Methods("POST")
+	publicRouter.HandleFunc("/incoming/catalog", handler.IncomingMessageCatalog).Methods("POST")
+	publicRouter.HandleFunc("/incoming/block/{id}", handler.IncomingMessageBlock).Methods("POST")
+	publicRouter.HandleFunc("/incoming", handler.CompleteIncoming).Methods("POST")
+	publicRouter.HandleFunc("/incoming", handler.DeleteIncoming).Methods("DELETE")
 
 	// Routes that need to be authenticated
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
@@ -118,11 +115,7 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flags", handler.GetFlags).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.SetFlag).Methods("PUT")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}/message/{id:[A-Za-z0-9-]+}/flag/{flag}", handler.UnsetFlag).Methods("DELETE")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/header", handler.UploadMessageHeader).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/catalog", handler.UploadMessageCatalog).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/block/{id}", handler.UploadMessageBlock).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.CompleteUpload).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/send/{msgid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}", handler.DeleteUpload).Methods("DELETE")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetRemoteTicket).Methods("POST")
 
 	return mainRouter
 }
@@ -164,7 +157,8 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 }
 
 func mainLoop(ctx context.Context) {
-	ticker := time.NewTicker(5 * time.Second)
+	retryTicker := time.NewTicker(5 * time.Second)
+	stuckTicker := time.NewTicker(60 * time.Second)
 	processor.IncomingChannel = make(chan string)
 
 	for {
@@ -179,9 +173,10 @@ func mainLoop(ctx context.Context) {
 			}
 			go processor.ProcessMessage(msgID)
 
-		// Process heartbeat ticker
-		case <-ticker.C:
+		// Process tickers
+		case <-retryTicker.C:
 			processor.ProcessRetryQueue()
+		case <-stuckTicker.C:
 			processor.ProcessStuckIncomingMessages()
 			processor.ProcessStuckProcessingMessages()
 
