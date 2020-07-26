@@ -20,7 +20,7 @@ import (
 
 type jsonOut map[string]interface{}
 
-var errNoSuccess = errors.New("operating was not successful")
+var errNoSuccess = errors.New("operation was not successful")
 
 // API is a structure to connect to the server for the given account
 type API struct {

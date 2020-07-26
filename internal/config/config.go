@@ -11,18 +11,6 @@ import (
 
 var errNotFound = errors.New("cannot find config file")
 
-/**
- * Configuration is found the following way:
- *
- * 1. Check path is not empty and config found in path
- * 2. Check for config (*-config.yml) in current directory
- * 3. Check for config (*-config.yml) in directory ~/.bitmaelum
- * 4. Check for config (*-config.yml) in directory /etc/bitmaelum
- * 5. Error (or pass)
- *
- * Config assumes that all paths are expanded with homedir.Expand
- */
-
 var triedPaths []string
 
 // LoadClientConfig loads client configuration from given path or panic if cannot load
@@ -62,7 +50,7 @@ func LoadClientConfigOrPass(configPath string) error {
 
 	configPath = os.Getenv("BITMAELUM_CLIENT_CONFIG")
 	if configPath != "" {
-		err = readConfigPath(configPath, Server.LoadConfig)
+		err = readConfigPath(configPath, Client.LoadConfig)
 		if err == nil || err != errNotFound {
 			return err
 		}
