@@ -3,6 +3,7 @@ package message
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	core "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
@@ -88,6 +89,22 @@ func NewCatalog(info *account.Info) *Catalog {
 	c.From.PublicKey = string(info.PubKey)
 
 	return c
+}
+
+// AddFlags adds extra flags to the message
+func (c *Catalog) AddFlags(flags ...string) {
+	c.Flags = append(c.Flags, flags...)
+}
+
+// AddLabels adds extra labels to the message
+func (c *Catalog) AddLabels(labels ...string) {
+	c.Labels = append(c.Labels, labels...)
+}
+
+// SetToAddress sets the address of the recipient
+func (c *Catalog) SetToAddress(addr address.Address, fullName string) {
+	c.To.Address = addr.String()
+	c.To.Name = fullName
 }
 
 // AddBlock adds a block to a catalog

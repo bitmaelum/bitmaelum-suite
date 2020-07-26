@@ -71,27 +71,27 @@ func generateCert(domain string) {
 	}
 
 	// Write certificate to file
-	fmt.Println("Writing ./server.cert file")
+	fmt.Println("Writing server.cert file")
 
-	certOut, err := os.OpenFile("./server.cert", os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	certOut, err := os.Create("server.cert")
 	if err != nil {
-		logrus.Fatalf("Error while opening ./server.cert: %v", err)
+		logrus.Fatalf("Error while opening server.cert: %v", err)
 	}
 	err = pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	if err != nil {
-		logrus.Fatalf("Failed to write to ./server.cert: %v", err)
+		logrus.Fatalf("Failed to write to server.cert: %v", err)
 	}
 	err = certOut.Close()
 	if err != nil {
-		logrus.Fatalf("ERror while closing ./server.cert: %v", err)
+		logrus.Fatalf("ERror while closing server.cert: %v", err)
 	}
 
 	// Write key to file
-	fmt.Println("Writing ./server.key file")
+	fmt.Println("Writing server.key file")
 
-	keyOut, err := os.OpenFile("./server.key", os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	keyOut, err := os.Create("server.key")
 	if err != nil {
-		logrus.Fatalf("Error while opening ./server.key: %v", err)
+		logrus.Fatalf("Error while opening server.key: %v", err)
 	}
 	privBytes, err := x509.MarshalPKCS8PrivateKey(privKey)
 	if err != nil {
@@ -99,11 +99,11 @@ func generateCert(domain string) {
 	}
 	err = pem.Encode(keyOut, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
 	if err != nil {
-		logrus.Fatalf("Failed to write to ./server.key: %v", err)
+		logrus.Fatalf("Failed to write to server.key: %v", err)
 	}
 	err = keyOut.Close()
 	if err != nil {
-		logrus.Fatalf("Error while closing ./server.key: %v", err)
+		logrus.Fatalf("Error while closing server.key: %v", err)
 	}
 
 	fmt.Println("All done.")

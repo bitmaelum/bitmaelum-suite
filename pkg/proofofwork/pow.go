@@ -2,7 +2,10 @@ package proofofwork
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
+	"io"
 	"math"
 	"math/big"
 	"strconv"
@@ -31,19 +34,31 @@ import (
 // ProofOfWork represents a proof-of-work which either can be completed or not
 type ProofOfWork struct {
 	Bits  int    `json:"bits"`
+	Data  string `json:"data"`
 	Proof uint64 `json:"proof,omitempty"`
-	Data  []byte `json:"data,omitempty"`
 }
 
 // New generates a new ProofOfWork structure.
-func New(bits int, data []byte, proof uint64) *ProofOfWork {
+func New(bits int, data string, proof uint64) *ProofOfWork {
 	pow := &ProofOfWork{
 		Bits:  bits,
-		Proof: proof,
 		Data:  data,
+		Proof: proof,
 	}
 
 	return pow
+}
+
+// GenerateWork generates random work
+func GenerateWork() string {
+	data := make([]byte, 32)
+	_, err := io.ReadFull(rand.Reader, data)
+	if err != nil {
+		// @TODO: danger Will!
+		return ""
+	}
+
+	return base64.StdEncoding.EncodeToString(data)
 }
 
 // HasDoneWork returns true if this instance already has done proof-of-work
@@ -64,7 +79,7 @@ func (pow *ProofOfWork) Work() {
 	for counter < math.MaxInt64 {
 		// SHA256 the data
 		hash := sha256.Sum256(bytes.Join([][]byte{
-			pow.Data,
+			[]byte(pow.Data),
 			intToHex(counter),
 		}, []byte{}))
 		hashInt.SetBytes(hash[:])
@@ -86,7 +101,7 @@ func (pow *ProofOfWork) IsValid() bool {
 	var hashInt big.Int
 
 	hash := sha256.Sum256(bytes.Join([][]byte{
-		pow.Data,
+		[]byte(pow.Data),
 		intToHex(pow.Proof),
 	}, []byte{}))
 	hashInt.SetBytes(hash[:])

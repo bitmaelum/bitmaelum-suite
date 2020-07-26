@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 )
@@ -30,6 +31,7 @@ func JSONOut(w http.ResponseWriter, v interface{}) error {
 
 // ErrorOut outputs an error
 func ErrorOut(w http.ResponseWriter, code int, msg string) {
+	logrus.Debugf("Returning error (%d): %s", code, msg)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_ = json.NewEncoder(w).Encode(StatusError(msg))

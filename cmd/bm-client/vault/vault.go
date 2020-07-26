@@ -16,7 +16,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 const (
@@ -42,7 +42,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 
 	// Save new vault when we cannot find one
 	if _, ok := err.(*os.PathError); ok {
-		err = os.MkdirAll(path.Dir(p), 0777)
+		err = os.MkdirAll(filepath.Dir(p), 0777)
 		if err != nil {
 			return nil, err
 		}

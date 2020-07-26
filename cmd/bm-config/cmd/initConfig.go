@@ -38,7 +38,7 @@ This command creates default templates that you can use as a starting point.`,
 }
 
 func createFile(path string, configTemplate func(w io.Writer) error) {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+	f, err := os.Create(path)
 	if err != nil {
 		logrus.Fatalf("Error while creating file: %v", err)
 	}

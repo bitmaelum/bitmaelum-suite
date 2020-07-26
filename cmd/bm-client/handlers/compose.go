@@ -2,16 +2,17 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
 	"github.com/bitmaelum/bitmaelum-suite/core/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
@@ -19,10 +20,10 @@ import (
 )
 
 // ComposeMessage composes a new message from the given account Info to the "to" with given subject, blocks and attachments
-func ComposeMessage(info account.Info, toAddr address.HashAddress, subject string, b, a []string) error {
+func ComposeMessage(info account.Info, toAddr address.Address, subject string, b, a []string) error {
 	// Resolve public key for our recipient
 	resolver := container.GetResolveService()
-	toInfo, err := resolver.Resolve(toAddr)
+	toInfo, err := resolver.Resolve(toAddr.Hash())
 	if err != nil {
 		return fmt.Errorf("cannot retrieve public key for '%s'", toAddr.String())
 	}
@@ -55,64 +56,63 @@ func ComposeMessage(info account.Info, toAddr address.HashAddress, subject strin
 		return err
 	}
 
-	msgID, err := uuid.NewRandom()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Outgoing message created: %s\n", msgID.String())
-	fmt.Printf("Sending message to : %s\n", info.Server)
-
-	err = uploadToServer(msgID.String(), info, header, encryptedCatalog, catalog)
+	fmt.Printf("  Sending message to : %s\n", info.Server)
+	err = uploadToServer(info, header, encryptedCatalog, catalog)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func uploadToServer(msgID string, info account.Info, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
-	// Upload message to server
-	addr, err := address.NewHash(info.Address)
+func uploadToServer(info account.Info, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
+	client, err := api.NewAuthenticated(&info, api.ClientOpts{
+		Host:          info.Server,
+		AllowInsecure: config.Client.Server.AllowInsecure,
+	})
 	if err != nil {
 		return err
 	}
 
-	client, err := api.New(&info)
+	// Get upload ticket
+	t, err := client.GetTicket(header.From.Addr, header.To.Addr, "")
 	if err != nil {
-		return err
+		return errors.New("cannot get ticket from server: " + err.Error())
+	}
+	if !t.Valid {
+		return errors.New("invalid ticket returned by server")
 	}
 
 	// parallelize uploads
 	g := new(errgroup.Group)
 	g.Go(func() error {
-		return client.UploadHeader(*addr, msgID, header)
+		return client.UploadHeader(*t, header)
 	})
 	g.Go(func() error {
-		return client.UploadCatalog(*addr, msgID, encryptedCatalog)
+		return client.UploadCatalog(*t, encryptedCatalog)
 	})
 	for _, block := range catalog.Blocks {
 		// Store locally, otherwise the anonymous go function doesn't know which "block"
 		b := block
 		g.Go(func() error {
-			return client.UploadBlock(*addr, msgID, b.ID, b.Reader)
+			return client.UploadBlock(*t, b.ID, b.Reader)
 		})
 	}
 	for _, attachment := range catalog.Attachments {
 		// Store locally, otherwise the anonymous go function doesn't know which "attachment"
 		a := attachment
 		g.Go(func() error {
-			return client.UploadBlock(*addr, msgID, a.ID, a.Reader)
+			return client.UploadBlock(*t, a.ID, a.Reader)
 		})
 	}
 
 	// Wait until all are completed
 	if err := g.Wait(); err != nil {
-		_ = client.DeleteMessage(*addr, msgID)
+		_ = client.DeleteMessage(*t)
 		return err
 	}
 
 	// All done, mark upload as completed
-	return client.CompleteUpload(*addr, msgID)
+	return client.CompleteUpload(*t)
 }
 
 // Generate a header file based on the info provided
@@ -155,16 +155,14 @@ func generateHeader(info account.Info, toInfo *resolve.Info, catalog []byte, cat
 }
 
 // Generate a complete catalog file. Outputs catalog key and the encrypted catalog
-func generateCatalog(info account.Info, toAddr address.HashAddress, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
+func generateCatalog(info account.Info, toAddr address.Address, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
 	// Create catalog
 	cat := message.NewCatalog(&info)
 
-	// @TODO: maybe these should be setters in Catalog?
-	cat.To.Address = toAddr.String()
-	cat.To.Name = toAddr.String()
+	cat.AddFlags("new")
+	cat.AddLabels("important")
+	cat.SetToAddress(toAddr, "John Doe")
 
-	cat.Flags = append(cat.Flags, "important")
-	cat.Labels = append(cat.Labels, "invoice", "sales", "seams-cms")
 	cat.Subject = subject
 	cat.ThreadID = ""
 

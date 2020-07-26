@@ -27,7 +27,7 @@ func HomePage(w http.ResponseWriter, req *http.Request) {
 		logo = internal.GetMonochromeASCIILogo() + "\n\n" + host + "\n\n"
 
 		var version bytes.Buffer
-		internal.WriteVersionInfo("BitMealum-Server", &version)
+		internal.WriteVersionInfo("BitMaelum-Server", &version)
 		logo = logo + "\n\n" + version.String()
 	}
 

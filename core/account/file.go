@@ -3,13 +3,13 @@ package account
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/nightlyone/lockfile"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -112,7 +112,7 @@ func (r *fileRepo) CreateBox(addr address.HashAddress, box, name, description st
 	}
 
 	data, _ := json.MarshalIndent(mbi, "", " ")
-	return r.store(addr, path.Join(box, infoFile), data)
+	return r.store(addr, filepath.Join(box, infoFile), data)
 }
 
 // Returns true when the given mailbox exists in this account
@@ -180,7 +180,7 @@ func (r *fileRepo) getPath(addr address.HashAddress, suffix string) string {
 	strAddr := strings.ToLower(addr.String())
 	suffix = strings.ToLower(suffix)
 
-	return path.Join(r.basePath, strAddr[:2], strAddr[2:], suffix)
+	return filepath.Join(r.basePath, strAddr[:2], strAddr[2:], suffix)
 }
 
 // Retrieve a single mailbox
@@ -189,7 +189,7 @@ func (r *fileRepo) GetBox(addr address.HashAddress, box string) (*message.MailBo
 	mbi.Name = box
 
 	// Fetch information from .info file
-	err := r.fetchJSON(addr, path.Join(box, infoFile), mbi)
+	err := r.fetchJSON(addr, filepath.Join(box, infoFile), mbi)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +250,7 @@ func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box string, offset
 		}
 
 		flags := &message.Flags{}
-		_ = r.fetchJSON(addr, path.Join(box, f.Name(), flagFile), flags)
+		_ = r.fetchJSON(addr, filepath.Join(box, f.Name(), flagFile), flags)
 
 		msg := message.List{
 			ID:    f.Name(),
@@ -277,7 +277,7 @@ func (r *fileRepo) UnsetFlag(addr address.HashAddress, box string, id string, fl
 // Get flags from the given message
 func (r *fileRepo) GetFlags(addr address.HashAddress, box string, id string) ([]string, error) {
 	flags := &message.Flags{}
-	err := r.fetchJSON(addr, path.Join(box, id, flagFile), flags)
+	err := r.fetchJSON(addr, filepath.Join(box, id, flagFile), flags)
 	if err != nil {
 		return nil, err
 	}
@@ -308,7 +308,7 @@ func find(slice []string, item string) (int, error) {
 
 func (r *fileRepo) writeFlag(addr address.HashAddress, box string, id string, flag string, addFlag bool) error {
 	// Lock our flags for writing
-	lockfilePath := r.getPath(addr, path.Join(box, id, flagFile+".lock"))
+	lockfilePath := r.getPath(addr, filepath.Join(box, id, flagFile+".lock"))
 	lockfilePath, err := filepath.Abs(lockfilePath)
 	if err != nil {
 		return err
@@ -350,12 +350,12 @@ func (r *fileRepo) writeFlag(addr address.HashAddress, box string, id string, fl
 		return err
 	}
 
-	return r.store(addr, path.Join(box, id, flagFile), data)
+	return r.store(addr, filepath.Join(box, id, flagFile), data)
 }
 
 func (r *fileRepo) MoveToBox(addr address.HashAddress, srcBox, dstBox, msgID string) error {
-	srcPath := r.getPath(addr, path.Join(srcBox, msgID))
-	dstPath := r.getPath(addr, path.Join(dstBox, msgID))
+	srcPath := r.getPath(addr, filepath.Join(srcBox, msgID))
+	dstPath := r.getPath(addr, filepath.Join(dstBox, msgID))
 
 	return os.Rename(srcPath, dstPath)
 }
@@ -367,7 +367,12 @@ func (r *fileRepo) SendToBox(addr address.HashAddress, box, msgID string) error 
 		return err
 	}
 
-	dstPath := r.getPath(addr, path.Join(box, msgID))
+	dstPath := r.getPath(addr, filepath.Join(box, msgID))
 
+	// If we have the inbox, the message is prefixed with the current timestamp (UTC). This allows us
+	// sort on time locally and we can just fetch from a specific time (ie: fetch all messages since 20 minutes ago)
+	if box == "inbox" {
+		dstPath = r.getPath(addr, filepath.Join(box, fmt.Sprintf("%d-%s", time.Now().Unix(), msgID)))
+	}
 	return os.Rename(srcPath, dstPath)
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // Server keeps all server configuration settings
-var Server ServerConfig = ServerConfig{}
+var Server = ServerConfig{}
 
 // Basically, our config is inside the "config" section. So we load the whole file and only store the Cfg section
 type wrappedServerConfig struct {
@@ -37,12 +37,13 @@ type ServerConfig struct {
 	} `yaml:"paths"`
 
 	Server struct {
-		Name        string `yaml:"hostname"`
-		Host        string `yaml:"host"`
-		Port        int    `yaml:"port"`
-		CertFile    string `yaml:"certfile"`
-		KeyFile     string `yaml:"keyfile"`
-		VerboseInfo bool   `yaml:"verbose_info"`
+		Name          string `yaml:"hostname"`
+		Host          string `yaml:"host"`
+		Port          int    `yaml:"port"`
+		CertFile      string `yaml:"certfile"`
+		KeyFile       string `yaml:"keyfile"`
+		VerboseInfo   bool   `yaml:"verbose_info"`
+		AllowInsecure bool   `yaml:"allow_insecure"`
 	} `yaml:"server"`
 
 	Acme struct {

@@ -13,9 +13,13 @@ func (api *API) GetPublicKey(addr address.HashAddress) (string, error) {
 	}
 	output := PubKeyOutput{}
 
-	err := api.GetJSON("/account/"+addr.String()+"/key", output)
+	statusCode, err := api.GetJSON("/account/"+addr.String()+"/key", output)
 	if err != nil {
 		return "", err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return "", errNoSuccess
 	}
 
 	return output.PublicKey, nil
@@ -38,5 +42,14 @@ func (api *API) CreateAccount(info account.Info, token string) error {
 		PublicKey:   info.PubKey,
 		ProofOfWork: info.Pow,
 	}
-	return api.PostJSON("/account", input)
+
+	_, statusCode, err := api.PostJSON("/account", input)
+	if err != nil {
+		return err
+	}
+	if statusCode < 200 || statusCode > 299 {
+		return errNoSuccess
+	}
+
+	return nil
 }

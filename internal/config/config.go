@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 var errNotFound = errors.New("cannot find config file")
@@ -22,83 +23,100 @@ var errNotFound = errors.New("cannot find config file")
  * Config assumes that all paths are expanded with homedir.Expand
  */
 
+var triedPaths []string
+
 // LoadClientConfig loads client configuration from given path or panic if cannot load
-func LoadClientConfig(path string) {
-	err := LoadClientConfigOrPass(path)
+func LoadClientConfig(configPath string) {
+	err := LoadClientConfigOrPass(configPath)
 	if err != nil {
-		logrus.Fatalf("cannot load client configuration: %s", err)
+		for _, p := range triedPaths {
+			logrus.Errorf("Tried path: %s", p)
+		}
+		logrus.Fatalf("could not load client configuration")
 	}
 }
 
 // LoadServerConfig loads server configuration from given path or panic if cannot load
-func LoadServerConfig(path string) {
-	err := LoadServerConfigOrPass(path)
+func LoadServerConfig(configPath string) {
+	err := LoadServerConfigOrPass(configPath)
 	if err != nil {
-		logrus.Fatalf("cannot load server configuration: %s", err)
+		for _, p := range triedPaths {
+			logrus.Errorf("Tried path: %s", p)
+		}
+
+		logrus.Fatalf("could not load server configuration")
 	}
 }
 
 // LoadClientConfigOrPass loads client configuration, but return false if not able
-func LoadClientConfigOrPass(path string) error {
+func LoadClientConfigOrPass(configPath string) error {
 	var err error
 
-	if path != "" {
-		err = readConfigPath(path, Client.LoadConfig)
+	// Try custom path first
+	if configPath != "" {
+		err = readConfigPath(configPath, Client.LoadConfig)
 		if err == nil || err != errNotFound {
 			return err
 		}
 	}
 
-	err = readConfigPath("./client-config.yml", Client.LoadConfig)
-	if err == nil || err != errNotFound {
-		return err
+	configPath = os.Getenv("BITMAELUM_CLIENT_CONFIG")
+	if configPath != "" {
+		err = readConfigPath(configPath, Server.LoadConfig)
+		if err == nil || err != errNotFound {
+			return err
+		}
 	}
 
-	err = readConfigPath("~/.bitmaelum/client-config.yml", Client.LoadConfig)
-	if err == nil || err != errNotFound {
-		return err
-	}
-
-	err = readConfigPath("/etc/bitmaelum/client-config.yml", Client.LoadConfig)
-	if err == nil || err != errNotFound {
-		return err
+	// try on our search paths
+	for _, p := range getSearchPaths() {
+		p = filepath.Join(p, "client-config.yml")
+		err = readConfigPath(p, Client.LoadConfig)
+		if err == nil || err != errNotFound {
+			return err
+		}
 	}
 
 	return errors.New("cannot find client-config.yml")
 }
 
 // LoadServerConfigOrPass loads client configuration, but return false if not able
-func LoadServerConfigOrPass(path string) error {
+func LoadServerConfigOrPass(configPath string) error {
 	var err error
 
-	if path != "" {
-		err = readConfigPath(path, Server.LoadConfig)
+	// Try custom path first
+	if configPath != "" {
+		err = readConfigPath(configPath, Server.LoadConfig)
 		if err == nil || err != errNotFound {
 			return err
 		}
 	}
 
-	err = readConfigPath("./server-config.yml", Server.LoadConfig)
-	if err == nil || err != errNotFound {
-		return err
+	configPath = os.Getenv("BITMAELUM_SERVER_CONFIG")
+	if configPath != "" {
+		err = readConfigPath(configPath, Server.LoadConfig)
+		if err == nil || err != errNotFound {
+			return err
+		}
 	}
 
-	err = readConfigPath("~/.bitmaelum/server-config.yml", Server.LoadConfig)
-	if err == nil || err != errNotFound {
-		return err
-	}
-
-	err = readConfigPath("/etc/bitmaelum/server-config.yml", Server.LoadConfig)
-	if err == nil || err != errNotFound {
-		return err
+	// try on our search paths
+	for _, p := range getSearchPaths() {
+		p = filepath.Join(p, "server-config.yml")
+		err = readConfigPath(p, Server.LoadConfig)
+		if err == nil || err != errNotFound {
+			return err
+		}
 	}
 
 	return errors.New("cannot find server-config.yml")
 }
 
 // Expands the given path and loads the configuration
-func readConfigPath(path string, loader func(r io.Reader) error) error {
-	p, _ := homedir.Expand(path)
+func readConfigPath(p string, loader func(r io.Reader) error) error {
+	p, _ = homedir.Expand(p)
+
+	triedPaths = append(triedPaths, p)
 
 	f, err := os.Open(p)
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/spf13/cobra"
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -145,9 +145,9 @@ func do(useStaging bool, httpPort string) {
 
 func getAcmePath(useStaging bool) string {
 	if useStaging {
-		return path.Join(config.Server.Acme.Path, "staging")
+		return filepath.Join(config.Server.Acme.Path, "staging")
 	}
-	return path.Join(config.Server.Acme.Path, "prod")
+	return filepath.Join(config.Server.Acme.Path, "prod")
 }
 
 var (

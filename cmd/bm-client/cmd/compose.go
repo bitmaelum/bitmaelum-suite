@@ -6,6 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
@@ -21,16 +22,16 @@ var composeCmd = &cobra.Command{
 
 		fromAddr, err := address.New(*from)
 		if err != nil {
-			panic(err)
+			logrus.Fatal(err)
 		}
 		fromInfo, err := Vault.GetAccountInfo(*fromAddr)
 		if err != nil {
-			panic(err)
+			logrus.Fatal(err)
 		}
 
-		toAddr, err := address.NewHash(*to)
+		toAddr, err := address.New(*to)
 		if err != nil {
-			panic(err)
+			logrus.Fatal(err)
 		}
 
 		// If no blocks are specified, we assume reading a single block from stdin
@@ -45,7 +46,7 @@ var composeCmd = &cobra.Command{
 				block, err = useStdinEditor()
 			}
 			if err != nil {
-				panic(err)
+				logrus.Fatal(err)
 			}
 			if len(block) == 0 {
 				fmt.Println("Warning: empty message body")
@@ -54,20 +55,20 @@ var composeCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("Endresult\n")
+		fmt.Printf("Composing message:\n")
 		fmt.Printf("  From:    %s (%s)\n", fromInfo.Name, fromInfo.Address)
 		fmt.Printf("  To:      %s\n", *to)
 		fmt.Printf("  Subject: %s\n", *subject)
 		for i, block := range *blocks {
-			fmt.Printf("Block  #%d %s\n", i, block)
+			fmt.Printf("  Block  #%d %s\n", i, block)
 		}
 		for i, attachment := range *attachments {
-			fmt.Printf("Att.   #%d %s\n", i, attachment)
+			fmt.Printf("  Att.   #%d %s\n", i, attachment)
 		}
 
 		err = handlers.ComposeMessage(*fromInfo, *toAddr, *subject, *blocks, *attachments)
 		if err != nil {
-			panic(err)
+			logrus.Fatal(err)
 		}
 	},
 }
