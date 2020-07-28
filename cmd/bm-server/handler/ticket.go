@@ -154,7 +154,6 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 		logrus.Tracef("Ticket proof-of-work validated: %s (valid: %v)", t.ID, t.Valid)
 	}
 
-
 	// Send out validated or invalidated ticket
 	w.Header().Set("Content-Type", "application/json")
 	if t.Valid {

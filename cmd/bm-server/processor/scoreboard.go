@@ -6,6 +6,7 @@ type scoreboardType struct {
 	mux sync.Mutex
 	v   map[string]int
 }
+
 var scoreboard scoreboardType
 
 // IsInScoreboard will check if the given message ID in the section is present
