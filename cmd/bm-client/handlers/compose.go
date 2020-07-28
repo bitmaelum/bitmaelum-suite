@@ -56,7 +56,7 @@ func ComposeMessage(info account.Info, toAddr address.Address, subject string, b
 		return err
 	}
 
-	fmt.Printf("  Sending message to : %s\n", info.Server)
+	fmt.Printf("  Sending message to: %s\n", info.Server)
 	err = uploadToServer(info, header, encryptedCatalog, catalog)
 	if err != nil {
 		return err

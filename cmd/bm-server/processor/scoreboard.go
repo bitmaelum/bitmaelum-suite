@@ -28,3 +28,7 @@ func RemoveFromScoreboard(section int, msgID string) {
 	delete(scoreboard.v, msgID)
 	scoreboard.mux.Unlock()
 }
+
+func init() {
+	scoreboard.v = make(map[string]int)
+}

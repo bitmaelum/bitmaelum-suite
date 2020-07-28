@@ -109,6 +109,9 @@ func StoreBlock(msgID, blockID string, r io.Reader) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		_ = blockFile.Close()
+	}()
 
 	_, err = io.Copy(blockFile, r)
 	if err != nil {
@@ -139,6 +142,10 @@ func StoreCatalog(msgID string, r io.Reader) error {
 		return err
 	}
 
+	defer func() {
+		_ = catFile.Close()
+	}()
+
 	_, err = io.Copy(catFile, r)
 	if err != nil {
 		// Something went wrong, remove the file just in case something was already written
@@ -167,6 +174,10 @@ func StoreHeader(msgID string, header *Header) error {
 	if err != nil {
 		return err
 	}
+
+	defer func() {
+		_ = headerFile.Close()
+	}()
 
 	// Marshal data and save
 	data, err := json.Marshal(header)

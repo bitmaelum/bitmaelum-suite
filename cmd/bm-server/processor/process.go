@@ -44,7 +44,8 @@ func ProcessMessage(msgID string) {
 	}
 
 	// Local addresses don't need to be send. They are treated locally
-	if res.IsLocal() {
+	as := container.GetAccountService()
+	if as.AccountExists(header.To.Addr) {
 		// probably move the message to the incoming queue
 		// Do stuff locally
 		logrus.Debugf("Message %s can be transferred locally to %s", msgID, res.Hash)
@@ -110,6 +111,7 @@ func deliverRemote(header *message.Header, info *resolve.Info, msgID string) err
 		if err != nil || !t.Valid {
 			logrus.Warnf("Ticket for message %s not valid after proof of work, moving to retry queue", msgID)
 			MoveToRetryQueue(msgID)
+			return err
 		}
 	}
 
@@ -168,5 +170,11 @@ func deliverRemote(header *message.Header, info *resolve.Info, msgID string) err
 
 	// All done, mark upload as completed
 	logrus.Tracef("message completed for ticket %s", t.ID)
-	return client.CompleteUpload(*t)
+	err = client.CompleteUpload(*t)
+	if err != nil {
+		return err
+	}
+
+	// Remove local message from processing queue
+	return message.RemoveMessage(message.SectionProcessing, msgID)
 }

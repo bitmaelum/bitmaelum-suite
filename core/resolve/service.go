@@ -4,12 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
-	"net/url"
-	"strings"
 )
 
 // Service represents a resolver service tied to a specific repository
@@ -29,39 +26,6 @@ func KeyRetrievalService(repo Repository) *Service {
 	return &Service{
 		repo: repo,
 	}
-}
-
-// IsLocal returns true when the resolve address of the info is our own server address
-func (info *Info) IsLocal() bool {
-	// @TODO: Local is when the address is known on the server. It should not care about names and such
-	localHost, localPort, err := getHostPort(config.Server.Server.Name)
-	if err != nil {
-		return false
-	}
-	infoHost, infoPort, err := getHostPort(info.Server)
-	if err != nil {
-		return false
-	}
-
-	return localHost == infoHost && localPort == infoPort
-}
-
-func getHostPort(hostport string) (string, string, error) {
-	// We need schema otherwise url.Parse does not work
-	if !strings.HasPrefix(hostport, "http://") && !strings.HasPrefix(hostport, "https://") {
-		hostport = "https://" + hostport
-	}
-
-	info, err := url.Parse(hostport)
-	if err != nil {
-		return "", "", err
-	}
-
-	if info.Port() == "" {
-		info.Host = info.Host + ":2424"
-	}
-
-	return info.Hostname(), info.Port(), nil
 }
 
 // Resolve resolves an address.

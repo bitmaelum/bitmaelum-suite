@@ -3,6 +3,8 @@ package processor
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/sirupsen/logrus"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -35,7 +37,7 @@ func ProcessRetryQueue() {
 			}
 		}
 
-		if canRetryNow(info) {
+		if forceRetry() || canRetryNow(info) {
 			err := message.MoveMessage(message.SectionRetry, message.SectionProcessing, info.MsgID)
 			if err != nil {
 				continue
@@ -44,6 +46,19 @@ func ProcessRetryQueue() {
 			go ProcessMessage(info.MsgID)
 		}
 	}
+
+	disableForceRetry()
+}
+
+func forceRetry() bool {
+	// @TODO: We should use a different way to control retries. For instance, through HTTP api (bm-config)
+	_, err := os.Stat(filepath.Join(os.TempDir(), ".bm_flush_retry"))
+
+	return err == nil
+}
+
+func disableForceRetry() {
+	_ = os.Remove(filepath.Join(os.TempDir(), ".bm_flush_retry"))
 }
 
 // MoveToRetryQueue moves a message (back) to retry queue and update retry info

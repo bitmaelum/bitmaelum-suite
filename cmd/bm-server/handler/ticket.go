@@ -69,6 +69,28 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var t *ticket.Ticket
+	ticketRepo := container.GetTicketRepo()
+
+	if body.TicketID != "" {
+		t, err = ticketRepo.Fetch(body.TicketID)
+		if err != nil {
+			ErrorOut(w, http.StatusPreconditionFailed, "ticket not found")
+			return
+		}
+		logrus.Tracef("Found ticket in repository: %s", body.TicketID)
+
+		// Set info from ticket into body. It might overwrite, but ticket is leading..
+		body.FromAddr = t.From.String()
+		body.ToAddr = t.To.String()
+		body.SubscriptionID = t.SubscriptionID
+
+		// Set proof, we will check later if the proof is actually correct
+		if body.Proof > 0 {
+			t.Pow.Proof = body.Proof
+		}
+	}
+
 	// Validate from / to address
 	fromAddr, err := address.NewHashFromHash(body.FromAddr)
 	if err != nil {
@@ -82,13 +104,11 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if to address is a local address
-	rs := container.GetResolveService()
-	res, err := rs.Resolve(*toAddr)
-	if err != nil || !res.IsLocal() {
-		ErrorOut(w, http.StatusBadRequest, "destination isn't local, and we don't support proxying")
+	as := container.GetAccountService()
+	if !as.AccountExists(*toAddr) {
+		ErrorOut(w, http.StatusBadRequest, "recipient isn't found on this server, and we don't support proxying")
+		return
 	}
-
-	ticketRepo := container.GetTicketRepo()
 
 	// Check if we have a subscription tuple, if so, create valid ticket and return
 	subscriptionRepo := container.GetSubscriptionRepo()
@@ -110,15 +130,6 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Get ticket provided, or create a new ticket if not found
-	var t *ticket.Ticket
-	if body.TicketID != "" {
-		t, err = ticketRepo.Fetch(body.TicketID)
-		if err != nil {
-			ErrorOut(w, http.StatusPreconditionFailed, "ticket not found")
-			return
-		}
-		logrus.Tracef("Found ticket in repository: %s", body.TicketID)
-	}
 	if t == nil {
 		t = ticket.New(*fromAddr, *toAddr, body.SubscriptionID)
 		err = ticketRepo.Store(t)
@@ -126,11 +137,7 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 			ErrorOut(w, http.StatusInternalServerError, "can't save ticket on the server")
 			return
 		}
-	}
-
-	// Set proof, we will check later if the proof is actually correct
-	if body.Proof > 0 {
-		t.Pow.Proof = body.Proof
+		logrus.Tracef("Generated ticket: %s (valid: %v)", t.ID, t.Valid)
 	}
 
 	// Check if proof of work is done, and save accordingly
@@ -144,19 +151,17 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		logrus.Tracef("Ticket proof-of-work validated: %s %v", t.ID, t.Valid)
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusPreconditionFailed)
-		_ = json.NewEncoder(w).Encode(ticket.NewSimpleTicket(t))
-		return
+		logrus.Tracef("Ticket proof-of-work validated: %s (valid: %v)", t.ID, t.Valid)
 	}
 
-	logrus.Tracef("Generated ticket: %s %v", t.ID, t.Valid)
 
 	// Send out validated or invalidated ticket
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	if t.Valid {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusPreconditionFailed)
+	}
 	_ = json.NewEncoder(w).Encode(ticket.NewSimpleTicket(t))
 	return
 }
