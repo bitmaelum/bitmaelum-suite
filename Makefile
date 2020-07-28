@@ -85,7 +85,7 @@ $(PLATFORMS):
 	$(eval GOOS=$(firstword $(subst -, ,$@)))
 	$(eval GOARCH=$(lastword $(subst -, ,$@)))
 	$(info - Cross platform build $(GOOS) / $(GOARCH))
-	make build-all-$(GOOS)-$(GOARCH)
+	make -j build-all-$(GOOS)-$(GOARCH)
 
 info:
 	$(info Building BitMaelum apps and tools)

@@ -15,7 +15,17 @@ type OutputResponse struct {
 
 // JSONOut outputs the given data structure to JSON
 func JSONOut(w http.ResponseWriter, v interface{}) error {
-	data, err := json.MarshalIndent(v, "", "  ")
+	var data []byte
+	var err error
+
+	// Indent or not, depends on the x-pretty-json header set in the response. This is set by the prettyjson middleware
+	if w.Header().Get("x-pretty-json") == "1" {
+		data, err = json.MarshalIndent(v, "", "  ")
+	} else {
+		data, err = json.Marshal(v)
+	}
+	w.Header().Del("x-pretty-json")
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)

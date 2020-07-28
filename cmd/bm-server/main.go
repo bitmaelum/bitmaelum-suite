@@ -86,12 +86,14 @@ func setupRouter() *mux.Router {
 	logger := &middleware.Logger{}
 	tracer := &middleware.Tracer{}
 	jwt := &middleware.JwtToken{}
+	prettyJson := &middleware.PrettyJson{}
 
 	mainRouter := mux.NewRouter().StrictSlash(true)
 
 	// Public things router
 	publicRouter := mainRouter.PathPrefix("/").Subrouter()
 	publicRouter.Use(logger.Middleware)
+	publicRouter.Use(prettyJson.Middleware)
 	publicRouter.Use(tracer.Middleware)
 	publicRouter.HandleFunc("/", handler.HomePage).Methods("GET")
 	publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
@@ -109,6 +111,7 @@ func setupRouter() *mux.Router {
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
 	authRouter.Use(jwt.Middleware)
 	authRouter.Use(logger.Middleware)
+	authRouter.Use(prettyJson.Middleware)
 	authRouter.Use(tracer.Middleware)
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.RetrieveBoxes).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[A-Za-z0-9]+}", handler.RetrieveBox).Methods("GET")
