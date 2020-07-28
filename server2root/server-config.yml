@@ -31,7 +31,7 @@ config:
         incoming: /bitmaelum/incoming
         accounts: /bitmaelum/messagedb
     server:
-        hostname: foobar.bladieblah.foo.us.gov
+        hostname: bitmaelum.docker.internal
 
         # Address where to listen. Use 0.0.0.0 for all interfaces
         host: 0.0.0.0

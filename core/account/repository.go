@@ -1,9 +1,21 @@
 package account
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"time"
 )
+
+type Message struct {
+	Header  string `json:"h"`
+	Catalog []byte `json:"c"`
+}
+type MessageList struct {
+	Total    int       `json:"total"`
+	Returned int       `json:"returned"`
+	Limit    int       `json:"limit"`
+	Offset   int       `json:"offset"`
+	Messages []Message `json:"messages"`
+}
 
 // Repository is an interface to manage accounts on a REMOTE machine (ie: server, not client side)
 type Repository interface {
@@ -16,20 +28,22 @@ type Repository interface {
 	FetchPubKeys(addr address.HashAddress) ([]string, error)
 
 	// Box related functions
-	CreateBox(addr address.HashAddress, box, name, description string, quota int) error
-	ExistsBox(addr address.HashAddress, box string) bool
-	DeleteBox(addr address.HashAddress, box string) error
-	GetBox(addr address.HashAddress, box string) (*message.MailBoxInfo, error)
-	FindBox(addr address.HashAddress, query string) ([]message.MailBoxInfo, error)
+	CreateBox(addr address.HashAddress, box int) error
+	ExistsBox(addr address.HashAddress, box int) bool
+	DeleteBox(addr address.HashAddress, box int) error
+	// GetBox(addr address.HashAddress, box int) (*message.MailBoxInfo, error)
+	GetAllBoxes(addr address.HashAddress) ([]BoxInfo, error)
+	//	FindBox(addr address.HashAddress, query string) ([]message.MailBoxInfo, error)
 
-	SendToBox(addr address.HashAddress, box, msgID string) error
-	MoveToBox(addr address.HashAddress, srcBox, dstBox, msgID string) error
+	SendToBox(addr address.HashAddress, box int, msgID string) error
+	MoveToBox(addr address.HashAddress, srcBox, dstBox int, msgID string) error
 
 	// Message boxes
-	FetchListFromBox(addr address.HashAddress, box string, offset, limit int) ([]message.List, error)
+	FetchListFromBox(addr address.HashAddress, box int, since time.Time, offset, limit int) (*MessageList, error)
 
 	// Flags
-	GetFlags(addr address.HashAddress, box string, id string) ([]string, error)
-	SetFlag(addr address.HashAddress, box string, id string, flag string) error
-	UnsetFlag(addr address.HashAddress, box string, id string, flag string) error
+	// @TODO flag repository? Are we going to use flags on messages this way?
+	GetFlags(addr address.HashAddress, box int, id string) ([]string, error)
+	SetFlag(addr address.HashAddress, box int, id string, flag string) error
+	UnsetFlag(addr address.HashAddress, box int, id string, flag string) error
 }

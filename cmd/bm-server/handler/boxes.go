@@ -2,54 +2,82 @@ package handler
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+	"time"
 )
+
+type jsonOut map[string]interface{}
 
 // RetrieveBoxes retrieves all message boxes for the given account
 func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		// @TODO: Return error
+		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
 	}
 
 	// Retrieve all boxes
 	as := container.GetAccountService()
-	boxes := as.FetchMessageBoxes(*haddr, "*")
-
-	type MailBoxListOutput struct {
-		Address string                `json:"address"`
-		Boxes   []message.MailBoxInfo `json:"boxes"`
+	boxes, err := as.GetAllBoxes(*haddr)
+	if err != nil {
+		ErrorOut(w, http.StatusInternalServerError, "cannot read boxes")
+		return
 	}
 
-	output := &MailBoxListOutput{
-		Address: haddr.String(),
-		Boxes:   boxes,
+	output := jsonOut{
+		"meta": jsonOut {
+			"total": len(boxes),
+			"returned": len(boxes),
+		},
+		"boxes": boxes,
 	}
 
 	_ = JSONOut(w, output)
 }
 
-// RetrieveBox retrieves info about the given mailbox
-func RetrieveBox(w http.ResponseWriter, req *http.Request) {
+// RetrieveMessagesFromBox retrieves info about the given mailbox
+func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		// @TODO: Return error
+		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
 	}
-	name := mux.Vars(req)["box"]
 
-	offset := getQueryInt(req, "offset", 0)
-	limit := getQueryInt(req, "limit", 1000)
+	box, err := strconv.Atoi(mux.Vars(req)["box"])
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "box not found")
+		return
+	}
 
 	as := container.GetAccountService()
-	mail := as.FetchListFromBox(*haddr, name, offset, limit)
+	if !as.ExistsBox(*haddr, box) {
+		ErrorOut(w, http.StatusNotFound, "account not found")
+		return
+	}
 
-	_ = JSONOut(w, mail)
+	since := getQueryInt(req, "since", 0)
+	sinceTs := time.Unix(int64(since), 0)
+	offset := getQueryInt(req, "offset", 0)
+	limit := getQueryInt(req, "limit", 100)
+
+	list, err := as.FetchListFromBox(*haddr, box, sinceTs, offset, limit)
+	if err != nil {
+		ErrorOut(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	_ = JSONOut(w, jsonOut{
+		"meta": jsonOut{
+			"total":    list.Total,
+			"returned": list.Returned,
+			"offset": list.Offset,
+			"limit": list.Limit,
+		},
+		"messages": list.Messages,
+	})
 }
 
 // Returns the given query key as integer, or returns the default value

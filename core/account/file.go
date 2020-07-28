@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -52,7 +53,7 @@ func (r *fileRepo) Exists(addr address.HashAddress) bool {
 
 // Store the public key for this account
 func (r *fileRepo) StorePubKey(addr address.HashAddress, key string) error {
-	// Lock our keyfile for writing
+	// Lock our key file for writing
 	lockfilePath := r.getPath(addr, pubKeyFile+".lock")
 	lock, err := lockfile.New(lockfilePath)
 	if err != nil {
@@ -100,28 +101,19 @@ func (r *fileRepo) FetchPubKeys(addr address.HashAddress) ([]string, error) {
 }
 
 // Create a new mailbox in this account
-func (r *fileRepo) CreateBox(addr address.HashAddress, box, name, description string, quota int) error {
-	fullPath := r.getPath(addr, box)
+func (r *fileRepo) CreateBox(addr address.HashAddress, box int) error {
+	fullPath := r.getPath(addr, getBoxAsString(box))
 
-	_ = os.MkdirAll(fullPath, 0700)
-
-	mbi := message.MailBoxInfo{
-		Name:        name,
-		Description: description,
-		Quota:       quota,
-	}
-
-	data, _ := json.MarshalIndent(mbi, "", " ")
-	return r.store(addr, filepath.Join(box, infoFile), data)
+	return os.MkdirAll(fullPath, 0700)
 }
 
 // Returns true when the given mailbox exists in this account
-func (r *fileRepo) ExistsBox(addr address.HashAddress, box string) bool {
-	return r.pathExists(addr, box)
+func (r *fileRepo) ExistsBox(addr address.HashAddress, box int) bool {
+	return r.pathExists(addr, getBoxAsString(box))
 }
 
 // Delete a given mailbox in the account
-func (r *fileRepo) DeleteBox(addr address.HashAddress, box string) error {
+func (r *fileRepo) DeleteBox(addr address.HashAddress, box int) error {
 	// @TODO: not yet implemented
 	return errors.New("not implemented yet")
 }
@@ -184,18 +176,13 @@ func (r *fileRepo) getPath(addr address.HashAddress, suffix string) string {
 }
 
 // Retrieve a single mailbox
-func (r *fileRepo) GetBox(addr address.HashAddress, box string) (*message.MailBoxInfo, error) {
-	mbi := &message.MailBoxInfo{}
-	mbi.Name = box
-
-	// Fetch information from .info file
-	err := r.fetchJSON(addr, filepath.Join(box, infoFile), mbi)
-	if err != nil {
-		return nil, err
+func (r *fileRepo) GetBoxInfo(addr address.HashAddress, box int) (*BoxInfo, error) {
+	mbi := &BoxInfo{
+		ID: box,
 	}
 
 	// Check number of messages in directory
-	files, err := ioutil.ReadDir(r.getPath(addr, box))
+	files, err := ioutil.ReadDir(r.getPath(addr, getBoxAsString(box)))
 	if err != nil {
 		mbi.Total = 0
 	} else {
@@ -209,9 +196,8 @@ func (r *fileRepo) GetBox(addr address.HashAddress, box string) (*message.MailBo
 	return mbi, nil
 }
 
-// Search for mailboxes. Use glob-patterns for querying
-func (r *fileRepo) FindBox(addr address.HashAddress, query string) ([]message.MailBoxInfo, error) {
-	var list []message.MailBoxInfo
+func (r *fileRepo) GetAllBoxes(addr address.HashAddress) ([]BoxInfo, error) {
+	var list []BoxInfo
 
 	files, err := ioutil.ReadDir(r.getPath(addr, ""))
 	if err != nil {
@@ -219,27 +205,30 @@ func (r *fileRepo) FindBox(addr address.HashAddress, query string) ([]message.Ma
 	}
 
 	for _, f := range files {
-		matched, err := filepath.Match(query, f.Name())
-		if !matched || err != nil {
-			continue
-		}
+		if f.IsDir() && isBoxDir(f.Name()) {
+			bi, err := r.GetBoxInfo(addr, getBoxIdFromString(f.Name()))
+			if err != nil {
+				continue
+			}
 
-		boxInfo, err := r.GetBox(addr, f.Name())
-		if err != nil {
-			continue
+			list = append(list, *bi)
 		}
-
-		list = append(list, *boxInfo)
 	}
 
 	return list, nil
 }
 
 // Query messages inside mailbox
-func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box string, offset, limit int) ([]message.List, error) {
-	var list []message.List
+func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box int, since time.Time, offset, limit int) (*MessageList, error) {
+	var list = &MessageList{
+		Offset:   offset,
+		Limit:    limit,
+		Total:    0,
+		Returned: 0,
+		Messages: []Message{},
+	}
 
-	files, err := ioutil.ReadDir(r.getPath(addr, box))
+	files, err := ioutil.ReadDir(r.getPath(addr, getBoxAsString(box)))
 	if err != nil {
 		return nil, err
 	}
@@ -249,35 +238,44 @@ func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box string, offset
 			continue
 		}
 
-		flags := &message.Flags{}
-		_ = r.fetchJSON(addr, filepath.Join(box, f.Name(), flagFile), flags)
-
-		msg := message.List{
-			ID:    f.Name(),
-			Dt:    f.ModTime().Format(time.RFC3339),
-			Flags: flags.Flags,
+		list.Total++
+		if list.Returned >= list.Limit {
+			continue
 		}
 
-		list = append(list, msg)
+		header, err := r.fetch(addr, filepath.Join(getBoxAsString(box), f.Name(), "header.json"))
+		if err != nil {
+			continue
+		}
+		catalog, err := r.fetch(addr, filepath.Join(getBoxAsString(box), f.Name(), "catalog"))
+		if err != nil {
+			continue
+		}
+
+		list.Returned++
+		list.Messages = append(list.Messages, Message{
+			Header: string(header),
+			Catalog: catalog,
+		})
 	}
 
 	return list, nil
 }
 
 // Set flag from the given message
-func (r *fileRepo) SetFlag(addr address.HashAddress, box string, id string, flag string) error {
+func (r *fileRepo) SetFlag(addr address.HashAddress, box int, id string, flag string) error {
 	return r.writeFlag(addr, box, id, flag, true)
 }
 
 // Unset flag from the given message
-func (r *fileRepo) UnsetFlag(addr address.HashAddress, box string, id string, flag string) error {
+func (r *fileRepo) UnsetFlag(addr address.HashAddress, box int, id string, flag string) error {
 	return r.writeFlag(addr, box, id, flag, false)
 }
 
 // Get flags from the given message
-func (r *fileRepo) GetFlags(addr address.HashAddress, box string, id string) ([]string, error) {
+func (r *fileRepo) GetFlags(addr address.HashAddress, box int, id string) ([]string, error) {
 	flags := &message.Flags{}
-	err := r.fetchJSON(addr, filepath.Join(box, id, flagFile), flags)
+	err := r.fetchJSON(addr, filepath.Join(getBoxAsString(box), id, flagFile), flags)
 	if err != nil {
 		return nil, err
 	}
@@ -306,9 +304,9 @@ func find(slice []string, item string) (int, error) {
 	return 0, errors.New("not found")
 }
 
-func (r *fileRepo) writeFlag(addr address.HashAddress, box string, id string, flag string, addFlag bool) error {
+func (r *fileRepo) writeFlag(addr address.HashAddress, box int, id string, flag string, addFlag bool) error {
 	// Lock our flags for writing
-	lockfilePath := r.getPath(addr, filepath.Join(box, id, flagFile+".lock"))
+	lockfilePath := r.getPath(addr, filepath.Join(getBoxAsString(box), id, flagFile+".lock"))
 	lockfilePath, err := filepath.Abs(lockfilePath)
 	if err != nil {
 		return err
@@ -350,29 +348,51 @@ func (r *fileRepo) writeFlag(addr address.HashAddress, box string, id string, fl
 		return err
 	}
 
-	return r.store(addr, filepath.Join(box, id, flagFile), data)
+	return r.store(addr, filepath.Join(getBoxAsString(box), id, flagFile), data)
 }
 
-func (r *fileRepo) MoveToBox(addr address.HashAddress, srcBox, dstBox, msgID string) error {
-	srcPath := r.getPath(addr, filepath.Join(srcBox, msgID))
-	dstPath := r.getPath(addr, filepath.Join(dstBox, msgID))
+func (r *fileRepo) MoveToBox(addr address.HashAddress, srcBox, dstBox int, msgID string) error {
+	srcPath := r.getPath(addr, filepath.Join(getBoxAsString(srcBox), msgID))
+	dstPath := r.getPath(addr, filepath.Join(getBoxAsString(dstBox), msgID))
 
 	return os.Rename(srcPath, dstPath)
 }
 
-// Send a message to specific inbox
-func (r *fileRepo) SendToBox(addr address.HashAddress, box, msgID string) error {
+// Send a message to specific box
+func (r *fileRepo) SendToBox(addr address.HashAddress, box int, msgID string) error {
 	srcPath, err := message.GetPath(message.SectionProcessing, msgID, "")
 	if err != nil {
 		return err
 	}
 
-	dstPath := r.getPath(addr, filepath.Join(box, msgID))
-
-	// If we have the inbox, the message is prefixed with the current timestamp (UTC). This allows us
-	// sort on time locally and we can just fetch from a specific time (ie: fetch all messages since 20 minutes ago)
-	if box == "inbox" {
-		dstPath = r.getPath(addr, filepath.Join(box, fmt.Sprintf("%d-%s", time.Now().Unix(), msgID)))
-	}
+	dstPath := r.getPath(addr, filepath.Join(getBoxAsString(box), msgID))
+	// // If we have the inbox, the message is prefixed with the current timestamp (UTC). This allows us
+	// // sort on time locally and we can just fetch from a specific time (ie: fetch all messages since 20 minutes ago)
+	// if box == "inbox" {
+	// 	dstPath = r.getPath(addr, filepath.Join(box, fmt.Sprintf("%d-%s", time.Now().Unix(), msgID)))
+	// }
 	return os.Rename(srcPath, dstPath)
+}
+
+func getBoxIdFromString(dir string) int {
+	if !isBoxDir(dir) {
+		return 0
+	}
+
+	dir = strings.TrimPrefix(dir, "box-")
+	box, err := strconv.Atoi(dir)
+	if err != nil {
+		return 0
+	}
+
+	return box
+
+}
+
+func isBoxDir(dir string) bool {
+	return strings.HasPrefix(dir, "box-")
+}
+
+func getBoxAsString(box int) string {
+	return fmt.Sprintf("box-%d", box)
 }

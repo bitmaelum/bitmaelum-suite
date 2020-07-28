@@ -2,8 +2,9 @@ package account
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"time"
 )
 
 // Service is an account service that generates accounts on the REMOTE side (thus not client side)
@@ -29,9 +30,9 @@ func (s *Service) CreateAccount(addr address.HashAddress, pubKey string) error {
 		return err
 	}
 
-	_ = s.repo.CreateBox(addr, "inbox", "Inbox", "This is your regular inbox", 0)
-	_ = s.repo.CreateBox(addr, "outbox", "Outbox", "All your outgoing messages will be stored here", 0)
-	_ = s.repo.CreateBox(addr, "trash", "Trashcan", "Everything in here will be removed automatically after 30 days or when purged manually", 0)
+	_ = s.repo.CreateBox(addr, internal.BoxInbox)
+	_ = s.repo.CreateBox(addr, internal.BoxOutbox)
+	_ = s.repo.CreateBox(addr, internal.BoxTrash)
 	_ = s.repo.StorePubKey(addr, pubKey)
 
 	return nil
@@ -44,7 +45,7 @@ func (s *Service) AccountExists(addr address.HashAddress) bool {
 
 // Deliver delivers a message (found in the processing queue) to the inbox of the given account
 func (s *Service) Deliver(msgID string, addr address.HashAddress) error {
-	return s.repo.SendToBox(addr, "inbox", msgID)
+	return s.repo.SendToBox(addr, internal.BoxInbox, msgID)
 }
 
 // GetPublicKeys retrieves the public keys for given address
@@ -61,37 +62,45 @@ func (s *Service) GetPublicKeys(addr address.HashAddress) []string {
 	return pubKeys
 }
 
-// FetchMessageBoxes retrieves the message boxes based on the given query
-func (s *Service) FetchMessageBoxes(addr address.HashAddress, query string) []message.MailBoxInfo {
-	list, err := s.repo.FindBox(addr, query)
-	if err != nil {
-		return []message.MailBoxInfo{}
-	}
-
-	return list
-}
+// // FetchMessageBoxes retrieves the message boxes based on the given query
+// func (s *Service) FetchMessageBoxes(addr address.HashAddress, query string) []message.MailBoxInfo {
+// 	list, err := s.repo.FindBox(addr, query)
+// 	if err != nil {
+// 		return []message.MailBoxInfo{}
+// 	}
+//
+// 	return list
+// }
 
 // FetchListFromBox retrieves a list of message boxes
-func (s *Service) FetchListFromBox(addr address.HashAddress, box string, offset int, limit int) []message.List {
-	list, err := s.repo.FetchListFromBox(addr, box, offset, limit)
-	if err != nil {
-		return []message.List{}
-	}
-
-	return list
+func (s *Service) FetchListFromBox(addr address.HashAddress, box int, since time.Time, offset int, limit int) (*MessageList, error) {
+	return s.repo.FetchListFromBox(addr, box, since, offset, limit)
 }
 
 // GetFlags gets the flags for the given message
-func (s *Service) GetFlags(addr address.HashAddress, box string, id string) ([]string, error) {
+func (s *Service) GetFlags(addr address.HashAddress, box int, id string) ([]string, error) {
 	return s.repo.GetFlags(addr, box, id)
 }
 
 // SetFlag sets a flag for a given message
-func (s *Service) SetFlag(addr address.HashAddress, box string, id string, flag string) error {
+func (s *Service) SetFlag(addr address.HashAddress, box int, id string, flag string) error {
 	return s.repo.SetFlag(addr, box, id, flag)
 }
 
 // UnsetFlag unsets a flag for a given message
-func (s *Service) UnsetFlag(addr address.HashAddress, box string, id string, flag string) error {
+func (s *Service) UnsetFlag(addr address.HashAddress, box int, id string, flag string) error {
 	return s.repo.UnsetFlag(addr, box, id, flag)
+}
+
+type BoxInfo struct {
+	ID    int   `json:"id"`
+	Total int   `json:"total"`
+}
+
+func (s *Service) GetAllBoxes(addr address.HashAddress) ([]BoxInfo, error) {
+	return s.repo.GetAllBoxes(addr)
+}
+
+func (s *Service) ExistsBox(addr address.HashAddress, box int) bool {
+	return s.repo.ExistsBox(addr, box)
 }

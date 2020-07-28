@@ -5,6 +5,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 // GetFlags Get flags from message
@@ -14,8 +15,12 @@ func GetFlags(w http.ResponseWriter, req *http.Request) {
 		// @TODO: Return error
 		return
 	}
-	box := mux.Vars(req)["box"]
+
 	id := mux.Vars(req)["id"]
+	box, err := strconv.Atoi(mux.Vars(req)["box"])
+	if err != nil {
+		return
+	}
 
 	// Retrieve flags
 	as := container.GetAccountService()
@@ -31,9 +36,12 @@ func SetFlag(w http.ResponseWriter, req *http.Request) {
 		// @TODO: Return error
 		return
 	}
-	box := mux.Vars(req)["box"]
 	id := mux.Vars(req)["id"]
 	flag := mux.Vars(req)["flag"]
+	box, err := strconv.Atoi(mux.Vars(req)["box"])
+	if err != nil {
+		return
+	}
 
 	as := container.GetAccountService()
 	_ = as.SetFlag(*haddr, box, id, flag)
@@ -49,9 +57,13 @@ func UnsetFlag(w http.ResponseWriter, req *http.Request) {
 		// @TODO: Return error
 		return
 	}
-	box := mux.Vars(req)["box"]
+
 	id := mux.Vars(req)["id"]
 	flag := mux.Vars(req)["flag"]
+	box, err := strconv.Atoi(mux.Vars(req)["box"])
+	if err != nil {
+		return
+	}
 
 	as := container.GetAccountService()
 	_ = as.UnsetFlag(*haddr, box, id, flag)
