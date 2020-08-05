@@ -11,6 +11,61 @@ import (
 
 type jsonOut map[string]interface{}
 
+type boxIn struct {
+	ParentBoxID int `json:"parent_box_id"`
+}
+
+// CreateBox creates a new box under a specific parent box or 0 for a root box
+func CreateBox(w http.ResponseWriter, req *http.Request) {
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "account not found")
+		return
+	}
+
+	var input boxIn
+	err = DecodeBody(w, req.Body, &input)
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	as := container.GetAccountService()
+	err = as.CreateBox(*haddr, input.ParentBoxID)
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+}
+
+// DeleteBox deletes a given box with all messages (note: what about child boxes??)
+func DeleteBox(w http.ResponseWriter, req *http.Request) {
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "account not found")
+		return
+	}
+
+	box, err := strconv.Atoi(mux.Vars(req)["box"])
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "box not found")
+		return
+	}
+
+	as := container.GetAccountService()
+	err = as.DeleteBox(*haddr, box)
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // RetrieveBoxes retrieves all message boxes for the given account
 func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
@@ -28,8 +83,8 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	}
 
 	output := jsonOut{
-		"meta": jsonOut {
-			"total": len(boxes),
+		"meta": jsonOut{
+			"total":    len(boxes),
 			"returned": len(boxes),
 		},
 		"boxes": boxes,
@@ -73,8 +128,8 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 		"meta": jsonOut{
 			"total":    list.Total,
 			"returned": list.Returned,
-			"offset": list.Offset,
-			"limit": list.Limit,
+			"offset":   list.Offset,
+			"limit":    list.Limit,
 		},
 		"messages": list.Messages,
 	})

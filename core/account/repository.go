@@ -5,10 +5,13 @@ import (
 	"time"
 )
 
+// Message is a simple message structure that we return as a list
 type Message struct {
 	Header  string `json:"h"`
 	Catalog []byte `json:"c"`
 }
+
+// MessageList is a list of messages we return
 type MessageList struct {
 	Total    int       `json:"total"`
 	Returned int       `json:"returned"`
@@ -18,6 +21,7 @@ type MessageList struct {
 }
 
 // Repository is an interface to manage accounts on a REMOTE machine (ie: server, not client side)
+// @TODO: Too big.. Split into smaller interfaces
 type Repository interface {
 	// Account management
 	Create(addr address.HashAddress) error
@@ -28,7 +32,7 @@ type Repository interface {
 	FetchPubKeys(addr address.HashAddress) ([]string, error)
 
 	// Box related functions
-	CreateBox(addr address.HashAddress, box int) error
+	CreateBox(addr address.HashAddress, parentBox int) error
 	ExistsBox(addr address.HashAddress, box int) bool
 	DeleteBox(addr address.HashAddress, box int) error
 	// GetBox(addr address.HashAddress, box int) (*message.MailBoxInfo, error)

@@ -42,8 +42,8 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if token exists for the given address
-	is := container.GetInviteService()
-	registeredToken, err := is.GetInvite(input.Addr)
+	inviteRepo := container.GetInviteRepo()
+	registeredToken, err := inviteRepo.Get(input.Addr)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "token not found")
 		return
@@ -68,7 +68,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Done with the invite, let's remove
-	_ = is.RemoveInvite(input.Addr)
+	_ = inviteRepo.Remove(input.Addr)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

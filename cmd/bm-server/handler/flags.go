@@ -12,13 +12,14 @@ import (
 func GetFlags(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		// @TODO: Return error
+		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
 	}
 
 	id := mux.Vars(req)["id"]
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "incorrect box")
 		return
 	}
 
@@ -33,13 +34,14 @@ func GetFlags(w http.ResponseWriter, req *http.Request) {
 func SetFlag(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		// @TODO: Return error
+		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
 	}
 	id := mux.Vars(req)["id"]
 	flag := mux.Vars(req)["flag"]
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "incorrect box")
 		return
 	}
 
@@ -54,7 +56,7 @@ func SetFlag(w http.ResponseWriter, req *http.Request) {
 func UnsetFlag(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		// @TODO: Return error
+		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
 	}
 
@@ -62,6 +64,7 @@ func UnsetFlag(w http.ResponseWriter, req *http.Request) {
 	flag := mux.Vars(req)["flag"]
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "incorrect box")
 		return
 	}
 

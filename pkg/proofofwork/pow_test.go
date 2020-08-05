@@ -24,6 +24,8 @@ func Test_ProofOfWork(t *testing.T) {
 	assert.True(t, pow.IsValid())
 }
 
-func TestGenerateWork(t *testing.T) {
-	assert.NotEmpty(t, GenerateWork())
+func TestGenerateWorkData(t *testing.T) {
+	w, e := GenerateWorkData()
+	assert.NoError(t, e)
+	assert.NotEmpty(t, w)
 }

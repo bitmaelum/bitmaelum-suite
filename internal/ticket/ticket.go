@@ -51,7 +51,12 @@ func New(from, to address.HashAddress, subscriptionID string) *Ticket {
 		return nil
 	}
 
-	proof := pow.New(config.Server.Accounts.ProofOfWork, pow.GenerateWork(), 0)
+	work, err := pow.GenerateWorkData()
+	if err != nil {
+		return nil
+	}
+
+	proof := pow.New(config.Server.Accounts.ProofOfWork, work, 0)
 	t := &Ticket{
 		ID:             id.String(),
 		Pow:            proof,

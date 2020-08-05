@@ -21,8 +21,8 @@ var uninviteCmd = &cobra.Command{
 			return
 		}
 
-		is := container.GetInviteService()
-		err = is.RemoveInvite(addr.Hash())
+		inviteRepo := container.GetInviteRepo()
+		err = inviteRepo.Remove(addr.Hash())
 		if err != nil {
 			fmt.Printf("error while uninviting address")
 		}

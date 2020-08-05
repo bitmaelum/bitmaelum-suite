@@ -6,7 +6,7 @@ is to make sure our happy-path works the way it should be: we should be able to 
 receive it.
 
 To make this happen, we need lots of components: message structures, encryption methods, server 
-APIs, client connectivity etc etc. This is all still very much work in progress. 
+APIs, client connectivity etc. This is all still very much work in progress. 
 
 ## We are currently able to
 
@@ -17,10 +17,11 @@ APIs, client connectivity etc etc. This is all still very much work in progress.
  - [X] Compose email, and uploading to the mail-server through bm-client
  - [X] Read email through utility
  - [X] Setting status flags on the mail-server (@todo: do we want this on the server, and if so, unencrypted?)
+ - [X] Send email that is uploaded to the mail-server to an actual destination mail-server (or itself)
  
 ## Next up in our todo
 
- - [ ] Send email that is uploaded to the mail-server to an actual destination mail-server (or itself)
+ - [ ] Deal with organisations
  - [ ] Read messages in your mailboxes from bm-client
  
 
@@ -28,7 +29,7 @@ APIs, client connectivity etc etc. This is all still very much work in progress.
 
  - [ ] Deal with multiple recipients (multi-header uploads)
  - [ ] Mailing lists
- - [ ] Create a simple mail client UI (bm-client-ui is a start)
+ - [ ] Create a simple mail client UI (electronjs most likely)
 
 
 ## Much later

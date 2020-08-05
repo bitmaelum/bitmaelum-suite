@@ -114,8 +114,14 @@ func (r *fileRepo) ExistsBox(addr address.HashAddress, box int) bool {
 
 // Delete a given mailbox in the account
 func (r *fileRepo) DeleteBox(addr address.HashAddress, box int) error {
-	// @TODO: not yet implemented
-	return errors.New("not implemented yet")
+	fullPath := r.getPath(addr, getBoxAsString(box))
+
+	err := os.RemoveAll(fullPath)
+	if err != nil {
+		return errors.New("cannot remove box: " + err.Error())
+	}
+
+	return err
 }
 
 // Store data on the given account path
@@ -206,7 +212,7 @@ func (r *fileRepo) GetAllBoxes(addr address.HashAddress) ([]BoxInfo, error) {
 
 	for _, f := range files {
 		if f.IsDir() && isBoxDir(f.Name()) {
-			bi, err := r.GetBoxInfo(addr, getBoxIdFromString(f.Name()))
+			bi, err := r.GetBoxInfo(addr, getBoxIDFromString(f.Name()))
 			if err != nil {
 				continue
 			}
@@ -254,7 +260,7 @@ func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box int, since tim
 
 		list.Returned++
 		list.Messages = append(list.Messages, Message{
-			Header: string(header),
+			Header:  string(header),
 			Catalog: catalog,
 		})
 	}
@@ -374,7 +380,7 @@ func (r *fileRepo) SendToBox(addr address.HashAddress, box int, msgID string) er
 	return os.Rename(srcPath, dstPath)
 }
 
-func getBoxIdFromString(dir string) int {
+func getBoxIDFromString(dir string) int {
 	if !isBoxDir(dir) {
 		return 0
 	}

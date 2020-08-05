@@ -1,6 +1,5 @@
 package message
 
-
 // Flags represents the .flags.json file which holds all current flags for the given mailbox/message
 type Flags struct {
 	Flags []string `json:"flags"`

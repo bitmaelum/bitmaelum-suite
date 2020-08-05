@@ -8,8 +8,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
-	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -24,26 +22,27 @@ type ticketIn struct {
 // GetRemoteTicket will try and retrieve a (valid) ticket so we can upload messages. It is allowed to have a
 // remote destination address as this is used by clients to upload messages for remote servers (client-to-server communication)
 func GetRemoteTicket(w http.ResponseWriter, req *http.Request) {
-	body, err := readTicketBody(req.Body)
+	ticketBody := &ticketIn{}
+	err := DecodeBody(w, req.Body, ticketBody)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Validate from / to address
-	fromAddr, err := address.NewHashFromHash(body.FromAddr)
+	fromAddr, err := address.NewHashFromHash(ticketBody.FromAddr)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "Incorrect from address specified")
 		return
 	}
-	toAddr, err := address.NewHashFromHash(body.ToAddr)
+	toAddr, err := address.NewHashFromHash(ticketBody.ToAddr)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "Incorrect to address specified")
 		return
 	}
 
 	// Create new ticket, no need to validation
-	t := ticket.NewValid(*fromAddr, *toAddr, body.SubscriptionID)
+	t := ticket.NewValid(*fromAddr, *toAddr, ticketBody.SubscriptionID)
 	ticketRepo := container.GetTicketRepo()
 	err = ticketRepo.Store(t)
 	if err != nil {
@@ -63,7 +62,8 @@ func GetRemoteTicket(w http.ResponseWriter, req *http.Request) {
 // GetLocalTicket will try and retrieve a (valid) ticket so we can upload messages. It is only allowed to have a
 // local destination address as this is used for local only (server-to-server communication)
 func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
-	body, err := readTicketBody(req.Body)
+	ticketBody := &ticketIn{}
+	err := DecodeBody(w, req.Body, ticketBody)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
@@ -72,32 +72,32 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 	var t *ticket.Ticket
 	ticketRepo := container.GetTicketRepo()
 
-	if body.TicketID != "" {
-		t, err = ticketRepo.Fetch(body.TicketID)
+	if ticketBody.TicketID != "" {
+		t, err = ticketRepo.Fetch(ticketBody.TicketID)
 		if err != nil {
 			ErrorOut(w, http.StatusPreconditionFailed, "ticket not found")
 			return
 		}
-		logrus.Tracef("Found ticket in repository: %s", body.TicketID)
+		logrus.Tracef("Found ticket in repository: %s", ticketBody.TicketID)
 
 		// Set info from ticket into body. It might overwrite, but ticket is leading..
-		body.FromAddr = t.From.String()
-		body.ToAddr = t.To.String()
-		body.SubscriptionID = t.SubscriptionID
+		ticketBody.FromAddr = t.From.String()
+		ticketBody.ToAddr = t.To.String()
+		ticketBody.SubscriptionID = t.SubscriptionID
 
 		// Set proof, we will check later if the proof is actually correct
-		if body.Proof > 0 {
-			t.Pow.Proof = body.Proof
+		if ticketBody.Proof > 0 {
+			t.Pow.Proof = ticketBody.Proof
 		}
 	}
 
 	// Validate from / to address
-	fromAddr, err := address.NewHashFromHash(body.FromAddr)
+	fromAddr, err := address.NewHashFromHash(ticketBody.FromAddr)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "Incorrect from address specified")
 		return
 	}
-	toAddr, err := address.NewHashFromHash(body.ToAddr)
+	toAddr, err := address.NewHashFromHash(ticketBody.ToAddr)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "Incorrect to address specified")
 		return
@@ -112,9 +112,9 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 
 	// Check if we have a subscription tuple, if so, create valid ticket and return
 	subscriptionRepo := container.GetSubscriptionRepo()
-	sub := subscription.New(*fromAddr, *toAddr, body.SubscriptionID)
+	sub := subscription.New(*fromAddr, *toAddr, ticketBody.SubscriptionID)
 	if subscriptionRepo.Has(&sub) {
-		t := ticket.NewValid(*fromAddr, *toAddr, body.SubscriptionID)
+		t := ticket.NewValid(*fromAddr, *toAddr, ticketBody.SubscriptionID)
 		err = ticketRepo.Store(t)
 		if err != nil {
 			ErrorOut(w, http.StatusInternalServerError, "can't save ticket on the server")
@@ -131,7 +131,7 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 
 	// Get ticket provided, or create a new ticket if not found
 	if t == nil {
-		t = ticket.New(*fromAddr, *toAddr, body.SubscriptionID)
+		t = ticket.New(*fromAddr, *toAddr, ticketBody.SubscriptionID)
 		err = ticketRepo.Store(t)
 		if err != nil {
 			ErrorOut(w, http.StatusInternalServerError, "can't save ticket on the server")
@@ -182,20 +182,4 @@ func fetchTicketHeader(req *http.Request) (*ticket.Ticket, error) {
 
 	logrus.Tracef("Valid ticket found: %s", t.ID)
 	return t, nil
-}
-
-// readTicketBody will read the incoming request body and fills a ticketIn struct
-func readTicketBody(body io.ReadCloser) (*ticketIn, error) {
-	data, err := ioutil.ReadAll(body)
-	if err != nil {
-		return nil, err
-	}
-
-	ticketBody := &ticketIn{}
-	err = json.Unmarshal(data, &ticketBody)
-	if err != nil {
-		return nil, errors.New("incorrect body specified")
-	}
-
-	return ticketBody, nil
 }

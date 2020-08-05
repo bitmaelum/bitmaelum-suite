@@ -20,7 +20,7 @@ type outputPublicKey struct {
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		// @TODO: Return error
+		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
 	}
 

@@ -49,16 +49,15 @@ func New(bits int, data string, proof uint64) *ProofOfWork {
 	return pow
 }
 
-// GenerateWork generates random work
-func GenerateWork() string {
+// GenerateWorkData generates random work
+func GenerateWorkData() (string, error) {
 	data := make([]byte, 32)
 	_, err := io.ReadFull(rand.Reader, data)
 	if err != nil {
-		// @TODO: danger Will!
-		return ""
+		return "", err
 	}
 
-	return base64.StdEncoding.EncodeToString(data)
+	return base64.StdEncoding.EncodeToString(data), nil
 }
 
 // HasDoneWork returns true if this instance already has done proof-of-work

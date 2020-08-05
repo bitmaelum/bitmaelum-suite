@@ -92,15 +92,36 @@ func (s *Service) UnsetFlag(addr address.HashAddress, box int, id string, flag s
 	return s.repo.UnsetFlag(addr, box, id, flag)
 }
 
+// BoxInfo returns information about the given message box
 type BoxInfo struct {
-	ID    int   `json:"id"`
-	Total int   `json:"total"`
+	ID    int `json:"id"`
+	Total int `json:"total"`
 }
 
+// GetAllBoxes returns a list of all boxes
 func (s *Service) GetAllBoxes(addr address.HashAddress) ([]BoxInfo, error) {
 	return s.repo.GetAllBoxes(addr)
 }
 
+// ExistsBox reurns true when the box exists
 func (s *Service) ExistsBox(addr address.HashAddress, box int) bool {
+	if box == internal.BoxRoot {
+		return true
+	}
+
 	return s.repo.ExistsBox(addr, box)
+}
+
+// DeleteBox deletes a box with all messages inside. It cannot delete mandatory boxes
+func (s *Service) DeleteBox(addr address.HashAddress, box int) error {
+	if box <= internal.MaxMandatoryBoxID {
+		return errors.New("cannot delete mandatory box")
+	}
+
+	return s.repo.DeleteBox(addr, box)
+}
+
+// CreateBox creates a new box as a child of a parentBox
+func (s *Service) CreateBox(addr address.HashAddress, parentBox int) error {
+	return s.repo.CreateBox(addr, parentBox)
 }

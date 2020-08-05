@@ -24,14 +24,14 @@ server. Only the specified address can register the account`,
 			return
 		}
 
-		is := container.GetInviteService()
-		token, err := is.GetInvite(addr.Hash())
+		inviteRepo := container.GetInviteRepo()
+		token, err := inviteRepo.Get(addr.Hash())
 		if err == nil {
 			fmt.Printf("'%s' already allowed to register with token: %s\n", addr.String(), token)
 			return
 		}
 
-		token, err = is.CreateInvite(addr.Hash(), time.Duration(d)*24*time.Hour)
+		token, err = inviteRepo.Create(addr.Hash(), time.Duration(d)*24*time.Hour)
 		if err != nil {
 			fmt.Printf("error while inviting address: %s", err)
 			return
