@@ -249,7 +249,8 @@ func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box int, since tim
 			continue
 		}
 
-		header, err := r.fetch(addr, filepath.Join(getBoxAsString(box), f.Name(), "header.json"))
+		header := &message.Header{}
+		err := r.fetchJSON(addr, filepath.Join(getBoxAsString(box), f.Name(), "header.json"), header)
 		if err != nil {
 			continue
 		}
@@ -260,7 +261,7 @@ func (r *fileRepo) FetchListFromBox(addr address.HashAddress, box int, since tim
 
 		list.Returned++
 		list.Messages = append(list.Messages, Message{
-			Header:  string(header),
+			Header:  *header,
 			Catalog: catalog,
 		})
 	}

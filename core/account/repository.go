@@ -1,13 +1,14 @@
 package account
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"time"
 )
 
 // Message is a simple message structure that we return as a list
 type Message struct {
-	Header  string `json:"h"`
+	Header  message.Header `json:"h"`
 	Catalog []byte `json:"c"`
 }
 
