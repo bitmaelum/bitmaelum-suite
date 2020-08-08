@@ -16,7 +16,7 @@ func GetFlags(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	id := mux.Vars(req)["id"]
+	messageID := mux.Vars(req)["message"]
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "incorrect box")
@@ -24,8 +24,8 @@ func GetFlags(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Retrieve flags
-	as := container.GetAccountService()
-	flags, _ := as.GetFlags(*haddr, box, id)
+	ar := container.GetAccountRepo()
+	flags, _ := ar.GetFlags(*haddr, box, messageID)
 
 	_ = JSONOut(w, flags)
 }
@@ -37,7 +37,7 @@ func SetFlag(w http.ResponseWriter, req *http.Request) {
 		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
 	}
-	id := mux.Vars(req)["id"]
+	messageID := mux.Vars(req)["message"]
 	flag := mux.Vars(req)["flag"]
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
@@ -45,8 +45,8 @@ func SetFlag(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	as := container.GetAccountService()
-	_ = as.SetFlag(*haddr, box, id, flag)
+	ar := container.GetAccountRepo()
+	_ = ar.SetFlag(*haddr, box, messageID, flag)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -60,7 +60,7 @@ func UnsetFlag(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	id := mux.Vars(req)["id"]
+	messageID := mux.Vars(req)["message"]
 	flag := mux.Vars(req)["flag"]
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
@@ -68,8 +68,8 @@ func UnsetFlag(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	as := container.GetAccountService()
-	_ = as.UnsetFlag(*haddr, box, id, flag)
+	ar := container.GetAccountRepo()
+	_ = ar.UnsetFlag(*haddr, box, messageID, flag)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

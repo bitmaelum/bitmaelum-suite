@@ -54,16 +54,16 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if account exists
-	as := container.GetAccountService()
-	if as.AccountExists(input.Addr) {
+	ar := container.GetAccountRepo()
+	if ar.Exists(input.Addr) {
 		ErrorOut(w, http.StatusBadRequest, "account already exists")
 		return
 	}
 
 	// All clear. Create account
-	err = as.CreateAccount(input.Addr, input.PublicKey)
+	err = ar.Create(input.Addr, input.PublicKey)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, err.Error())
+		ErrorOut(w, http.StatusInternalServerError, "cannot create account")
 		return
 	}
 

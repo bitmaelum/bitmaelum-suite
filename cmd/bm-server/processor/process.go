@@ -3,6 +3,7 @@ package processor
 import (
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
 	"github.com/bitmaelum/bitmaelum-suite/core/resolve"
+	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
@@ -44,8 +45,8 @@ func ProcessMessage(msgID string) {
 	}
 
 	// Local addresses don't need to be send. They are treated locally
-	as := container.GetAccountService()
-	if as.AccountExists(header.To.Addr) {
+	ar := container.GetAccountRepo()
+	if ar.Exists(header.To.Addr) {
 		// probably move the message to the incoming queue
 		// Do stuff locally
 		logrus.Debugf("Message %s can be transferred locally to %s", msgID, res.Hash)
@@ -71,8 +72,8 @@ func ProcessMessage(msgID string) {
 // the message to another directory.
 func deliverLocal(info *resolve.Info, msgID string) error {
 	// Deliver mail to local user's inbox
-	as := container.GetAccountService()
-	err := as.Deliver(msgID, address.HashAddress(info.Hash))
+	ar := container.GetAccountRepo()
+	err := ar.SendToBox(address.HashAddress(info.Hash), account.BoxInbox, msgID)
 	if err != nil {
 		// Something went wrong.. let's try and move the message back to the retry queue
 		logrus.Warnf("cannot deliver %s locally. Moving to retry queue", msgID)

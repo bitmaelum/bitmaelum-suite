@@ -48,7 +48,7 @@ func getLocalRepository() *resolve.Repository {
 		return localResolverRepository
 	}
 
-	repo := resolve.NewLocalRepository(GetAccountService())
+	repo := resolve.NewLocalRepository(GetAccountRepo())
 	localResolverRepository = &repo
 	return localResolverRepository
 }

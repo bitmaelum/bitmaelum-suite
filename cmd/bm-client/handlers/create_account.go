@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"os"
@@ -58,7 +58,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 	fmt.Printf("done.\n")
 
 	fmt.Printf("* Adding your new account into the vault: ")
-	info := account.Info{
+	info := pkg.Info{
 		Address:      bmAddr,
 		Name:         name,
 		Organisation: organisation,

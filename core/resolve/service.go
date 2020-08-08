@@ -3,8 +3,8 @@ package resolve
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 )
@@ -40,7 +40,7 @@ func (s *Service) Resolve(addr address.HashAddress) (*Info, error) {
 }
 
 // UploadInfo uploads resolve information to a service.
-func (s *Service) UploadInfo(info account.Info, resolveAddress string) error {
+func (s *Service) UploadInfo(info pkg.Info, resolveAddress string) error {
 
 	// @TODO: We maybe should sign with a different algo? Otherwise we use the same one for all systems
 	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))

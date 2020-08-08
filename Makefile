@@ -71,12 +71,12 @@ $(TOOLS):
 
 # Build GOOS/GOARCH apps in separate release directory
 $(CROSS_APPS):
-	$(info -   Building app $(subst cross-,,$@))
+	$(info -   Building app $(subst cross-,,$@) (${GOOS}-${GOARCH}))
 	go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/cmd/$(subst cross-,,$@)
 
 # Build GOOS/GOARCH tools in separate release directory
 $(CROSS_TOOLS):
-	$(info -   Building tool $(subst cross-,,$@))
+	$(info -   Building tool $(subst cross-,,$@) (${GOOS}-${GOARCH}))
 	go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/tools/$(subst cross-,,$@)
 
 $(BUILD_ALL_PLATFORMS): $(CROSS_APPS) $(CROSS_TOOLS)

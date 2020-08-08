@@ -1,18 +1,18 @@
 package resolve
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/core/account"
+	account2 "github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 type localRepo struct {
-	as *account.Service
+	accountRepo account2.AddressRepository
 }
 
 // NewLocalRepository intializes a local repository
-func NewLocalRepository(s *account.Service) Repository {
+func NewLocalRepository(ar account2.AddressRepository) Repository {
 	return &localRepo{
-		as: s,
+		accountRepo: ar,
 	}
 }
 

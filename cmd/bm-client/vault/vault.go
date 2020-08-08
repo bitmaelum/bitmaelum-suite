@@ -9,7 +9,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/juju/fslock"
 	"golang.org/x/crypto/pbkdf2"
@@ -25,7 +25,7 @@ const (
 
 // Vault defines our vault with path and password. Only the accounts should be exported
 type Vault struct {
-	Accounts []account.Info
+	Accounts []pkg.Info
 	password []byte
 	path     string
 }
@@ -35,7 +35,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 	var err error
 
 	v := &Vault{
-		Accounts: []account.Info{},
+		Accounts: []pkg.Info{},
 		password: pwd,
 		path:     p,
 	}
@@ -99,7 +99,7 @@ func (v *Vault) unlockVault() error {
 	ctr.XORKeyStream(plainText, vaultData.Data)
 
 	// Unmarshal vault data
-	var accounts []account.Info
+	var accounts []pkg.Info
 	err = json.Unmarshal(plainText, &accounts)
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func (v *Vault) unlockVault() error {
 }
 
 // AddAccount adds a new account to the vault
-func (v *Vault) AddAccount(account account.Info) {
+func (v *Vault) AddAccount(account pkg.Info) {
 	v.Accounts = append(v.Accounts, account)
 }
 
@@ -179,7 +179,7 @@ func (v *Vault) Save() error {
 }
 
 // GetAccountInfo tries to find the given address and returns the account from the vault
-func (v *Vault) GetAccountInfo(addr address.Address) (*account.Info, error) {
+func (v *Vault) GetAccountInfo(addr address.Address) (*pkg.Info, error) {
 	for _, acc := range v.Accounts {
 		if acc.Address == addr.String() {
 			return &acc, nil

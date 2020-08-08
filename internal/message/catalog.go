@@ -1,8 +1,8 @@
 package message
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
+	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	core "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gabriel-vasile/mimetype"
@@ -76,7 +76,7 @@ type Block struct {
 }
 
 // NewCatalog initialises a new catalog. This catalog has to be filled with more info, blocks and attachments
-func NewCatalog(info *account.Info) *Catalog {
+func NewCatalog(info *pkg.Info) *Catalog {
 	c := &Catalog{}
 
 	c.CreatedAt = time.Now()
