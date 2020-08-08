@@ -6,34 +6,42 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
-type MailboxListBoxIn struct {
+// MailboxListBox is a structure that holds a given mailbox and the total messages inside
+type MailboxListBox struct {
 	ID    int `json:"id"`
 	Total int `json:"total"`
 }
-type MailboxListIn struct {
+
+// MailboxList is a list of mailboxes
+type MailboxList struct {
 	Meta struct {
 		Total    int `json:"total"`
 		Returned int `json:"returned"`
 	} `json:"meta"`
-	Boxes []MailboxListBoxIn `json:"boxes"`
+	Boxes []MailboxListBox `json:"boxes"`
 }
 
-type MailboxMessagesMessageIn struct {
+// MailboxMessagesMessage is a message (header + catalog) within a mailbox
+type MailboxMessagesMessage struct {
+	ID      string         `json:"id"`
 	Header  message.Header `json:"h"`
-	Catalog []byte `json:"c"`
+	Catalog []byte         `json:"c"`
 }
-type MailboxMessagesIn struct {
+
+// MailboxMessages returns a list of mailbox messages
+type MailboxMessages struct {
 	Meta struct {
 		Total    int `json:"total"`
 		Returned int `json:"returned"`
 		Offset   int `json:"offset"`
 		Limit    int `json:"limit"`
 	} `json:"meta"`
-	Messages []MailboxMessagesMessageIn `json:"messages"`
+	Messages []MailboxMessagesMessage `json:"messages"`
 }
 
-func (api *API) GetMailboxList(addr address.HashAddress) (*MailboxListIn, error) {
-	in := &MailboxListIn{}
+// GetMailboxList returns a list of mailboxes
+func (api *API) GetMailboxList(addr address.HashAddress) (*MailboxList, error) {
+	in := &MailboxList{}
 
 	statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/boxes", addr.String()), in)
 	if err != nil {
@@ -47,8 +55,9 @@ func (api *API) GetMailboxList(addr address.HashAddress) (*MailboxListIn, error)
 	return in, nil
 }
 
-func (api *API) GetMailboxMessages(addr address.HashAddress, box string) (*MailboxMessagesIn, error) {
-	in := &MailboxMessagesIn{}
+// GetMailboxMessages returns a list of message within a specific mailbox
+func (api *API) GetMailboxMessages(addr address.HashAddress, box string) (*MailboxMessages, error) {
+	in := &MailboxMessages{}
 
 	statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s", addr.String(), box), in)
 	if err != nil {

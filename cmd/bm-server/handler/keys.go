@@ -8,14 +8,6 @@ import (
 	"net/http"
 )
 
-type outputPublicKey struct {
-	PublicKeys []string `json:"public_key"`
-}
-
-// type inputPublicKey struct {
-// 	PublicKey string `json:"public_key"`
-// }
-
 // RetrieveKeys is the handler that will retrieve public keys directly from the mailserver
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
@@ -25,18 +17,22 @@ func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if account exists
-	as := container.GetAccountService()
-	if !as.AccountExists(*haddr) {
-		ErrorOut(w, http.StatusNotFound, "public key not found")
+	ar := container.GetAccountRepo()
+	if !ar.Exists(*haddr) {
+		ErrorOut(w, http.StatusNotFound, "public keys not found")
 		return
 	}
 
-	// Return public key
-	ret := outputPublicKey{
-		PublicKeys: as.GetPublicKeys(*haddr),
+	keys, err := ar.FetchKeys(*haddr)
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "public keys not found")
+		return
 	}
 
+	// Return public keys
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(ret)
+	_ = json.NewEncoder(w).Encode(jsonOut{
+		"public_keys": keys,
+	})
 }

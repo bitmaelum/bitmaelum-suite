@@ -81,9 +81,9 @@ func IncomingMessageBlock(w http.ResponseWriter, req *http.Request) {
 	}
 
 	vars := mux.Vars(req)
-	id := vars["id"]
+	messageID := vars["message"]
 
-	err = message.StoreBlock(t.ID, id, req.Body)
+	err = message.StoreBlock(t.ID, messageID, req.Body)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while storing message block")
 		return

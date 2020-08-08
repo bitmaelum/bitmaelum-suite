@@ -104,8 +104,8 @@ func GetLocalTicket(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if to address is a local address
-	as := container.GetAccountService()
-	if !as.AccountExists(*toAddr) {
+	ar := container.GetAccountRepo()
+	if !ar.Exists(*toAddr) {
 		ErrorOut(w, http.StatusBadRequest, "recipient isn't found on this server, and we don't support proxying")
 		return
 	}

@@ -30,8 +30,8 @@ func CreateBox(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	as := container.GetAccountService()
-	err = as.CreateBox(*haddr, input.ParentBoxID)
+	ar := container.GetAccountRepo()
+	err = ar.CreateBox(*haddr, input.ParentBoxID)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
@@ -55,8 +55,8 @@ func DeleteBox(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	as := container.GetAccountService()
-	err = as.DeleteBox(*haddr, box)
+	ar := container.GetAccountRepo()
+	err = ar.DeleteBox(*haddr, box)
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, err.Error())
 		return
@@ -75,8 +75,8 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Retrieve all boxes
-	as := container.GetAccountService()
-	boxes, err := as.GetAllBoxes(*haddr)
+	ar := container.GetAccountRepo()
+	boxes, err := ar.GetAllBoxes(*haddr)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "cannot read boxes")
 		return
@@ -107,8 +107,8 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	as := container.GetAccountService()
-	if !as.ExistsBox(*haddr, box) {
+	ar := container.GetAccountRepo()
+	if !ar.ExistsBox(*haddr, box) {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
 	}
@@ -118,7 +118,7 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 	offset := getQueryInt(req, "offset", 0)
 	limit := getQueryInt(req, "limit", 100)
 
-	list, err := as.FetchListFromBox(*haddr, box, sinceTs, offset, limit)
+	list, err := ar.FetchListFromBox(*haddr, box, sinceTs, offset, limit)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, err.Error())
 		return

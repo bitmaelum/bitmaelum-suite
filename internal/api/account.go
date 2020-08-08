@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
@@ -26,7 +26,7 @@ func (api *API) GetPublicKey(addr address.HashAddress) (string, error) {
 }
 
 // CreateAccount creates new account on server
-func (api *API) CreateAccount(info account.Info, token string) error {
+func (api *API) CreateAccount(info pkg.Info, token string) error {
 	type InputCreateAccount struct {
 		Addr        address.HashAddress `json:"address"`
 		Token       string              `json:"token"`

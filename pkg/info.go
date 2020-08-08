@@ -1,4 +1,4 @@
-package account
+package pkg
 
 import pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 

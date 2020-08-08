@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
+	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"io"
 	"io/ioutil"
@@ -55,7 +55,7 @@ func NewAnonymous(opts ClientOpts) (*API, error) {
 
 // NewAuthenticated creates a new client that connects with the specified account to a BitMaelum server (normally
 // client-to-server communication)
-func NewAuthenticated(info *account.Info, opts ClientOpts) (*API, error) {
+func NewAuthenticated(info *pkg.Info, opts ClientOpts) (*API, error) {
 	var jwtToken string
 
 	if info != nil {

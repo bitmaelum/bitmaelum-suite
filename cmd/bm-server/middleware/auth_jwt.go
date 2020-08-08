@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/core/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"github.com/vtolstov/jwt-go"
@@ -19,7 +18,7 @@ type JwtToken struct{}
 type claimsContext string
 type addressContext string
 
-// ErrTokenNotValidated is returend when the token could not be validated (for any reason)
+// ErrTokenNotValidated is returned when the token could not be validated (for any reason)
 var ErrTokenNotValidated = errors.New("token could not be validated")
 
 // Middleware JWT token authentication
@@ -31,8 +30,8 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		as := container.GetAccountService()
-		if !as.AccountExists(*haddr) {
+		ar := container.GetAccountRepo()
+		if !ar.Exists(*haddr) {
 			http.Error(w, "Address not found", http.StatusUnauthorized)
 			return
 		}
@@ -62,15 +61,14 @@ func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 	}
 	tokenString := auth[7:]
 
-	as := container.GetAccountService()
-	keys := as.GetPublicKeys(addr)
-	for _, key := range keys {
-		pubKey, err := encrypt.PEMToPubKey([]byte(key))
-		if err != nil {
-			continue
-		}
+	ar := container.GetAccountRepo()
+	keys, err := ar.FetchDecodedKeys(addr)
+	if err != nil {
+		return nil, ErrTokenNotValidated
+	}
 
-		token, err := internal.ValidateJWTToken(tokenString, addr, pubKey)
+	for _, key := range keys {
+		token, err := internal.ValidateJWTToken(tokenString, addr, key)
 		if err == nil {
 			return token, nil
 		}

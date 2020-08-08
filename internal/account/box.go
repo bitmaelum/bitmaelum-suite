@@ -1,16 +1,19 @@
-package internal
+package account
 
 const (
 	// BoxRoot is the root box when we want to add boxes without a parent ID
-	BoxRoot   = iota
+	BoxRoot = iota
 	// BoxInbox is the mandatory inbox where all incoming messages are stored
-	BoxInbox  // Always box 1
+	BoxInbox // Always box 1
 	// BoxOutbox is the mandatory outbox where send messages are stored
 	BoxOutbox // Always box 2
 	// BoxTrash is the mandatory trashcan where deleted messages are stored (before actual deletion)
-	BoxTrash  // Always box 3
+	BoxTrash // Always box 3
 )
+
+// MandatoryBoxes is a list of all boxes that are mandatory. Makes it easier to range on them
+var MandatoryBoxes = []int{BoxInbox, BoxOutbox, BoxTrash}
 
 // MaxMandatoryBoxID is the largest box that must be present. Everything below this box (including this box) is
 // mandatory and cannot be removed.
-const MaxMandatoryBoxID = 3
+const MaxMandatoryBoxID = 99
