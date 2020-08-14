@@ -52,7 +52,6 @@ func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
 
 	// spew.Dump(catalog)
 
-
 	// for _, b := range catalog.Blocks {
 	// 	data, err := client.GetMessageBlock(*addr, box, messageID, b.ID)
 	// 	bb := bytes.NewBuffer(data)
@@ -70,8 +69,6 @@ func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
 	// 	spew.Dump(b)
 	// 	spew.Dump(content)
 	// }
-
-
 
 	for _, a := range catalog.Attachments {
 		ar, err := client.GetMessageAttachment(*addr, box, messageID, a.ID)

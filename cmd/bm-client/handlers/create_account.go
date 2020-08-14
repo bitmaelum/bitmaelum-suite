@@ -3,9 +3,9 @@ package handlers
 import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-suite/core/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"

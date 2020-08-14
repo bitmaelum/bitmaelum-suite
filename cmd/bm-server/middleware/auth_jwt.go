@@ -3,8 +3,8 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/core/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"github.com/vtolstov/jwt-go"

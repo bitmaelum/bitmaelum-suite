@@ -98,10 +98,12 @@ func (api *API) Get(path string) (body []byte, statusCode int, err error) {
 
 	r, statusCode, err := api.do(req)
 	body, err = ioutil.ReadAll(r)
-	r.Close()
+	_ = r.Close()
 	return body, statusCode, err
 }
 
+// GetReader returns a io.Reader from the API. It is the same as api.Get(), except this one already has read the whole
+// body.
 func (api *API) GetReader(path string) (r io.Reader, statusCode int, err error) {
 	req, err := http.NewRequest("GET", api.host+path, nil)
 	if err != nil {

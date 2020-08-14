@@ -1,11 +1,11 @@
 package processor
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/core/container"
 	"github.com/bitmaelum/bitmaelum-suite/core/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"

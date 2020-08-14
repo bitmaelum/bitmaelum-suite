@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/core/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -98,6 +98,6 @@ func GetMessageAttachment(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	bw, err := io.Copy(w, attachment)
 	if err != nil {
-		logrus.Error("Could only write %d out of %d bytes from attachment %s/%s", bw, size, messageID, attachmentID)
+		logrus.Errorf("Could only write %d out of %d bytes from attachment %s/%s", bw, size, messageID, attachmentID)
 	}
 }

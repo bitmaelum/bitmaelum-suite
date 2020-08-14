@@ -39,7 +39,7 @@ func (r *fileRepo) FetchMessageBlock(addr address.HashAddress, box int, messageI
 }
 
 func (r *fileRepo) FetchMessageAttachment(addr address.HashAddress, box int, messageID, attachmentID string) (rdr io.ReadCloser, size int64, err error) {
-	return  r.fetchReader(addr, filepath.Join(getBoxAsString(box), messageID, attachmentID))
+	return r.fetchReader(addr, filepath.Join(getBoxAsString(box), messageID, attachmentID))
 }
 
 // Query messages inside mailbox

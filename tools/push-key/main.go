@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
-	"github.com/bitmaelum/bitmaelum-suite/core/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/password"
 	"os"
 )

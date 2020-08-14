@@ -8,7 +8,7 @@ import (
 
 var powService storage.Storable
 
-// GetProofOfWorkService retrieves an incoming service
+// GetProofOfWorkService returns a service that can store a proof of work
 func GetProofOfWorkService() storage.Storable {
 	if powService != nil {
 		return powService
