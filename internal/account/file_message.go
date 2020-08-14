@@ -3,6 +3,7 @@ package account
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -37,13 +38,8 @@ func (r *fileRepo) FetchMessageBlock(addr address.HashAddress, box int, messageI
 	return block, nil
 }
 
-func (r *fileRepo) FetchMessageAttachment(addr address.HashAddress, box int, messageID, attachmentID string) ([]byte, error) {
-	attachment, err := r.fetch(addr, filepath.Join(getBoxAsString(box), messageID, attachmentID))
-	if err != nil {
-		return nil, err
-	}
-
-	return attachment, nil
+func (r *fileRepo) FetchMessageAttachment(addr address.HashAddress, box int, messageID, attachmentID string) (rdr io.ReadCloser, size int64, err error) {
+	return  r.fetchReader(addr, filepath.Join(getBoxAsString(box), messageID, attachmentID))
 }
 
 // Query messages inside mailbox

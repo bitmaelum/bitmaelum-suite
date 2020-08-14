@@ -1,6 +1,7 @@
 package message
 
 import (
+	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
 	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -86,7 +87,7 @@ func NewCatalog(info *pkg.Info) *Catalog {
 	c.From.Organisation = info.Organisation
 	c.From.ProofOfWork.Bits = info.Pow.Bits
 	c.From.ProofOfWork.Proof = info.Pow.Proof
-	c.From.PublicKey = string(info.PubKey)
+	c.From.PublicKey = info.PubKey
 
 	return c
 }
@@ -114,7 +115,7 @@ func (c *Catalog) AddBlock(entry Block) error {
 		return err
 	}
 
-	var reader io.Reader = entry.Reader
+	var reader = entry.Reader
 	var compression = ""
 
 	// Very arbitrary size on when we should compress output first
@@ -168,7 +169,7 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 		return err
 	}
 
-	var reader io.Reader = entry.Reader
+	var reader = entry.Reader
 	var compression = ""
 
 	// Very arbitrary size on when we should compress output first
@@ -203,4 +204,31 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 
 	c.Attachments = append(c.Attachments, *at)
 	return nil
+}
+
+// HasBlock returns true when the catalog has the given block type presents
+func (c *Catalog) HasBlock(blockType string) bool {
+	for _, b := range c.Blocks {
+		if b.Type == blockType {
+			return true
+		}
+	}
+
+	return false
+}
+
+// GetBlock returns the specified block from the catalog
+func (c *Catalog) GetBlock(blockType string) (*BlockType, error) {
+	for _, b := range c.Blocks {
+		if b.Type == blockType {
+			return &b, nil
+		}
+	}
+
+	return nil, errors.New("block not found")
+}
+
+// GetFirstBlock returns the first block found in the message
+func (c *Catalog) GetFirstBlock() *BlockType {
+	return &c.Blocks[0]
 }

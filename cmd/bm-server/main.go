@@ -103,7 +103,8 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/ticket", handler.GetLocalTicket).Methods("POST")
 	publicRouter.HandleFunc("/incoming/header", handler.IncomingMessageHeader).Methods("POST")
 	publicRouter.HandleFunc("/incoming/catalog", handler.IncomingMessageCatalog).Methods("POST")
-	publicRouter.HandleFunc("/incoming/block//{message:[A-Za-z0-9-]+}", handler.IncomingMessageBlock).Methods("POST")
+	publicRouter.HandleFunc("/incoming/block/{message:[A-Za-z0-9-]+}", handler.IncomingMessageBlock).Methods("POST")
+	publicRouter.HandleFunc("/incoming/attachment/{message:[A-Za-z0-9-]+}", handler.IncomingMessageAttachment).Methods("POST")
 	publicRouter.HandleFunc("/incoming", handler.CompleteIncoming).Methods("POST")
 	publicRouter.HandleFunc("/incoming", handler.DeleteIncoming).Methods("DELETE")
 
@@ -123,7 +124,7 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}", handler.RetrieveMessagesFromBox).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}", handler.GetMessage).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/block/{block:[A-Za-z0-9-]+}", handler.GetMessageBlock).Methods("GET")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/attachment/{block:[A-Za-z0-9-]+}", handler.GetMessageAttachment).Methods("GET")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/attachment/{attachment:[A-Za-z0-9-]+}", handler.GetMessageAttachment).Methods("GET")
 	// Message flags (@TODO: remove?)
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/flags", handler.GetFlags).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/flag/{flag}", handler.SetFlag).Methods("PUT")

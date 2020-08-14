@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"io"
 )
 
 // Message is a standard structure that returns a message header + catalog
@@ -17,7 +18,7 @@ type Message struct {
 func (api *API) GetMessage(addr address.HashAddress, box, messageID string) (*Message, error) {
 	in := &Message{}
 
-	statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s/%s", addr.String(), box, messageID), in)
+	statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s/message/%s", addr.String(), box, messageID), in)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +32,7 @@ func (api *API) GetMessage(addr address.HashAddress, box, messageID string) (*Me
 
 // GetMessageBlock retrieves a message block
 func (api *API) GetMessageBlock(addr address.HashAddress, box, messageID, blockID string) ([]byte, error) {
-	body, statusCode, err := api.Get(fmt.Sprintf("/account/%s/box/%s/%s/%s", addr.String(), box, messageID, blockID))
+	body, statusCode, err := api.Get(fmt.Sprintf("/account/%s/box/%s/message/%s/block/%s", addr.String(), box, messageID, blockID))
 	if err != nil {
 		return nil, err
 	}
@@ -43,9 +44,9 @@ func (api *API) GetMessageBlock(addr address.HashAddress, box, messageID, blockI
 	return body, nil
 }
 
-// GetMessageAttachment retrieves a message attachment
-func (api *API) GetMessageAttachment(addr address.HashAddress, box, messageID, attachmentID string) ([]byte, error) {
-	body, statusCode, err := api.Get(fmt.Sprintf("/account/%s/box/%s/%s/%s", addr.String(), box, messageID, attachmentID))
+// GetMessageAttachment retrieves a message attachment reader
+func (api *API) GetMessageAttachment(addr address.HashAddress, box, messageID, attachmentID string) (io.Reader, error) {
+	r, statusCode, err := api.GetReader(fmt.Sprintf("/account/%s/box/%s/message/%s/attachment/%s", addr.String(), box, messageID, attachmentID))
 	if err != nil {
 		return nil, err
 	}
@@ -54,5 +55,5 @@ func (api *API) GetMessageAttachment(addr address.HashAddress, box, messageID, a
 		return nil, errNoSuccess
 	}
 
-	return body, nil
+	return r, nil
 }

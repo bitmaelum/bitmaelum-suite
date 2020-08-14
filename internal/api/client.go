@@ -96,6 +96,18 @@ func (api *API) Get(path string) (body []byte, statusCode int, err error) {
 		return nil, 0, err
 	}
 
+	r, statusCode, err := api.do(req)
+	body, err = ioutil.ReadAll(r)
+	r.Close()
+	return body, statusCode, err
+}
+
+func (api *API) GetReader(path string) (r io.Reader, statusCode int, err error) {
+	req, err := http.NewRequest("GET", api.host+path, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	return api.do(req)
 }
 
@@ -136,7 +148,9 @@ func (api *API) PostReader(path string, r io.Reader) (body []byte, statusCode in
 		return nil, 0, err
 	}
 
-	return api.do(req)
+	r, statusCode, err = api.do(req)
+	body, err = ioutil.ReadAll(r)
+	return body, statusCode, err
 }
 
 // Delete from API
@@ -146,7 +160,9 @@ func (api *API) Delete(path string) (body []byte, statusCode int, err error) {
 		return nil, 0, err
 	}
 
-	return api.do(req)
+	r, statusCode, err := api.do(req)
+	body, err = ioutil.ReadAll(r)
+	return body, statusCode, err
 }
 
 // setTicketHeader sets a ticket so api requests add them to the header when doing requests
@@ -154,8 +170,8 @@ func (api *API) setTicketHeader(t ticket.Ticket) {
 	api.ticket = &t
 }
 
-// do actually does the given request
-func (api *API) do(req *http.Request) (body []byte, statusCode int, err error) {
+// do does the actual request and returns body reader, status code and error
+func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err error) {
 	req.Header.Set("Content-Type", "application/json")
 	if api.ticket != nil {
 		req.Header.Set(ticket.TicketHeader, api.ticket.ID)
@@ -168,12 +184,8 @@ func (api *API) do(req *http.Request) (body []byte, statusCode int, err error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
 
-	body, err = ioutil.ReadAll(resp.Body)
-	return body, resp.StatusCode, err
+	return resp.Body, resp.StatusCode, nil
 }
 
 // canonicalHost returns a given host in the form of http(s)://<host>:<port>

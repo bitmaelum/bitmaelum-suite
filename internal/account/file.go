@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -62,6 +63,23 @@ func (r *fileRepo) fetch(addr address.HashAddress, path string) ([]byte, error) 
 	logrus.Debugf("fetching file %s", fullPath)
 
 	return ioutil.ReadFile(fullPath)
+}
+
+func (r *fileRepo) fetchReader(addr address.HashAddress, path string) (rdr io.ReadCloser, size int64, err error) {
+	fullPath := r.getPath(addr, path)
+	logrus.Debugf("fetching file reader %s", fullPath)
+
+	f, err := os.Open(fullPath)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	info, err := f.Stat()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return f, info.Size(), nil
 }
 
 // Retrieves a data structure based on JSON

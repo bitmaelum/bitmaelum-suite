@@ -123,6 +123,38 @@ func StoreBlock(msgID, blockID string, r io.Reader) error {
 	return nil
 }
 
+// StoreAttachment stores a message attachment to disk
+func StoreAttachment(msgID, attachmentID string, r io.Reader) error {
+	p, err := GetPath(SectionIncoming, msgID, attachmentID)
+	if err != nil {
+		return err
+	}
+
+	// Create path if needed
+	err = os.MkdirAll(filepath.Dir(p), 0777)
+	if err != nil {
+		return err
+	}
+
+	// Copy body straight to attachment file
+	attachmentFile, err := os.Create(p)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = attachmentFile.Close()
+	}()
+
+	_, err = io.Copy(attachmentFile, r)
+	if err != nil {
+		// Something went wrong, remove the file just in case something was already written
+		_ = os.Remove(p)
+		return err
+	}
+
+	return nil
+}
+
 // StoreCatalog stores a catalog to disk
 func StoreCatalog(msgID string, r io.Reader) error {
 	p, err := GetPath(SectionIncoming, msgID, "catalog")

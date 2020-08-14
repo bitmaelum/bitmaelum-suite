@@ -3,6 +3,7 @@ package account
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"io"
 	"time"
 )
 
@@ -82,5 +83,5 @@ type MessageRepository interface {
 	FetchMessageHeader(addr address.HashAddress, box int, messageID string) (*message.Header, error)
 	FetchMessageCatalog(addr address.HashAddress, box int, messageID string) ([]byte, error)
 	FetchMessageBlock(addr address.HashAddress, box int, messageID, blockID string) ([]byte, error)
-	FetchMessageAttachment(addr address.HashAddress, box int, messageID, attachmentID string) ([]byte, error)
+	FetchMessageAttachment(addr address.HashAddress, box int, messageID, attachmentID string) (r io.ReadCloser, size int64, err error)
 }

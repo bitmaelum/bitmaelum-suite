@@ -95,6 +95,30 @@ func IncomingMessageBlock(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+// IncomingMessageAttachment deals with uploading message attachments
+func IncomingMessageAttachment(w http.ResponseWriter, req *http.Request) {
+	// Check ticket
+	t, err := fetchTicketHeader(req)
+	if err != nil {
+		ErrorOut(w, http.StatusUnauthorized, "invalid ticket id or ticket not valid")
+		return
+	}
+
+	vars := mux.Vars(req)
+	messageID := vars["message"]
+
+	err = message.StoreAttachment(t.ID, messageID, req.Body)
+	if err != nil {
+		ErrorOut(w, http.StatusInternalServerError, "error while storing message attachment")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(StatusOk("saved message attachment"))
+	return
+}
+
 // CompleteIncoming is called whenever everything from a message has been uploaded and can be actually send
 func CompleteIncoming(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
