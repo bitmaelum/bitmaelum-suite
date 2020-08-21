@@ -100,11 +100,17 @@ config:
         # via sLetEncrypt for instance or you can use self-signed certificates if you want
         certfile: "~/.bitmaelum/certs/server.cert"
         keyfile: "~/.bitmaelum/certs/server.key"
+
+    management: 
+        # When enabled, allow remote management through HTTPS instead of only local bm-config
+        remote_enabled: false
+
     redis:
         # Redis host where we store information
         host: 127.0.0.1:6379
         # Redis Database Number (defaults to 0)
         db: 0
+
     resolver:
         # Local resolver cache 
         local:

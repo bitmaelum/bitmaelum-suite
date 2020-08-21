@@ -119,7 +119,7 @@ func (le *LetsEncrypt) LoadCertificate(p string) *x509.Certificate {
 
 	// Decode FIRST certificate found in the certfile
 	var certDERBlock *pem.Block
-	certDERBlock, data = pem.Decode(data)
+	certDERBlock, _ = pem.Decode(data)
 	cert, err := x509.ParseCertificates(certDERBlock.Bytes)
 	if err != nil || len(cert) == 0 {
 		return nil
@@ -160,6 +160,9 @@ func (le *LetsEncrypt) FinalizeOrder(order *acme.Order, domain string, privCertK
 		}
 
 		certPem, err := encrypt.CertToPEM(*c)
+		if err != nil {
+			return "", "", err
+		}
 		certificate += certPem
 	}
 

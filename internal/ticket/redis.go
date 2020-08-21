@@ -22,7 +22,7 @@ func NewRepository(opts *redis.Options) Repository {
 // Fetch a ticket from the repository, or err
 func (r redisRepo) Fetch(ticketID string) (*Ticket, error) {
 	data, err := r.client.Get(r.client.Context(), createTicketKey(ticketID)).Result()
-	if data == "" {
+	if data == "" || err != nil {
 		return nil, errors.New("ticket not found")
 	}
 

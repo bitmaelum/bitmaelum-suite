@@ -31,12 +31,7 @@ type Ticket struct {
 
 // MarshalBinary converts a ticket to binary format so it can be stored in Redis
 func (t *Ticket) MarshalBinary() (data []byte, err error) {
-	data, err = json.Marshal(t)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return json.Marshal(t)
 }
 
 // UnmarshalBinary converts binary to a ticket so it can be fetched from Redis

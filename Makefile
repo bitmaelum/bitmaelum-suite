@@ -38,21 +38,29 @@ endif
 
 # path to golint
 GO_LINT_BIN = $(GOPATH)/bin/golint
+GO_INEFF_BIN = $(GOPATH)/bin/ineffassign
+GO_GOCYCLO_BIN = $(GOPATH)/bin/gocyclo
 
 # ---------------------------------------------------------------------------
 
-# Downloads golint as it's not available by default
-$(GO_LINT_BIN):
+# Downloads external tools as it's not available by default
+$(GO_TEST_BIN):
 	go get -u golang.org/x/lint/golint
+	go get -u github.com/gordonklaus/ineffassign
+	go get github.com/fzipp/gocyclo
 
 
-test: $(GO_LINT_BIN) ## Runs all tests for the whole repository
+test: $(GO_TEST_BIN) ## Runs all tests for the whole repository
 	echo "Check format"
 	gofmt -l .
 	echo "Check vet"
 	go vet ./...
 	echo "Check lint"
 	$(GO_LINT_BIN) ./...
+	echo "Check ineffassign"
+	$(GO_INEFF_BIN) ./*
+	echo "Check gocyclo"
+	$(GO_GOCYCLO_BIN) -over 15 .
 	echo "Check unit tests"
 	go test ./...
 
