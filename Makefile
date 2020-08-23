@@ -47,7 +47,7 @@ GO_GOCYCLO_BIN = $(GOPATH)/bin/gocyclo
 $(GO_TEST_BIN):
 	go get -u golang.org/x/lint/golint
 	go get -u github.com/gordonklaus/ineffassign
-	go get github.com/fzipp/gocyclo
+	go get -u github.com/fzipp/gocyclo
 
 
 test: $(GO_TEST_BIN) ## Runs all tests for the whole repository
