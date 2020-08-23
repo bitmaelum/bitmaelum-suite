@@ -3,8 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
 	"time"
@@ -29,12 +29,11 @@ server. Only the specified address can register the account`,
 			return
 		}
 
-		duration, err := internal.ParseValidDuration(d)
+		duration, err := parse.ValidDuration(d)
 		if err != nil {
 			outError("incorrect duration specified", asJSON)
 			return
 		}
-
 
 		inviteRepo := container.GetInviteRepo()
 		token, err := inviteRepo.Get(addr.Hash())
@@ -53,8 +52,8 @@ server. Only the specified address can register the account`,
 
 		if asJSON {
 			output := jsonOut{
-				"address": addr.String(),
-				"token": token,
+				"address":     addr.String(),
+				"token":       token,
 				"valid_until": time.Now().Add(duration),
 			}
 			out, _ := json.Marshal(output)
@@ -75,7 +74,6 @@ func outError(msg string, asJSON bool) {
 	out, _ := json.Marshal(jsonOut{"error": msg})
 	fmt.Printf("%s", out)
 }
-
 
 func init() {
 	rootCmd.AddCommand(inviteCmd)

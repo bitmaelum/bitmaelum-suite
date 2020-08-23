@@ -10,7 +10,7 @@ import (
 
 type options struct {
 	Version bool `short:"v" long:"version" description:"Display version information"`
-	AsJSON bool `long:"json" description:"Return result as JSON"`
+	AsJSON  bool `long:"json" description:"Return result as JSON"`
 }
 
 var opts options

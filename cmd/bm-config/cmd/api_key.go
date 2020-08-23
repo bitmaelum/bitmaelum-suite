@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/spf13/cobra"
 	"os"
 	"time"
@@ -35,13 +35,13 @@ Creating an admin key can only be done locally.
 		}
 
 		// Our custom parser allows (and defaults) to using days
-		validDuration, err := internal.ParseValidDuration(*mgValid)
+		validDuration, err := parse.ValidDuration(*mgValid)
 		if err != nil {
 			fmt.Printf("Error: incorrect duration specified")
 			os.Exit(1)
 		}
 
-		err = internal.ParsePermissions(*mgPerms)
+		err = parse.Permissions(*mgPerms)
 		if err != nil {
 			fmt.Printf("Error: %s", err)
 			os.Exit(1)

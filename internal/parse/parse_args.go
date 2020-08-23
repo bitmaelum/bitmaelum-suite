@@ -1,4 +1,4 @@
-package internal
+package parse
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// ParseValidDuration gets a time duration string and return the time duration. Accepts single int as days
-func ParseValidDuration(ds string) (time.Duration, error) {
+// ValidDuration gets a time duration string and return the time duration. Accepts single int as days
+func ValidDuration(ds string) (time.Duration, error) {
 	vd, err := str2duration.ParseDuration(ds)
 	if err != nil {
 		days, err := strconv.Atoi(ds)
@@ -24,8 +24,8 @@ func ParseValidDuration(ds string) (time.Duration, error) {
 	return vd, nil
 }
 
-// ParsePermissions checks all permission and returns an error when a permission is not valid
-func ParsePermissions(perms []string) error {
+// Permissions checks all permission and returns an error when a permission is not valid
+func Permissions(perms []string) error {
 	for _, p := range perms {
 		p = strings.ToLower(p)
 

@@ -47,7 +47,7 @@ func main() {
 		_ = password.StorePassword(opts.Password)
 	}
 
-	// We inject our vault into the cmd, so all commands and handlers know about the vault. It doesn't
+	// We inject our vault into the parse, so all commands and handlers know about the vault. It doesn't
 	// feel right though. I wonder if there are more idiomatic ways to do this.
 	cmd.Vault = *accountVault
 	cmd.Execute()

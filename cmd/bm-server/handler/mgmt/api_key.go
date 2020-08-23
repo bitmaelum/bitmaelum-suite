@@ -6,6 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"net/http"
 )
 
@@ -30,13 +31,13 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Our custom parser allows (and defaults) to using days
-	validDuration, err := apikey.ParseValidDuration(input.Valid)
+	validDuration, err := parse.ValidDuration(input.Valid)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect valid duration")
 		return
 	}
 
-	err = apikey.ParsePermissions(input.Permissions)
+	err = parse.Permissions(input.Permissions)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return
