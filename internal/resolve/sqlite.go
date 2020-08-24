@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // SQLite driver
 	"strings"
 	"sync"
 )
@@ -14,9 +14,9 @@ const (
 )
 
 type sqliteRepo struct {
-	dsn string
+	dsn  string
 	conn *sql.DB
-	mu *sync.Mutex
+	mu   *sync.Mutex
 }
 
 // NewSqliteRepository creates new local repository where keys are stored in an SQLite database
@@ -36,9 +36,9 @@ func NewSqliteRepository(dsn string) (Repository, error) {
 	}
 
 	db := &sqliteRepo{
-		dsn: dsn,
+		dsn:  dsn,
 		conn: conn,
-		mu: new(sync.Mutex),
+		mu:   new(sync.Mutex),
 	}
 
 	createTableIfNotExist(db)
@@ -88,5 +88,5 @@ func (r *sqliteRepo) Upload(addr address.HashAddress, pubKey, address, _ string)
 	}
 
 	_, err = st.Exec(addr.String(), pubKey, address)
-	return nil
+	return err
 }

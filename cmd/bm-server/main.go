@@ -44,6 +44,8 @@ func main() {
 
 	logrus.Info("Starting " + internal.VersionString("bm-server"))
 
+	_ = container.GetResolveService()
+
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

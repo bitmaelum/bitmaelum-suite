@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 	Long:  `This client allows you to manage accounts, read and compose mail.`,
 }
 
-// Vault is password
+// VaultPassword is the given password through the commandline for opening the vault
 var VaultPassword string
 
 // Execute runs the given command
@@ -31,8 +31,6 @@ func init() {
 	rootCmd.PersistentFlags().StringP("config", "c", "", "configuration file")
 	rootCmd.PersistentFlags().StringP("password", "p", "", "password to unlock your account vault")
 }
-
-
 
 // OpenVault returns an opened vault, or opens the vault, asking a password if needed
 func OpenVault() *vault.Vault {

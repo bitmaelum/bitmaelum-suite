@@ -32,8 +32,8 @@ type ClientConfig struct {
 
 	Resolver struct {
 		Remote struct {
-			Enabled bool `yaml:"enabled"`
-			URL string `yaml:"url"`
+			Enabled bool   `yaml:"enabled"`
+			URL     string `yaml:"url"`
 		} `yaml:"remote"`
 	} `yaml:"resolver"`
 }

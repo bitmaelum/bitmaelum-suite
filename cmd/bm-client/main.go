@@ -34,6 +34,3 @@ func main() {
 	cmd.VaultPassword = opts.Password
 	cmd.Execute()
 }
-
-
-

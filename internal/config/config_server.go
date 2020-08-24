@@ -65,13 +65,13 @@ type ServerConfig struct {
 
 	Resolver struct {
 		Sqlite struct {
-			Enabled bool `yaml:"enabled"`
-			Dsn string `yaml:"dsn"`
+			Enabled bool   `yaml:"enabled"`
+			Dsn     string `yaml:"dsn"`
 		} `yaml:"sqlite"`
 
 		Remote struct {
-			Enabled bool `yaml:"enabled"`
-			URL string `yaml:"url"`
+			Enabled bool   `yaml:"enabled"`
+			URL     string `yaml:"url"`
 		} `yaml:"remote"`
 	} `yaml:"resolver"`
 }
