@@ -46,6 +46,10 @@ type ServerConfig struct {
 		AllowInsecure bool   `yaml:"allow_insecure"`
 	} `yaml:"server"`
 
+	Management struct {
+		Enabled bool `yaml:"remote_enabled"`
+	} `yaml:"management"`
+
 	Acme struct {
 		Enabled         bool   `yaml:"enabled"`
 		Domain          string `yaml:"domain"`

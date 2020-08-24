@@ -21,5 +21,4 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringP("config", "c", "", "path to configuration file")
 }

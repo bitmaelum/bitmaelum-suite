@@ -72,6 +72,9 @@ func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
 
 	for _, a := range catalog.Attachments {
 		ar, err := client.GetMessageAttachment(*addr, box, messageID, a.ID)
+		if err != nil {
+			panic(err)
+		}
 
 		r, err := message.GetAesDecryptorReader(a.IV, a.Key, ar)
 		if err != nil {

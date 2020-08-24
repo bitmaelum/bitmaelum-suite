@@ -9,8 +9,8 @@ import (
 )
 
 type options struct {
-	Config  string `short:"c" long:"config" description:"Path to your configuration file"`
-	Version bool   `short:"v" long:"version" description:"Display version information"`
+	Version bool `short:"v" long:"version" description:"Display version information"`
+	AsJSON  bool `long:"json" description:"Return result as JSON"`
 }
 
 var opts options
@@ -23,10 +23,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(internal.GetASCIILogo())
+	if !opts.AsJSON {
+		fmt.Println(internal.GetASCIILogo())
+	}
 
-	config.LoadClientConfigOrPass(opts.Config)
-	config.LoadServerConfigOrPass(opts.Config)
+	_ = config.LoadClientConfigOrPass(".")
+	_ = config.LoadServerConfigOrPass(".")
 
 	cmd.Execute()
 }

@@ -1,12 +1,16 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
 	"time"
 )
+
+type jsonOut map[string]interface{}
 
 // inviteCmd represents the invite command
 var inviteCmd = &cobra.Command{
@@ -16,37 +20,67 @@ var inviteCmd = &cobra.Command{
 server. Only the specified address can register the account`,
 	Run: func(cmd *cobra.Command, args []string) {
 		s, _ := cmd.Flags().GetString("address")
-		d, _ := cmd.Flags().GetInt("days")
+		d, _ := cmd.Flags().GetString("duration")
+		asJSON, _ := cmd.Flags().GetBool("json")
 
 		addr, err := address.New(s)
 		if err != nil {
-			fmt.Printf("incorrect address specified")
+			outError("incorrect address specified", asJSON)
+			return
+		}
+
+		duration, err := parse.ValidDuration(d)
+		if err != nil {
+			outError("incorrect duration specified", asJSON)
 			return
 		}
 
 		inviteRepo := container.GetInviteRepo()
 		token, err := inviteRepo.Get(addr.Hash())
 		if err == nil {
-			fmt.Printf("'%s' already allowed to register with token: %s\n", addr.String(), token)
+			msg := fmt.Sprintf("'%s' already allowed to register with token: %s\n", addr.String(), token)
+			outError(msg, asJSON)
 			return
 		}
 
-		token, err = inviteRepo.Create(addr.Hash(), time.Duration(d)*24*time.Hour)
+		token, err = inviteRepo.Create(addr.Hash(), duration)
 		if err != nil {
-			fmt.Printf("error while inviting address: %s", err)
+			msg := fmt.Sprintf("error while inviting address: %s", err)
+			outError(msg, asJSON)
 			return
 		}
 
-		fmt.Printf("'%s' is allowed to register on our server in the next %d days.\n", addr.String(), d)
-		fmt.Printf("The invitation token is: %s\n", token)
+		if asJSON {
+			output := jsonOut{
+				"address":     addr.String(),
+				"token":       token,
+				"valid_until": time.Now().Add(duration),
+			}
+			out, _ := json.Marshal(output)
+			fmt.Printf("%s", out)
+		} else {
+			fmt.Printf("'%s' is allowed to register on our server until %s.\n", addr.String(), time.Now().Add(duration).Format(time.RFC822))
+			fmt.Printf("The invitation token is: %s\n", token)
+		}
 	},
+}
+
+func outError(msg string, asJSON bool) {
+	if !asJSON {
+		fmt.Print(msg)
+		return
+	}
+
+	out, _ := json.Marshal(jsonOut{"error": msg})
+	fmt.Printf("%s", out)
 }
 
 func init() {
 	rootCmd.AddCommand(inviteCmd)
 
 	inviteCmd.Flags().String("address", "", "Address to register")
-	inviteCmd.Flags().Int("days", 30, "Days allowed for registration")
+	inviteCmd.Flags().String("duration", "30", "NUmber of days (or duration like 1w2d3h4m6s) allowed for registration")
+	inviteCmd.Flags().Bool("json", false, "Return JSON response when set")
 
 	_ = inviteCmd.MarkFlagRequired("address")
 }

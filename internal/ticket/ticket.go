@@ -31,12 +31,7 @@ type Ticket struct {
 
 // MarshalBinary converts a ticket to binary format so it can be stored in Redis
 func (t *Ticket) MarshalBinary() (data []byte, err error) {
-	data, err = json.Marshal(t)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return json.Marshal(t)
 }
 
 // UnmarshalBinary converts binary to a ticket so it can be fetched from Redis
@@ -44,37 +39,41 @@ func (t *Ticket) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, t)
 }
 
-// New creates a new unvalidated ticket with proof of work
-func New(from, to address.HashAddress, subscriptionID string) *Ticket {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return nil
+// NewUnvalidated creates a new unvalidated ticket with proof of work
+func NewUnvalidated(ticketID string, from, to address.HashAddress, subscriptionID string) *Ticket {
+	if ticketID == "" {
+		// Generate ID if none specified
+		ticketUUID, err := uuid.NewRandom()
+		if err != nil {
+			return nil
+		}
+		ticketID = ticketUUID.String()
 	}
 
+	// Generate workdata for proof-of-work
 	work, err := pow.GenerateWorkData()
 	if err != nil {
 		return nil
 	}
-
 	proof := pow.New(config.Server.Accounts.ProofOfWork, work, 0)
-	t := &Ticket{
-		ID:             id.String(),
+
+	// Return ticket
+	return &Ticket{
+		ID:             ticketID,
 		Pow:            proof,
 		Valid:          false,
 		From:           from,
 		To:             to,
 		SubscriptionID: subscriptionID,
 	}
-
-	return t
 }
 
-// NewValid returns a new ticket that is validated (without proof-of-work)
-func NewValid(from, to address.HashAddress, subscriptionID string) *Ticket {
-	t := New(from, to, subscriptionID)
-	t.Valid = true
+// NewValidated returns a new ticket that is validated (without proof-of-work)
+func NewValidated(ticketID string, from, to address.HashAddress, subscriptionID string) *Ticket {
+	tckt := NewUnvalidated(ticketID, from, to, subscriptionID)
+	tckt.Valid = true
 
-	return t
+	return tckt
 }
 
 // NewSimpleTicket converts a ticket into a simple ticket. Used for outputting when we don't need routing info

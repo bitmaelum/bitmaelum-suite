@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
+	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -75,4 +77,14 @@ func DecodeBody(w http.ResponseWriter, body io.ReadCloser, v interface{}) error 
 	}
 
 	return nil
+}
+
+// GetAPIKey returns the api key stored in the request context. If not found, it will return a dummy key with no permissions
+func GetAPIKey(req *http.Request) *apikey.KeyType {
+	val := req.Context().Value(middleware.APIKeyContext("apikey"))
+	if val == nil {
+		return &apikey.KeyType{}
+	}
+
+	return val.(*apikey.KeyType)
 }

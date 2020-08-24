@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler/mgmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
@@ -86,14 +87,15 @@ func setupRouter() *mux.Router {
 	logger := &middleware.Logger{}
 	tracer := &middleware.Tracer{}
 	jwt := &middleware.JwtToken{}
-	PrettyJSON := &middleware.PrettyJSON{}
+	apikey := &middleware.APIKey{}
+	prettyJSON := &middleware.PrettyJSON{}
 
 	mainRouter := mux.NewRouter().StrictSlash(true)
 
 	// Public things router
 	publicRouter := mainRouter.PathPrefix("/").Subrouter()
 	publicRouter.Use(logger.Middleware)
-	publicRouter.Use(PrettyJSON.Middleware)
+	publicRouter.Use(prettyJSON.Middleware)
 	publicRouter.Use(tracer.Middleware)
 	publicRouter.HandleFunc("/", handler.HomePage).Methods("GET")
 	publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
@@ -112,7 +114,7 @@ func setupRouter() *mux.Router {
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
 	authRouter.Use(jwt.Middleware)
 	authRouter.Use(logger.Middleware)
-	authRouter.Use(PrettyJSON.Middleware)
+	authRouter.Use(prettyJSON.Middleware)
 	authRouter.Use(tracer.Middleware)
 	// Authorized sending
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetRemoteTicket).Methods("POST")
@@ -129,6 +131,19 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/flags", handler.GetFlags).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/flag/{flag}", handler.SetFlag).Methods("PUT")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/flag/{flag}", handler.UnsetFlag).Methods("DELETE")
+
+	// Add management endpoints if enabled
+	if config.Server.Management.Enabled {
+		mgmtRouter := mainRouter.PathPrefix("/admin").Subrouter()
+		mgmtRouter.Use(apikey.Middleware)
+		mgmtRouter.Use(logger.Middleware)
+		mgmtRouter.Use(prettyJSON.Middleware)
+		mgmtRouter.Use(tracer.Middleware)
+
+		mgmtRouter.HandleFunc("/flush", mgmt.FlushQueues).Methods("POST")
+		mgmtRouter.HandleFunc("/invite", mgmt.NewInvite).Methods("POST")
+		mgmtRouter.HandleFunc("/apikey", mgmt.NewAPIKey).Methods("POST")
+	}
 
 	return mainRouter
 }
@@ -186,10 +201,10 @@ func mainLoop(ctx context.Context) {
 
 		// Process tickers
 		case <-retryTicker.C:
-			processor.ProcessRetryQueue()
+			go processor.ProcessRetryQueue()
 		case <-stuckTicker.C:
-			processor.ProcessStuckIncomingMessages()
-			processor.ProcessStuckProcessingMessages()
+			go processor.ProcessStuckIncomingMessages()
+			go processor.ProcessStuckProcessingMessages()
 
 		// Context is done (signal send)
 		case <-ctx.Done():

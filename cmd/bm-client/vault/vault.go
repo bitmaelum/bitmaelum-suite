@@ -47,7 +47,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 			return nil, err
 		}
 		err = v.Save()
-		return v, nil
+		return v, err
 	}
 
 	// Otherwise, read vault data
