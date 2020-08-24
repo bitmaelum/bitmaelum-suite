@@ -207,7 +207,7 @@ func mainLoop(ctx context.Context) {
 
 		// Process tickers
 		case <-retryTicker.C:
-			go processor.ProcessRetryQueue()
+			go processor.ProcessRetryQueue(false)
 		case <-stuckTicker.C:
 			go processor.ProcessStuckIncomingMessages()
 			go processor.ProcessStuckProcessingMessages()

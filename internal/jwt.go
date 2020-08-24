@@ -18,6 +18,7 @@ type jwtClaims struct {
 }
 
 /*
+ * @TODO
  * I don't really like this. Suppose we get access to a single JWT token. We can use the same token for every
  * single call in the next hour. Maybe we should limit each token for single-use (with a nonce that expires after
  * one hour, which means that expiresAt expires too), or maybe even limit the token for a single operation (add

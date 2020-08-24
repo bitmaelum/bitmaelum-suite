@@ -17,7 +17,7 @@ func FlushQueues(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Flush queues. Note that this means that multiple queue processing can run multiple times
-	go processor.ProcessRetryQueue()
+	go processor.ProcessRetryQueue(true)
 	go processor.ProcessStuckIncomingMessages()
 	go processor.ProcessStuckProcessingMessages()
 

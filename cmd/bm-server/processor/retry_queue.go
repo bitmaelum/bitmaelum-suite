@@ -3,8 +3,6 @@ package processor
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/sirupsen/logrus"
-	"os"
-	"path/filepath"
 	"time"
 )
 
@@ -14,7 +12,7 @@ const (
 )
 
 // ProcessRetryQueue will process all mails found in the retry queue or removes them when they are expired
-func ProcessRetryQueue() {
+func ProcessRetryQueue(forceRetry bool) {
 	logrus.Tracef("scanning retry queue for action")
 
 	// Get retry info from all messages found in the retry queue
@@ -37,7 +35,7 @@ func ProcessRetryQueue() {
 			}
 		}
 
-		if forceRetry() || canRetryNow(info) {
+		if forceRetry || canRetryNow(info) {
 			err := message.MoveMessage(message.SectionRetry, message.SectionProcessing, info.MsgID)
 			if err != nil {
 				continue
@@ -46,19 +44,6 @@ func ProcessRetryQueue() {
 			go ProcessMessage(info.MsgID)
 		}
 	}
-
-	disableForceRetry()
-}
-
-func forceRetry() bool {
-	// @TODO: We should use a different way to control retries. For instance, through HTTP api (bm-config)
-	_, err := os.Stat(filepath.Join(os.TempDir(), ".bm_flush_retry"))
-
-	return err == nil
-}
-
-func disableForceRetry() {
-	_ = os.Remove(filepath.Join(os.TempDir(), ".bm_flush_retry"))
 }
 
 // MoveToRetryQueue moves a message (back) to retry queue and update retry info
