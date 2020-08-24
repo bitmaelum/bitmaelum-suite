@@ -79,8 +79,9 @@ func setupSignals(cancel context.CancelFunc) {
 			s := <-sigChannel
 			switch s {
 			case syscall.SIGHUP:
-				// @TODO: Should finish all queues. Rereads config files and certs, restart queues or something
-				logrus.Info("SIGHUP received")
+				// Reload configuration and such
+				logrus.Debug("SIGHUP received")
+				internal.Reload()
 			default:
 				logrus.Infof("Signal %s received. Terminating.", s)
 				cancel()

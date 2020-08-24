@@ -6,7 +6,6 @@ import pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 type Info struct {
 	Address string `json:"address"` // The address of the account
 
-	// TODO: here be additional information about the user.
 	Name         string `json:"name"`         // Full name of the user
 	Organisation string `json:"organisation"` // Org of the user (if any)
 
