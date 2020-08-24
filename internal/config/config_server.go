@@ -64,11 +64,13 @@ type ServerConfig struct {
 	} `yaml:"redis"`
 
 	Resolver struct {
-		Local struct {
-			Path string `yaml:"path"`
-		} `yaml:"local"`
+		Sqlite struct {
+			Enabled bool `yaml:"enabled"`
+			Dsn string `yaml:"dsn"`
+		} `yaml:"sqlite"`
 
 		Remote struct {
+			Enabled bool `yaml:"enabled"`
 			URL string `yaml:"url"`
 		} `yaml:"remote"`
 	} `yaml:"resolver"`
@@ -99,7 +101,6 @@ func (c *ServerConfig) LoadConfig(r io.Reader) error {
 	c.Paths.Incoming, _ = homedir.Expand(c.Paths.Incoming)
 	c.Paths.Accounts, _ = homedir.Expand(c.Paths.Accounts)
 	c.Acme.Path, _ = homedir.Expand(c.Acme.Path)
-	c.Resolver.Local.Path, _ = homedir.Expand(c.Resolver.Local.Path)
 	c.Server.CertFile, _ = homedir.Expand(c.Server.CertFile)
 	c.Server.KeyFile, _ = homedir.Expand(c.Server.KeyFile)
 

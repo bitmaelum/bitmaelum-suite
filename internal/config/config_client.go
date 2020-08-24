@@ -31,11 +31,8 @@ type ClientConfig struct {
 	} `yaml:"server"`
 
 	Resolver struct {
-		Local struct {
-			Path string `yaml:"path"`
-		} `yaml:"local"`
-
 		Remote struct {
+			Enabled bool `yaml:"enabled"`
 			URL string `yaml:"url"`
 		} `yaml:"remote"`
 	} `yaml:"resolver"`
@@ -60,7 +57,6 @@ func (c *ClientConfig) LoadConfig(r io.Reader) error {
 
 	// Expand homedirs in configuration
 	c.Accounts.Path, _ = homedir.Expand(c.Accounts.Path)
-	c.Resolver.Local.Path, _ = homedir.Expand(c.Resolver.Local.Path)
 
 	return nil
 }

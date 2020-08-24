@@ -18,9 +18,8 @@ config:
 
     # How can we resolve public keys and accounts
     resolver:
-        local:
-            path: "~/.bitmaelum/.resolvecache"
         remote:
+			enabled: true
             url: "https://resolver.bitmaelum.com"
 `
 
@@ -112,11 +111,14 @@ config:
         db: 0
 
     resolver:
-        # Local resolver cache 
-        local:
-            path: "~/.bitmaelum/.resolvecache"
+        # SQLite local resolver cache 
+        sqlite:
+			enabled: false
+            # DSN currently does not support ~ homedir expansion
+            dsn: "file:/tmp/keyresolve.db"
         # Remove resolver
         remote:
+			enabled: true
             url: "https://resolver.bitmaelum.com"
 `
 
