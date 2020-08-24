@@ -11,7 +11,9 @@ var listAccountsCmd = &cobra.Command{
 	Short:   "List your accounts",
 	Long:    `Displays a list of all your accounts currently available`,
 	Run: func(cmd *cobra.Command, args []string) {
-		handlers.ListAccounts(&Vault, *displayKeys)
+		vault := OpenVault()
+
+		handlers.ListAccounts(vault, *displayKeys)
 	},
 }
 

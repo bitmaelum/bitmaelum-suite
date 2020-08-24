@@ -13,11 +13,13 @@ var fetchMessagesCmd = &cobra.Command{
 	Short:   "Retrieves messages from your account(s)",
 	Long:    `Connects to the BitMaelum servers and fetches new emails that are not available on your local system.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		vault := OpenVault()
+
 		addr, err := address.New(*fmAccount)
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		info, err := Vault.GetAccountInfo(*addr)
+		info, err := vault.GetAccountInfo(*addr)
 		if err != nil {
 			logrus.Fatal(err)
 		}

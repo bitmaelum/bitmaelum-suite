@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/cmd"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/password"
+	"math/rand"
 	"os"
+	"time"
 )
 
 type options struct {
@@ -19,6 +19,8 @@ type options struct {
 var opts options
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	internal.ParseOptions(&opts)
 	if opts.Version {
 		internal.WriteVersionInfo("BitMaelum Client", os.Stdout)
@@ -29,26 +31,9 @@ func main() {
 	fmt.Println(internal.GetASCIILogo())
 	config.LoadClientConfig(opts.Config)
 
-	fromVault := false
-	if opts.Password == "" {
-		opts.Password, fromVault = password.AskPassword()
-	}
-
-	// Unlock vault
-	accountVault, err := vault.New(config.Client.Accounts.Path, []byte(opts.Password))
-	if err != nil {
-		fmt.Printf("Error while opening vault: %s", err)
-		fmt.Println("")
-		os.Exit(1)
-	}
-
-	// If the password was correct and not already read from the vault, store it in the vault
-	if !fromVault {
-		_ = password.StorePassword(opts.Password)
-	}
-
-	// We inject our vault into the parse, so all commands and handlers know about the vault. It doesn't
-	// feel right though. I wonder if there are more idiomatic ways to do this.
-	cmd.Vault = *accountVault
+	cmd.VaultPassword = opts.Password
 	cmd.Execute()
 }
+
+
+
