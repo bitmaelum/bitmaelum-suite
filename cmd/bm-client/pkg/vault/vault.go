@@ -30,6 +30,13 @@ type Vault struct {
 	path     string
 }
 
+type vaultJSONData struct {
+	Data []byte `json:"data"`
+	Salt []byte `json:"salt"`
+	Iv   []byte `json:"iv"`
+	Hmac []byte `json:"hmac"`
+}
+
 // New instantiates a new vault
 func New(p string, pwd []byte) (*Vault, error) {
 	var err error
@@ -57,13 +64,6 @@ func New(p string, pwd []byte) (*Vault, error) {
 	}
 
 	return v, nil
-}
-
-type vaultJSONData struct {
-	Data []byte `json:"data"`
-	Salt []byte `json:"salt"`
-	Iv   []byte `json:"iv"`
-	Hmac []byte `json:"hmac"`
 }
 
 // unlockVault unlocks the vault by the given password

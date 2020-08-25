@@ -12,7 +12,9 @@ var createAccountCmd = &cobra.Command{
 
 This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		handlers.CreateAccount(&Vault, *addr, *name, *organisation, *server, *token)
+		vault := OpenVault()
+
+		handlers.CreateAccount(vault, *addr, *name, *organisation, *server, *token)
 	},
 }
 

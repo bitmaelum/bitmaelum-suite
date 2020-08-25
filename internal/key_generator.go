@@ -2,7 +2,6 @@ package internal
 
 import (
 	"math/rand"
-	"time"
 )
 
 // GenerateKey generates a random key based on a given string length
@@ -15,8 +14,4 @@ func GenerateKey(prefix string, n int) string {
 	}
 
 	return prefix + string(b)
-}
-
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
 }

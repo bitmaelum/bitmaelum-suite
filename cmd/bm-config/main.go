@@ -5,7 +5,9 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/cmd"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"math/rand"
 	"os"
+	"time"
 )
 
 type options struct {
@@ -16,6 +18,8 @@ type options struct {
 var opts options
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	internal.ParseOptions(&opts)
 	if opts.Version {
 		internal.WriteVersionInfo("BitMaelum Server", os.Stdout)

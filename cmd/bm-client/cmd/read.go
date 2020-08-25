@@ -14,11 +14,13 @@ var readCmd = &cobra.Command{
 	Long: `Read message from your account
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		vault := OpenVault()
+
 		addr, err := address.New(*rAccount)
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		info, err := Vault.GetAccountInfo(*addr)
+		info, err := vault.GetAccountInfo(*addr)
 		if err != nil {
 			logrus.Fatal(err)
 		}

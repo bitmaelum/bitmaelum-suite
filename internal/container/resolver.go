@@ -1,18 +1,18 @@
 package container
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/core/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
 )
 
 // We can have multiple resolvers to resolve a single address. We could resolve locally, remotely through resolver-services, or through DHT.
 // We chain them all together with the ChainRepository
 
 var (
-	resolveService          *resolve.Service
-	localResolverRepository *resolve.Repository
-	dhtResolverRepository   *resolve.Repository
-	chainResolverRepository *resolve.ChainRepository
+	resolveService           *resolve.Service
+	sqliteResolverRepository *resolve.Repository
+	dhtResolverRepository    *resolve.Repository
+	chainResolverRepository  *resolve.ChainRepository
 )
 
 // GetResolveService retrieves a resolver service
@@ -22,11 +22,16 @@ func GetResolveService() *resolve.Service {
 	}
 
 	repo := getChainRepository()
-	_ = repo.Add(*getLocalRepository())
-	if config.Client.Resolver.Remote.URL != "" {
+	if config.Server.Resolver.Sqlite.Enabled {
+		r, err := getSQLiteRepository(config.Server.Resolver.Sqlite.Dsn)
+		if err == nil {
+			_ = repo.Add(r)
+		}
+	}
+	if config.Client.Resolver.Remote.Enabled {
 		_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL))
 	}
-	if config.Server.Resolver.Remote.URL != "" {
+	if config.Server.Resolver.Remote.Enabled {
 		_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL))
 	}
 	_ = repo.Add(*getDhtRepository())
@@ -43,19 +48,14 @@ func getChainRepository() *resolve.ChainRepository {
 	return chainResolverRepository
 }
 
-func getLocalRepository() *resolve.Repository {
-	if localResolverRepository != nil {
-		return localResolverRepository
-	}
-
-	repo := resolve.NewLocalRepository(GetAccountRepo())
-	localResolverRepository = &repo
-	return localResolverRepository
-}
-
 func getRemoteRepository(url string) *resolve.Repository {
 	repo := resolve.NewRemoteRepository(url)
 	return &repo
+}
+
+func getSQLiteRepository(dsn string) (resolve.Repository, error) {
+	repo, err := resolve.NewSqliteRepository(dsn)
+	return repo, err
 }
 
 func getDhtRepository() *resolve.Repository {

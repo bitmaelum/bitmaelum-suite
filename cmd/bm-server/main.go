@@ -9,10 +9,12 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -28,6 +30,8 @@ type options struct {
 var opts options
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	internal.ParseOptions(&opts)
 	if opts.Version {
 		internal.WriteVersionInfo("BitMaelum Server", os.Stdout)
@@ -39,6 +43,8 @@ func main() {
 	internal.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
 
 	logrus.Info("Starting " + internal.VersionString("bm-server"))
+
+	_ = container.GetResolveService()
 
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
