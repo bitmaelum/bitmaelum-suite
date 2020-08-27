@@ -11,6 +11,10 @@ import (
 
 // ValidDuration gets a time duration string and return the time duration. Accepts single int as days
 func ValidDuration(ds string) (time.Duration, error) {
+	if ds == "" {
+		return 0, nil
+	}
+
 	vd, err := str2duration.ParseDuration(ds)
 	if err != nil {
 		days, err := strconv.Atoi(ds)
