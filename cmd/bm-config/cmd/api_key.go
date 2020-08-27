@@ -37,13 +37,13 @@ Creating an admin key can only be done locally.
 		// Our custom parser allows (and defaults) to using days
 		validDuration, err := parse.ValidDuration(*mgValid)
 		if err != nil {
-			fmt.Printf("Error: incorrect duration specified")
+			fmt.Printf("Error: incorrect duration specified.\n")
 			os.Exit(1)
 		}
 
 		err = parse.Permissions(*mgPerms)
 		if err != nil {
-			fmt.Printf("Error: %s", err)
+			fmt.Printf("Error: %s\n", err)
 			os.Exit(1)
 		}
 
@@ -51,14 +51,14 @@ Creating an admin key can only be done locally.
 		if *mgAdmin {
 			fmt.Printf("Creating new admin key\n")
 			if len(*mgPerms) > 0 {
-				fmt.Printf("Error: cannot specify permissions when you create an admin key (all permissions are automatically granted)")
+				fmt.Printf("Error: cannot specify permissions when you create an admin key (all permissions are automatically granted)\n")
 				os.Exit(1)
 			}
 			key = apikey.NewAdminKey(validDuration)
 		} else {
 			fmt.Printf("Creating new regular key\n")
 			if len(*mgPerms) == 0 {
-				fmt.Printf("Error: need a set of permissions when generating a regular key")
+				fmt.Printf("Error: need a set of permissions when generating a regular key\n")
 				os.Exit(1)
 			}
 			key = apikey.NewKey(*mgPerms, validDuration)
@@ -68,7 +68,7 @@ Creating an admin key can only be done locally.
 		repo := container.GetAPIKeyRepo()
 		err = repo.Store(key)
 		if err != nil {
-			fmt.Printf("Error: cannot store key: %s", err)
+			fmt.Printf("Error: cannot store key: %s\n", err)
 			os.Exit(1)
 		}
 
