@@ -180,9 +180,9 @@ func (v *Vault) Save() error {
 
 // GetAccountInfo tries to find the given address and returns the account from the vault
 func (v *Vault) GetAccountInfo(addr address.Address) (*pkg.Info, error) {
-	for _, acc := range v.Accounts {
-		if acc.Address == addr.String() {
-			return &acc, nil
+	for i := range v.Accounts {
+		if v.Accounts[i].Address == addr.String() {
+			return &v.Accounts[i], nil
 		}
 	}
 
@@ -194,6 +194,25 @@ func (v *Vault) HasAccount(addr address.Address) bool {
 	_, err := v.GetAccountInfo(addr)
 
 	return err == nil
+}
+
+// GetDefaultAccount returns the default account from the vault. This could be the one set to default, or if none found,
+// the first account in the vault. Returns nil when no accounts are present in the vault.
+func (v *Vault) GetDefaultAccount() *pkg.Info {
+	// No accounts, return nil
+	if len(v.Accounts) == 0 {
+		return nil
+	}
+
+	// Return account that is set default (the first one, if multiple)
+	for i := range v.Accounts {
+		if v.Accounts[i].Default == true {
+			return &v.Accounts[i]
+		}
+	}
+
+	// No default found, return the first account
+	return &v.Accounts[0]
 }
 
 // writeFileData writes data by safely writing to a temp file first

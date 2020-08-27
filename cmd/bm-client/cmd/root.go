@@ -5,6 +5,9 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/password"
+	"github.com/bitmaelum/bitmaelum-suite/pkg"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -53,4 +56,24 @@ func OpenVault() *vault.Vault {
 	}
 
 	return vault
+}
+
+func GetAccountOrDefault(vault *vault.Vault, a string) *pkg.Info {
+	if a == "" {
+		return vault.GetDefaultAccount()
+	}
+
+	addr, err := address.New(a)
+	if err != nil {
+		logrus.Fatal(err)
+		os.Exit(1)
+	}
+
+	info, err := vault.GetAccountInfo(*addr)
+	if err != nil {
+		logrus.Fatal("Address not found in vault")
+		os.Exit(1)
+	}
+
+	return info
 }
