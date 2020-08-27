@@ -17,7 +17,7 @@ const (
 
 func TestGenerateJWTToken(t *testing.T) {
 	data, _ := ioutil.ReadFile("./testdata/mykey.pem")
-	privKey, _ := encrypt.PEMToPrivKey(data)
+	privKey, _ := encrypt.NewPrivKey(string(data))
 
 	haddr, _ := address.NewHash("test!")
 
@@ -28,7 +28,7 @@ func TestGenerateJWTToken(t *testing.T) {
 
 func TestValidateJWTToken(t *testing.T) {
 	data, _ := ioutil.ReadFile("./testdata/mykey.pub")
-	pubKey, _ := encrypt.PEMToPubKey(data)
+	pubKey, _ := encrypt.NewPubKey(string(data))
 
 	haddr, _ := address.NewHash("test!")
 

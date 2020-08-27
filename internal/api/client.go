@@ -60,10 +60,6 @@ func NewAuthenticated(info *pkg.Info, opts ClientOpts) (*API, error) {
 
 	if info != nil {
 		// Create JWT token based on the private key of the user
-		privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
-		if err != nil {
-			return nil, err
-		}
 		hash, err := address.NewHash(info.Address)
 		if err != nil {
 			return nil, err

@@ -5,7 +5,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 )
@@ -46,23 +45,14 @@ func main() {
 	fmt.Printf("%s\n", info.PubKey)
 	fmt.Println("")
 
-	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	pubKey, err := encrypt.PEMToPubKey([]byte(info.PubKey))
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	ts, err := internal.GenerateJWTToken(fromAddr.Hash(), privKey)
+	ts, err := internal.GenerateJWTToken(fromAddr.Hash(), info.PrivKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	fmt.Println(ts)
 	fmt.Println("")
 
-	token, err := internal.ValidateJWTToken(ts, fromAddr.Hash(), pubKey)
+	token, err := internal.ValidateJWTToken(ts, fromAddr.Hash(), info.PubKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}

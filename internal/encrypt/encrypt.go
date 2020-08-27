@@ -1,37 +1,29 @@
 package encrypt
 
 import (
-	"crypto/ecdsa"
-	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
 )
 
 // Encrypt a message with the given key
-func Encrypt(key interface{}, message []byte) ([]byte, error) {
-	switch key.(type) {
-	case *rsa.PublicKey:
-		return encryptRsa(key.(*rsa.PublicKey), message)
-	case *ecdsa.PublicKey:
-	case ed25519.PublicKey:
-		return nil, errors.New("This key type is not usable for encryption")
+func Encrypt(key PubKey, message []byte) ([]byte, error) {
+	switch key.Type {
+	case KEYTYPE_RSA:
+		return encryptRsa(key.K.(*rsa.PublicKey), message)
 	}
 
-	return nil, errors.New("Unknown key type for signing")
+	return nil, errors.New("This key type is not usable for encryption")
 }
 
 // Decrypt a message with the given key
-func Decrypt(key interface{}, message []byte) ([]byte, error) {
-	switch key.(type) {
-	case *rsa.PrivateKey:
-		return decryptRsa(key.(*rsa.PrivateKey), message)
-	case *ecdsa.PrivateKey:
-	case ed25519.PrivateKey:
-		return nil, errors.New("This key type is not usable for encryption")
+func Decrypt(key PrivKey , message []byte) ([]byte, error) {
+	switch key.Type {
+	case KEYTYPE_RSA:
+		return decryptRsa(key.K.(*rsa.PrivateKey), message)
 	}
 
-	return nil, errors.New("Unknown key type for signing")
+	return nil, errors.New("This key type is not usable for encryption")
 }
 
 func encryptRsa(key *rsa.PublicKey, message []byte) ([]byte, error) {

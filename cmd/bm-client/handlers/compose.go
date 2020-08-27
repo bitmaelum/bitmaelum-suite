@@ -129,12 +129,7 @@ func generateHeader(info pkg.Info, toInfo *resolve.Info, catalog []byte, catalog
 	header.Catalog.Size = uint64(len(catalog))
 	header.Catalog.Crypto = "rsa+aes256gcm"
 
-	pubKey, err := encrypt.PEMToPubKey([]byte(toInfo.PublicKey))
-	if err != nil {
-		return nil, err
-	}
-
-	header.Catalog.EncryptedKey, err = encrypt.Encrypt(pubKey, catalogKey)
+	header.Catalog.EncryptedKey, err = encrypt.Encrypt(toInfo.PublicKey, catalogKey)
 	if err != nil {
 		return nil, err
 	}

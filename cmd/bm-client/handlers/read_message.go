@@ -33,13 +33,7 @@ func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
 		logrus.Fatal(err)
 	}
 
-	// Get private key, and decrypt the encryption-key for the catalog
-	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	key, err := encrypt.Decrypt(privKey, msg.Header.Catalog.EncryptedKey)
+	key, err := encrypt.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}

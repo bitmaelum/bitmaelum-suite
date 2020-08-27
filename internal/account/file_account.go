@@ -22,7 +22,7 @@ import (
 // }
 
 // Create a new account for this address
-func (r *fileRepo) Create(addr address.HashAddress, pubKey string) error {
+func (r *fileRepo) Create(addr address.HashAddress, pubKeyPEM string) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 
@@ -34,7 +34,7 @@ func (r *fileRepo) Create(addr address.HashAddress, pubKey string) error {
 	// parallelize actions
 	g := new(errgroup.Group)
 	g.Go(func() error {
-		return r.StoreKey(addr, pubKey)
+		return r.StoreKey(addr, pubKeyPEM)
 	})
 	for _, box := range MandatoryBoxes {
 		g.Go(func() error {

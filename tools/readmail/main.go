@@ -71,12 +71,7 @@ func main() {
 		panic(err)
 	}
 
-	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
-	if err != nil {
-		panic(err)
-	}
-
-	decryptedKey, err := encrypt.Decrypt(privKey, header.Catalog.EncryptedKey)
+	decryptedKey, err := encrypt.Decrypt(info.PrivKey, header.Catalog.EncryptedKey)
 	if err != nil {
 		panic(err)
 	}

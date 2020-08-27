@@ -9,8 +9,11 @@ import (
 	"os"
 )
 
+
+todo: we must convert from pubkey
+
 // Store the public key for this account
-func (r *fileRepo) StoreKey(addr address.HashAddress, key string) error {
+func (r *fileRepo) StoreKey(addr address.HashAddress, key encrypt.PubKey) error {
 	// Lock our key file for writing
 	lockfilePath := r.getPath(addr, pubKeyFile+".lock")
 	lock, err := lockfile.New(lockfilePath)
@@ -26,6 +29,7 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key string) error {
 	defer func() {
 		_ = lock.Unlock()
 	}()
+
 
 	// Read keys
 	pk := &PubKeys{}
@@ -53,7 +57,7 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key string) error {
 
 
 // Retrieve the public keys for this account
-func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]string, error) {
+func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]encrypt.PubKey, error) {
 	pk := &PubKeys{}
 	err := r.fetchJSON(addr, pubKeyFile, pk)
 	if err != nil && os.IsNotExist(err) {
@@ -64,26 +68,6 @@ func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]string, error) {
 	}
 
 	return pk.PubKeys, nil
-}
-
-// Retrieve the public keys for this account and decode the PEMs
-func (r *fileRepo) FetchDecodedKeys(addr address.HashAddress) ([]interface{}, error) {
-	keys, err := r.FetchKeys(addr)
-	if err != nil {
-		return nil, err
-	}
-
-	s := make([]interface{}, len(keys))
-	for i, pem := range keys {
-		k, err := encrypt.PEMToPubKey([]byte(pem))
-		if err != nil {
-			continue
-		}
-
-		s[i] = k
-	}
-
-	return s, nil
 }
 
 // Create file because it doesn't exist yet

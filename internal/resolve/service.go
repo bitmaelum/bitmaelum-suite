@@ -42,15 +42,9 @@ func (s *Service) Resolve(addr address.HashAddress) (*Info, error) {
 // UploadInfo uploads resolve information to a service.
 func (s *Service) UploadInfo(info pkg.Info, resolveAddress string) error {
 
-	// @TODO: We maybe should sign with a different algo? Otherwise we use the same one for all systems
-	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
-	if err != nil {
-		return err
-	}
-
 	// Sign resolve address
 	hash := sha256.Sum256([]byte(resolveAddress))
-	signature, err := encrypt.Sign(privKey, hash[:])
+	signature, err := encrypt.Sign(info.PrivKey.K, hash[:])
 	if err != nil {
 		return err
 	}

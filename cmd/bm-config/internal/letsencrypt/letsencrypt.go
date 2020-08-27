@@ -1,6 +1,7 @@
 package letsencrypt
 
 import (
+	"bytes"
 	"context"
 	"crypto"
 	"crypto/ecdsa"
@@ -159,15 +160,17 @@ func (le *LetsEncrypt) FinalizeOrder(order *acme.Order, domain string, privCertK
 			return "", "", err
 		}
 
-		certPem, err := encrypt.CertToPEM(*c)
+		var b bytes.Buffer
+		err = pem.Encode(&b, &pem.Block{Type: "CERTIFICATE", Bytes: c.Raw})
 		if err != nil {
 			return "", "", err
 		}
-		certificate += certPem
+
+		certificate += b.String()
 	}
 
 	// Convert private and public key to PEM
-	privKey, err = encrypt.PrivKeyToPEM(privCertKey)
+	privKey, err = privKeyToPEM(privCertKey)
 	if err != nil {
 		return "", "", err
 	}
@@ -239,7 +242,7 @@ func (le *LetsEncrypt) SaveAccount(dir string) error {
 	}
 
 	// Convert key to PEM format
-	s, err := encrypt.PrivKeyToPEM(le.Key)
+	s, err := privKeyToPEM(le.Key)
 	if err != nil {
 		return err
 	}
@@ -301,10 +304,22 @@ func getAccountFromAcmeDir(dir string) (crypto.Signer, *acme.Account, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	key, err := encrypt.PEMToPrivKey([]byte(data))
+	privKey, _ := encrypt.NewPrivKey(data)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return key.(crypto.Signer), acc, nil
+	return privKey.K.(crypto.Signer), acc, nil
+}
+
+// PrivKeyToPEM Convert a private key into PKCS8/PEM format
+func privKeyToPEM(key interface{}) (string, error) {
+	privBytes, err := x509.MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		return "", err
+	}
+
+	var b bytes.Buffer
+	err = pem.Encode(&b, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
+	return b.String(), err
 }
