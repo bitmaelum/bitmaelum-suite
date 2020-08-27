@@ -31,8 +31,8 @@ func main() {
 		fmt.Println(internal.GetASCIILogo())
 	}
 
-	_ = config.LoadClientConfigOrPass(".")
-	_ = config.LoadServerConfigOrPass(".")
+	_ = config.LoadClientConfigOrPass("")
+	_ = config.LoadServerConfigOrPass("")
 
 	cmd.Execute()
 }
