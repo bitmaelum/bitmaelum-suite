@@ -13,6 +13,13 @@ var errNotFound = errors.New("cannot find config file")
 
 var triedPaths []string
 
+var (
+	// ClientConfigFile Filename of client configuration
+	ClientConfigFile string = "client-config.yml"
+	// ServerConfigFile Filename of server configuration
+	ServerConfigFile string = "server-config.yml"
+)
+
 // LoadClientConfig loads client configuration from given path or panic if cannot load
 func LoadClientConfig(configPath string) {
 	err := LoadClientConfigOrPass(configPath)
@@ -58,14 +65,14 @@ func LoadClientConfigOrPass(configPath string) error {
 
 	// try on our search paths
 	for _, p := range getSearchPaths() {
-		p = filepath.Join(p, "client-config.yml")
+		p = filepath.Join(p, ClientConfigFile)
 		err = readConfigPath(p, Client.LoadConfig)
 		if err == nil || err != errNotFound {
 			return err
 		}
 	}
 
-	return errors.New("cannot find client-config.yml")
+	return errors.New("cannot find " + ClientConfigFile)
 }
 
 // LoadServerConfigOrPass loads client configuration, but return false if not able
@@ -90,14 +97,14 @@ func LoadServerConfigOrPass(configPath string) error {
 
 	// try on our search paths
 	for _, p := range getSearchPaths() {
-		p = filepath.Join(p, "server-config.yml")
+		p = filepath.Join(p, ServerConfigFile)
 		err = readConfigPath(p, Server.LoadConfig)
 		if err == nil || err != errNotFound {
 			return err
 		}
 	}
 
-	return errors.New("cannot find server-config.yml")
+	return errors.New("cannot find " + ServerConfigFile)
 }
 
 // Expands the given path and loads the configuration

@@ -13,7 +13,6 @@ import (
 
 const (
 	pubKeyFile = ".keys.json"
-	infoFile   = ".info.json"
 	flagFile   = ".flags.json"
 )
 

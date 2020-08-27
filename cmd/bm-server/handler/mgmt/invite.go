@@ -33,21 +33,21 @@ func NewInvite(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	addr, err := address.New(input.Addr)
+	addr, err := address.NewHashFromHash(input.Addr)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
 	}
 
 	inviteRepo := container.GetInviteRepo()
-	token, err := inviteRepo.Get(addr.Hash())
+	token, err := inviteRepo.Get(*addr)
 	if err == nil {
 		msg := fmt.Sprintf("'%s' already allowed to register with token: %s\n", addr.String(), token)
 		handler.ErrorOut(w, http.StatusConflict, msg)
 		return
 	}
 
-	token, err = inviteRepo.Create(addr.Hash(), time.Duration(input.Days)*24*time.Hour)
+	token, err = inviteRepo.Create(*addr, time.Duration(input.Days)*24*time.Hour)
 	if err != nil {
 		msg := fmt.Sprintf("error while inviting address: %s", err)
 		handler.ErrorOut(w, http.StatusInternalServerError, msg)

@@ -5,6 +5,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/nightlyone/lockfile"
+	"github.com/sirupsen/logrus"
+	"os"
 )
 
 // Store the public key for this account
@@ -28,6 +30,9 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key string) error {
 	// Read keys
 	pk := &PubKeys{}
 	err = r.fetchJSON(addr, pubKeyFile, pk)
+	if err != nil && os.IsNotExist(err) {
+		err = r.createPubKeyFile(addr)
+	}
 	if err != nil {
 		return err
 	}
@@ -45,10 +50,15 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key string) error {
 	return r.store(addr, pubKeyFile, data)
 }
 
+
+
 // Retrieve the public keys for this account
 func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]string, error) {
 	pk := &PubKeys{}
 	err := r.fetchJSON(addr, pubKeyFile, pk)
+	if err != nil && os.IsNotExist(err) {
+		err = r.createPubKeyFile(addr)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -74,4 +84,15 @@ func (r *fileRepo) FetchDecodedKeys(addr address.HashAddress) ([]interface{}, er
 	}
 
 	return s, nil
+}
+
+// Create file because it doesn't exist yet
+func (r *fileRepo) createPubKeyFile(addr address.HashAddress) error {
+	p := r.getPath(addr, pubKeyFile)
+	f, err := os.Create(p)
+	if err != nil {
+		logrus.Errorf("Error while creating file %s: %s", p, err)
+		return err
+	}
+	return f.Close()
 }

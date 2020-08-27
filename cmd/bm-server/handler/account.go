@@ -8,6 +8,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -63,6 +64,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	// All clear. Create account
 	err = ar.Create(input.Addr, input.PublicKey)
 	if err != nil {
+		logrus.Error(err)
 		ErrorOut(w, http.StatusInternalServerError, "cannot create account")
 		return
 	}
