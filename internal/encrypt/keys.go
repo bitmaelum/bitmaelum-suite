@@ -202,15 +202,16 @@ func NewPrivKey(data string) (*PrivKey, error) {
 		return nil, errors.New("incorrect key data")
 	}
 
-	// Decode (base64-decoded) key
-	if pk.Type == KeyTypeED25519 {
+	// Parse key, see which parses actually works..
+	if pk.Type == KeyTypeECDSA {
 		pk.K, err = x509.ParseECPrivateKey(buf[:n])
 	} else {
 		pk.K, err = x509.ParsePKCS1PrivateKey(buf[:n])
-		if err != nil {
-			pk.K, err = x509.ParsePKCS8PrivateKey(buf[:n])
-		}
 	}
+	if err != nil {
+		pk.K, err = x509.ParsePKCS8PrivateKey(buf[:n])
+	}
+
 	if err != nil {
 		return nil, errors.New("incorrect key data")
 	}
@@ -220,28 +221,58 @@ func NewPrivKey(data string) (*PrivKey, error) {
 
 // NewPrivKeyFromInterface creates a new key based on an interface{} (like rsa.PrivateKey)
 func NewPrivKeyFromInterface(key interface{}) (*PrivKey, error) {
+	var t string
 	switch key.(type) {
 	case *rsa.PrivateKey:
-		return nil, nil
+		t = KeyTypeRSA
 	case *ecdsa.PrivateKey:
-		return nil, nil
+		t = KeyTypeECDSA
 	case ed25519.PrivateKey:
-		return nil, nil
+		t = KeyTypeED25519
+	default:
+		return nil, errors.New("unknown key type")
 	}
 
-	return nil, errors.New("incorrect key type")
+	pk := &PrivKey{
+		Type: t,
+		K:    key,
+	}
+
+	buf, err := x509.MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		return nil, errors.New("incorrect key")
+	}
+	pk.S = base64.StdEncoding.EncodeToString(buf)
+	pk.B = []byte(pk.S)
+
+	return pk, nil
 }
 
 // NewPubKeyFromInterface creates a new key based on an interface{} (like rsa.PublicKey)
 func NewPubKeyFromInterface(key interface{}) (*PubKey, error) {
+	var t string
 	switch key.(type) {
 	case *rsa.PublicKey:
-		return nil, nil
+		t = KeyTypeRSA
 	case *ecdsa.PublicKey:
-		return nil, nil
+		t = KeyTypeECDSA
 	case ed25519.PublicKey:
-		return nil, nil
+		t = KeyTypeED25519
+	default:
+		return nil, errors.New("unknown key type")
 	}
 
-	return nil, errors.New("incorrect key type")
+	pk := &PubKey{
+		Type: t,
+		K:    key,
+	}
+
+	buf, err := x509.MarshalPKIXPublicKey(key)
+	if err != nil {
+		return nil, errors.New("incorrect key")
+	}
+	pk.S = base64.StdEncoding.EncodeToString(buf)
+	pk.B = []byte(pk.S)
+
+	return pk, nil
 }

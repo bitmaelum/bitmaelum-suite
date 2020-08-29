@@ -3,6 +3,7 @@ package message
 import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	core "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -124,13 +125,13 @@ func (c *Catalog) AddBlock(entry Block) error {
 	}
 
 	// Generate key iv for this block
-	iv, key, err := GenerateIvAndKey()
+	iv, key, err := encrypt.GenerateIvAndKey()
 	if err != nil {
 		return err
 	}
 
 	// Wrap reader with encryption reader
-	reader, err = GetAesEncryptorReader(iv, key, reader)
+	reader, err = encrypt.GetAesEncryptorReader(iv, key, reader)
 	if err != nil {
 		return err
 	}
@@ -178,13 +179,13 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 	}
 
 	// Generate Key and IV that we will use for encryption
-	iv, key, err := GenerateIvAndKey()
+	iv, key, err := encrypt.GenerateIvAndKey()
 	if err != nil {
 		return err
 	}
 
 	// Wrap our reader with the encryption reader
-	reader, err = GetAesEncryptorReader(iv, key, reader)
+	reader, err = encrypt.GetAesEncryptorReader(iv, key, reader)
 	if err != nil {
 		return err
 	}

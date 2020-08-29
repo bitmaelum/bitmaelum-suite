@@ -7,10 +7,10 @@ import (
 )
 
 func TestEncrypt(t *testing.T) {
-	data, _ := ioutil.ReadFile("./testdata/mykey.pub")
+	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
 	pubKey, _ := NewPubKey(string(data))
 
-	data, _ = ioutil.ReadFile("./testdata/mykey.pem")
+	data, _ = ioutil.ReadFile("../testdata/privkey.rsa")
 	privKey, _ := NewPrivKey(string(data))
 
 	cipher, err := Encrypt(*pubKey, []byte("foobar"))

@@ -92,7 +92,7 @@ func main() {
 			panic(err)
 		}
 
-		r, err := message.GetAesDecryptorReader(block.IV, block.Key, f)
+		r, err := encrypt.GetAesDecryptorReader(block.IV, block.Key, f)
 		if err != nil {
 			f.Close()
 			panic(err)

@@ -9,8 +9,8 @@ import (
 )
 
 type options struct {
-	Config  string `short:"c" long:"config" description:"Path to your configuration file"`
-	Password  string `short:"p" long:"password" description:"Password to your vault"`
+	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
+	Password string `short:"p" long:"password" description:"Password to your vault"`
 }
 
 var opts options
