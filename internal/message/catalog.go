@@ -84,10 +84,9 @@ func NewCatalog(info *pkg.Info) *Catalog {
 
 	c.From.Address = info.Address
 	c.From.Name = info.Name
-	c.From.Organisation = info.Organisation
 	c.From.ProofOfWork.Bits = info.Pow.Bits
 	c.From.ProofOfWork.Proof = info.Pow.Proof
-	c.From.PublicKey = info.PubKey
+	c.From.PublicKey = info.PubKey.S
 
 	return c
 }

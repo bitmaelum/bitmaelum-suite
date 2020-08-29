@@ -16,9 +16,9 @@ type Service struct {
 
 // Info is a structure returned by the external resolver system
 type Info struct {
-	Hash      string `json:"hash"`       // Hash of the email address
-	PublicKey string `json:"public_key"` // Public key of the user
-	Server    string `json:"server"`     // Server where this email address resides
+	Hash      string         `json:"hash"`       // Hash of the email address
+	PublicKey encrypt.PubKey `json:"public_key"` // PublicKey of the user
+	Server    string         `json:"server"`     // Server where this email address resides
 }
 
 // KeyRetrievalService initialises a key retrieval service.
@@ -44,7 +44,7 @@ func (s *Service) UploadInfo(info pkg.Info, resolveAddress string) error {
 
 	// Sign resolve address
 	hash := sha256.Sum256([]byte(resolveAddress))
-	signature, err := encrypt.Sign(info.PrivKey.K, hash[:])
+	signature, err := encrypt.Sign(info.PrivKey, hash[:])
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (s *Service) UploadInfo(info pkg.Info, resolveAddress string) error {
 	// And upload
 	return s.repo.Upload(
 		*h,
-		string(info.PubKey),
+		info.PubKey,
 		resolveAddress,
 		hex.EncodeToString(signature),
 	)

@@ -4,6 +4,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/c2h5oh/datasize"
@@ -76,7 +77,8 @@ func displayBox(client *api.API, addr address.HashAddress, info *pkg.Info, box s
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		catalog, err := encrypt.CatalogDecrypt(key, msg.Catalog)
+		catalog := &message.Catalog{}
+		err = encrypt.CatalogDecrypt(key, msg.Catalog, catalog)
 		if err != nil {
 			continue
 		}

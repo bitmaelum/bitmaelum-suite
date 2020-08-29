@@ -142,7 +142,7 @@ func generateHeader(info pkg.Info, toInfo *resolve.Info, catalog []byte, catalog
 	}
 	header.From.Addr = *h
 
-	header.From.PublicKey = info.PubKey
+	header.From.PublicKey = info.PubKey.S
 	header.From.ProofOfWork.Bits = info.Pow.Bits
 	header.From.ProofOfWork.Proof = info.Pow.Proof
 

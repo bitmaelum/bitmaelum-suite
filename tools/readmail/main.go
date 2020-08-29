@@ -76,7 +76,8 @@ func main() {
 		panic(err)
 	}
 
-	catalog, err := encrypt.CatalogDecrypt(decryptedKey, data)
+	catalog := &message.Catalog{}
+	err = encrypt.CatalogDecrypt(decryptedKey, data, catalog)
 	if err != nil {
 		panic(err)
 	}

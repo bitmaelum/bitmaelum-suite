@@ -22,14 +22,6 @@ type PubKeys struct {
 	PubKeys []encrypt.PubKey `json:"keys"`
 }
 
-func (pk *PubKeys) Marshal() {
-	TODO: fix marshal
-}
-func (pk *PubKeys) Unmarshal() {
-	TODO: fix unmarshal
-}
-
-
 type fileRepo struct {
 	basePath string
 }

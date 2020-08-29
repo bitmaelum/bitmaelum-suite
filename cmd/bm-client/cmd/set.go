@@ -8,9 +8,9 @@ import (
 )
 
 var setCmd = &cobra.Command{
-	Use:     "set",
-	Short:   "Create or update a specific setting in your vault",
-	Long:    `Your vault accounts can have additional settings. With this command you can easily manage these.`,
+	Use:   "set",
+	Short: "Create or update a specific setting in your vault",
+	Long:  `Your vault accounts can have additional settings. With this command you can easily manage these.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		vault := OpenVault()
 		info := GetAccountOrDefault(vault, *sAddress)
@@ -22,9 +22,6 @@ var setCmd = &cobra.Command{
 		case "name":
 			info.Name = *sValue
 			msg = fmt.Sprintf("Updated setting %s to %s", "name", *sValue)
-		case "organisation":
-			info.Organisation = *sValue
-			msg = fmt.Sprintf("Updated setting %s to %s", "organisation", *sValue)
 		default:
 			if *sValue == "" {
 				if info.Settings != nil {

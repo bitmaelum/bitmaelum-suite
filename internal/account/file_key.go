@@ -9,9 +9,6 @@ import (
 	"os"
 )
 
-
-todo: we must convert from pubkey
-
 // Store the public key for this account
 func (r *fileRepo) StoreKey(addr address.HashAddress, key encrypt.PubKey) error {
 	// Lock our key file for writing
@@ -29,7 +26,6 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key encrypt.PubKey) error 
 	defer func() {
 		_ = lock.Unlock()
 	}()
-
 
 	// Read keys
 	pk := &PubKeys{}
@@ -53,8 +49,6 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key encrypt.PubKey) error 
 	// And store
 	return r.store(addr, pubKeyFile, data)
 }
-
-
 
 // Retrieve the public keys for this account
 func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]encrypt.PubKey, error) {

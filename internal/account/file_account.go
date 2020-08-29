@@ -1,28 +1,15 @@
 package account
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"os"
 )
 
-// // CreateAccount creates new account for the given address and public key
-// func (r *fileRepo) Create(addr address.HashAddress, pubKey string) error {
-// 	if r.Exists(addr) {
-// 		return errors.New("account already exists")
-// 	}
-//
-// 	_ = r.CreateBox(addr, internal.BoxInbox)
-// 	_ = r.CreateBox(addr, internal.BoxOutbox)
-// 	_ = r.CreateBox(addr, internal.BoxTrash)
-// 	_ = r.StorePubKey(addr, pubKey)
-//
-// 	return nil
-// }
-
 // Create a new account for this address
-func (r *fileRepo) Create(addr address.HashAddress, pubKeyPEM string) error {
+func (r *fileRepo) Create(addr address.HashAddress, pubKey encrypt.PubKey) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 
@@ -34,7 +21,7 @@ func (r *fileRepo) Create(addr address.HashAddress, pubKeyPEM string) error {
 	// parallelize actions
 	g := new(errgroup.Group)
 	g.Go(func() error {
-		return r.StoreKey(addr, pubKeyPEM)
+		return r.StoreKey(addr, pubKey)
 	})
 	for _, box := range MandatoryBoxes {
 		g.Go(func() error {

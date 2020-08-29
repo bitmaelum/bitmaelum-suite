@@ -29,9 +29,6 @@ var TestKeySet5 = []string{
 	"ed25519 MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7",
 }
 
-
-
-
 func TestRSAPubKey(t *testing.T) {
 	// Correct
 	pk, err := NewPubKey(TestKeySet1[0])

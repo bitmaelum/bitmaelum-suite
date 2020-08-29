@@ -19,7 +19,7 @@ var setDefaultCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		if ! vault.HasAccount(*fromAddr) {
+		if !vault.HasAccount(*fromAddr) {
 			logrus.Fatal("Address not found in vault")
 		}
 

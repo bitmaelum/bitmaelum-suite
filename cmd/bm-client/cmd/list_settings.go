@@ -8,9 +8,9 @@ import (
 )
 
 var listSettingsCmd = &cobra.Command{
-	Use:     "list-settings",
-	Short:   "List settings for your account",
-	Long:    `Displays a list of all your settings`,
+	Use:   "list-settings",
+	Short: "List settings for your account",
+	Long:  `Displays a list of all your settings`,
 	Run: func(cmd *cobra.Command, args []string) {
 		vault := OpenVault()
 
@@ -24,7 +24,6 @@ var listSettingsCmd = &cobra.Command{
 		table.SetHeader([]string{"Key", "Value"})
 
 		table.Append([]string{"Name", info.Name})
-		table.Append([]string{"Organisation", info.Organisation})
 
 		if info.Settings != nil {
 			for k, v := range info.Settings {

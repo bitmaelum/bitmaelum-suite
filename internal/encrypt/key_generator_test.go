@@ -1,4 +1,4 @@
-package internal
+package encrypt
 
 import (
 	"github.com/stretchr/testify/assert"

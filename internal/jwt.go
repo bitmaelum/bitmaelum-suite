@@ -1,12 +1,9 @@
 package internal
 
 import (
-	"crypto"
-	"crypto/ecdsa"
-	"crypto/ed25519"
-	"crypto/rsa"
 	"crypto/subtle"
 	"errors"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/vtolstov/jwt-go"
 	"time"
@@ -26,7 +23,7 @@ type jwtClaims struct {
  */
 
 // GenerateJWTToken generates a JWT token with the address and singed by the given private key
-func GenerateJWTToken(addr address.HashAddress, key crypto.PrivateKey) (string, error) {
+func GenerateJWTToken(addr address.HashAddress, key encrypt.PrivKey) (string, error) {
 	claims := &jwt.StandardClaims{
 		ExpiresAt: jwt.TimeFunc().Add(time.Hour * time.Duration(1)).Unix(),
 		IssuedAt:  jwt.TimeFunc().Unix(),
@@ -36,17 +33,17 @@ func GenerateJWTToken(addr address.HashAddress, key crypto.PrivateKey) (string, 
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
-	return token.SignedString(key)
+	return token.SignedString(key.K)
 }
 
 // ValidateJWTToken validates a JWT token with the given public key and address
-func ValidateJWTToken(tokenString string, addr address.HashAddress, key crypto.PublicKey) (*jwt.Token, error) {
+func ValidateJWTToken(tokenString string, addr address.HashAddress, key encrypt.PubKey) (*jwt.Token, error) {
 	kf := func(token *jwt.Token) (interface{}, error) {
 		// Make sure we signed with RS256
 		if token.Method != jwt.SigningMethodRS256 {
 			return nil, errors.New("incorrect signing method")
 		}
-		return key, nil
+		return key.K, nil
 	}
 
 	claims := &jwt.StandardClaims{}
@@ -56,18 +53,18 @@ func ValidateJWTToken(tokenString string, addr address.HashAddress, key crypto.P
 	}
 
 	// Make sure the token actually uses the correct signing method
-	switch key.(type) {
-	case *rsa.PublicKey:
+	switch key.Type {
+	case encrypt.KeyTypeRSA:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")
 		}
-	case *ecdsa.PublicKey:
+	case encrypt.KeyTypeECDSA:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")
 		}
-	case ed25519.PublicKey:
+	case encrypt.KeyTypeED25519:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")

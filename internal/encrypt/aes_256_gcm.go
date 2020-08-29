@@ -5,7 +5,6 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"io"
 )
 
@@ -72,7 +71,7 @@ func MessageDecrypt(key []byte, message []byte) ([]byte, error) {
 }
 
 // CatalogEncrypt encrypts a catalog with a random key.
-func CatalogEncrypt(catalog message.Catalog) ([]byte, []byte, error) {
+func CatalogEncrypt(catalog interface{}) ([]byte, []byte, error) {
 	catalogKey, err := keyGenerator()
 	if err != nil {
 		return nil, nil, err
@@ -87,19 +86,13 @@ func CatalogEncrypt(catalog message.Catalog) ([]byte, []byte, error) {
 }
 
 // CatalogDecrypt decrypts a catalog with the given key
-func CatalogDecrypt(key, data []byte) (*message.Catalog, error) {
-	// data, err := encode.Decode(data)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	catalog := &message.Catalog{}
-	err := JSONDecrypt(key, data, &catalog)
+func CatalogDecrypt(key, data []byte, catalog interface{}) error {
+	err := JSONDecrypt(key, data, catalog)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return catalog, nil
+	return nil
 }
 
 // Generator to generate nonces for AEAD. Used so we can easily mock it in tests

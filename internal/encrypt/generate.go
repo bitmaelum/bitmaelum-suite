@@ -11,21 +11,11 @@ import (
 
 type keyType int
 
-const (
-	// KeyTypeRSA RSA key
-	KeyTypeRSA = iota
-	// KeyTypeECDSA Elliptic curve key
-	KeyTypeECDSA
-	// KeyTypeED25519 ED25519 key
-	KeyTypeED25519
-)
-
 var curveFunc = elliptic.P384
 var rsaBits int = 2048
 
-
 // GenerateKeyPair generates a private/public keypair based on the given type
-func GenerateKeyPair(kt keyType) (*PrivKey, *PubKey, error) {
+func GenerateKeyPair(kt string) (*PrivKey, *PubKey, error) {
 	if kt == KeyTypeRSA {
 
 		privRSAKey, err := rsa.GenerateKey(rand.Reader, rsaBits)

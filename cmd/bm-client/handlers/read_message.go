@@ -39,7 +39,8 @@ func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
 	}
 
 	// Decrypt the catalog
-	catalog, err := encrypt.CatalogDecrypt(key, msg.Catalog)
+	catalog := &message.Catalog{}
+	err = encrypt.CatalogDecrypt(key, msg.Catalog, catalog)
 	if err != nil {
 		logrus.Fatal(err)
 	}

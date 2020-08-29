@@ -24,6 +24,6 @@ func TestGenerate(t *testing.T) {
 	assert.IsType(t, (ed25519.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (ed25519.PublicKey)(nil), pubKey.K)
 
-	_, _, err = GenerateKeyPair(25)
+	_, _, err = GenerateKeyPair("foobar")
 	assert.EqualError(t, err, "incorrect key type specified")
 }

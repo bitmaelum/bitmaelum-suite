@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -64,7 +63,7 @@ func NewAuthenticated(info *pkg.Info, opts ClientOpts) (*API, error) {
 		if err != nil {
 			return nil, err
 		}
-		jwtToken, err = internal.GenerateJWTToken(*hash, privKey)
+		jwtToken, err = internal.GenerateJWTToken(*hash, info.PrivKey)
 		if err != nil {
 			return nil, err
 		}

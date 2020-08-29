@@ -43,7 +43,7 @@ func OpenVault() *vault.Vault {
 	}
 
 	// Unlock vault
-	vault, err := vault.New(config.Client.Accounts.Path, []byte(VaultPassword))
+	v, err := vault.New(config.Client.Accounts.Path, []byte(VaultPassword))
 	if err != nil {
 		fmt.Printf("Error while opening vault: %s", err)
 		fmt.Println("")
@@ -55,9 +55,11 @@ func OpenVault() *vault.Vault {
 		_ = password.StorePassword(VaultPassword)
 	}
 
-	return vault
+	return v
 }
 
+// GetAccountOrDefault find the address from the vault. If address is empty, it will fetch the default address, or the
+// first address in the vault if no default address is present.
 func GetAccountOrDefault(vault *vault.Vault, a string) *pkg.Info {
 	if a == "" {
 		return vault.GetDefaultAccount()

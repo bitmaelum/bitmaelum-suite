@@ -17,12 +17,12 @@ var randReader io.Reader = rand.Reader
 // Sign a message based on the given key.
 func Sign(key PrivKey, message []byte) ([]byte, error) {
 	switch key.Type {
-	case KEYTYPE_RSA:
+	case KeyTypeRSA:
 		return rsa.SignPKCS1v15(randReader, key.K.(*rsa.PrivateKey), crypto.SHA256, message)
-	case KEYTYPE_ECDSA:
+	case KeyTypeECDSA:
 		privkey := key.K.(*ecdsa.PrivateKey)
 		return privkey.Sign(randReader, message, nil)
-	case KEYTYPE_ED25519:
+	case KeyTypeED25519:
 		return ed25519.Sign(key.K.(ed25519.PrivateKey), message), nil
 	}
 

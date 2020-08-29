@@ -39,7 +39,7 @@ func (api *API) CreateAccount(info pkg.Info, token string) error {
 	input := &InputCreateAccount{
 		Addr:        addr.Hash(),
 		Token:       token,
-		PublicKey:   info.PubKey,
+		PublicKey:   info.PubKey.S,
 		ProofOfWork: info.Pow,
 	}
 

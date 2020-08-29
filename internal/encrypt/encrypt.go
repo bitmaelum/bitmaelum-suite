@@ -8,22 +8,30 @@ import (
 
 // Encrypt a message with the given key
 func Encrypt(key PubKey, message []byte) ([]byte, error) {
+	if !key.CanEncrypt() {
+		return nil, errors.New("This key type is not usable for encryption")
+	}
+
 	switch key.Type {
-	case KEYTYPE_RSA:
+	case KeyTypeRSA:
 		return encryptRsa(key.K.(*rsa.PublicKey), message)
 	}
 
-	return nil, errors.New("This key type is not usable for encryption")
+	return nil, errors.New("encryption not implemented for" + key.Type)
 }
 
 // Decrypt a message with the given key
-func Decrypt(key PrivKey , message []byte) ([]byte, error) {
+func Decrypt(key PrivKey, message []byte) ([]byte, error) {
+	if !key.CanEncrypt() {
+		return nil, errors.New("This key type is not usable for encryption")
+	}
+
 	switch key.Type {
-	case KEYTYPE_RSA:
+	case KeyTypeRSA:
 		return decryptRsa(key.K.(*rsa.PrivateKey), message)
 	}
 
-	return nil, errors.New("This key type is not usable for encryption")
+	return nil, errors.New("encryption not implemented for" + key.Type)
 }
 
 func encryptRsa(key *rsa.PublicKey, message []byte) ([]byte, error) {

@@ -21,7 +21,7 @@ func TestGenerateJWTToken(t *testing.T) {
 
 	haddr, _ := address.NewHash("test!")
 
-	token, err := GenerateJWTToken(*haddr, privKey)
+	token, err := GenerateJWTToken(*haddr, *privKey)
 	assert.Nil(t, err)
 	assert.Equal(t, mockToken, token)
 }
@@ -32,7 +32,7 @@ func TestValidateJWTToken(t *testing.T) {
 
 	haddr, _ := address.NewHash("test!")
 
-	token, err := ValidateJWTToken(mockToken, *haddr, pubKey)
+	token, err := ValidateJWTToken(mockToken, *haddr, *pubKey)
 	assert.Nil(t, err)
 	assert.True(t, token.Valid)
 	assert.Equal(t, "RS256", token.Method.Alg())
