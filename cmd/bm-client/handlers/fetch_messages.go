@@ -4,6 +4,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/c2h5oh/datasize"
@@ -66,22 +67,18 @@ func displayBox(client *api.API, addr address.HashAddress, info *pkg.Info, box s
 		logrus.Fatal(err)
 	}
 
-	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
 	table := tablewriter.NewWriter(os.Stdout)
 
 	headers := []string{"ID", "Subject", "From", "Organisation", "Date", "# Blocks", "# Attachments"}
 	table.SetHeader(headers)
 
 	for _, msg := range mb.Messages {
-		key, err := encrypt.Decrypt(privKey, msg.Header.Catalog.EncryptedKey)
+		key, err := encrypt.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		catalog, err := encrypt.CatalogDecrypt(key, msg.Catalog)
+		catalog := &message.Catalog{}
+		err = encrypt.CatalogDecrypt(key, msg.Catalog, catalog)
 		if err != nil {
 			continue
 		}

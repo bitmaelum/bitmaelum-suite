@@ -1,6 +1,7 @@
 package resolve
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
@@ -16,6 +17,6 @@ func (r *dhtRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	return nil, errKeyNotFound
 }
 
-func (r *dhtRepo) Upload(addr address.HashAddress, pubKey, address, signature string) error {
+func (r *dhtRepo) Upload(addr address.HashAddress, pubKey encrypt.PubKey, address, signature string) error {
 	return nil
 }

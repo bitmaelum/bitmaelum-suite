@@ -5,6 +5,9 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/password"
+	"github.com/bitmaelum/bitmaelum-suite/pkg"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -40,7 +43,7 @@ func OpenVault() *vault.Vault {
 	}
 
 	// Unlock vault
-	vault, err := vault.New(config.Client.Accounts.Path, []byte(VaultPassword))
+	v, err := vault.New(config.Client.Accounts.Path, []byte(VaultPassword))
 	if err != nil {
 		fmt.Printf("Error while opening vault: %s", err)
 		fmt.Println("")
@@ -52,5 +55,27 @@ func OpenVault() *vault.Vault {
 		_ = password.StorePassword(VaultPassword)
 	}
 
-	return vault
+	return v
+}
+
+// GetAccountOrDefault find the address from the vault. If address is empty, it will fetch the default address, or the
+// first address in the vault if no default address is present.
+func GetAccountOrDefault(vault *vault.Vault, a string) *pkg.Info {
+	if a == "" {
+		return vault.GetDefaultAccount()
+	}
+
+	addr, err := address.New(a)
+	if err != nil {
+		logrus.Fatal(err)
+		os.Exit(1)
+	}
+
+	info, err := vault.GetAccountInfo(*addr)
+	if err != nil {
+		logrus.Fatal("Address not found in vault")
+		os.Exit(1)
+	}
+
+	return info
 }

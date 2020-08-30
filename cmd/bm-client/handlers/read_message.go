@@ -33,19 +33,14 @@ func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
 		logrus.Fatal(err)
 	}
 
-	// Get private key, and decrypt the encryption-key for the catalog
-	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	key, err := encrypt.Decrypt(privKey, msg.Header.Catalog.EncryptedKey)
+	key, err := encrypt.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	// Decrypt the catalog
-	catalog, err := encrypt.CatalogDecrypt(key, msg.Catalog)
+	catalog := &message.Catalog{}
+	err = encrypt.CatalogDecrypt(key, msg.Catalog, catalog)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -56,7 +51,7 @@ func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
 	// 	data, err := client.GetMessageBlock(*addr, box, messageID, b.ID)
 	// 	bb := bytes.NewBuffer(data)
 	//
-	// 	r, err := message.GetAesDecryptorReader(b.IV, b.Key, bb)
+	// 	r, err := encrypt.GetAesDecryptorReader(b.IV, b.Key, bb)
 	// 	if err != nil {
 	// 		panic(err)
 	// 	}
@@ -76,7 +71,7 @@ func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
 			panic(err)
 		}
 
-		r, err := message.GetAesDecryptorReader(a.IV, a.Key, ar)
+		r, err := encrypt.GetAesDecryptorReader(a.IV, a.Key, ar)
 		if err != nil {
 			panic(err)
 		}

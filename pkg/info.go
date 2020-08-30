@@ -1,18 +1,21 @@
 package pkg
 
-import pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+import (
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+)
 
 // Info represents client account information
 type Info struct {
 	Default bool   `json:"default"` // Is this the default account
 	Address string `json:"address"` // The address of the account
 
-	Name         string `json:"name"`         // Full name of the user
-	Organisation string `json:"organisation"` // Org of the user (if any)
+	Name     string            `json:"name"`     // Full name of the user
+	Settings map[string]string `json:"settings"` // Additional settings that can be user-defined
 
 	// Communication and encryption information
-	PrivKey string          `json:"privKey"` // PEM encoded private key
-	PubKey  string          `json:"pubKey"`  // PEM encoded public key
+	PrivKey encrypt.PrivKey `json:"privKey"` // PEM encoded private key
+	PubKey  encrypt.PubKey  `json:"pubKey"`  // PEM encoded public key
 	Pow     pow.ProofOfWork `json:"pow"`     // Proof of work
 	Server  string          `json:"server"`  // Mail server hosting this account
 }

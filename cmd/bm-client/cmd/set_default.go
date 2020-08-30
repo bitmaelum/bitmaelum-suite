@@ -5,7 +5,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var setDefaultCmd = &cobra.Command{
@@ -20,7 +19,7 @@ var setDefaultCmd = &cobra.Command{
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		if ! vault.HasAccount(*fromAddr) {
+		if !vault.HasAccount(*fromAddr) {
 			logrus.Fatal("Address not found in vault")
 		}
 
@@ -34,7 +33,7 @@ var setDefaultCmd = &cobra.Command{
 
 		err = vault.Save()
 		if err != nil {
-			log.Fatalf("error while saving vault: %s\n", err)
+			logrus.Fatalf("error while saving vault: %s\n", err)
 		}
 
 		fmt.Printf("Default address set to '%s'\n", *sdFrom)

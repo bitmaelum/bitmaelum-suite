@@ -1,7 +1,7 @@
 package apikey
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"strings"
 	"time"
 )
@@ -22,7 +22,7 @@ func NewAdminKey(valid time.Duration) KeyType {
 	}
 
 	return KeyType{
-		ID:          internal.GenerateKey("BMK-", 32),
+		ID:          encrypt.GenerateKey("BMK-", 32),
 		ValidUntil:  until,
 		Permissions: nil,
 		Admin:       true,
@@ -37,7 +37,7 @@ func NewKey(perms []string, valid time.Duration) KeyType {
 	}
 
 	return KeyType{
-		ID:          internal.GenerateKey("BMK-", 32),
+		ID:          encrypt.GenerateKey("BMK-", 32),
 		ValidUntil:  until,
 		Permissions: perms,
 		Admin:       false,

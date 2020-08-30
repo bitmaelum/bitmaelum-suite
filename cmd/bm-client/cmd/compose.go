@@ -21,13 +21,10 @@ var composeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		vault := OpenVault()
 
-		fromAddr, err := address.New(*from)
-		if err != nil {
-			logrus.Fatal(err)
-		}
-		fromInfo, err := vault.GetAccountInfo(*fromAddr)
-		if err != nil {
-			logrus.Fatal(err)
+		fromInfo := GetAccountOrDefault(vault, *from)
+		if fromInfo == nil {
+			logrus.Fatal("No account found in vault")
+			os.Exit(1)
 		}
 
 		toAddr, err := address.New(*to)

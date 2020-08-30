@@ -16,23 +16,24 @@ const (
 )
 
 func TestGenerateJWTToken(t *testing.T) {
-	data, _ := ioutil.ReadFile("./testdata/mykey.pem")
-	privKey, _ := encrypt.PEMToPrivKey(data)
+	data, _ := ioutil.ReadFile("./testdata/privkey.rsa")
+	privKey, err := encrypt.NewPrivKey(string(data))
+	assert.Nil(t, err)
 
 	haddr, _ := address.NewHash("test!")
 
-	token, err := GenerateJWTToken(*haddr, privKey)
+	token, err := GenerateJWTToken(*haddr, *privKey)
 	assert.Nil(t, err)
 	assert.Equal(t, mockToken, token)
 }
 
 func TestValidateJWTToken(t *testing.T) {
-	data, _ := ioutil.ReadFile("./testdata/mykey.pub")
-	pubKey, _ := encrypt.PEMToPubKey(data)
+	data, _ := ioutil.ReadFile("./testdata/pubkey.rsa")
+	pubKey, _ := encrypt.NewPubKey(string(data))
 
 	haddr, _ := address.NewHash("test!")
 
-	token, err := ValidateJWTToken(mockToken, *haddr, pubKey)
+	token, err := ValidateJWTToken(mockToken, *haddr, *pubKey)
 	assert.Nil(t, err)
 	assert.True(t, token.Valid)
 	assert.Equal(t, "RS256", token.Method.Alg())

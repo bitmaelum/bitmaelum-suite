@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var fetchMessagesCmd = &cobra.Command{
@@ -15,13 +15,10 @@ var fetchMessagesCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		vault := OpenVault()
 
-		addr, err := address.New(*fmAccount)
-		if err != nil {
-			logrus.Fatal(err)
-		}
-		info, err := vault.GetAccountInfo(*addr)
-		if err != nil {
-			logrus.Fatal(err)
+		info := GetAccountOrDefault(vault, *fmAccount)
+		if info == nil {
+			logrus.Fatal("No account found in vault")
+			os.Exit(1)
 		}
 
 		handlers.FetchMessages(info, *fmBox, *fmCheckOnly)

@@ -71,17 +71,13 @@ func main() {
 		panic(err)
 	}
 
-	privKey, err := encrypt.PEMToPrivKey([]byte(info.PrivKey))
+	decryptedKey, err := encrypt.Decrypt(info.PrivKey, header.Catalog.EncryptedKey)
 	if err != nil {
 		panic(err)
 	}
 
-	decryptedKey, err := encrypt.Decrypt(privKey, header.Catalog.EncryptedKey)
-	if err != nil {
-		panic(err)
-	}
-
-	catalog, err := encrypt.CatalogDecrypt(decryptedKey, data)
+	catalog := &message.Catalog{}
+	err = encrypt.CatalogDecrypt(decryptedKey, data, catalog)
 	if err != nil {
 		panic(err)
 	}
@@ -96,7 +92,7 @@ func main() {
 			panic(err)
 		}
 
-		r, err := message.GetAesDecryptorReader(block.IV, block.Key, f)
+		r, err := encrypt.GetAesDecryptorReader(block.IV, block.Key, f)
 		if err != nil {
 			f.Close()
 			panic(err)

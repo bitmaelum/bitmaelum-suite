@@ -3,6 +3,7 @@ package resolve
 import (
 	"database/sql"
 	"fmt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
 	"strings"
@@ -73,20 +74,25 @@ func (r *sqliteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 		return nil, err
 	}
 
+	pk, err := encrypt.NewPubKey(p)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Info{
 		Hash:      h,
-		PublicKey: p,
+		PublicKey: *pk,
 		Server:    a,
 	}, nil
 }
 
-func (r *sqliteRepo) Upload(addr address.HashAddress, pubKey, address, _ string) error {
+func (r *sqliteRepo) Upload(addr address.HashAddress, pubKey encrypt.PubKey, address, _ string) error {
 	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , address) VALUES (?, ?, ?)", tableName)
 	st, err := r.conn.Prepare(query)
 	if err != nil {
 		return err
 	}
 
-	_, err = st.Exec(addr.String(), pubKey, address)
+	_, err = st.Exec(addr.String(), pubKey.S, address)
 	return err
 }

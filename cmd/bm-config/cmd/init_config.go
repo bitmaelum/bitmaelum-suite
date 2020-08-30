@@ -22,11 +22,11 @@ This command creates default templates that you can use as a starting point.`,
 		s, _ := cmd.Flags().GetBool("server")
 
 		if c == false && s == false || c == true {
-			createFile("./" + config.ClientConfigFile, config.GenerateClientConfig)
+			createFile("./"+config.ClientConfigFile, config.GenerateClientConfig)
 			fmt.Println("Generated client configuration file")
 		}
 		if c == false && s == false || s == true {
-			createFile("./" + config.ServerConfigFile, config.GenerateServerConfig)
+			createFile("./"+config.ServerConfigFile, config.GenerateServerConfig)
 			fmt.Println("Generated server configuration file")
 		}
 	},

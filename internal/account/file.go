@@ -2,6 +2,7 @@ package account
 
 import (
 	"encoding/json"
+	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -18,7 +19,7 @@ const (
 
 // PubKeys holds a list of public keys
 type PubKeys struct {
-	PubKeys []string `json:"keys"`
+	PubKeys []encrypt.PubKey `json:"keys"`
 }
 
 type fileRepo struct {

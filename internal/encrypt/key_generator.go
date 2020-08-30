@@ -1,4 +1,4 @@
-package internal
+package encrypt
 
 import (
 	"math/rand"

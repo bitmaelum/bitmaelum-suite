@@ -10,7 +10,7 @@ import (
 func ListAccounts(vault *vault.Vault, displayKeys bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 
-	headers := []string{"Default", "Address", "Name", "Organisation", "Server"}
+	headers := []string{"Default", "Address", "Name", "Server"}
 	align := []int{tablewriter.ALIGN_CENTER, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT}
 
 	if displayKeys {
@@ -31,11 +31,10 @@ func ListAccounts(vault *vault.Vault, displayKeys bool) {
 			def,
 			acc.Address,
 			acc.Name,
-			acc.Organisation,
 			acc.Server,
 		}
 		if displayKeys {
-			values = append(values, acc.PrivKey, acc.PubKey)
+			values = append(values, acc.PrivKey.S, acc.PubKey.S)
 		}
 
 		table.Append(values)

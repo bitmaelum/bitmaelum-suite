@@ -44,7 +44,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 	fmt.Printf("not found. This is a good thing.\n")
 
 	fmt.Printf("* Generating your secret key to send and read mail: ")
-	pubKey, privKey, err := encrypt.GenerateKeyPair(encrypt.KeyTypeRSA)
+	privKey, pubKey, err := encrypt.GenerateKeyPair(encrypt.KeyTypeRSA)
 	if err != nil {
 		fmt.Print(err)
 		fmt.Println("")
@@ -59,13 +59,12 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 
 	fmt.Printf("* Adding your new account into the vault: ")
 	info := pkg.Info{
-		Address:      bmAddr,
-		Name:         name,
-		Organisation: organisation,
-		PrivKey:      privKey,
-		PubKey:       pubKey,
-		Pow:          *proof,
-		Server:       server,
+		Address: bmAddr,
+		Name:    name,
+		PrivKey: *privKey,
+		PubKey:  *pubKey,
+		Pow:     *proof,
+		Server:  server,
 	}
 
 	vault.AddAccount(info)

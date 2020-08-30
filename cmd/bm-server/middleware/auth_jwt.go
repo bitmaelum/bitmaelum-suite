@@ -62,7 +62,7 @@ func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 	tokenString := auth[7:]
 
 	ar := container.GetAccountRepo()
-	keys, err := ar.FetchDecodedKeys(addr)
+	keys, err := ar.FetchKeys(addr)
 	if err != nil {
 		return nil, ErrTokenNotValidated
 	}

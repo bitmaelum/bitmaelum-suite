@@ -8,28 +8,48 @@ import (
 	"testing"
 )
 
+var (
+	message = []byte("this is the message we need to sign")
+)
+
 func TestGenerate(t *testing.T) {
-	pubPEM, privPEM, err := GenerateKeyPair(KeyTypeRSA)
+	privKey, pubKey, err := GenerateKeyPair(KeyTypeRSA)
 	assert.Nil(t, err)
-	pubKey, _ := PEMToPubKey([]byte(pubPEM))
-	privKey, _ := PEMToPrivKey([]byte(privPEM))
-	assert.IsType(t, (*rsa.PrivateKey)(nil), privKey)
-	assert.IsType(t, (*rsa.PublicKey)(nil), pubKey)
+	assert.IsType(t, (*rsa.PrivateKey)(nil), privKey.K)
+	assert.IsType(t, (*rsa.PublicKey)(nil), pubKey.K)
 
-	pubPEM, privPEM, err = GenerateKeyPair(KeyTypeECDSA)
+	// Check if we can verify with this key
+	sig, err := Sign(*privKey, message)
 	assert.Nil(t, err)
-	pubKey, _ = PEMToPubKey([]byte(pubPEM))
-	privKey, _ = PEMToPrivKey([]byte(privPEM))
-	assert.IsType(t, (*ecdsa.PrivateKey)(nil), privKey)
-	assert.IsType(t, (*ecdsa.PublicKey)(nil), pubKey)
-
-	pubPEM, privPEM, err = GenerateKeyPair(KeyTypeED25519)
+	b, err := Verify(*pubKey, message, sig)
 	assert.Nil(t, err)
-	pubKey, _ = PEMToPubKey([]byte(pubPEM))
-	privKey, _ = PEMToPrivKey([]byte(privPEM))
-	assert.IsType(t, (ed25519.PrivateKey)(nil), privKey)
-	assert.IsType(t, (ed25519.PublicKey)(nil), pubKey)
+	assert.True(t, b)
 
-	_, _, err = GenerateKeyPair(25)
+	privKey, pubKey, err = GenerateKeyPair(KeyTypeECDSA)
+	assert.Nil(t, err)
+	assert.IsType(t, (*ecdsa.PrivateKey)(nil), privKey.K)
+	assert.IsType(t, (*ecdsa.PublicKey)(nil), pubKey.K)
+
+	// Check if we can verify with this key
+	sig, err = Sign(*privKey, message)
+	assert.Nil(t, err)
+	b, err = Verify(*pubKey, message, sig)
+	assert.Nil(t, err)
+	assert.True(t, b)
+
+	privKey, pubKey, err = GenerateKeyPair(KeyTypeED25519)
+	assert.Nil(t, err)
+	assert.IsType(t, (ed25519.PrivateKey)(nil), privKey.K)
+	assert.IsType(t, (ed25519.PublicKey)(nil), pubKey.K)
+
+	// Check if we can verify with this key
+	sig, err = Sign(*privKey, message)
+	assert.Nil(t, err)
+	b, err = Verify(*pubKey, message, sig)
+	assert.Nil(t, err)
+	assert.True(t, b)
+
+	// Unknown key
+	_, _, err = GenerateKeyPair("foobar")
 	assert.EqualError(t, err, "incorrect key type specified")
 }

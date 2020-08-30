@@ -76,11 +76,15 @@ func (pow *ProofOfWork) Work() {
 	// Count from 0 to MAXINT
 	var counter uint64
 	for counter < math.MaxInt64 {
-		// SHA256 the data
+		// 1st round of SHA256
 		hash := sha256.Sum256(bytes.Join([][]byte{
 			[]byte(pow.Data),
 			intToHex(counter),
 		}, []byte{}))
+
+
+		// 2nd round of SHA256
+		hash = sha256.Sum256(hash[:])
 		hashInt.SetBytes(hash[:])
 
 		// Is it less than our target, then we have done our work
@@ -99,10 +103,14 @@ func (pow *ProofOfWork) Work() {
 func (pow *ProofOfWork) IsValid() bool {
 	var hashInt big.Int
 
+	// 1st round
 	hash := sha256.Sum256(bytes.Join([][]byte{
 		[]byte(pow.Data),
 		intToHex(pow.Proof),
 	}, []byte{}))
+
+	// 2nd round of SHA256
+	hash = sha256.Sum256(hash[:])
 	hashInt.SetBytes(hash[:])
 
 	target := big.NewInt(1)
