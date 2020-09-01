@@ -82,7 +82,6 @@ func (pow *ProofOfWork) Work() {
 			intToHex(counter),
 		}, []byte{}))
 
-
 		// 2nd round of SHA256
 		hash = sha256.Sum256(hash[:])
 		hashInt.SetBytes(hash[:])

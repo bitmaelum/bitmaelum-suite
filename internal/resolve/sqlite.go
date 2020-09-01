@@ -3,8 +3,8 @@ package resolve
 import (
 	"database/sql"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
 	"strings"
 	"sync"
@@ -74,7 +74,7 @@ func (r *sqliteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 		return nil, err
 	}
 
-	pk, err := encrypt.NewPubKey(p)
+	pk, err := bmcrypto.NewPubKey(p)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (r *sqliteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	}, nil
 }
 
-func (r *sqliteRepo) Upload(addr address.HashAddress, pubKey encrypt.PubKey, address, _ string) error {
+func (r *sqliteRepo) Upload(addr address.HashAddress, pubKey bmcrypto.PubKey, address, _ string) error {
 	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , address) VALUES (?, ?, ?)", tableName)
 	st, err := r.conn.Prepare(query)
 	if err != nil {

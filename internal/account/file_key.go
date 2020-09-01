@@ -2,15 +2,15 @@ package account
 
 import (
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/nightlyone/lockfile"
 	"github.com/sirupsen/logrus"
 	"os"
 )
 
 // Store the public key for this account
-func (r *fileRepo) StoreKey(addr address.HashAddress, key encrypt.PubKey) error {
+func (r *fileRepo) StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error {
 	// Lock our key file for writing
 	lockfilePath := r.getPath(addr, pubKeyFile+".lock")
 	lock, err := lockfile.New(lockfilePath)
@@ -51,7 +51,7 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key encrypt.PubKey) error 
 }
 
 // Retrieve the public keys for this account
-func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]encrypt.PubKey, error) {
+func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]bmcrypto.PubKey, error) {
 	pk := &PubKeys{}
 	err := r.fetchJSON(addr, pubKeyFile, pk)
 	if err != nil && os.IsNotExist(err) {

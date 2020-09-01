@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
@@ -14,8 +14,8 @@ type Info struct {
 	Settings map[string]string `json:"settings"` // Additional settings that can be user-defined
 
 	// Communication and encryption information
-	PrivKey encrypt.PrivKey `json:"privKey"` // PEM encoded private key
-	PubKey  encrypt.PubKey  `json:"pubKey"`  // PEM encoded public key
-	Pow     pow.ProofOfWork `json:"pow"`     // Proof of work
-	Server  string          `json:"server"`  // Mail server hosting this account
+	PrivKey bmcrypto.PrivKey `json:"privKey"` // PEM encoded private key
+	PubKey  bmcrypto.PubKey  `json:"pubKey"`  // PEM encoded public key
+	Pow     pow.ProofOfWork  `json:"pow"`     // Proof of work
+	Server  string           `json:"server"`  // Mail server hosting this account
 }

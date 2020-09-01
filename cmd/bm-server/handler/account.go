@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -16,7 +16,7 @@ import (
 type inputCreateAccount struct {
 	Addr        address.HashAddress `json:"address"`
 	Token       string              `json:"token"`
-	PublicKey   encrypt.PubKey      `json:"public_key"`
+	PublicKey   bmcrypto.PubKey     `json:"public_key"`
 	ProofOfWork struct {
 		Bits  int    `json:"bits"`
 		Proof uint64 `json:"proof"`

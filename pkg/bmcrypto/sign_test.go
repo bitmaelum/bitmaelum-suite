@@ -1,4 +1,4 @@
-package encrypt
+package bmcrypto
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -23,11 +23,11 @@ func (d *dummyReader) Read(b []byte) (n int, err error) {
 func TestSignRSA(t *testing.T) {
 	randReader = &dummyReader{}
 
-	data, err := ioutil.ReadFile("../testdata/privkey.rsa")
+	data, err := ioutil.ReadFile("../../testdata/privkey.rsa")
 	assert.NoError(t, err)
 	privKey, err := NewPrivKey(string(data))
 	assert.NoError(t, err)
-	data, err = ioutil.ReadFile("../testdata/pubkey.rsa")
+	data, err = ioutil.ReadFile("../../testdata/pubkey.rsa")
 	assert.NoError(t, err)
 	pubKey, err := NewPubKey(string(data))
 	assert.NoError(t, err)
@@ -48,11 +48,11 @@ func TestSignRSA(t *testing.T) {
 func TestSignECDSA(t *testing.T) {
 	randReader = &dummyReader{}
 
-	data, err := ioutil.ReadFile("../testdata/privkey.ecdsa")
+	data, err := ioutil.ReadFile("../../testdata/privkey.ecdsa")
 	assert.NoError(t, err)
 	privKey, err := NewPrivKey(string(data))
 	assert.NoError(t, err)
-	data, err = ioutil.ReadFile("../testdata/pubkey.ecdsa")
+	data, err = ioutil.ReadFile("../../testdata/pubkey.ecdsa")
 	assert.NoError(t, err)
 	pubKey, err := NewPubKey(string(data))
 	assert.NoError(t, err)
@@ -73,11 +73,11 @@ func TestSignECDSA(t *testing.T) {
 func TestSignED25519(t *testing.T) {
 	randReader = &dummyReader{}
 
-	data, err := ioutil.ReadFile("../testdata/privkey.ed25519")
+	data, err := ioutil.ReadFile("../../testdata/privkey.ed25519")
 	assert.NoError(t, err)
 	privKey, err := NewPrivKey(string(data))
 	assert.NoError(t, err)
-	data, err = ioutil.ReadFile("../testdata/pubkey.ed25519")
+	data, err = ioutil.ReadFile("../../testdata/pubkey.ed25519")
 	assert.NoError(t, err)
 	pubKey, err := NewPubKey(string(data))
 	assert.NoError(t, err)
