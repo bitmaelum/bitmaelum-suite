@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/vtolstov/jwt-go"
 	"io/ioutil"
@@ -16,8 +16,8 @@ const (
 )
 
 func TestGenerateJWTToken(t *testing.T) {
-	data, _ := ioutil.ReadFile("./testdata/privkey.rsa")
-	privKey, err := encrypt.NewPrivKey(string(data))
+	data, _ := ioutil.ReadFile("../testdata/privkey.rsa")
+	privKey, err := bmcrypto.NewPrivKey(string(data))
 	assert.Nil(t, err)
 
 	haddr, _ := address.NewHash("test!")
@@ -28,8 +28,8 @@ func TestGenerateJWTToken(t *testing.T) {
 }
 
 func TestValidateJWTToken(t *testing.T) {
-	data, _ := ioutil.ReadFile("./testdata/pubkey.rsa")
-	pubKey, _ := encrypt.NewPubKey(string(data))
+	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
+	pubKey, _ := bmcrypto.NewPubKey(string(data))
 
 	haddr, _ := address.NewHash("test!")
 

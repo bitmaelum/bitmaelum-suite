@@ -1,15 +1,15 @@
 package account
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"os"
 )
 
 // Create a new account for this address
-func (r *fileRepo) Create(addr address.HashAddress, pubKey encrypt.PubKey) error {
+func (r *fileRepo) Create(addr address.HashAddress, pubKey bmcrypto.PubKey) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 

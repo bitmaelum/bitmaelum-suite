@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal/fileio"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"golang.org/x/crypto/acme"
 	"io/ioutil"
 	"net"
@@ -304,7 +304,7 @@ func getAccountFromAcmeDir(dir string) (crypto.Signer, *acme.Account, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	privKey, _ := encrypt.NewPrivKey(data)
+	privKey, _ := bmcrypto.NewPrivKey(data)
 	if err != nil {
 		return nil, nil, err
 	}

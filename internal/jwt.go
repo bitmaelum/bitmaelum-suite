@@ -3,8 +3,8 @@ package internal
 import (
 	"crypto/subtle"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/vtolstov/jwt-go"
 	"time"
 )
@@ -23,7 +23,7 @@ type jwtClaims struct {
  */
 
 // GenerateJWTToken generates a JWT token with the address and singed by the given private key
-func GenerateJWTToken(addr address.HashAddress, key encrypt.PrivKey) (string, error) {
+func GenerateJWTToken(addr address.HashAddress, key bmcrypto.PrivKey) (string, error) {
 	claims := &jwt.StandardClaims{
 		ExpiresAt: jwt.TimeFunc().Add(time.Hour * time.Duration(1)).Unix(),
 		IssuedAt:  jwt.TimeFunc().Unix(),
@@ -37,7 +37,7 @@ func GenerateJWTToken(addr address.HashAddress, key encrypt.PrivKey) (string, er
 }
 
 // ValidateJWTToken validates a JWT token with the given public key and address
-func ValidateJWTToken(tokenString string, addr address.HashAddress, key encrypt.PubKey) (*jwt.Token, error) {
+func ValidateJWTToken(tokenString string, addr address.HashAddress, key bmcrypto.PubKey) (*jwt.Token, error) {
 	kf := func(token *jwt.Token) (interface{}, error) {
 		// Make sure we signed with RS256
 		if token.Method != jwt.SigningMethodRS256 {
@@ -54,17 +54,17 @@ func ValidateJWTToken(tokenString string, addr address.HashAddress, key encrypt.
 
 	// Make sure the token actually uses the correct signing method
 	switch key.Type {
-	case encrypt.KeyTypeRSA:
+	case bmcrypto.KeyTypeRSA:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")
 		}
-	case encrypt.KeyTypeECDSA:
+	case bmcrypto.KeyTypeECDSA:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")
 		}
-	case encrypt.KeyTypeED25519:
+	case bmcrypto.KeyTypeED25519:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			return nil, errors.New("incorrect signing method")

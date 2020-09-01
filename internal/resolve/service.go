@@ -3,9 +3,9 @@ package resolve
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,9 +16,9 @@ type Service struct {
 
 // Info is a structure returned by the external resolver system
 type Info struct {
-	Hash      string         `json:"hash"`       // Hash of the email address
-	PublicKey encrypt.PubKey `json:"public_key"` // PublicKey of the user
-	Server    string         `json:"server"`     // Server where this email address resides
+	Hash      string          `json:"hash"`       // Hash of the email address
+	PublicKey bmcrypto.PubKey `json:"public_key"` // PublicKey of the user
+	Server    string          `json:"server"`     // Server where this email address resides
 }
 
 // KeyRetrievalService initialises a key retrieval service.
@@ -44,7 +44,7 @@ func (s *Service) UploadInfo(info pkg.Info, resolveAddress string) error {
 
 	// Sign resolve address
 	hash := sha256.Sum256([]byte(resolveAddress))
-	signature, err := encrypt.Sign(info.PrivKey, hash[:])
+	signature, err := bmcrypto.Sign(info.PrivKey, hash[:])
 	if err != nil {
 		return err
 	}

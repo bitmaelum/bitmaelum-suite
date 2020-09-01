@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -18,16 +18,16 @@ type remoteRepo struct {
 
 // KeyUpload is a JSON structure we upload to a resolver server
 type KeyUpload struct {
-	PublicKey encrypt.PubKey `json:"public_key"`
-	Address   string         `json:"address"`
-	Signature string         `json:"signature"`
+	PublicKey bmcrypto.PubKey `json:"public_key"`
+	Address   string          `json:"address"`
+	Signature string          `json:"signature"`
 }
 
 // KeyDownload is a JSON structure we download from a resolver server
 type KeyDownload struct {
-	Hash      string         `json:"hash"`
-	PublicKey encrypt.PubKey `json:"public_key"`
-	Address   string         `json:"address"`
+	Hash      string          `json:"hash"`
+	PublicKey bmcrypto.PubKey `json:"public_key"`
+	Address   string          `json:"address"`
 }
 
 // NewRemoteRepository creates new remote resolve repository
@@ -81,7 +81,7 @@ func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	return nil, errKeyNotFound
 }
 
-func (r *remoteRepo) Upload(addr address.HashAddress, pubKey encrypt.PubKey, address, signature string) error {
+func (r *remoteRepo) Upload(addr address.HashAddress, pubKey bmcrypto.PubKey, address, signature string) error {
 	data := &KeyUpload{
 		PublicKey: pubKey,
 		Address:   address,

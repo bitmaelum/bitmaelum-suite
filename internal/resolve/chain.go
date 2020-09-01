@@ -1,8 +1,8 @@
 package resolve
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 // ChainRepository holds a list of multiple repositories which can all be tried to resolve addresses and keys
@@ -35,7 +35,7 @@ func (r *ChainRepository) Resolve(addr address.HashAddress) (*Info, error) {
 }
 
 // Upload public key through the chained repos
-func (r *ChainRepository) Upload(addr address.HashAddress, pubKey encrypt.PubKey, address, signature string) error {
+func (r *ChainRepository) Upload(addr address.HashAddress, pubKey bmcrypto.PubKey, address, signature string) error {
 	for idx := range r.repos {
 		err := r.repos[idx].Upload(addr, pubKey, address, signature)
 		if err != nil {

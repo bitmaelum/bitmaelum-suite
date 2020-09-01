@@ -1,4 +1,4 @@
-package encrypt
+package bmcrypto
 
 import (
 	"crypto/ecdsa"

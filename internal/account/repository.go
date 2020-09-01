@@ -1,9 +1,9 @@
 package account
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"io"
 	"time"
 )
@@ -41,7 +41,7 @@ type Repository interface {
 
 // AddressRepository creates, checks or deletes complete accounts. Address is not the correct word for this.
 type AddressRepository interface {
-	Create(addr address.HashAddress, pubKey encrypt.PubKey) error
+	Create(addr address.HashAddress, pubKey bmcrypto.PubKey) error
 	Exists(addr address.HashAddress) bool
 	Delete(addr address.HashAddress) error
 }
@@ -58,8 +58,8 @@ type FlagRepository interface {
 // KeyRepository gets and sets public keys into an account
 type KeyRepository interface {
 	// Public key
-	StoreKey(addr address.HashAddress, key encrypt.PubKey) error
-	FetchKeys(addr address.HashAddress) ([]encrypt.PubKey, error)
+	StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error
+	FetchKeys(addr address.HashAddress) ([]bmcrypto.PubKey, error)
 }
 
 // BoxRepository deals with message boxes insides an account
