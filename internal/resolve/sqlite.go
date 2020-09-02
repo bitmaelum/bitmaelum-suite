@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
 	"strings"
 	"sync"
@@ -86,13 +87,24 @@ func (r *sqliteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	}, nil
 }
 
-func (r *sqliteRepo) Upload(addr address.HashAddress, pubKey bmcrypto.PubKey, address, _ string) error {
+func (r *sqliteRepo) Upload(info *Info, _ bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
 	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , address) VALUES (?, ?, ?)", tableName)
 	st, err := r.conn.Prepare(query)
 	if err != nil {
 		return err
 	}
 
-	_, err = st.Exec(addr.String(), pubKey.S, address)
+	_, err = st.Exec(info.Hash, info.PublicKey.S, info.Server)
+	return err
+}
+
+func (r *sqliteRepo) Delete(info *Info, privKey bmcrypto.PrivKey) error {
+	query := fmt.Sprintf("DELETE FROM %s WHERE hash LIKE ?", tableName)
+	st, err := r.conn.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	_, err = st.Exec(info.Hash)
 	return err
 }

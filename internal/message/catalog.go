@@ -2,11 +2,11 @@ package message
 
 import (
 	"errors"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
-	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	core "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"io"
@@ -44,11 +44,11 @@ type AttachmentType struct {
 // actual message, blocks and attachments.
 type Catalog struct {
 	From struct {
-		Address      string           `json:"address"`       // BitMaelum address of the sender
-		Name         string           `json:"name"`          // Name of the sender
-		Organisation string           `json:"organisation"`  // Organisation of the sender
-		ProofOfWork  core.ProofOfWork `json:"proof_of_work"` // Sender's proof of work
-		PublicKey    string           `json:"public_key"`    // Public key of the sender
+		Address      string                  `json:"address"`       // BitMaelum address of the sender
+		Name         string                  `json:"name"`          // Name of the sender
+		Organisation string                  `json:"organisation"`  // Organisation of the sender
+		ProofOfWork  proofofwork.ProofOfWork `json:"proof_of_work"` // Sender's proof of work
+		PublicKey    string                  `json:"public_key"`    // Public key of the sender
 	} `json:"from"`
 	To struct {
 		Address string `json:"address"` // Address of the recipient
@@ -78,7 +78,7 @@ type Block struct {
 }
 
 // NewCatalog initialises a new catalog. This catalog has to be filled with more info, blocks and attachments
-func NewCatalog(info *pkg.Info) *Catalog {
+func NewCatalog(info *internal.AccountInfo) *Catalog {
 	c := &Catalog{}
 
 	c.CreatedAt = time.Now()

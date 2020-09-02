@@ -11,7 +11,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
-	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"golang.org/x/sync/errgroup"
 	"io"
@@ -20,7 +19,7 @@ import (
 )
 
 // ComposeMessage composes a new message from the given account Info to the "to" with given subject, blocks and attachments
-func ComposeMessage(info pkg.Info, toAddr address.Address, subject string, b, a []string) error {
+func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject string, b, a []string) error {
 	// Resolve public key for our recipient
 	resolver := container.GetResolveService()
 	toInfo, err := resolver.Resolve(toAddr.Hash())
@@ -64,7 +63,7 @@ func ComposeMessage(info pkg.Info, toAddr address.Address, subject string, b, a 
 	return nil
 }
 
-func uploadToServer(info pkg.Info, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
+func uploadToServer(info internal.AccountInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
 	client, err := api.NewAuthenticated(&info, api.ClientOpts{
 		Host:          info.Server,
 		AllowInsecure: config.Client.Server.AllowInsecure,
@@ -116,13 +115,13 @@ func uploadToServer(info pkg.Info, header *message.Header, encryptedCatalog []by
 }
 
 // Generate a header file based on the info provided
-func generateHeader(info pkg.Info, toInfo *resolve.Info, catalog []byte, catalogKey []byte) (*message.Header, error) {
+func generateHeader(info internal.AccountInfo, toInfo *resolve.Info, catalog []byte, catalogKey []byte) (*message.Header, error) {
 	header := &message.Header{}
 
 	// We can add a multitude of checksums here.. whatever we like
 	r := bytes.NewBuffer(catalog)
 	var err error
-	header.Catalog.Checksum, err = internal.CalculateChecksums(r)
+	header.Catalog.Checksum, err = message.CalculateChecksums(r)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +149,7 @@ func generateHeader(info pkg.Info, toInfo *resolve.Info, catalog []byte, catalog
 }
 
 // Generate a complete catalog file. Outputs catalog key and the encrypted catalog
-func generateCatalog(info pkg.Info, toAddr address.Address, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
+func generateCatalog(info internal.AccountInfo, toAddr address.Address, subject string, b []message.Block, a []message.Attachment) (*message.Catalog, error) {
 	// Create catalog
 	cat := message.NewCatalog(&info)
 

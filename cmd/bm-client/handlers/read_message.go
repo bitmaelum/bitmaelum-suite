@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
@@ -13,7 +13,7 @@ import (
 )
 
 // ReadMessage will read a specific message blocks
-func ReadMessage(info *pkg.Info, box, messageID, blockType string) {
+func ReadMessage(info *internal.AccountInfo, box, messageID, blockType string) {
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
 		Host:          info.Server,
 		AllowInsecure: config.Client.Server.AllowInsecure,

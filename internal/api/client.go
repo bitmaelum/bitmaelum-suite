@@ -7,12 +7,13 @@ import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
-	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 	"time"
 )
@@ -45,7 +46,7 @@ func NewAnonymous(opts ClientOpts) (*API, error) {
 				// Allow insecure and self-signed certificates if so configured
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
 			},
-			Timeout: 30 * time.Second,
+			Timeout: 15 * time.Second,
 		},
 	}
 
@@ -54,7 +55,7 @@ func NewAnonymous(opts ClientOpts) (*API, error) {
 
 // NewAuthenticated creates a new client that connects with the specified account to a BitMaelum server (normally
 // client-to-server communication)
-func NewAuthenticated(info *pkg.Info, opts ClientOpts) (*API, error) {
+func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error) {
 	var jwtToken string
 
 	if info != nil {
@@ -92,6 +93,9 @@ func (api *API) Get(path string) (body []byte, statusCode int, err error) {
 	}
 
 	r, statusCode, err := api.do(req)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	body, err = ioutil.ReadAll(r)
 	_ = r.Close()
 	return body, statusCode, err
@@ -109,18 +113,18 @@ func (api *API) GetReader(path string) (r io.Reader, statusCode int, err error) 
 }
 
 // GetJSON gets JSON result from API
-func (api *API) GetJSON(path string, v interface{}) (status int, err error) {
-	body, status, err := api.Get(path)
+func (api *API) GetJSON(path string, v interface{}) (body []byte, status int, err error) {
+	body, status, err = api.Get(path)
 	if err != nil {
-		return status, err
+		return body, status, err
 	}
 
 	err = json.Unmarshal(body, v)
 	if err != nil {
-		return status, err
+		return body, status, err
 	}
 
-	return status, nil
+	return body, status, nil
 }
 
 // Post posts to API by single bytes
@@ -146,6 +150,9 @@ func (api *API) PostReader(path string, r io.Reader) (body []byte, statusCode in
 	}
 
 	r, statusCode, err = api.do(req)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	body, err = ioutil.ReadAll(r)
 	return body, statusCode, err
 }
@@ -158,6 +165,9 @@ func (api *API) Delete(path string) (body []byte, statusCode int, err error) {
 	}
 
 	r, statusCode, err := api.do(req)
+	if err != nil {
+		return nil, statusCode, err
+	}
 	body, err = ioutil.ReadAll(r)
 	return body, statusCode, err
 }
@@ -177,11 +187,14 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 		req.Header.Set("Authorization", "Bearer "+api.jwt)
 	}
 
+	logHttp(req, nil)
 	resp, err := api.client.Do(req)
 	if err != nil {
+		logHttp(nil, err)
 		return nil, 0, err
 	}
 
+	logHttp(resp, nil)
 	return resp.Body, resp.StatusCode, nil
 }
 
@@ -199,4 +212,37 @@ func canonicalHost(host string) string {
 	}
 
 	return host
+}
+
+func logHttp(v interface{}, err error) {
+	if err == nil {
+		logrus.Tracef("%s\n\n", err)
+		return
+	}
+
+	var data []byte
+
+	switch v.(type) {
+	case *http.Request:
+		data, err = httputil.DumpRequest(v.(*http.Request), true)
+	case *http.Response:
+		data, err = httputil.DumpResponse(v.(*http.Response), true)
+	}
+
+    logrus.Tracef("%s\n\n", data)
+}
+
+func getErrorFromResponse(body []byte) error {
+	type errorStatus struct {
+		Error bool `json:"error"`
+		Status string `json:"status"`
+	}
+
+	s := &errorStatus{}
+	err := json.Unmarshal(body, &s)
+	if err != nil {
+		return errNoSuccess
+	}
+
+	return errors.New(s.Status)
 }

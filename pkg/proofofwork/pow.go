@@ -5,10 +5,14 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"math"
 	"math/big"
 	"strconv"
+	"strings"
 )
 
 /*
@@ -49,6 +53,32 @@ func New(bits int, data string, proof uint64) *ProofOfWork {
 	return pow
 }
 
+// NewFromString generates a proof-of-work based on the given string
+func NewFromString(s string) (*ProofOfWork, error) {
+	parts := strings.SplitN(s, "$", 3)
+	if len(parts) != 3 {
+		return nil, errors.New("incorrect proof-of-work format")
+	}
+
+	bits, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := base64.StdEncoding.DecodeString(parts[1])
+
+	proof, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return nil, err
+	}
+
+	return &ProofOfWork{
+		Bits: bits,
+		Data: string(data),
+		Proof: uint64(proof),
+	}, nil
+}
+
 // GenerateWorkData generates random work
 func GenerateWorkData() (string, error) {
 	data := make([]byte, 32)
@@ -63,6 +93,11 @@ func GenerateWorkData() (string, error) {
 // HasDoneWork returns true if this instance already has done proof-of-work
 func (pow *ProofOfWork) HasDoneWork() bool {
 	return pow.Proof > 0
+}
+
+// Return a representation of proof-of-work
+func (pow *ProofOfWork) String() string {
+	return fmt.Sprintf("%d$%s$%d", pow.Bits, base64.StdEncoding.EncodeToString([]byte(pow.Data)), pow.Proof)
 }
 
 // Work actually does the proof-of-work
@@ -96,6 +131,49 @@ func (pow *ProofOfWork) Work() {
 	}
 
 	pow.Proof = counter
+}
+
+// MarshalJSON marshals a pow into bytes
+func (pow *ProofOfWork) MarshalJSON() ([]byte, error) {
+	return json.Marshal(pow.String())
+}
+
+// UnmarshalJSON unmarshals bytes into a pow
+func (pow *ProofOfWork) UnmarshalJSON(b []byte) error {
+	var s string
+
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		// Seems incorrect, try "regular json"
+		type powtype struct {
+			Bits int
+			Data string
+			Proof uint64
+		}
+
+		pt := powtype{}
+		err := json.Unmarshal(b, &pt)
+		if err != nil {
+			return err
+		}
+
+		pow.Bits = pt.Bits
+		pow.Data = pt.Data
+		pow.Proof = pt.Proof
+		return nil
+	}
+
+	powCopy, err := NewFromString(s)
+	if err != nil {
+		return err
+	}
+
+	// This seems wrong, but copy() doesn't work?
+	pow.Bits = powCopy.Bits
+	pow.Data = powCopy.Data
+	pow.Proof = powCopy.Proof
+
+	return err
 }
 
 // IsValid returns true when the given work can be validated against the proof

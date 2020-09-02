@@ -3,6 +3,7 @@ package resolve
 import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
 // ChainRepository holds a list of multiple repositories which can all be tried to resolve addresses and keys
@@ -35,9 +36,21 @@ func (r *ChainRepository) Resolve(addr address.HashAddress) (*Info, error) {
 }
 
 // Upload public key through the chained repos
-func (r *ChainRepository) Upload(addr address.HashAddress, pubKey bmcrypto.PubKey, address, signature string) error {
+func (r *ChainRepository) Upload(info *Info, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
 	for idx := range r.repos {
-		err := r.repos[idx].Upload(addr, pubKey, address, signature)
+		err := r.repos[idx].Upload(info, privKey, pow)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Delete from repos
+func (r *ChainRepository) Delete(info *Info, privKey bmcrypto.PrivKey) error {
+	for idx := range r.repos {
+		err := r.repos[idx].Delete(info, privKey)
 		if err != nil {
 			return err
 		}

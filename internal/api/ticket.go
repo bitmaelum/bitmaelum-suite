@@ -56,7 +56,7 @@ func (api *API) GetAnonymousTicket(from, to address.HashAddress, subscriptionID 
 	}
 
 	if (statusCode < 200 || statusCode > 299) && statusCode != 412 {
-		return nil, errNoSuccess
+		return nil, getErrorFromResponse(body)
 	}
 
 	// Parse body for ticket

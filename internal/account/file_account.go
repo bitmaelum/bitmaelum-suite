@@ -24,8 +24,10 @@ func (r *fileRepo) Create(addr address.HashAddress, pubKey bmcrypto.PubKey) erro
 		return r.StoreKey(addr, pubKey)
 	})
 	for _, box := range MandatoryBoxes {
+		boxCopy := box
 		g.Go(func() error {
-			return r.CreateBox(addr, box)
+			logrus.Trace("Creating box: ", boxCopy)
+			return r.CreateBox(addr, boxCopy)
 		})
 	}
 

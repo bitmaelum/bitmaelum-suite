@@ -17,10 +17,7 @@ type inputCreateAccount struct {
 	Addr        address.HashAddress `json:"address"`
 	Token       string              `json:"token"`
 	PublicKey   bmcrypto.PubKey     `json:"public_key"`
-	ProofOfWork struct {
-		Bits  int    `json:"bits"`
-		Proof uint64 `json:"proof"`
-	} `json:"proof_of_work"`
+	ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
 }
 
 // CreateAccount will create a new account
@@ -69,9 +66,6 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		ErrorOut(w, http.StatusInternalServerError, "cannot create account")
 		return
 	}
-
-	// Done with the invite, let's remove
-	_ = inviteRepo.Remove(input.Addr)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

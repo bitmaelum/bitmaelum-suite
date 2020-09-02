@@ -33,7 +33,6 @@ type BoxInfo struct {
 // Repository is the main repository that needs to be implemented. It's pretty big
 type Repository interface {
 	AddressRepository
-	FlagRepository
 	KeyRepository
 	BoxRepository
 	MessageRepository
@@ -44,15 +43,6 @@ type AddressRepository interface {
 	Create(addr address.HashAddress, pubKey bmcrypto.PubKey) error
 	Exists(addr address.HashAddress) bool
 	Delete(addr address.HashAddress) error
-}
-
-// FlagRepository is for dealing with message flags
-// @TODO flag repository? Are we going to use flags on messages this way?
-type FlagRepository interface {
-	// Flags
-	GetFlags(addr address.HashAddress, box int, id string) ([]string, error)
-	SetFlag(addr address.HashAddress, box int, id string, flag string) error
-	UnsetFlag(addr address.HashAddress, box int, id string, flag string) error
 }
 
 // KeyRepository gets and sets public keys into an account

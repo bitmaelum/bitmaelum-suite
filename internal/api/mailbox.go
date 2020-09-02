@@ -43,13 +43,13 @@ type MailboxMessages struct {
 func (api *API) GetMailboxList(addr address.HashAddress) (*MailboxList, error) {
 	in := &MailboxList{}
 
-	statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/boxes", addr.String()), in)
+	resp, statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/boxes", addr.String()), in)
 	if err != nil {
 		return nil, err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return nil, errNoSuccess
+		return nil, getErrorFromResponse(resp)
 	}
 
 	return in, nil
@@ -59,13 +59,13 @@ func (api *API) GetMailboxList(addr address.HashAddress) (*MailboxList, error) {
 func (api *API) GetMailboxMessages(addr address.HashAddress, box string) (*MailboxMessages, error) {
 	in := &MailboxMessages{}
 
-	statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s", addr.String(), box), in)
+	body, statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s", addr.String(), box), in)
 	if err != nil {
 		return nil, err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return nil, errNoSuccess
+		return nil, getErrorFromResponse(body)
 	}
 
 	return in, nil
