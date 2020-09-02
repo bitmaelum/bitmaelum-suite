@@ -6,9 +6,11 @@ import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 )
 
 type remoteRepo struct {
@@ -20,7 +22,7 @@ type remoteRepo struct {
 type KeyUpload struct {
 	PublicKey bmcrypto.PubKey `json:"public_key"`
 	Address   string          `json:"address"`
-	Signature string          `json:"signature"`
+	Pow       string          `json:"pow"`
 }
 
 // KeyDownload is a JSON structure we download from a resolver server
@@ -81,11 +83,11 @@ func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	return nil, errKeyNotFound
 }
 
-func (r *remoteRepo) Upload(addr address.HashAddress, pubKey bmcrypto.PubKey, address, signature string) error {
+func (r *remoteRepo) Upload(info *Info, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
 	data := &KeyUpload{
-		PublicKey: pubKey,
-		Address:   address,
-		Signature: signature,
+		PublicKey: info.PublicKey,
+		Address:   info.Server,
+		Pow:       pow.String(),
 	}
 
 	byteBuf, err := json.Marshal(&data)
@@ -93,11 +95,21 @@ func (r *remoteRepo) Upload(addr address.HashAddress, pubKey bmcrypto.PubKey, ad
 		return err
 	}
 
-	response, err := r.client.Post(r.BaseURL+"/"+addr.String(), "application/json", bytes.NewBuffer(byteBuf))
+	req, err := http.NewRequest("POST", r.BaseURL+"/"+info.Hash, bytes.NewBuffer(byteBuf))
 	if err != nil {
 		return err
 	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer " + generateSignature(info, privKey))
 
+	logHttp(req, nil)
+	response, err := r.client.Do(req)
+	if err != nil {
+		logHttp(response, nil)
+		return err
+	}
+
+	logHttp(response, nil)
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
@@ -108,4 +120,53 @@ func (r *remoteRepo) Upload(addr address.HashAddress, pubKey bmcrypto.PubKey, ad
 	}
 
 	return errors.New(string(body))
+}
+
+func (r *remoteRepo) Delete(info *Info, privKey bmcrypto.PrivKey) error {
+	req, err := http.NewRequest("DELETE", r.BaseURL+"/"+info.Hash, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer " + generateSignature(info, privKey))
+	logHttp(req, nil)
+	response, err := r.client.Do(req)
+	if err != nil {
+		logHttp(response, err)
+		return err
+	}
+
+	logHttp(response, err)
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode >= 200 && response.StatusCode <= 299 {
+		return nil
+	}
+
+	return errors.New(string(body))
+}
+
+func logHttp(v interface{}, err error) {
+	if err != nil {
+		logrus.Tracef("%s\n\n", err)
+		return
+	}
+
+	var data []byte
+
+	switch v.(type) {
+	case *http.Request:
+		data, err = httputil.DumpRequest(v.(*http.Request), true)
+	case *http.Response:
+		data, err = httputil.DumpResponse(v.(*http.Response), true)
+	}
+	if err != nil {
+		logrus.Tracef("%s\n\n", err)
+		return
+	}
+
+    logrus.Tracef("%s\n\n", data)
 }

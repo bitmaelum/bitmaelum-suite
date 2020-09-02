@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/pkg"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
@@ -17,7 +17,7 @@ import (
 )
 
 // FetchMessages will display message information from a box or display all boxes
-func FetchMessages(info *pkg.Info, box string, checkOnly bool) {
+func FetchMessages(info *internal.AccountInfo, box string, checkOnly bool) {
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
 		Host:          info.Server,
 		AllowInsecure: config.Client.Server.AllowInsecure,
@@ -61,7 +61,7 @@ func displayBoxList(client *api.API, addr address.HashAddress) {
 	table.Render()
 }
 
-func displayBox(client *api.API, addr address.HashAddress, info *pkg.Info, box string) {
+func displayBox(client *api.API, addr address.HashAddress, info *internal.AccountInfo, box string) {
 	mb, err := client.GetMailboxMessages(addr, box)
 	if err != nil {
 		logrus.Fatal(err)

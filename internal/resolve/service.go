@@ -2,8 +2,8 @@ package resolve
 
 import (
 	"crypto/sha256"
-	"encoding/hex"
-	"github.com/bitmaelum/bitmaelum-suite/pkg"
+	"encoding/base64"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
@@ -19,6 +19,7 @@ type Info struct {
 	Hash      string          `json:"hash"`       // Hash of the email address
 	PublicKey bmcrypto.PubKey `json:"public_key"` // PublicKey of the user
 	Server    string          `json:"server"`     // Server where this email address resides
+	Pow       string          `json:"pow"`        // Proof of work
 }
 
 // KeyRetrievalService initialises a key retrieval service.
@@ -39,26 +40,28 @@ func (s *Service) Resolve(addr address.HashAddress) (*Info, error) {
 	return info, err
 }
 
-// UploadInfo uploads resolve information to a service.
-func (s *Service) UploadInfo(info pkg.Info, resolveAddress string) error {
-
-	// Sign resolve address
-	hash := sha256.Sum256([]byte(resolveAddress))
-	signature, err := bmcrypto.Sign(info.PrivKey, hash[:])
+// UploadInfo uploads resolve information to one (or more) resolvers
+func (s *Service) UploadInfo(info internal.AccountInfo) error {
+	hashAddr, err := address.NewHash(info.Address)
 	if err != nil {
 		return err
 	}
 
-	h, err := address.NewHash(info.Address)
+	return s.repo.Upload(&Info{
+		Hash:      hashAddr.String(),
+		PublicKey: info.PubKey,
+		Server:    info.Server,
+	}, info.PrivKey, info.Pow)
+}
+
+// generateSignature generates a signature with the accounts private key that can be used for authentication on the resolver
+func generateSignature(info *Info, privKey bmcrypto.PrivKey) string {
+	// Generate token
+	hash := sha256.Sum256([]byte(info.Hash + info.Server))
+	signature, err := bmcrypto.Sign(privKey, hash[:])
 	if err != nil {
-		return err
+		return ""
 	}
 
-	// And upload
-	return s.repo.Upload(
-		*h,
-		info.PubKey,
-		resolveAddress,
-		hex.EncodeToString(signature),
-	)
+	return base64.StdEncoding.EncodeToString(signature)
 }

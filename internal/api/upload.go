@@ -16,13 +16,13 @@ func (api *API) UploadHeader(t ticket.Ticket, header *message.Header) error {
 		return err
 	}
 
-	_, statusCode, err := api.Post("/incoming/header", data)
+	resp, statusCode, err := api.Post("/incoming/header", data)
 	if err != nil {
 		return err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return errNoSuccess
+		return getErrorFromResponse(resp)
 	}
 
 	return nil

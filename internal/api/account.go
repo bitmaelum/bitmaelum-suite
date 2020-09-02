@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/pkg"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
@@ -13,24 +14,24 @@ func (api *API) GetPublicKey(addr address.HashAddress) (string, error) {
 	}
 	output := PubKeyOutput{}
 
-	statusCode, err := api.GetJSON("/account/"+addr.String()+"/key", output)
+	resp, statusCode, err := api.GetJSON("/account/"+addr.String()+"/key", output)
 	if err != nil {
 		return "", err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return "", errNoSuccess
+		return "", getErrorFromResponse(resp)
 	}
 
 	return output.PublicKey, nil
 }
 
 // CreateAccount creates new account on server
-func (api *API) CreateAccount(info pkg.Info, token string) error {
+func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
 	type InputCreateAccount struct {
 		Addr        address.HashAddress `json:"address"`
 		Token       string              `json:"token"`
-		PublicKey   string              `json:"public_key"`
+		PublicKey   bmcrypto.PubKey     `json:"public_key"`
 		ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
 	}
 
@@ -39,16 +40,17 @@ func (api *API) CreateAccount(info pkg.Info, token string) error {
 	input := &InputCreateAccount{
 		Addr:        addr.Hash(),
 		Token:       token,
-		PublicKey:   info.PubKey.S,
+		PublicKey:   info.PubKey,
 		ProofOfWork: info.Pow,
 	}
 
-	_, statusCode, err := api.PostJSON("/account", input)
+	resp, statusCode, err := api.PostJSON("/account", input)
 	if err != nil {
 		return err
 	}
+
 	if statusCode < 200 || statusCode > 299 {
-		return errNoSuccess
+		return getErrorFromResponse(resp)
 	}
 
 	return nil

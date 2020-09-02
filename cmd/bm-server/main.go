@@ -134,10 +134,6 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}", handler.GetMessage).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/block/{block:[A-Za-z0-9-]+}", handler.GetMessageBlock).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/attachment/{attachment:[A-Za-z0-9-]+}", handler.GetMessageAttachment).Methods("GET")
-	// Message flags (@TODO: remove?)
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/flags", handler.GetFlags).Methods("GET")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/flag/{flag}", handler.SetFlag).Methods("PUT")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/flag/{flag}", handler.UnsetFlag).Methods("DELETE")
 
 	// Add management endpoints if enabled
 	if config.Server.Management.Enabled {

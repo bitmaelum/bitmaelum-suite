@@ -9,7 +9,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/pkg"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/juju/fslock"
 	"golang.org/x/crypto/pbkdf2"
@@ -25,7 +25,7 @@ const (
 
 // Vault defines our vault with path and password. Only the accounts should be exported
 type Vault struct {
-	Accounts []pkg.Info
+	Accounts []internal.AccountInfo
 	password []byte
 	path     string
 }
@@ -42,7 +42,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 	var err error
 
 	v := &Vault{
-		Accounts: []pkg.Info{},
+		Accounts: []internal.AccountInfo{},
 		password: pwd,
 		path:     p,
 	}
@@ -99,7 +99,7 @@ func (v *Vault) unlockVault() error {
 	ctr.XORKeyStream(plainText, vaultData.Data)
 
 	// Unmarshal vault data
-	var accounts []pkg.Info
+	var accounts []internal.AccountInfo
 	err = json.Unmarshal(plainText, &accounts)
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func (v *Vault) unlockVault() error {
 }
 
 // AddAccount adds a new account to the vault
-func (v *Vault) AddAccount(account pkg.Info) {
+func (v *Vault) AddAccount(account internal.AccountInfo) {
 	v.Accounts = append(v.Accounts, account)
 }
 
@@ -179,7 +179,7 @@ func (v *Vault) Save() error {
 }
 
 // GetAccountInfo tries to find the given address and returns the account from the vault
-func (v *Vault) GetAccountInfo(addr address.Address) (*pkg.Info, error) {
+func (v *Vault) GetAccountInfo(addr address.Address) (*internal.AccountInfo, error) {
 	for i := range v.Accounts {
 		if v.Accounts[i].Address == addr.String() {
 			return &v.Accounts[i], nil
@@ -198,7 +198,7 @@ func (v *Vault) HasAccount(addr address.Address) bool {
 
 // GetDefaultAccount returns the default account from the vault. This could be the one set to default, or if none found,
 // the first account in the vault. Returns nil when no accounts are present in the vault.
-func (v *Vault) GetDefaultAccount() *pkg.Info {
+func (v *Vault) GetDefaultAccount() *internal.AccountInfo {
 	// No accounts, return nil
 	if len(v.Accounts) == 0 {
 		return nil
