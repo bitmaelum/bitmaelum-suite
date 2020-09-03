@@ -39,7 +39,12 @@ type PubKey struct {
 
 // MarshalJSON marshals a key into bytes
 func (pk *PubKey) MarshalJSON() ([]byte, error) {
-	return json.Marshal(pk.Type + " " + pk.S + " " + pk.Description)
+	return json.Marshal(pk.String())
+}
+
+// String converts a key to "<type> <key> <description>"
+func (pk *PubKey) String() string {
+	return strings.TrimSpace(pk.Type + " " + pk.S + " " + pk.Description)
 }
 
 // UnmarshalJSON unmarshals bytes into a key
