@@ -12,7 +12,9 @@ func Test_ProofOfWork(t *testing.T) {
 	assert.False(t, pow.HasDoneWork())
 	assert.False(t, pow.IsValid())
 
-	pow.Work()
+	// Use a single core, otherwise we don't know which core will find the proof and thus what
+	// the proof actually is.
+	pow.Work(1)
 	assert.True(t, pow.HasDoneWork())
 	assert.True(t, pow.IsValid())
 	assert.Equal(t, uint64(149), pow.Proof)
@@ -54,11 +56,8 @@ func TestString(t *testing.T) {
 	assert.Nil(t, pow)
 
 	pow, err = NewFromString("3$a$1")
-	assert.NoError(t, err)
-	assert.False(t, pow.IsValid())
-	assert.Equal(t, uint64(1), pow.Proof)
-	assert.Equal(t, 3, pow.Bits)
-	assert.Equal(t, "", pow.Data)
+	assert.Error(t, err)
+	assert.Nil(t, pow)
 
 	pow, err = NewFromString("8$a$b")
 	assert.Error(t, err)

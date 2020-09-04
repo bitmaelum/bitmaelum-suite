@@ -68,6 +68,9 @@ func NewFromString(s string) (*ProofOfWork, error) {
 	}
 
 	data, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, err
+	}
 
 	proof, err := strconv.Atoi(parts[2])
 	if err != nil {
@@ -75,8 +78,8 @@ func NewFromString(s string) (*ProofOfWork, error) {
 	}
 
 	return &ProofOfWork{
-		Bits: bits,
-		Data: string(data),
+		Bits:  bits,
+		Data:  string(data),
 		Proof: uint64(proof),
 	}, nil
 }
@@ -170,8 +173,8 @@ func (pow *ProofOfWork) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		// Seems incorrect, try "regular json"
 		type powtype struct {
-			Bits int
-			Data string
+			Bits  int
+			Data  string
 			Proof uint64
 		}
 
@@ -220,16 +223,17 @@ func (pow *ProofOfWork) IsValid() bool {
 	return hashInt.Cmp(target) == -1
 }
 
-// convert a large number to hexadecimal bytes
+// intToHex converts a large number to hexadecimal bytes
 func intToHex(n uint64) []byte {
 	return []byte(strconv.FormatUint(n, 16))
 }
 
+// maxCores returns the number of cores in the current system
 func maxCores() int {
-    maxProcs := runtime.GOMAXPROCS(0)
-    numCPU := runtime.NumCPU()
-    if maxProcs < numCPU {
-        return maxProcs
-    }
-    return numCPU
+	maxProcs := runtime.GOMAXPROCS(0)
+	numCPU := runtime.NumCPU()
+	if maxProcs < numCPU {
+		return maxProcs
+	}
+	return numCPU
 }

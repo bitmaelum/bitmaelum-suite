@@ -100,16 +100,16 @@ func (r *remoteRepo) Upload(info *Info, privKey bmcrypto.PrivKey, pow proofofwor
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer " + generateSignature(info, privKey))
+	req.Header.Set("Authorization", "Bearer "+generateSignature(info, privKey))
 
-	logHttp(req, nil)
+	logHTTP(req, nil)
 	response, err := r.client.Do(req)
 	if err != nil {
-		logHttp(response, nil)
+		logHTTP(response, nil)
 		return err
 	}
 
-	logHttp(response, nil)
+	logHTTP(response, nil)
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
@@ -128,15 +128,15 @@ func (r *remoteRepo) Delete(info *Info, privKey bmcrypto.PrivKey) error {
 		return err
 	}
 
-	req.Header.Set("Authorization", "Bearer " + generateSignature(info, privKey))
-	logHttp(req, nil)
+	req.Header.Set("Authorization", "Bearer "+generateSignature(info, privKey))
+	logHTTP(req, nil)
 	response, err := r.client.Do(req)
 	if err != nil {
-		logHttp(response, err)
+		logHTTP(response, err)
 		return err
 	}
 
-	logHttp(response, err)
+	logHTTP(response, err)
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
@@ -149,7 +149,7 @@ func (r *remoteRepo) Delete(info *Info, privKey bmcrypto.PrivKey) error {
 	return errors.New(string(body))
 }
 
-func logHttp(v interface{}, err error) {
+func logHTTP(v interface{}, err error) {
 	if err != nil {
 		logrus.Tracef("%s\n\n", err)
 		return
@@ -168,5 +168,5 @@ func logHttp(v interface{}, err error) {
 		return
 	}
 
-    logrus.Tracef("%s\n\n", data)
+	logrus.Tracef("%s\n\n", data)
 }

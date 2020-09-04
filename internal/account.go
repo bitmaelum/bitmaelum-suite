@@ -5,7 +5,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
-// Info represents client account information
+// AccountInfo represents client account information
 type AccountInfo struct {
 	Default bool   `json:"default"` // Is this the default account
 	Address string `json:"address"` // The address of the account

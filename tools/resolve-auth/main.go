@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
-	tools "github.com/bitmaelum/bitmaelum-suite/tools/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	tools "github.com/bitmaelum/bitmaelum-suite/tools/internal"
 	"github.com/sirupsen/logrus"
 	"os"
 )

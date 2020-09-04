@@ -187,14 +187,14 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 		req.Header.Set("Authorization", "Bearer "+api.jwt)
 	}
 
-	logHttp(req, nil)
+	logHTTP(req, nil)
 	resp, err := api.client.Do(req)
 	if err != nil {
-		logHttp(nil, err)
+		logHTTP(nil, err)
 		return nil, 0, err
 	}
 
-	logHttp(resp, nil)
+	logHTTP(resp, nil)
 	return resp.Body, resp.StatusCode, nil
 }
 
@@ -214,7 +214,7 @@ func canonicalHost(host string) string {
 	return host
 }
 
-func logHttp(v interface{}, err error) {
+func logHTTP(v interface{}, err error) {
 	if err == nil {
 		logrus.Tracef("%s\n\n", err)
 		return
@@ -224,17 +224,17 @@ func logHttp(v interface{}, err error) {
 
 	switch v.(type) {
 	case *http.Request:
-		data, err = httputil.DumpRequest(v.(*http.Request), true)
+		data, _ = httputil.DumpRequest(v.(*http.Request), true)
 	case *http.Response:
-		data, err = httputil.DumpResponse(v.(*http.Response), true)
+		data, _ = httputil.DumpResponse(v.(*http.Response), true)
 	}
 
-    logrus.Tracef("%s\n\n", data)
+	logrus.Tracef("%s\n\n", data)
 }
 
 func getErrorFromResponse(body []byte) error {
 	type errorStatus struct {
-		Error bool `json:"error"`
+		Error  bool   `json:"error"`
 		Status string `json:"status"`
 	}
 
