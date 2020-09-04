@@ -304,7 +304,7 @@ func getAccountFromAcmeDir(dir string) (crypto.Signer, *acme.Account, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	privKey, _ := bmcrypto.NewPrivKey(data)
+	privKey, err := bmcrypto.NewPrivKey(data)
 	if err != nil {
 		return nil, nil, err
 	}

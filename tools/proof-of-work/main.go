@@ -19,6 +19,6 @@ func main() {
 	fmt.Printf("Working on %d bits proof...\n", bits)
 	work := pow.New(bits, data, 0)
 
-	work.Work()
+	work.Work(0)
 	fmt.Printf("Proof: %d\n", work.Proof)
 }

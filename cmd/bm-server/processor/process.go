@@ -105,7 +105,7 @@ func deliverRemote(header *message.Header, info *resolve.Info, msgID string) err
 	if !t.Valid {
 		logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
 		// Do proof of work. We have to wait for it. THis is ok as this is just a separate thread.
-		t.Pow.Work()
+		t.Pow.Work(0)
 
 		logrus.Debugf("work for %s is completed", t.ID)
 		t, err = client.GetAnonymousTicketByProof(t.ID, t.Pow.Proof)

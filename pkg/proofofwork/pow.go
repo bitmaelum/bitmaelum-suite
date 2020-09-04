@@ -2,6 +2,7 @@ package proofofwork
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
@@ -11,6 +12,7 @@ import (
 	"io"
 	"math"
 	"math/big"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -101,36 +103,58 @@ func (pow *ProofOfWork) String() string {
 }
 
 // Work actually does the proof-of-work
-func (pow *ProofOfWork) Work() {
+func (pow *ProofOfWork) Work(cores int) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// If no cores are specified, use the maximum number of cores
+	if cores <= 0 {
+		cores = maxCores()
+	}
+
+	found := make(chan uint64)
+	for i := 0; i < cores; i++ {
+		go pow.workOnCore(ctx, uint64(i), uint64(cores), found)
+	}
+	pow.Proof = <-found
+}
+
+// workOnCore does hashing on a core, starting at start and increasing with step each time until
+// the context is cancelled (completed), or we found the proof, in which case we send it to the
+// channel.
+func (pow *ProofOfWork) workOnCore(ctx context.Context, start, step uint64, found chan uint64) {
 	var hashInt big.Int
 
 	// Hash must be less than this
 	target := big.NewInt(1)
 	target = target.Lsh(target, uint(256-pow.Bits))
 
-	// Count from 0 to MAXINT
-	var counter uint64
+	var counter uint64 = start
 	for counter < math.MaxInt64 {
-		// 1st round of SHA256
-		hash := sha256.Sum256(bytes.Join([][]byte{
-			[]byte(pow.Data),
-			intToHex(counter),
-		}, []byte{}))
+		select {
+		case <-ctx.Done():
+			// Break when context is cancelled (other go thread has found our proof)
+			return
+		default:
+			// 1st round of SHA256
+			hash := sha256.Sum256(bytes.Join([][]byte{
+				[]byte(pow.Data),
+				intToHex(counter),
+			}, []byte{}))
 
-		// 2nd round of SHA256
-		hash = sha256.Sum256(hash[:])
-		hashInt.SetBytes(hash[:])
+			// 2nd round of SHA256
+			hash = sha256.Sum256(hash[:])
+			hashInt.SetBytes(hash[:])
 
-		// Is it less than our target, then we have done our work
-		if hashInt.Cmp(target) == -1 {
-			break
+			// Is it less than our target, then we have done our work
+			if hashInt.Cmp(target) == -1 {
+				found <- counter
+				return
+			}
 		}
 
-		// Higher, so we must do more work. Increase counter and try again
-		counter++
+		counter += step
 	}
-
-	pow.Proof = counter
 }
 
 // MarshalJSON marshals a pow into bytes
@@ -199,4 +223,13 @@ func (pow *ProofOfWork) IsValid() bool {
 // convert a large number to hexadecimal bytes
 func intToHex(n uint64) []byte {
 	return []byte(strconv.FormatUint(n, 16))
+}
+
+func maxCores() int {
+    maxProcs := runtime.GOMAXPROCS(0)
+    numCPU := runtime.NumCPU()
+    if maxProcs < numCPU {
+        return maxProcs
+    }
+    return numCPU
 }

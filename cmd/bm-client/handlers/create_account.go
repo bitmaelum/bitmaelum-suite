@@ -60,7 +60,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 
 		fmt.Printf("* Doing some work to let people know this is not a fake account: ")
 		proof := pow.New(config.Client.Accounts.ProofOfWork, addr.Hash().String(), 0)
-		proof.Work()
+		proof.Work(0)
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Adding your new account into the vault: ")
