@@ -51,6 +51,7 @@ func GetRemoteTicket(w http.ResponseWriter, req *http.Request) {
 	ticketBody := &ticketIn{}
 	err := DecodeBody(w, req.Body, ticketBody)
 	if err != nil {
+		logrus.Trace("cannot decode body: ", err)
 		ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -58,11 +59,13 @@ func GetRemoteTicket(w http.ResponseWriter, req *http.Request) {
 	// Validate from / to address
 	fromAddr, err := address.NewHashFromHash(ticketBody.FromAddr)
 	if err != nil {
+		logrus.Trace("cannot create address: ", err)
 		ErrorOut(w, http.StatusBadRequest, "Incorrect from address specified")
 		return
 	}
 	toAddr, err := address.NewHashFromHash(ticketBody.ToAddr)
 	if err != nil {
+		logrus.Trace("cannot create address: ", err)
 		ErrorOut(w, http.StatusBadRequest, "Incorrect to address specified")
 		return
 	}
@@ -72,6 +75,7 @@ func GetRemoteTicket(w http.ResponseWriter, req *http.Request) {
 	ticketRepo := container.GetTicketRepo()
 	err = ticketRepo.Store(t)
 	if err != nil {
+		logrus.Trace("cannot save ticket: ", err)
 		ErrorOut(w, http.StatusInternalServerError, "can't save ticket on the server")
 		return
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/ernesto-jimenez/httplogger"
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -39,13 +40,15 @@ type ClientOpts struct {
 // NewAnonymous creates a new client that connects anonymously to a BitMaelum server (normally
 // server-to-server communication)
 func NewAnonymous(opts ClientOpts) (*API, error) {
+	transport := &http.Transport{
+		// Allow insecure and self-signed certificates if so configured
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
+	}
+
 	api := &API{
 		host: canonicalHost(opts.Host),
 		client: &http.Client{
-			Transport: &http.Transport{
-				// Allow insecure and self-signed certificates if so configured
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
-			},
+			Transport: httplogger.NewLoggedTransport(transport, newLogger()),
 			Timeout: 15 * time.Second,
 		},
 	}
@@ -57,6 +60,11 @@ func NewAnonymous(opts ClientOpts) (*API, error) {
 // client-to-server communication)
 func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error) {
 	var jwtToken string
+
+	transport := &http.Transport{
+		// Allow insecure and self-signed certificates if so configured
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
+	}
 
 	if info != nil {
 		// Create JWT token based on the private key of the user
@@ -73,10 +81,7 @@ func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error)
 	api := &API{
 		host: canonicalHost(opts.Host),
 		client: &http.Client{
-			Transport: &http.Transport{
-				// Allow insecure and self-signed certificates if so configured
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
-			},
+			Transport: httplogger.NewLoggedTransport(transport, newLogger()),
 			Timeout: 30 * time.Second,
 		},
 		jwt: jwtToken,
@@ -245,4 +250,77 @@ func getErrorFromResponse(body []byte) error {
 	}
 
 	return errors.New(s.Status)
+}
+
+type httpLogger struct {
+}
+
+func newLogger() *httpLogger {
+	logrus.SetLevel(logrus.TraceLevel)
+	return &httpLogger{}
+}
+
+func (l *httpLogger) LogRequest(req *http.Request) {
+	var err error
+	save := req.Body
+	if req.Body != nil {
+		save, req.Body, err = drainBody(req.Body)
+		if err != nil {
+			return
+		}
+	}
+
+	logrus.Tracef(
+		"Request %s %s",
+		req.Method,
+		req.URL.String(),
+	)
+
+	for k, v := range req.Header {
+		logrus.Tracef("HEADER: %s : %s\n", k, v)
+	}
+
+	var b bytes.Buffer
+	if req.Body != nil {
+		var dest io.Writer = &b
+		_, err = io.Copy(dest, req.Body)
+	}
+
+	req.Body = save
+
+	logrus.Tracef("%s", b.String())
+}
+
+func (l *httpLogger) LogResponse(req *http.Request, res *http.Response, err error, duration time.Duration) {
+	duration /= time.Millisecond
+	if err != nil {
+		logrus.Trace(err)
+	} else {
+		logrus.Tracef(
+			"Response method=%s status=%d durationMs=%d %s",
+			req.Method,
+			res.StatusCode,
+			duration,
+			req.URL.String(),
+		)
+		for k, v := range res.Header {
+			logrus.Tracef("HEADER: %s : %s\n", k, v)
+		}
+
+	}
+}
+
+func drainBody(b io.ReadCloser) (r1, r2 io.ReadCloser, err error) {
+	if b == nil || b == http.NoBody {
+		// No copying needed. Preserve the magic sentinel meaning of NoBody.
+		return http.NoBody, http.NoBody, nil
+	}
+	var buf bytes.Buffer
+	if _, err = buf.ReadFrom(b); err != nil {
+		return nil, b, err
+	}
+	if err = b.Close(); err != nil {
+		return nil, b, err
+	}
+	return ioutil.NopCloser(&buf), ioutil.NopCloser(bytes.NewReader(buf.Bytes())), nil
 }
