@@ -119,10 +119,10 @@ func setupRouter() *mux.Router {
 
 	// Routes that need to be authenticated
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
-	authRouter.Use(jwt.Middleware)
 	authRouter.Use(logger.Middleware)
 	authRouter.Use(prettyJSON.Middleware)
 	authRouter.Use(tracer.Middleware)
+	authRouter.Use(jwt.Middleware)
 	// Authorized sending
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetRemoteTicket).Methods("POST")
 	// Message boxes
@@ -138,10 +138,10 @@ func setupRouter() *mux.Router {
 	// Add management endpoints if enabled
 	if config.Server.Management.Enabled {
 		mgmtRouter := mainRouter.PathPrefix("/admin").Subrouter()
-		mgmtRouter.Use(apikey.Middleware)
 		mgmtRouter.Use(logger.Middleware)
 		mgmtRouter.Use(prettyJSON.Middleware)
 		mgmtRouter.Use(tracer.Middleware)
+		mgmtRouter.Use(apikey.Middleware)
 
 		mgmtRouter.HandleFunc("/flush", mgmt.FlushQueues).Methods("POST")
 		mgmtRouter.HandleFunc("/invite", mgmt.NewInvite).Methods("POST")
