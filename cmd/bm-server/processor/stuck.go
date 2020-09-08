@@ -9,8 +9,6 @@ import (
 
 // ProcessStuckIncomingMessages will process stuck message found in the incoming queue.
 func ProcessStuckIncomingMessages() {
-	logrus.Trace("checking for stuck messages in incoming queue")
-
 	p, err := message.GetPath(message.SectionIncoming, "", "")
 	if err != nil {
 		return
@@ -42,8 +40,6 @@ func ProcessStuckIncomingMessages() {
 
 // ProcessStuckProcessingMessages will process stuck message found in the processing queue.
 func ProcessStuckProcessingMessages() {
-	logrus.Trace("checking for stuck messages in processing queue")
-
 	p, err := message.GetPath(message.SectionProcessing, "", "")
 	if err != nil {
 		return

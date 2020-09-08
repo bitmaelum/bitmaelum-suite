@@ -13,15 +13,12 @@ const (
 
 // ProcessRetryQueue will process all mails found in the retry queue or removes them when they are expired
 func ProcessRetryQueue(forceRetry bool) {
-	logrus.Tracef("scanning retry queue for action")
-
 	// Get retry info from all messages found in the retry queue
 	retryQueue, err := message.GetRetryInfoFromQueue()
 	if err != nil {
 		return
 	}
-
-	logrus.Tracef("Found %d messages in retry queue", len(retryQueue))
+	
 	for _, info := range retryQueue {
 		if info.Retries > MaxRetries {
 			// @TODO: We should send a message back to the user?
