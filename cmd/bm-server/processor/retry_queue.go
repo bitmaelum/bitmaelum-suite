@@ -18,7 +18,7 @@ func ProcessRetryQueue(forceRetry bool) {
 	if err != nil {
 		return
 	}
-	
+
 	for _, info := range retryQueue {
 		if info.Retries > MaxRetries {
 			// @TODO: We should send a message back to the user?

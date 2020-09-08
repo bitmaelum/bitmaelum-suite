@@ -10,6 +10,7 @@ import (
 
 var readCmd = &cobra.Command{
 	Use:   "read",
+	Aliases: []string{"read-message", "r"},
 	Short: "Read messages for your account",
 	Long: `Read message from your account
 `,

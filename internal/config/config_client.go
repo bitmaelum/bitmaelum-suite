@@ -28,6 +28,7 @@ type ClientConfig struct {
 
 	Server struct {
 		AllowInsecure bool `yaml:"allow_insecure"`
+		DebugHttp     bool `yaml:"debug_http"`
 	} `yaml:"server"`
 
 	Resolver struct {

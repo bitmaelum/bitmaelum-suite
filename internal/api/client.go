@@ -35,20 +35,27 @@ type API struct {
 type ClientOpts struct {
 	Host          string
 	AllowInsecure bool
+	Debug         bool
 }
 
 // NewAnonymous creates a new client that connects anonymously to a BitMaelum server (normally
 // server-to-server communication)
 func NewAnonymous(opts ClientOpts) (*API, error) {
-	transport := &http.Transport{
+	var transport http.RoundTripper
+	transport = &http.Transport{
 		// Allow insecure and self-signed certificates if so configured
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
+	}
+
+	if opts.Debug {
+		// Wrap transport in debug logging
+		transport = httplogger.NewLoggedTransport(transport, newLogger())
 	}
 
 	api := &API{
 		host: canonicalHost(opts.Host),
 		client: &http.Client{
-			Transport: httplogger.NewLoggedTransport(transport, newLogger()),
+			Transport: transport,
 			Timeout: 15 * time.Second,
 		},
 	}
@@ -60,10 +67,16 @@ func NewAnonymous(opts ClientOpts) (*API, error) {
 // client-to-server communication)
 func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error) {
 	var jwtToken string
+	var transport http.RoundTripper
 
-	transport := &http.Transport{
+	transport = &http.Transport{
 		// Allow insecure and self-signed certificates if so configured
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
+	}
+
+	if opts.Debug {
+		// Wrap transport in debug logging
+		transport = httplogger.NewLoggedTransport(transport, newLogger())
 	}
 
 	if info != nil {
@@ -81,7 +94,7 @@ func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error)
 	api := &API{
 		host: canonicalHost(opts.Host),
 		client: &http.Client{
-			Transport: httplogger.NewLoggedTransport(transport, newLogger()),
+			Transport: transport,
 			Timeout: 30 * time.Second,
 		},
 		jwt: jwtToken,

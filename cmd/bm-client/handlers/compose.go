@@ -67,6 +67,7 @@ func uploadToServer(info internal.AccountInfo, header *message.Header, encrypted
 	client, err := api.NewAuthenticated(&info, api.ClientOpts{
 		Host:          info.Server,
 		AllowInsecure: config.Client.Server.AllowInsecure,
+		Debug:         config.Client.Server.DebugHttp,
 	})
 	if err != nil {
 		return err

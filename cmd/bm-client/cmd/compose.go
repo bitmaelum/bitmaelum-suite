@@ -141,7 +141,6 @@ func init() {
 	blocks = composeCmd.Flags().StringArrayP("blocks", "b", []string{}, "Message blocks")
 	attachments = composeCmd.Flags().StringArrayP("attachment", "a", []string{}, "Attachments")
 
-	_ = composeCmd.MarkFlagRequired("from")
 	_ = composeCmd.MarkFlagRequired("to")
 	_ = composeCmd.MarkFlagRequired("subject")
 }
