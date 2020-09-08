@@ -112,7 +112,6 @@ var keyGenerator = func() ([]byte, error) {
 }
 
 // GenerateIvAndKey generate a random IV and key
-// @TODO: This is not a good spot. We should store it in the encrypt page, but this gives us a import cycle
 func GenerateIvAndKey() ([]byte, []byte, error) {
 	iv := make([]byte, 16)
 	n, err := rand.Read(iv)
@@ -130,7 +129,6 @@ func GenerateIvAndKey() ([]byte, []byte, error) {
 }
 
 // GetAesEncryptorReader returns a reader that automatically encrypts reader blocks through CFB stream
-// @TODO: This is not a good spot. We should store it in the encrypt page, but this gives us a import cycle
 func GetAesEncryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error) {
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
