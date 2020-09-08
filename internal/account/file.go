@@ -62,7 +62,13 @@ func (r *fileRepo) fetch(addr address.HashAddress, path string) ([]byte, error) 
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file %s", fullPath)
 
-	return ioutil.ReadFile(fullPath)
+	b, err := ioutil.ReadFile(fullPath)
+	if err != nil {
+		logrus.Tracef("file: cannot read file: %s", fullPath)
+		return nil, err
+	}
+
+	return b, nil
 }
 
 func (r *fileRepo) fetchReader(addr address.HashAddress, path string) (rdr io.ReadCloser, size int64, err error) {
@@ -89,10 +95,12 @@ func (r *fileRepo) fetchJSON(addr address.HashAddress, path string, v interface{
 
 	data, err := ioutil.ReadFile(fullPath)
 	if err != nil {
+		logrus.Tracef("file: cannot read file: %s", fullPath)
 		return err
 	}
 	err = json.Unmarshal(data, v)
 	if err != nil {
+		logrus.Tracef("file: cannot unmarshal file: %s", fullPath)
 		return err
 	}
 

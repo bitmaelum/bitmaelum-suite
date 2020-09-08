@@ -235,7 +235,6 @@ func (le *LetsEncrypt) SaveAccount(dir string) error {
 	// Make sure directory exists before writing
 	_ = os.MkdirAll(dir, 0777)
 
-	// @TODO: What happens if we mix staging and production.. or different accounts?
 	err := fileio.SaveFile(filepath.Join(dir, "account.json"), le.Account)
 	if err != nil {
 		return err

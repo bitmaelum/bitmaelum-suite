@@ -7,6 +7,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"github.com/vtolstov/jwt-go"
 	"net/http"
 	"strings"
@@ -26,18 +27,21 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 		if err != nil {
+			logrus.Trace("auth: no address specified")
 			http.Error(w, "Cannot authorize without address", http.StatusUnauthorized)
 			return
 		}
 
 		ar := container.GetAccountRepo()
 		if !ar.Exists(*haddr) {
+			logrus.Trace("auth: address not found")
 			http.Error(w, "Address not found", http.StatusUnauthorized)
 			return
 		}
 
 		token, err := checkToken(req.Header.Get("Authorization"), *haddr)
 		if err != nil {
+			logrus.Trace("auth: incorrect token: ", err)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -53,10 +57,12 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 // Check if the authorization contains a valid JWT token for the given address
 func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 	if auth == "" {
+		logrus.Trace("auth: empty auth string")
 		return nil, ErrTokenNotValidated
 	}
 
 	if len(auth) <= 6 || strings.ToUpper(auth[0:7]) != "BEARER " {
+		logrus.Trace("auth: bearer not found")
 		return nil, ErrTokenNotValidated
 	}
 	tokenString := auth[7:]
@@ -64,6 +70,7 @@ func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 	ar := container.GetAccountRepo()
 	keys, err := ar.FetchKeys(addr)
 	if err != nil {
+		logrus.Trace("auth: cannot fetch keys: ", err)
 		return nil, ErrTokenNotValidated
 	}
 
@@ -74,5 +81,6 @@ func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 		}
 	}
 
+	logrus.Trace("auth: no key found that validates the token")
 	return nil, ErrTokenNotValidated
 }
