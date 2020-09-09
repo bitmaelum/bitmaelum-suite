@@ -14,7 +14,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 	"time"
 )
@@ -205,14 +204,11 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 		req.Header.Set("Authorization", "Bearer "+api.jwt)
 	}
 
-	logHTTP(req, nil)
 	resp, err := api.client.Do(req)
 	if err != nil {
-		logHTTP(nil, err)
 		return nil, 0, err
 	}
 
-	logHTTP(resp, nil)
 	return resp.Body, resp.StatusCode, nil
 }
 
@@ -232,23 +228,6 @@ func canonicalHost(host string) string {
 	return host
 }
 
-func logHTTP(v interface{}, err error) {
-	if err == nil {
-		logrus.Tracef("%s\n\n", err)
-		return
-	}
-
-	var data []byte
-
-	switch v.(type) {
-	case *http.Request:
-		data, _ = httputil.DumpRequest(v.(*http.Request), true)
-	case *http.Response:
-		data, _ = httputil.DumpResponse(v.(*http.Response), true)
-	}
-
-	logrus.Tracef("%s\n\n", data)
-}
 
 func getErrorFromResponse(body []byte) error {
 	type errorStatus struct {
@@ -301,13 +280,13 @@ func (l *httpLogger) LogRequest(req *http.Request) {
 
 	req.Body = save
 
-	logrus.Tracef("%s", b.String())
+	logrus.Tracef("log: %s", b.String())
 }
 
 func (l *httpLogger) LogResponse(req *http.Request, res *http.Response, err error, duration time.Duration) {
 	duration /= time.Millisecond
 	if err != nil {
-		logrus.Trace(err)
+		logrus.Trace("log: ", err)
 	} else {
 		logrus.Tracef(
 			"Response method=%s status=%d durationMs=%d %s",

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
@@ -28,21 +29,21 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 		haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
 		if err != nil {
 			logrus.Trace("auth: no address specified")
-			http.Error(w, "Cannot authorize without address", http.StatusUnauthorized)
+			ErrorOut(w, http.StatusUnauthorized, "Cannot authorize without address")
 			return
 		}
 
 		ar := container.GetAccountRepo()
 		if !ar.Exists(*haddr) {
 			logrus.Trace("auth: address not found")
-			http.Error(w, "Address not found", http.StatusUnauthorized)
+			ErrorOut(w, http.StatusUnauthorized, "Address not found")
 			return
 		}
 
 		token, err := checkToken(req.Header.Get("Authorization"), *haddr)
 		if err != nil {
 			logrus.Trace("auth: incorrect token: ", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			ErrorOut(w, http.StatusUnauthorized, "Unauthorized: " + err.Error())
 			return
 		}
 
@@ -83,4 +84,21 @@ func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
 
 	logrus.Trace("auth: no key found that validates the token")
 	return nil, ErrTokenNotValidated
+}
+
+// ErrorOut outputs an error
+func ErrorOut(w http.ResponseWriter, code int, msg string) {
+	type OutputResponse struct {
+		Error  bool   `json:"error,omitempty"`
+		Status string `json:"status"`
+	}
+
+	logrus.Debugf("Returning error (%d): %s", code, msg)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(&OutputResponse{
+		Error:  true,
+		Status: msg,
+	})
+	return
 }

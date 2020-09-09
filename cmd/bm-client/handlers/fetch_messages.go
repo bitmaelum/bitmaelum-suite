@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -48,7 +49,6 @@ func displayBoxList(client *api.API, addr address.HashAddress) {
 	table := tablewriter.NewWriter(os.Stdout)
 
 	headers := []string{"Mailbox ID", "Total Messages"}
-	// headers := []string{"Subject", "From", "Organisation", "Date"}
 	table.SetHeader(headers)
 
 	for _, mb := range mbl.Boxes {
@@ -70,7 +70,7 @@ func displayBox(client *api.API, addr address.HashAddress, info *internal.Accoun
 
 	table := tablewriter.NewWriter(os.Stdout)
 
-	headers := []string{"ID", "Subject", "From", "Organisation", "Date", "# Blocks", "# Attachments"}
+	headers := []string{"ID", "Subject", "From", "Date", "# Blocks", "# Attachments"}
 	table.SetHeader(headers)
 
 	for _, msg := range mb.Messages {
@@ -84,12 +84,12 @@ func displayBox(client *api.API, addr address.HashAddress, info *internal.Accoun
 			continue
 		}
 
-		blocks := []string{}
+		var blocks []string
 		for _, b := range catalog.Blocks {
 			blocks = append(blocks, b.Type)
 		}
 
-		attachments := []string{}
+		var attachments []string
 		for _, a := range catalog.Attachments {
 			fs := datasize.ByteSize(a.Size)
 			attachments = append(attachments, a.FileName+" ("+fs.HR()+")")
@@ -98,12 +98,10 @@ func displayBox(client *api.API, addr address.HashAddress, info *internal.Accoun
 		values := []string{
 			msg.ID,
 			catalog.Subject,
-			catalog.From.Name,
-			catalog.From.Organisation,
+			fmt.Sprintf("%s <%s>", catalog.From.Name, catalog.From.Address),
 			catalog.CreatedAt.Format(time.RFC822),
 			strings.Join(blocks, ","),
 			strings.Join(attachments, "\n"),
-			catalog.To.Name,
 		}
 
 		table.Append(values)
