@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+	"github.com/ernesto-jimenez/httplogger"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -33,10 +35,19 @@ type KeyDownload struct {
 }
 
 // NewRemoteRepository creates new remote resolve repository
-func NewRemoteRepository(baseURL string) Repository {
+func NewRemoteRepository(baseURL string, debug bool) Repository {
+	var transport http.RoundTripper = &http.Transport{}
+
+	if debug {
+		// Wrap transport in debug logging
+		transport = httplogger.NewLoggedTransport(transport, internal.NewHttpLogger())
+	}
+
 	return &remoteRepo{
 		BaseURL: baseURL,
-		client:  &http.Client{},
+		client: &http.Client{
+			Transport: transport,
+		},
 	}
 }
 

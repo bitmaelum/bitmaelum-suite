@@ -107,6 +107,7 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/", handler.HomePage).Methods("GET")
 	publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
 	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
+	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/org", handler.RetrieveOrganisation).Methods("GET")
 
 	// Server to server message upload
 	publicRouter.HandleFunc("/ticket", handler.GetLocalTicket).Methods("POST")
@@ -116,6 +117,7 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/incoming/attachment/{message:[A-Za-z0-9-]+}", handler.IncomingMessageAttachment).Methods("POST")
 	publicRouter.HandleFunc("/incoming", handler.CompleteIncoming).Methods("POST")
 	publicRouter.HandleFunc("/incoming", handler.DeleteIncoming).Methods("DELETE")
+
 
 	// Routes that need to be authenticated
 	authRouter := mainRouter.PathPrefix("/").Subrouter()

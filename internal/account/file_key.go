@@ -12,7 +12,7 @@ import (
 // Store the public key for this account
 func (r *fileRepo) StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error {
 	// Lock our key file for writing
-	lockfilePath := r.getPath(addr, pubKeyFile+".lock")
+	lockfilePath := r.getPath(addr, keysFile+".lock")
 	lock, err := lockfile.New(lockfilePath)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error
 
 	// Read keys
 	pk := &PubKeys{}
-	err = r.fetchJSON(addr, pubKeyFile, pk)
+	err = r.fetchJSON(addr, keysFile, pk)
 	if err != nil && os.IsNotExist(err) {
 		err = r.createPubKeyFile(addr)
 	}
@@ -47,13 +47,13 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error
 	}
 
 	// And store
-	return r.store(addr, pubKeyFile, data)
+	return r.store(addr, keysFile, data)
 }
 
 // Retrieve the public keys for this account
 func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]bmcrypto.PubKey, error) {
 	pk := &PubKeys{}
-	err := r.fetchJSON(addr, pubKeyFile, pk)
+	err := r.fetchJSON(addr, keysFile, pk)
 	if err != nil && os.IsNotExist(err) {
 		err = r.createPubKeyFile(addr)
 	}
@@ -66,7 +66,7 @@ func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]bmcrypto.PubKey, error
 
 // Create file because it doesn't exist yet
 func (r *fileRepo) createPubKeyFile(addr address.HashAddress) error {
-	p := r.getPath(addr, pubKeyFile)
+	p := r.getPath(addr, keysFile)
 	f, err := os.Create(p)
 	if err != nil {
 		logrus.Errorf("Error while creating file %s: %s", p, err)

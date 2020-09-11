@@ -24,6 +24,11 @@ type MessageList struct {
 	Messages []Message `json:"messages"`
 }
 
+// OrganisationSettings defines settings for organisations
+type OrganisationSettings struct {
+	OnlyAllowAccountsOnMainServer   bool    `json:"only_allow_main_server_accounts"`
+}
+
 // BoxInfo returns information about the given message box
 type BoxInfo struct {
 	ID    int `json:"id"`
@@ -36,6 +41,7 @@ type Repository interface {
 	KeyRepository
 	BoxRepository
 	MessageRepository
+	OrganisationRepository
 }
 
 // AddressRepository creates, checks or deletes complete accounts. Address is not the correct word for this.
@@ -50,6 +56,12 @@ type KeyRepository interface {
 	// Public key
 	StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error
 	FetchKeys(addr address.HashAddress) ([]bmcrypto.PubKey, error)
+}
+
+// OrganisationRepository gets and sets organisation settings into an account
+type OrganisationRepository interface {
+	StoreOrganisationSettings(addr address.HashAddress, settings OrganisationSettings) error
+	FetchOrganisationSettings(addr address.HashAddress) (*OrganisationSettings, error)
 }
 
 // BoxRepository deals with message boxes insides an account
