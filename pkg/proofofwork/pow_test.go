@@ -62,4 +62,52 @@ func TestString(t *testing.T) {
 	pow, err = NewFromString("8$a$b")
 	assert.Error(t, err)
 	assert.Nil(t, pow)
+
+	pow, err = NewFromString("abc$am9obkBleGFtcGxlIQ==$149")
+	assert.Error(t, err)
+	assert.Nil(t, pow)
+
+	pow, err = NewFromString("7$am9obkBleGFtcGxlIQ==$foobar")
+	assert.Error(t, err)
+	assert.Nil(t, pow)
+}
+
+func TestWorkData(t *testing.T) {
+	randomReader = &dummyReader{}
+
+	s, err := GenerateWorkData()
+	assert.NoError(t, err)
+	assert.Equal(t, "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=", s)
+}
+
+func TestMaxCores(t *testing.T) {
+	assert.GreaterOrEqual(t, maxCores(), 1)
+}
+
+func TestMarshalling(t *testing.T) {
+	powBytes := []byte{0x22, 0x38, 0x24, 0x61, 0x6d, 0x39, 0x6f, 0x62, 0x6b, 0x42, 0x6c, 0x65, 0x47, 0x46, 0x74, 0x63, 0x47, 0x78, 0x6c, 0x49, 0x51, 0x3d, 0x3d, 0x24, 0x31, 0x34, 0x39, 0x22}
+
+	pow, err := NewFromString("8$am9obkBleGFtcGxlIQ==$149")
+	assert.NoError(t, err)
+
+	b, err := pow.MarshalJSON()
+	assert.NoError(t, err)
+	assert.Equal(t, powBytes, b)
+
+	pow = &ProofOfWork{}
+	err = pow.UnmarshalJSON(powBytes)
+	assert.NoError(t, err)
+	assert.True(t, pow.IsValid())
+	assert.Equal(t, uint64(149), pow.Proof)
+	assert.Equal(t, 8, pow.Bits)
+	assert.Equal(t, "john@example!", pow.Data)
+
+}
+
+type dummyReader struct{}
+func (d *dummyReader) Read(b []byte) (n int, err error) {
+	for i := range b {
+		b[i] = 1
+	}
+	return len(b), nil
 }

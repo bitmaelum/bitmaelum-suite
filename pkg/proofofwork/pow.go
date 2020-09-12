@@ -17,6 +17,9 @@ import (
 	"strings"
 )
 
+// Override for testing purposes
+var randomReader = rand.Reader
+
 /*
  * Proof of work consists of SHA256 hashing data with an additional counter
  *
@@ -87,7 +90,7 @@ func NewFromString(s string) (*ProofOfWork, error) {
 // GenerateWorkData generates random work
 func GenerateWorkData() (string, error) {
 	data := make([]byte, 32)
-	_, err := io.ReadFull(rand.Reader, data)
+	_, err := io.ReadFull(randomReader, data)
 	if err != nil {
 		return "", err
 	}
