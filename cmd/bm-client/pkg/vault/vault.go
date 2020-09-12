@@ -47,6 +47,11 @@ func New(p string, pwd []byte) (*Vault, error) {
 		path:     p,
 	}
 
+	if p == "" {
+		// empty vault, that's ok
+		return v ,nil
+	}
+
 	// Save new vault when we cannot find one
 	if _, ok := err.(*os.PathError); ok {
 		err = os.MkdirAll(filepath.Dir(p), 0777)
@@ -128,31 +133,42 @@ func (v *Vault) RemoveAccount(addr address.Address) {
 
 // Save saves the account data back into the vault on disk
 func (v *Vault) Save() error {
+	encryptedData, err := v.Encrypted()
+	if err != nil {
+		return err
+	}
+
+	// Write vault back through temp file
+	return writeFileData(v.path, encryptedData, 0600)
+}
+
+// Returns the vault as encrypted JSON data
+func (v *Vault) Encrypted() ([]byte, error) {
 	// Generate 64 byte salt
 	salt := make([]byte, 64)
 	_, err := io.ReadFull(rand.Reader, salt)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Generate key based on password
 	derivedAESKey := pbkdf2.Key(v.password, salt, pbkdfIterations, 32, sha256.New)
 	aes256, err := aes.NewCipher(derivedAESKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Generate 32 byte IV
 	iv := make([]byte, aes.BlockSize)
 	_, err = io.ReadFull(rand.Reader, iv)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Marshal and encrypt the data
 	plainText, err := json.MarshalIndent(&v.Accounts, "", "  ")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cipherText := make([]byte, len(plainText))
@@ -164,18 +180,12 @@ func (v *Vault) Save() error {
 	hash.Write(cipherText)
 
 	// Generate the vault structure for disk
-	data, err := json.MarshalIndent(&vaultJSONData{
+	return json.MarshalIndent(&vaultJSONData{
 		Data: cipherText,
 		Salt: salt,
 		Iv:   iv,
 		Hmac: hash.Sum(nil),
 	}, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	// Write vault back through temp file
-	return writeFileData(v.path, data, 0600)
 }
 
 // GetAccountInfo tries to find the given address and returns the account from the vault
