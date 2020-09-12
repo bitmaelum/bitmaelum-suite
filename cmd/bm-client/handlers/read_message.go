@@ -19,7 +19,7 @@ func ReadMessage(info *internal.AccountInfo, box, messageID, blockType string) {
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
 		Host:          info.Server,
 		AllowInsecure: config.Client.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHttp,
+		Debug:         config.Client.Server.DebugHTTP,
 	})
 	if err != nil {
 		logrus.Fatal(err)
@@ -88,7 +88,6 @@ func ReadMessage(info *internal.AccountInfo, box, messageID, blockType string) {
 	// 	spew.Dump(content)
 	// }
 
-
 	fmt.Printf("--------------------------------------------------------\n")
 	fmt.Printf("From       : %s <%s>\n", catalog.From.Name, catalog.From.Address)
 	fmt.Printf("To         : %s <%s>\n", catalog.To.Name, catalog.To.Address)
@@ -105,6 +104,9 @@ func ReadMessage(info *internal.AccountInfo, box, messageID, blockType string) {
 		fmt.Printf("\n")
 
 		data, err := client.GetMessageBlock(*addr, box, messageID, b.ID)
+		if err != nil {
+			panic(err)
+		}
 		bb := bytes.NewBuffer(data)
 
 		r, err := encrypt.GetAesDecryptorReader(b.IV, b.Key, bb)

@@ -43,7 +43,7 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 		token, err := checkToken(req.Header.Get("Authorization"), *haddr)
 		if err != nil {
 			logrus.Trace("auth: incorrect token: ", err)
-			ErrorOut(w, http.StatusUnauthorized, "Unauthorized: " + err.Error())
+			ErrorOut(w, http.StatusUnauthorized, "Unauthorized: "+err.Error())
 			return
 		}
 

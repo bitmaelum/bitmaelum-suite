@@ -9,15 +9,18 @@ import (
 	"time"
 )
 
-type HttpLogger struct {
+// HTTPLogger is a structure that allows to log HTTP requests and responses
+type HTTPLogger struct {
 }
 
-func NewHttpLogger() *HttpLogger {
+// NewHTTPLogger returns a new http logger
+func NewHTTPLogger() *HTTPLogger {
 	logrus.SetLevel(logrus.TraceLevel)
-	return &HttpLogger{}
+	return &HTTPLogger{}
 }
 
-func (l *HttpLogger) LogRequest(req *http.Request) {
+// LogRequest will log the request
+func (l *HTTPLogger) LogRequest(req *http.Request) {
 	var err error
 	save := req.Body
 	if req.Body != nil {
@@ -40,7 +43,7 @@ func (l *HttpLogger) LogRequest(req *http.Request) {
 	var b bytes.Buffer
 	if req.Body != nil {
 		var dest io.Writer = &b
-		_, err = io.Copy(dest, req.Body)
+		_, _ = io.Copy(dest, req.Body)
 	}
 
 	req.Body = save
@@ -48,7 +51,8 @@ func (l *HttpLogger) LogRequest(req *http.Request) {
 	logrus.Tracef("log: %s", b.String())
 }
 
-func (l *HttpLogger) LogResponse(req *http.Request, res *http.Response, err error, duration time.Duration) {
+// LogResponse will log the response
+func (l *HTTPLogger) LogResponse(req *http.Request, res *http.Response, err error, duration time.Duration) {
 	duration /= time.Millisecond
 	if err != nil {
 		logrus.Trace("log: ", err)
@@ -67,6 +71,7 @@ func (l *HttpLogger) LogResponse(req *http.Request, res *http.Response, err erro
 	}
 }
 
+// drainBody will duplicate a reader into two separate readers
 func drainBody(b io.ReadCloser) (r1, r2 io.ReadCloser, err error) {
 	if b == nil || b == http.NoBody {
 		// No copying needed. Preserve the magic sentinel meaning of NoBody.

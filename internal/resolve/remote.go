@@ -40,7 +40,7 @@ func NewRemoteRepository(baseURL string, debug bool) Repository {
 
 	if debug {
 		// Wrap transport in debug logging
-		transport = httplogger.NewLoggedTransport(transport, internal.NewHttpLogger())
+		transport = httplogger.NewLoggedTransport(transport, internal.NewHTTPLogger())
 	}
 
 	return &remoteRepo{

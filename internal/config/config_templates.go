@@ -15,8 +15,8 @@ config:
     server:
         # Should we be able to connect to self-signed and other insecure servers?
         allow_insecure: false
-		# Display HTTP communication between client and server
-		debug_http: false
+        # Display HTTP communication between client and server
+        debug_http: false
 
     # How can we resolve public keys and accounts
     resolver:

@@ -9,9 +9,9 @@ import (
 )
 
 var readCmd = &cobra.Command{
-	Use:   "read",
+	Use:     "read",
 	Aliases: []string{"read-message", "r"},
-	Short: "Read messages for your account",
+	Short:   "Read messages for your account",
 	Long: `Read message from your account
 `,
 	Run: func(cmd *cobra.Command, args []string) {

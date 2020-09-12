@@ -49,7 +49,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 
 	if p == "" {
 		// empty vault, that's ok
-		return v ,nil
+		return v, nil
 	}
 
 	// Save new vault when we cannot find one
@@ -142,7 +142,7 @@ func (v *Vault) Save() error {
 	return writeFileData(v.path, encryptedData, 0600)
 }
 
-// Returns the vault as encrypted JSON data
+// Encrypted returns the vault as encrypted JSON data
 func (v *Vault) Encrypted() ([]byte, error) {
 	// Generate 64 byte salt
 	salt := make([]byte, 64)

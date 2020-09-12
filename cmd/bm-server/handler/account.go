@@ -73,7 +73,6 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewEncoder(w).Encode(StatusOk("BitMaelum account has been successfully created."))
 }
 
-
 // RetrieveOrganisation is the handler that will retrieve organisation settings
 func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
 	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])

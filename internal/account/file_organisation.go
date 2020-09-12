@@ -5,7 +5,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
-
 func (r *fileRepo) StoreOrganisationSettings(addr address.HashAddress, settings OrganisationSettings) error {
 	data, err := json.MarshalIndent(settings, "", "  ")
 	if err != nil {

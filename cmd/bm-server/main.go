@@ -118,7 +118,6 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/incoming", handler.CompleteIncoming).Methods("POST")
 	publicRouter.HandleFunc("/incoming", handler.DeleteIncoming).Methods("DELETE")
 
-
 	// Routes that need to be authenticated
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
 	authRouter.Use(logger.Middleware)

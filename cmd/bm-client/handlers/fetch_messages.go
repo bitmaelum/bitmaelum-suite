@@ -22,7 +22,7 @@ func FetchMessages(info *internal.AccountInfo, box string, checkOnly bool) {
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
 		Host:          info.Server,
 		AllowInsecure: config.Client.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHttp,
+		Debug:         config.Client.Server.DebugHTTP,
 	})
 	if err != nil {
 		logrus.Fatal(err)

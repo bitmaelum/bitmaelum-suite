@@ -105,6 +105,7 @@ func TestMarshalling(t *testing.T) {
 }
 
 type dummyReader struct{}
+
 func (d *dummyReader) Read(b []byte) (n int, err error) {
 	for i := range b {
 		b[i] = 1

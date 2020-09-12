@@ -29,7 +29,7 @@ func GetResolveService() *resolve.Service {
 		}
 	}
 	if config.Client.Resolver.Remote.Enabled {
-		_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHttp))
+		_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHTTP))
 	}
 	if config.Server.Resolver.Remote.Enabled {
 		_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false))

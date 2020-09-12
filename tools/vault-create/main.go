@@ -15,8 +15,6 @@ type options struct {
 
 var opts options
 
-
-
 func main() {
 	internal.ParseOptions(&opts)
 

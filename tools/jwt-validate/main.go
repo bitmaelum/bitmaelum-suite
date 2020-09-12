@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-
 func main() {
 	logrus.SetLevel(logrus.TraceLevel)
 

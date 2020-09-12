@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	keysFile = ".keys.json"
+	keysFile         = ".keys.json"
 	organisationFile = ".organisation.json"
 )
 

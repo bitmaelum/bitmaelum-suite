@@ -26,7 +26,7 @@ type MessageList struct {
 
 // OrganisationSettings defines settings for organisations
 type OrganisationSettings struct {
-	OnlyAllowAccountsOnMainServer   bool    `json:"only_allow_main_server_accounts"`
+	OnlyAllowAccountsOnMainServer bool `json:"only_allow_main_server_accounts"`
 }
 
 // BoxInfo returns information about the given message box
