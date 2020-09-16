@@ -59,7 +59,7 @@ func Test_Address(t *testing.T) {
 	a, err = New("joshua!")
 	assert.NoError(t, err)
 	assert.Equal(t, "joshua!", a.String())
-	assert.Equal(t, HashAddress("2f92571b5567b4557b94ac5701fc48e552ba9970d6dac89f7c2ebce92f1cd836"), a.Hash())
+	assert.Equal(t, HashAddress("66c94b6643ada5661b2d940eb87502b5af0f47f40fd45ce0fa125502dfa9c1ee"), a.Hash())
 
 	a, err = New("j!")
 	assert.Nil(t, a)
@@ -73,7 +73,7 @@ func Test_Address(t *testing.T) {
 	assert.Equal(t, "example", a.Org)
 
 	assert.Equal(t, "john@example!", a.String())
-	assert.Equal(t, "f454fe8d4b5017369f9e64861f0d471efe3cdcbdf45732f26b7a377c3e93d278", a.Hash().String())
+	assert.Equal(t, "16d0a463eb0be0514246e65b6b2d74c96d876bd1531f3bc095ac4b9f0b26d71c", a.Hash().String())
 
 	a, err = New("JOHN!")
 	assert.NoError(t, err)
@@ -89,14 +89,29 @@ func Test_HashAddress(t *testing.T) {
 	ha, err := NewHash("joshua@bitmaelum!")
 	assert.NoError(t, err)
 	assert.NotNil(t, ha)
-	assert.Equal(t, "013fdce56461fcfdf6675d6f507fde72b81573faea4bb6d5a42c9b18d0e9ac9e", ha.String())
+	assert.Equal(t, "6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840", ha.String())
 
 	ha, err = NewHash("incorrectaddress")
 	assert.Error(t, err)
 	assert.Nil(t, ha)
 
-	ha, err = NewHashFromHash("013fdce56461fcfdf6675d6f507fde72b81573faea4bb6d5a42c9b18d0e9ac9e")
+	ha, err = NewHashFromHash("6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840")
 	assert.NoError(t, err)
 	assert.NotNil(t, ha)
-	assert.Equal(t, "013fdce56461fcfdf6675d6f507fde72b81573faea4bb6d5a42c9b18d0e9ac9e", ha.String())
+	assert.Equal(t, "6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840", ha.String())
+}
+
+func Test_Verify(t *testing.T) {
+	assert.True(t, VerifyHash(
+		"6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840",
+		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
+		"49aa67181f4a3176f9b65605390bb81126e8ff1f6d03b1bd220c53e7a6b36d3e",
+	))
+
+	assert.False(t, VerifyHash(
+		"6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840",
+		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
+		"0000000000000006f9b65605390bb81126e8ff1f6d03b1bd220c53e7a6b36d3e",
+	))
+
 }
