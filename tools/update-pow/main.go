@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	tools "github.com/bitmaelum/bitmaelum-suite/tools/internal"
 )
@@ -12,6 +13,7 @@ type options struct {
 	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
 	Password string `short:"p" long:"password" description:"Password to your vault"`
 	Bits     int    `short:"b" long:"bits" description:"Number of bits"`
+	Force    bool   `short:"f" long:"force" description:"Force generation"`
 }
 
 func main() {
@@ -28,13 +30,16 @@ func main() {
 
 		if len(v.Accounts[i].Pow.Data) == 0 {
 			var err error
-			v.Accounts[i].Pow.Data, err = proofofwork.GenerateWorkData()
+			addr, err := address.New(v.Accounts[i].Address)
 			if err != nil {
 				panic(err)
 			}
+
+			// proof of work is actually our hash address
+			v.Accounts[i].Pow.Data = addr.Hash().String()
 		}
 
-		if v.Accounts[i].Pow.Bits >= opts.Bits && v.Accounts[i].Pow.IsValid() {
+		if v.Accounts[i].Pow.Bits >= opts.Bits && v.Accounts[i].Pow.IsValid() && ! opts.Force {
 			fmt.Printf("Account %s has %d bits\n", v.Accounts[i].Address, v.Accounts[i].Pow.Bits)
 			continue
 		}
