@@ -18,11 +18,11 @@ APIs, client connectivity etc. This is all still very much work in progress.
  - [X] Read email through utility
  - [X] Setting status flags on the mail-server (@todo: do we want this on the server, and if so, unencrypted?)
  - [X] Send email that is uploaded to the mail-server to an actual destination mail-server (or itself)
+ - [X] Read messages in your mailboxes from bm-client
  
 ## Next up in our todo
 
  - [ ] Deal with organisations
- - [ ] Read messages in your mailboxes from bm-client
  
 
 ## Later
