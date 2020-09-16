@@ -84,7 +84,6 @@ func (a *Address) String() string {
 func (a *Address) Hash() HashAddress {
 	l := sha256.Sum256([]byte(a.Local))
 	o := sha256.Sum256([]byte(a.Org))
-
 	sum := sha256.Sum256([]byte(hex.EncodeToString(l[:]) + hex.EncodeToString(o[:])))
 
 	return HashAddress(hex.EncodeToString(sum[:]))

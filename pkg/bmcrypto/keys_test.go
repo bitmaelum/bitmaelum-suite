@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/rsa"
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
@@ -53,6 +54,15 @@ func TestRSAPubKey(t *testing.T) {
 	// wrong type, right data
 	pk, err = NewPubKey(TestKeySet1[4])
 	assert.EqualError(t, err, "incorrect key type")
+
+
+	pk, err = NewPubKey(TestKeySet1[0])
+	npk, err := NewPubKeyFromInterface(pk.K)
+	assert.NoError(t, err)
+	assert.Equal(t, "rsa", npk.Type)
+	assert.Equal(t, "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB", npk.S)
+	assert.Equal(t, pk.K, npk.K.(*rsa.PublicKey))
+	assert.Equal(t, "", npk.Description)
 }
 
 func TestED25519PubKey(t *testing.T) {
@@ -64,6 +74,14 @@ func TestED25519PubKey(t *testing.T) {
 	assert.Equal(t, "MCowBQYDK2VwAyEAOT5K9VqRFjJ2Q0RWWqT8+OndKQrmzXCuMTSnhfvVpws=", pk.S)
 	assert.Equal(t, key, pk.K.(ed25519.PublicKey))
 	assert.Equal(t, "my foo bar", pk.Description)
+
+
+	pk, err = NewPubKeyFromInterface(key)
+	assert.NoError(t, err)
+	assert.Equal(t, "ed25519", pk.Type)
+	assert.Equal(t, "MCowBQYDK2VwAyEAOT5K9VqRFjJ2Q0RWWqT8+OndKQrmzXCuMTSnhfvVpws=", pk.S)
+	assert.Equal(t, key, pk.K.(ed25519.PublicKey))
+	assert.Equal(t, "", pk.Description)
 }
 
 func TestECDSAPub(t *testing.T) {
@@ -106,4 +124,60 @@ func TestED25519Priv(t *testing.T) {
 	assert.Equal(t, "ed25519", pk.Type)
 	assert.Equal(t, "MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7", pk.S)
 	assert.Equal(t, b, pk.K.(ed25519.PrivateKey).Seed())
+
+
+	npk, err := NewPrivKeyFromInterface(pk.K)
+	assert.NoError(t, err)
+	assert.Equal(t, "ed25519", pk.Type)
+	assert.Equal(t, "MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7", pk.S)
+	assert.Equal(t, pk.K, npk.K.(ed25519.PrivateKey))
+}
+
+func TestIncorrectKeys(t *testing.T) {
+	pk, err := NewPrivKey("foo 12314")
+	assert.Error(t, err)
+	assert.Nil(t, pk)
+
+	pk, err = NewPrivKey("foo12314")
+	assert.Error(t, err)
+	assert.Nil(t, pk)
+}
+
+func TestPrivateKeyJSON(t *testing.T) {
+	pk, err := NewPrivKey(TestKeySet5[0])
+	assert.NoError(t, err)
+	assert.Equal(t, "ed25519", pk.Type)
+
+	data, err := pk.MarshalJSON()
+	assert.NoError(t, err)
+	assert.Equal(t, "\"ed25519 MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7\"", string(data))
+
+	err = pk.UnmarshalJSON([]byte("fasfdsadfA"))
+	assert.IsType(t, &json.SyntaxError{}, err)
+
+	foo := &PrivKey{}
+	err = foo.UnmarshalJSON([]byte("\"ed25519 MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7\""))
+	assert.NoError(t, err)
+	assert.Equal(t, "ed25519", foo.Type)
+	assert.Equal(t, "MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7", foo.S)
+}
+
+func TestPubKeyJSON(t *testing.T) {
+	// Pub keys
+	pk, err := NewPubKey(TestKeySet1[0])
+	assert.NoError(t, err)
+	assert.Equal(t, "rsa", pk.Type)
+
+	data, err := pk.MarshalJSON()
+	assert.NoError(t, err)
+	assert.Equal(t, "\"rsa MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB\"", string(data))
+
+	err = pk.UnmarshalJSON([]byte("fasfdsadfA"))
+	assert.IsType(t, &json.SyntaxError{}, err)
+
+	foo := &PubKey{}
+	err = foo.UnmarshalJSON([]byte("\"rsa MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB\""))
+	assert.NoError(t, err)
+	assert.Equal(t, "rsa", foo.Type)
+	assert.Equal(t, "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB", foo.S)
 }
