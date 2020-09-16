@@ -4,6 +4,7 @@
 ![License](https://img.shields.io/github/license/bitmaelum/bitmaelum-suite)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/bitmaelum/bitmaelum-suite)         
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4122/badge)](https://bestpractices.coreinfrastructure.org/projects/4122)
+[![Gitter](https://badges.gitter.im/bitmaelum/community.svg)](https://gitter.im/bitmaelum/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
          
          ____  _ _   __  __            _                 
         |  _ \(_) | |  \/  |          | |                
