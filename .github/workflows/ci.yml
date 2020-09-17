@@ -23,15 +23,15 @@ jobs:
     - name: Go lint
       run: |
         go get -u golang.org/x/lint/golint
-        $HOME/gopath/bin/golint ./...
+        $GOPATH/bin/golint ./...
     - name: Go ineffassign
       run: |
         go get -u github.com/gordonklaus/ineffassign
-        $HOME/gopath/bin/ineffassign ./*
+        $GOPATH/bin/ineffassign ./*
     - name: Go cyclo
       run: |
         go get -u github.com/fzipp/gocyclo
-        $HOME/gopath/bin/gocyclo -over 15 .
+        $GOPATH/bin/gocyclo -over 15 .
     - name: Go test
       run: |
         go test -race -coverprofile=coverage.txt -covermode=atomic ./...
