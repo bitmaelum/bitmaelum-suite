@@ -36,7 +36,7 @@ func main() {
 		logrus.Fatal("Incorrect address")
 		os.Exit(1)
 	}
-	hashed := []byte(ha.String() + info.Server)
+	hashed := []byte(ha.String() + info.Routing)
 	sig, err := bmcrypto.Sign(info.PrivKey, hashed)
 	if err != nil {
 		logrus.Fatal("Cannot sign")

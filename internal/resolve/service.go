@@ -18,7 +18,7 @@ type Service struct {
 type Info struct {
 	Hash      string          `json:"hash"`       // Hash of the email address
 	PublicKey bmcrypto.PubKey `json:"public_key"` // PublicKey of the user
-	Server    string          `json:"server"`     // Server where this email address resides
+	Routing   string          `json:"routing"`    // Server where this email address resides
 	Pow       string          `json:"pow"`        // Proof of work
 }
 
@@ -50,14 +50,14 @@ func (s *Service) UploadInfo(info internal.AccountInfo) error {
 	return s.repo.Upload(&Info{
 		Hash:      hashAddr.String(),
 		PublicKey: info.PubKey,
-		Server:    info.Server,
+		Routing:   info.Routing,
 	}, info.PrivKey, info.Pow)
 }
 
 // generateSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateSignature(info *Info, privKey bmcrypto.PrivKey) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash + info.Server))
+	hash := sha256.Sum256([]byte(info.Hash + info.Routing))
 	signature, err := bmcrypto.Sign(privKey, hash[:])
 	if err != nil {
 		return ""

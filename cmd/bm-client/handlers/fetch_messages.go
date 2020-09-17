@@ -20,7 +20,7 @@ import (
 // FetchMessages will display message information from a box or display all boxes
 func FetchMessages(info *internal.AccountInfo, box string, checkOnly bool) {
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          info.Server,
+		Host:          info.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})
