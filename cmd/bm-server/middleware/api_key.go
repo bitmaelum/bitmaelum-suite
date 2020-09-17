@@ -30,7 +30,7 @@ func (*APIKey) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		key, err := getAPIKey(req.Header.Get("Authorization"))
 		if err != nil {
-			ErrorOut(w, http.StatusUnauthorized, "Unauthorized: " + err.Error())
+			ErrorOut(w, http.StatusUnauthorized, "Unauthorized: "+err.Error())
 			return
 		}
 

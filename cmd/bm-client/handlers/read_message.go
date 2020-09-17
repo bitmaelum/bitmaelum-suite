@@ -88,7 +88,6 @@ func ReadMessage(info *internal.AccountInfo, box, messageID, blockType string) {
 	// 	spew.Dump(content)
 	// }
 
-
 	fmt.Printf("--------------------------------------------------------\n")
 	fmt.Printf("From       : %s <%s>\n", catalog.From.Name, catalog.From.Address)
 	fmt.Printf("To         : %s <%s>\n", catalog.To.Name, catalog.To.Address)

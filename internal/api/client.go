@@ -55,7 +55,7 @@ func NewAnonymous(opts ClientOpts) (*API, error) {
 		host: canonicalHost(opts.Host),
 		client: &http.Client{
 			Transport: transport,
-			Timeout: 15 * time.Second,
+			Timeout:   15 * time.Second,
 		},
 	}
 
@@ -94,7 +94,7 @@ func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error)
 		host: canonicalHost(opts.Host),
 		client: &http.Client{
 			Transport: transport,
-			Timeout: 30 * time.Second,
+			Timeout:   30 * time.Second,
 		},
 		jwt: jwtToken,
 	}
@@ -227,7 +227,6 @@ func canonicalHost(host string) string {
 
 	return host
 }
-
 
 func getErrorFromResponse(body []byte) error {
 	type errorStatus struct {
