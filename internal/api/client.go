@@ -274,7 +274,7 @@ func (l *httpLogger) LogRequest(req *http.Request) {
 	var b bytes.Buffer
 	if req.Body != nil {
 		var dest io.Writer = &b
-		_, err = io.Copy(dest, req.Body)
+		_, _ = io.Copy(dest, req.Body)
 	}
 
 	req.Body = save

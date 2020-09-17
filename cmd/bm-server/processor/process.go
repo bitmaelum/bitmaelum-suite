@@ -91,7 +91,7 @@ func deliverRemote(header *message.Header, info *resolve.Info, msgID string) err
 	client, err := api.NewAnonymous(api.ClientOpts{
 		Host:          info.Server,
 		AllowInsecure: config.Server.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHttp,
+		Debug:         config.Client.Server.DebugHTTP,
 	})
 	if err != nil {
 		return err
