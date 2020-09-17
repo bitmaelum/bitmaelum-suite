@@ -29,10 +29,10 @@ func GetResolveService() *resolve.Service {
 		}
 	}
 	if config.Client.Resolver.Remote.Enabled {
-		_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL))
+		_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHTTP))
 	}
 	if config.Server.Resolver.Remote.Enabled {
-		_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL))
+		_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false))
 	}
 	_ = repo.Add(*getDhtRepository())
 
@@ -48,8 +48,8 @@ func getChainRepository() *resolve.ChainRepository {
 	return chainResolverRepository
 }
 
-func getRemoteRepository(url string) *resolve.Repository {
-	repo := resolve.NewRemoteRepository(url)
+func getRemoteRepository(url string, debug bool) *resolve.Repository {
+	repo := resolve.NewRemoteRepository(url, debug)
 	return &repo
 }
 

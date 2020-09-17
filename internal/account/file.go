@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	pubKeyFile = ".keys.json"
-	flagFile   = ".flags.json"
+	keysFile         = ".keys.json"
+	organisationFile = ".organisation.json"
 )
 
 // PubKeys holds a list of public keys

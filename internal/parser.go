@@ -10,6 +10,7 @@ import (
 func ParseOptions(opts interface{}) {
 	parser := flags.NewParser(opts, flags.IgnoreUnknown)
 	_, err := parser.Parse()
+
 	if err != nil {
 		flagsError, _ := err.(*flags.Error)
 		if flagsError.Type == flags.ErrHelp {

@@ -9,6 +9,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -72,10 +73,58 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewEncoder(w).Encode(StatusOk("BitMaelum account has been successfully created."))
 }
 
-// RetrieveAccount retrieves account information
-func RetrieveAccount(w http.ResponseWriter, req *http.Request) {
+// RetrieveOrganisation is the handler that will retrieve organisation settings
+func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "incorrect address")
+		return
+	}
+
+	// Check if account exists
+	ar := container.GetAccountRepo()
+	if !ar.Exists(*haddr) {
+		ErrorOut(w, http.StatusNotFound, "address not found")
+		return
+	}
+
+	settings, err := ar.FetchOrganisationSettings(*haddr)
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "organisation settings not found")
+		return
+	}
+
+	// Return public keys
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk("this is your account"))
-	return
+	_ = json.NewEncoder(w).Encode(settings)
+}
+
+// RetrieveKeys is the handler that will retrieve public keys directly from the mailserver
+func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
+	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "incorrect address")
+		return
+	}
+
+	// Check if account exists
+	ar := container.GetAccountRepo()
+	if !ar.Exists(*haddr) {
+		ErrorOut(w, http.StatusNotFound, "public keys not found")
+		return
+	}
+
+	keys, err := ar.FetchKeys(*haddr)
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "public keys not found")
+		return
+	}
+
+	// Return public keys
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(jsonOut{
+		"public_keys": keys,
+	})
 }
