@@ -16,21 +16,24 @@ jobs:
       uses: actions/checkout@v2
     - name: Go format
       run: |
-        gofmt -l .
+        test -z "$(gofmt -l .)"
     - name: Go vet
       run: |
         go vet ./...
     - name: Go lint
       run: |
         go get -u golang.org/x/lint/golint
+        GOPATH=`go env GOPATH`
         $GOPATH/bin/golint ./...
     - name: Go ineffassign
       run: |
         go get -u github.com/gordonklaus/ineffassign
+        GOPATH=`go env GOPATH`
         $GOPATH/bin/ineffassign ./*
     - name: Go cyclo
       run: |
         go get -u github.com/fzipp/gocyclo
+        GOPATH=`go env GOPATH`
         $GOPATH/bin/gocyclo -over 15 .
     - name: Go test
       run: |
