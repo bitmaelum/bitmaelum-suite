@@ -5,7 +5,8 @@ jobs:
     strategy:
       matrix:
         go-version: [1.13.x, 1.14.x, 1.15.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+#        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Install Go
@@ -14,24 +15,27 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Go format
-      run: |
-        gofmt -l .
+#    - name: Go format
+#      run: |
+#        test -z "$(gofmt -l .)"
     - name: Go vet
       run: |
         go vet ./...
     - name: Go lint
       run: |
         go get -u golang.org/x/lint/golint
-        $HOME/gopath/bin/golint ./...
+        GOPATH=`go env GOPATH`
+        $GOPATH/bin/golint ./...
     - name: Go ineffassign
       run: |
         go get -u github.com/gordonklaus/ineffassign
-        $HOME/gopath/bin/ineffassign ./*
+        GOPATH=`go env GOPATH`
+        $GOPATH/bin/ineffassign ./*
     - name: Go cyclo
       run: |
         go get -u github.com/fzipp/gocyclo
-        $HOME/gopath/bin/gocyclo -over 15 .
+        GOPATH=`go env GOPATH`
+        $GOPATH/bin/gocyclo -over 15 .
     - name: Go test
       run: |
         go test -race -coverprofile=coverage.txt -covermode=atomic ./...
