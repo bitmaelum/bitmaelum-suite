@@ -53,6 +53,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 	}
 
 	// Save new vault when we cannot find one
+	_, err = os.Stat(p)
 	if _, ok := err.(*os.PathError); ok {
 		err = os.MkdirAll(filepath.Dir(p), 0777)
 		if err != nil {
