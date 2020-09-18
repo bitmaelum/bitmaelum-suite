@@ -64,8 +64,8 @@ func createTableIfNotExist(db *sqliteRepo) {
 
 func (r *sqliteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	var (
-		h string
-		p string
+		h  string
+		p  string
 		rt string
 	)
 
@@ -83,7 +83,7 @@ func (r *sqliteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	return &Info{
 		Hash:      h,
 		PublicKey: *pk,
-		Routing:    rt,
+		Routing:   rt,
 	}, nil
 }
 

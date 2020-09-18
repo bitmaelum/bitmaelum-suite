@@ -51,6 +51,7 @@ func (s *Service) UploadInfo(info internal.AccountInfo) error {
 		Hash:      hashAddr.String(),
 		PublicKey: info.PubKey,
 		Routing:   info.Routing,
+		Pow:       info.Pow.String(),
 	}, info.PrivKey, info.Pow)
 }
 

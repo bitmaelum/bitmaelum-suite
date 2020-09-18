@@ -17,5 +17,5 @@ type AccountInfo struct {
 	PrivKey bmcrypto.PrivKey        `json:"privKey"`       // PEM encoded private key
 	PubKey  bmcrypto.PubKey         `json:"pubKey"`        // PEM encoded public key
 	Pow     proofofwork.ProofOfWork `json:"pow,omitEmpty"` // Proof of work
-	Routing string                  `json:"routing"`       // Mail server hosting this account
+	Routing string                  `json:"server"`        // Mail server hosting this account
 }
