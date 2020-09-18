@@ -14,6 +14,7 @@
         |____/|_|\__|_|  |_|\__,_|\___|_|\__,_|_| |_| |_|
            P r i v a c y   i s   y o u r s   a g a i n                                          
 
+
 # What if..
 we could redesign email without any need for backward compatibility. What would it look like? 
 Could we solve the problems we face nowadays like spam, email forgery, phishing emails and, maybe the most important 
@@ -24,6 +25,7 @@ BitMaelum (old Anglo-Saxon for "bit-by-bit") is an attempt. Instead of trying to
 To read the current status of the project, check out [our status document](docs/status.md).
 
 To build and test BitMaelum, check out [build document](docs/build.md).
+
 
 # Benefits
 We try to design a system that:
@@ -36,9 +38,11 @@ We try to design a system that:
   - Slow connection / mobile friendly 
   - Privacy first
 
+
 # How do we want to achieve all this?
 There are a lot of issues we want to solve. Some of them more difficult than others. In a nutshell, this is what BitMaelum does:
  
+
 ### Deal with less to no spam at all
 There are multiple ways we try to combat spam:
 
@@ -69,9 +73,11 @@ Tired of getting email you never subscribed to? Or ever tried to unsubscribe to 
 
 BitMaelum puts you in charge of mailing lists. You and ONLY you decide if you want to subscribe to a mailing list. Want to unsubscribe? This is also YOUR decision. There is no need to wait for any action from the mailing list owner. As soon as you decide to unsubscribe, you're unsubscribed!
  
+
 ### Slow connection / mobile friendly
 Not everybody has a 10Gbit fiber internet connection. And in the middle of the woods, you're probably lucky with a 1-bar connection.
 We try to keep communication to a minimum by selective downloading what you need.
+
 
 ### Privacy first
 We use end-to-end encryption between the sender and recipient. When sending a message, ONLY the recipient can decrypt the email. This means that no server, router, or agency that is snooping traffic can read your messages or email meta-data. Even your mail provider cannot read or modify your messages.
