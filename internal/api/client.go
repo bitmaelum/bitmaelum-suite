@@ -243,16 +243,16 @@ func getErrorFromResponse(body []byte) error {
 }
 
 func isErrorResponse(body []byte) bool {
-        type errorStatus struct {
-                Error  bool   `json:"error"`
-                Status string `json:"status"`
-        }
+	type errorStatus struct {
+		Error  bool   `json:"error"`
+		Status string `json:"status"`
+	}
 
-        s := &errorStatus{}
-        err := json.Unmarshal(body, &s)
-        if err != nil {
-                return false
-        }
+	s := &errorStatus{}
+	err := json.Unmarshal(body, &s)
+	if err != nil {
+		return false
+	}
 
-        return s.Error
+	return s.Error
 }
