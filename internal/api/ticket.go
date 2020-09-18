@@ -27,6 +27,10 @@ func (api *API) GetTicket(from, to address.HashAddress, subscriptionID string) (
 	if statusCode < 200 || statusCode > 299 {
 		return nil, errNoSuccess
 	}
+	
+	if (isErrorResponse(body)) {
+                return nil, getErrorFromResponse(body)
+        }
 
 	// Parse body for ticket
 	t := &ticket.Ticket{}
@@ -58,6 +62,10 @@ func (api *API) GetAnonymousTicket(from, to address.HashAddress, subscriptionID 
 	if (statusCode < 200 || statusCode > 299) && statusCode != 412 {
 		return nil, getErrorFromResponse(body)
 	}
+	
+	if (isErrorResponse(body)) {
+                return nil, getErrorFromResponse(body)
+        }
 
 	// Parse body for ticket
 	t := &ticket.Ticket{}
@@ -89,6 +97,10 @@ func (api *API) GetAnonymousTicketByProof(id string, proof uint64) (*ticket.Tick
 	if statusCode < 200 || statusCode > 299 {
 		return nil, errNoSuccess
 	}
+	
+	if (isErrorResponse(body)) {
+                return nil, getErrorFromResponse(body)
+        }
 
 	// Parse body for ticket
 	newT := &ticket.Ticket{}
