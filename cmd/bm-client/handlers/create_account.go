@@ -15,7 +15,7 @@ import (
 )
 
 // CreateAccount creates a new account locally in the vault, stores it on the mailserver and pushes the public key to the resolver
-func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token string) {
+func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, token string) {
 
 	fmt.Printf("* Verifying if address is correct: ")
 	addr, err := address.New(bmAddr)
@@ -70,7 +70,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 			PrivKey: *privKey,
 			PubKey:  *pubKey,
 			Pow:     *proof,
-			Server:  server,
+			Routing: routing,
 		}
 
 		vault.AddAccount(*info)
@@ -85,7 +85,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, server, token
 
 	fmt.Printf("* Sending your account information to the server: ")
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          info.Server,
+		Host:          info.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})

@@ -50,7 +50,7 @@ func NewSqliteRepository(dsn string) (Repository, error) {
 
 // createTableIfNotExist creates the key table if it doesn't exist already in the database
 func createTableIfNotExist(db *sqliteRepo) {
-	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (hash VARCHAR(32) PRIMARY KEY, pubkey TEXT, address TEXT)", tableName)
+	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (hash VARCHAR(32) PRIMARY KEY, pubkey TEXT, routing TEXT)", tableName)
 	st, err := db.conn.Prepare(query)
 	if err != nil {
 		return
@@ -64,13 +64,13 @@ func createTableIfNotExist(db *sqliteRepo) {
 
 func (r *sqliteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	var (
-		h string
-		p string
-		a string
+		h  string
+		p  string
+		rt string
 	)
 
-	query := fmt.Sprintf("SELECT hash, pubkey, address FROM %s WHERE hash LIKE ?", tableName)
-	err := r.conn.QueryRow(query, addr.String).Scan(&h, &p, &a)
+	query := fmt.Sprintf("SELECT hash, pubkey, routing FROM %s WHERE hash LIKE ?", tableName)
+	err := r.conn.QueryRow(query, addr.String).Scan(&h, &p, &rt)
 	if err != nil {
 		return nil, err
 	}
@@ -83,18 +83,18 @@ func (r *sqliteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	return &Info{
 		Hash:      h,
 		PublicKey: *pk,
-		Server:    a,
+		Routing:   rt,
 	}, nil
 }
 
 func (r *sqliteRepo) Upload(info *Info, _ bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
-	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , address) VALUES (?, ?, ?)", tableName)
+	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , routing) VALUES (?, ?, ?)", tableName)
 	st, err := r.conn.Prepare(query)
 	if err != nil {
 		return err
 	}
 
-	_, err = st.Exec(info.Hash, info.PublicKey.S, info.Server)
+	_, err = st.Exec(info.Hash, info.PublicKey.S, info.Routing)
 	return err
 }
 
