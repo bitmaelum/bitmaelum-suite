@@ -23,7 +23,6 @@ func main() {
 	tools.VaultPassword = opts.Password
 	v := tools.OpenVault()
 
-
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Address", "Old", "New"})
 

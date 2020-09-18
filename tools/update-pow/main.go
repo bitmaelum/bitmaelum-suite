@@ -39,7 +39,7 @@ func main() {
 			v.Accounts[i].Pow.Data = addr.Hash().String()
 		}
 
-		if v.Accounts[i].Pow.Bits >= opts.Bits && v.Accounts[i].Pow.IsValid() && ! opts.Force {
+		if v.Accounts[i].Pow.Bits >= opts.Bits && v.Accounts[i].Pow.IsValid() && !opts.Force {
 			fmt.Printf("Account %s has %d bits\n", v.Accounts[i].Address, v.Accounts[i].Pow.Bits)
 			continue
 		}

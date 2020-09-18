@@ -55,8 +55,7 @@ func TestRSAPubKey(t *testing.T) {
 	pk, err = NewPubKey(TestKeySet1[4])
 	assert.EqualError(t, err, "incorrect key type")
 
-
-	pk, err = NewPubKey(TestKeySet1[0])
+	pk, _ = NewPubKey(TestKeySet1[0])
 	npk, err := NewPubKeyFromInterface(pk.K)
 	assert.NoError(t, err)
 	assert.Equal(t, "rsa", npk.Type)
@@ -74,7 +73,6 @@ func TestED25519PubKey(t *testing.T) {
 	assert.Equal(t, "MCowBQYDK2VwAyEAOT5K9VqRFjJ2Q0RWWqT8+OndKQrmzXCuMTSnhfvVpws=", pk.S)
 	assert.Equal(t, key, pk.K.(ed25519.PublicKey))
 	assert.Equal(t, "my foo bar", pk.Description)
-
 
 	pk, err = NewPubKeyFromInterface(key)
 	assert.NoError(t, err)
@@ -124,7 +122,6 @@ func TestED25519Priv(t *testing.T) {
 	assert.Equal(t, "ed25519", pk.Type)
 	assert.Equal(t, "MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7", pk.S)
 	assert.Equal(t, b, pk.K.(ed25519.PrivateKey).Seed())
-
 
 	npk, err := NewPrivKeyFromInterface(pk.K)
 	assert.NoError(t, err)
