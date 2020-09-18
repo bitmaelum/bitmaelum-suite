@@ -2,6 +2,7 @@ package address
 
 import (
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -81,12 +82,28 @@ func (a *Address) String() string {
 
 // Hash converts an address to a hashed value
 func (a *Address) Hash() HashAddress {
-	sum := sha256.Sum256(a.Bytes())
+	l := sha256.Sum256([]byte(a.Local))
+	o := sha256.Sum256([]byte(a.Org))
+	sum := sha256.Sum256([]byte(hex.EncodeToString(l[:]) + hex.EncodeToString(o[:])))
 
+	return HashAddress(hex.EncodeToString(sum[:]))
+}
+
+// OldHash converts an address to a old hashed value
+func (a *Address) OldHash() HashAddress {
+	sum := sha256.Sum256([]byte(a.String()))
 	return HashAddress(hex.EncodeToString(sum[:]))
 }
 
 // Bytes converts an address to []byte
 func (a *Address) Bytes() []byte {
 	return []byte(a.String())
+}
+
+// VerifyHash will check if the hashes for local and org found matches the actual target hash
+func VerifyHash(target, local, org string) bool {
+	sum := sha256.Sum256([]byte(local + org))
+	hash := hex.EncodeToString(sum[:])
+
+	return subtle.ConstantTimeCompare([]byte(hash), []byte(target)) == 1
 }
