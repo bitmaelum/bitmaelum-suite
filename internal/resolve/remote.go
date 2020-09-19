@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -95,11 +94,11 @@ func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 	return nil, errKeyNotFound
 }
 
-func (r *remoteRepo) Upload(info *Info, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
+func (r *remoteRepo) Upload(info *Info, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
 	data := &KeyUpload{
 		PublicKey: info.PublicKey,
 		Routing:   info.Routing,
-		Pow:       pow.String(),
+		Proof:     proof.String(),
 	}
 
 	byteBuf, err := json.Marshal(&data)
