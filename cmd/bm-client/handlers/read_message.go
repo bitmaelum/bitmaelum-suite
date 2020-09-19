@@ -17,7 +17,7 @@ import (
 // ReadMessage will read a specific message blocks
 func ReadMessage(info *internal.AccountInfo, box, messageID, blockType string) {
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          info.Server,
+		Host:          info.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})

@@ -23,7 +23,7 @@ type remoteRepo struct {
 // KeyUpload is a JSON structure we upload to a resolver server
 type KeyUpload struct {
 	PublicKey bmcrypto.PubKey `json:"public_key"`
-	Address   string          `json:"address"`
+	Routing   string          `json:"routing"`
 	Pow       string          `json:"pow"`
 }
 
@@ -31,7 +31,7 @@ type KeyUpload struct {
 type KeyDownload struct {
 	Hash      string          `json:"hash"`
 	PublicKey bmcrypto.PubKey `json:"public_key"`
-	Address   string          `json:"address"`
+	Routing   string          `json:"routing"`
 }
 
 // NewRemoteRepository creates new remote resolve repository
@@ -80,7 +80,7 @@ func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 		ri := &Info{
 			Hash:      kd.Hash,
 			PublicKey: kd.PublicKey,
-			Server:    kd.Address,
+			Routing:   kd.Routing,
 		}
 		err = json.Unmarshal(res, &ri)
 		if err != nil {
@@ -97,7 +97,7 @@ func (r *remoteRepo) Resolve(addr address.HashAddress) (*Info, error) {
 func (r *remoteRepo) Upload(info *Info, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
 	data := &KeyUpload{
 		PublicKey: info.PublicKey,
-		Address:   info.Server,
+		Routing:   info.Routing,
 		Pow:       pow.String(),
 	}
 

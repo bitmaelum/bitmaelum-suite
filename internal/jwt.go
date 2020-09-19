@@ -92,7 +92,7 @@ func ValidateJWTToken(tokenString string, addr address.HashAddress, key bmcrypto
 	// The standard claims should be valid
 	err = token.Claims.Valid()
 	if err != nil {
-		logrus.Tracef("auth: jwt: ", err)
+		logrus.Trace("auth: jwt: ", err)
 		return nil, err
 	}
 

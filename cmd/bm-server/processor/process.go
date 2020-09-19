@@ -60,7 +60,7 @@ func ProcessMessage(msgID string) {
 	}
 
 	// Otherwise, send to outgoing server
-	logrus.Debugf("Message %s is remote, transferring to %s", msgID, res.Server)
+	logrus.Debugf("Message %s is remote, transferring to %s", msgID, res.Routing)
 	err = deliverRemote(header, res, msgID)
 	if err != nil {
 		logrus.Warnf("cannot deliver message %s remotely to %s. Retrying.", msgID, header.To.Addr)
@@ -89,7 +89,7 @@ func deliverLocal(info *resolve.Info, msgID string) error {
 // we upload a message from a client to a server.
 func deliverRemote(header *message.Header, info *resolve.Info, msgID string) error {
 	client, err := api.NewAnonymous(api.ClientOpts{
-		Host:          info.Server,
+		Host:          info.Routing,
 		AllowInsecure: config.Server.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})

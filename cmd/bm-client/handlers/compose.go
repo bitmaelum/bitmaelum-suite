@@ -55,7 +55,7 @@ func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject s
 		return err
 	}
 
-	fmt.Printf("  Sending message to: %s\n", info.Server)
+	fmt.Printf("  Sending message to: %s\n", info.Routing)
 	err = uploadToServer(info, header, encryptedCatalog, catalog)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject s
 
 func uploadToServer(info internal.AccountInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
 	client, err := api.NewAuthenticated(&info, api.ClientOpts{
-		Host:          info.Server,
+		Host:          info.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})
