@@ -6,6 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // TicketHeader is the HTTP Header that contains our ticket ID
@@ -15,14 +16,14 @@ const TicketHeader = "x-bitmaelum-ticket"
 // we use Ticket instead.
 type SimpleTicket struct {
 	ID    string           `json:"ticket_id"`     // ticket ID. Will be used as the message ID when uploading
-	Pow   *pow.ProofOfWork `json:"proof_of_work"` // proof of work that must be completed
+	Proof *pow.ProofOfWork `json:"proof_of_work"` // proof of work that must be completed
 	Valid bool             `json:"is_valid"`      // true if the ticket is valid
 }
 
 // Ticket is a structure that defines if a client or server is allowed to upload a message, or if additional work has to be done first
 type Ticket struct {
 	ID             string              `json:"ticket_id"`       // ticket ID. Will be used as the message ID when uploading
-	Pow            *pow.ProofOfWork    `json:"proof_of_work"`   // proof of work that must be completed
+	Proof          *pow.ProofOfWork    `json:"proof_of_work"`   // proof of work that must be completed
 	Valid          bool                `json:"is_valid"`        // true if the ticket is valid
 	From           address.HashAddress `json:"from_addr"`       // From address for this ticket
 	To             address.HashAddress `json:"to_addr"`         // To address for this ticket
@@ -40,27 +41,28 @@ func (t *Ticket) UnmarshalBinary(data []byte) error {
 }
 
 // NewUnvalidated creates a new unvalidated ticket with proof of work
-func NewUnvalidated(ticketID string, from, to address.HashAddress, subscriptionID string) *Ticket {
-	if ticketID == "" {
-		// Generate ID if none specified
-		ticketUUID, err := uuid.NewRandom()
-		if err != nil {
-			return nil
-		}
-		ticketID = ticketUUID.String()
+func NewUnvalidated(from, to address.HashAddress, subscriptionID string) *Ticket {
+	logrus.Trace("Generating new unvalidated ticket")
+
+	// Generate Ticket ID
+	ticketUUID, err := uuid.NewRandom()
+	if err != nil {
+		return nil
 	}
+	ticketID := ticketUUID.String()
+	logrus.Trace("TicketID: ", ticketID)
 
 	// Generate workdata for proof-of-work
 	work, err := pow.GenerateWorkData()
 	if err != nil {
 		return nil
 	}
-	proof := pow.New(config.Server.Accounts.ProofOfWork, work, 0)
+	proof := pow.NewWithoutProof(config.Server.Accounts.ProofOfWork, work)
 
 	// Return ticket
 	return &Ticket{
 		ID:             ticketID,
-		Pow:            proof,
+		Proof:          proof,
 		Valid:          false,
 		From:           from,
 		To:             to,
@@ -69,8 +71,8 @@ func NewUnvalidated(ticketID string, from, to address.HashAddress, subscriptionI
 }
 
 // NewValidated returns a new ticket that is validated (without proof-of-work)
-func NewValidated(ticketID string, from, to address.HashAddress, subscriptionID string) *Ticket {
-	tckt := NewUnvalidated(ticketID, from, to, subscriptionID)
+func NewValidated(from, to address.HashAddress, subscriptionID string) *Ticket {
+	tckt := NewUnvalidated(from, to, subscriptionID)
 	tckt.Valid = true
 
 	return tckt
@@ -80,7 +82,7 @@ func NewValidated(ticketID string, from, to address.HashAddress, subscriptionID 
 func NewSimpleTicket(t *Ticket) SimpleTicket {
 	return SimpleTicket{
 		ID:    t.ID,
-		Pow:   t.Pow,
+		Proof: t.Proof,
 		Valid: t.Valid,
 	}
 }

@@ -46,7 +46,7 @@ func main() {
 
 		fmt.Printf("Working on %s\n", v.Accounts[i].Address)
 		pow = proofofwork.New(opts.Bits, v.Accounts[i].Pow.Data, 0)
-		pow.Work(0)
+		pow.WorkMulticore()
 
 		v.Accounts[i].Pow = *pow
 

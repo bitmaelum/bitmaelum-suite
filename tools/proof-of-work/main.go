@@ -17,8 +17,8 @@ func main() {
 	data := os.Args[2]
 
 	fmt.Printf("Working on %d bits proof...\n", bits)
-	work := pow.New(bits, data, 0)
+	work := pow.NewWithoutProof(bits, data)
 
-	work.Work(0)
+	work.WorkMulticore()
 	fmt.Printf("Proof: %d\n", work.Proof)
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -21,8 +22,10 @@ func NewRepository(opts *redis.Options) Repository {
 
 // Fetch a ticket from the repository, or err
 func (r redisRepo) Fetch(ticketID string) (*Ticket, error) {
+	logrus.Trace("Trying to fetch ticket from REDIS: ", ticketID)
 	data, err := r.client.Get(r.client.Context(), createTicketKey(ticketID)).Result()
 	if data == "" || err != nil {
+		logrus.Trace("ticket not found in REDIS: ", data, err)
 		return nil, errors.New("ticket not found")
 	}
 
@@ -37,6 +40,7 @@ func (r redisRepo) Fetch(ticketID string) (*Ticket, error) {
 
 // Store the given ticket in the repository
 func (r redisRepo) Store(ticket *Ticket) error {
+	logrus.Trace("Storing ticket in REDIS: ", ticket)
 	_, err := r.client.Set(r.client.Context(), createTicketKey(ticket.ID), ticket, 30*time.Minute).Result()
 
 	return err

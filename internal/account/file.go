@@ -43,6 +43,8 @@ func (r *fileRepo) store(addr address.HashAddress, path string, data []byte) err
 
 // Check if path in account exists
 func (r *fileRepo) pathExists(addr address.HashAddress, path string) bool {
+	logrus.Trace("ADDR: ", addr)
+	logrus.Trace("PATH: ", path)
 	fullPath := r.getPath(addr, path)
 	_, err := os.Stat(fullPath)
 
@@ -111,6 +113,10 @@ func (r *fileRepo) fetchJSON(addr address.HashAddress, path string, v interface{
 func (r *fileRepo) getPath(addr address.HashAddress, suffix string) string {
 	strAddr := strings.ToLower(addr.String())
 	suffix = strings.ToLower(suffix)
+
+	if len(strAddr) < 2 {
+		logrus.Panic("Path seems wrong: '%s'", strAddr)
+	}
 
 	return filepath.Join(r.basePath, strAddr[:2], strAddr[2:], suffix)
 }

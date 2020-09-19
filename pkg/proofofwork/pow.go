@@ -58,6 +58,11 @@ func New(bits int, data string, proof uint64) *ProofOfWork {
 	return pow
 }
 
+// NewWithoutProof returns a new proof-of-work without actual proof (needs to be worked on)
+func NewWithoutProof(bits int, data string) *ProofOfWork {
+	return New(bits, data, 0)
+}
+
 // NewFromString generates a proof-of-work based on the given string
 func NewFromString(s string) (*ProofOfWork, error) {
 	parts := strings.SplitN(s, "$", 3)
@@ -108,15 +113,16 @@ func (pow *ProofOfWork) String() string {
 	return fmt.Sprintf("%d$%s$%d", pow.Bits, base64.StdEncoding.EncodeToString([]byte(pow.Data)), pow.Proof)
 }
 
-// Work actually does the proof-of-work
+// WorkMulticore will work on all cores possible
+func (pow *ProofOfWork) WorkMulticore() {
+	// Use the maximum number of cores for work to be the most efficient.
+	pow.Work(maxCores())
+}
+
+// Work actually does the proof-of-work on the given amount of cores
 func (pow *ProofOfWork) Work(cores int) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	// If no cores are specified, use the maximum number of cores
-	if cores <= 0 {
-		cores = maxCores()
-	}
 
 	found := make(chan uint64)
 	for i := 0; i < cores; i++ {

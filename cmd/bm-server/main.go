@@ -110,7 +110,7 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/org", handler.RetrieveOrganisation).Methods("GET")
 
 	// Server to server message upload
-	publicRouter.HandleFunc("/ticket", handler.GetLocalTicket).Methods("POST")
+	publicRouter.HandleFunc("/ticket", handler.GetServerToServerTicket).Methods("POST")
 	publicRouter.HandleFunc("/incoming/header", handler.IncomingMessageHeader).Methods("POST")
 	publicRouter.HandleFunc("/incoming/catalog", handler.IncomingMessageCatalog).Methods("POST")
 	publicRouter.HandleFunc("/incoming/block/{message:[A-Za-z0-9-]+}", handler.IncomingMessageBlock).Methods("POST")
@@ -125,7 +125,7 @@ func setupRouter() *mux.Router {
 	authRouter.Use(tracer.Middleware)
 	authRouter.Use(jwt.Middleware)
 	// Authorized sending
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetRemoteTicket).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetClientToServerTicket).Methods("POST")
 	// Message boxes
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.RetrieveBoxes).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.CreateBox).Methods("POST")

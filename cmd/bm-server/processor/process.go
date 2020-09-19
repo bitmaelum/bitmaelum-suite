@@ -8,6 +8,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"io/ioutil"
@@ -39,6 +40,7 @@ func ProcessMessage(msgID string) {
 	rs := container.GetResolveService()
 	res, err := rs.Resolve(header.To.Addr)
 	if err != nil {
+		logrus.Trace(err)
 		logrus.Warnf("cannot resolve address %s for message %s. Retrying.", header.To.Addr, msgID)
 		MoveToRetryQueue(msgID)
 		return
@@ -105,11 +107,14 @@ func deliverRemote(header *message.Header, info *resolve.Info, msgID string) err
 	}
 	if !t.Valid {
 		logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
-		// Do proof of work. We have to wait for it. THis is ok as this is just a separate thread.
-		t.Pow.Work(0)
+		spew.Dump(t)
+		// Do proof of work. We have to wait for it. This is ok as this is just a separate thread.
+		t.Proof.WorkMulticore()
+		spew.Dump(t)
+		spew.Dump(t.Proof.Proof)
 
 		logrus.Debugf("work for %s is completed", t.ID)
-		t, err = client.GetAnonymousTicketByProof(t.ID, t.Pow.Proof)
+		t, err = client.GetAnonymousTicketByProof(header.From.Addr, header.To.Addr, t.SubscriptionID, t.ID, t.Proof.Proof)
 		if err != nil || !t.Valid {
 			logrus.Warnf("Ticket for message %s not valid after proof of work, moving to retry queue", msgID)
 			MoveToRetryQueue(msgID)

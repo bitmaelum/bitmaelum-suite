@@ -13,6 +13,7 @@ import (
 const (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
 	addressRegex string = "(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$"
+	hashRegex string = "[a-z0-9]{64}"
 )
 
 // HashAddress is a SHA256'd address
@@ -61,6 +62,15 @@ func NewHash(address string) (*HashAddress, error) {
 
 // NewHashFromHash generates a hash address based on the given string hash
 func NewHashFromHash(hash string) (*HashAddress, error) {
+	re := regexp.MustCompile(hashRegex)
+	if re == nil {
+		return nil, errors.New("cannot compile regex")
+	}
+
+	if !re.MatchString(strings.ToLower(hash)) {
+		return nil, errors.New("incorrect hash address format specified")
+	}
+
 	h := HashAddress(hash)
 	return &h, nil
 }

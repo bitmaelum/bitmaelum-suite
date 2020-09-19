@@ -79,10 +79,13 @@ func (api *API) GetAnonymousTicket(from, to address.HashAddress, subscriptionID 
 
 // GetAnonymousTicketByProof will send proof of work for a given ticket ID. If correct, the server will
 // return the validated ticket back. From that point on we can use the ticket to send a message.
-func (api *API) GetAnonymousTicketByProof(id string, proof uint64) (*ticket.Ticket, error) {
+func (api *API) GetAnonymousTicketByProof(from, to address.HashAddress, subscriptionID, ticketId string, proof uint64) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
-		"ticket_id":     id,
-		"proof_of_work": proof,
+		"from_addr":      from.String(),
+		"to_addr":        to.String(),
+		"ticket_id":      ticketId,
+		"subscriptionId": subscriptionID,
+		"proof_of_work":  proof,
 	}, "", "  ")
 	if err != nil {
 		return nil, err
