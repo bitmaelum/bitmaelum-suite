@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -24,7 +25,7 @@ type remoteRepo struct {
 type KeyUpload struct {
 	PublicKey bmcrypto.PubKey `json:"public_key"`
 	Routing   string          `json:"routing"`
-	Pow       string          `json:"pow"`
+	Proof     string          `json:"proof"`
 }
 
 // KeyDownload is a JSON structure we download from a resolver server

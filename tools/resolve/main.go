@@ -33,5 +33,6 @@ func main() {
 
 	fmt.Printf("BitMaelum address '%s' resolves to %s\n", opts.Address, info.Routing)
 	fmt.Printf("Hash: %s\n", info.Hash)
+	fmt.Printf("Routing: %s\n", info.Routing)
 	fmt.Printf("Public key:\n%s\n", info.PublicKey.String())
 }
