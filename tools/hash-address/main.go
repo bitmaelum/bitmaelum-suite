@@ -20,10 +20,11 @@ func main() {
 			break
 		}
 
-		hash, err := address.NewHash(addr)
+		a, err := address.New(addr)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("%s\n", hash.String())
+		fmt.Printf("OLD: %s\n", a.OldHash().String())
+		fmt.Printf("NEW: %s\n", a.Hash().String())
 	}
 }
