@@ -142,7 +142,6 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	logrus.Tracef("Found ticket in repository: %s", tckt.ID)
-	spew.Dump(tckt)
 
 	// Validate ticket if not done already
 	if !tckt.Valid {
@@ -249,8 +248,6 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 		}
 	}
 
-	spew.Dump(requestInfo)
-
 	// Validate from / to address
 	requestInfo.From, err = address.NewHashFromHash(requestInfo.FromAddr)
 	if err != nil {
@@ -262,8 +259,6 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 		}
 	}
 
-	spew.Dump(requestInfo)
-
 	requestInfo.To, err = address.NewHashFromHash(requestInfo.ToAddr)
 	if err != nil {
 		logrus.Trace("cannot create address: ", err)
@@ -273,8 +268,6 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 			StatusCode: http.StatusBadRequest,
 		}
 	}
-
-	spew.Dump(requestInfo)
 
 	// Return info
 	return requestInfo, nil

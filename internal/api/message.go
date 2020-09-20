@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/sirupsen/logrus"
 	"io"
 )
 
@@ -18,8 +19,10 @@ type Message struct {
 func (api *API) GetMessage(addr address.HashAddress, box, messageID string) (*Message, error) {
 	in := &Message{}
 
-	resp, statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s/message/%s", addr.String(), box, messageID), in)
+	url := fmt.Sprintf("/account/%s/box/%s/message/%s", addr.String(), box, messageID)
+	resp, statusCode, err := api.GetJSON(url, in)
 	if err != nil {
+		logrus.Trace(err)
 		return nil, err
 	}
 
