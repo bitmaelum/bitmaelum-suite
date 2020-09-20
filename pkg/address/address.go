@@ -13,7 +13,7 @@ import (
 const (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
 	addressRegex string = "(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$"
-	hashRegex string = "[a-z0-9]{64}"
+	hashRegex    string = "[a-z0-9]{64}"
 )
 
 // HashAddress is a SHA256'd address

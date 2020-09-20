@@ -8,7 +8,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"io/ioutil"

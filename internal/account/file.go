@@ -115,7 +115,8 @@ func (r *fileRepo) getPath(addr address.HashAddress, suffix string) string {
 	suffix = strings.ToLower(suffix)
 
 	if len(strAddr) < 2 {
-		logrus.Panic("Path seems wrong: '%s'", strAddr)
+		// @TODO: we should probably not panic here, but not sure how to deal with this issue
+		logrus.Panicf("Path seems wrong: '%s'", strAddr)
 	}
 
 	return filepath.Join(r.basePath, strAddr[:2], strAddr[2:], suffix)

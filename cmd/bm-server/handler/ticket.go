@@ -7,7 +7,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -93,7 +92,6 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	// For now: a hash SHOULD be verified
 
 	logrus.Tracef("INFO FROM REQUEST: %#v", requestInfo)
-
 
 	// Check if the recipient address is valid
 	err = validateLocalAddress(*requestInfo.To)
