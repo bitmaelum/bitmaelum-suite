@@ -34,7 +34,8 @@ func GetResolveService() *resolve.Service {
 		_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false))
 	}
 
-	return resolve.KeyRetrievalService(repo)
+	resolveService = resolve.KeyRetrievalService(repo)
+	return resolveService
 }
 
 func getChainRepository() *resolve.ChainRepository {

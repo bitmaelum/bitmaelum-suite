@@ -55,8 +55,8 @@ func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject s
 		return err
 	}
 
-	// Fetch routing info
-	routingInfo, err := resolver.ResolveRouting(toInfo.RoutingID)
+	// Fetch routing info for the SENDER, as we send to the sender's mailserver (not the recipient)
+	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 	if err != nil {
 		return err
 	}

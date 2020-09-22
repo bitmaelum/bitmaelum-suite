@@ -26,6 +26,7 @@ const (
 // Vault defines our vault with path and password. Only the accounts should be exported
 type Vault struct {
 	Accounts []internal.AccountInfo
+	RawData  []byte
 	password []byte
 	path     string
 }
@@ -43,6 +44,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 
 	v := &Vault{
 		Accounts: []internal.AccountInfo{},
+		RawData:  []byte{},
 		password: pwd,
 		path:     p,
 	}
@@ -63,12 +65,8 @@ func New(p string, pwd []byte) (*Vault, error) {
 		return v, err
 	}
 
-	// Otherwise, read vault data
+	// Otherwise, read vault data, if possible
 	err = v.unlockVault()
-	if err != nil {
-		return nil, err
-	}
-
 	return v, nil
 }
 
@@ -104,6 +102,9 @@ func (v *Vault) unlockVault() error {
 	ctr := cipher.NewCTR(aes256, vaultData.Iv)
 	ctr.XORKeyStream(plainText, vaultData.Data)
 
+	// store raw data. This makes editing through vault-edit easier
+	v.RawData = plainText
+
 	// Unmarshal vault data
 	var accounts []internal.AccountInfo
 	err = json.Unmarshal(plainText, &accounts)
@@ -132,9 +133,38 @@ func (v *Vault) RemoveAccount(addr address.Address) {
 	v.Accounts = v.Accounts[:k]
 }
 
+// sanityCheck checks if the vault contains correct data. It might be the accounts are in some kind of invalid state,
+// so we should not save any data once we detected this.
+func (v *Vault) sanityCheck() bool {
+	if len(v.Accounts) == 0 {
+		return false
+	}
+
+	for _, acc := range v.Accounts {
+		if acc.PrivKey.S == "" {
+			return false
+		}
+		if acc.PubKey.S == "" {
+			return false
+		}
+	}
+
+	return true
+}
+
 // Save saves the account data back into the vault on disk
 func (v *Vault) Save() error {
+	if !v.sanityCheck() {
+		return errors.New("Vault seems to have invalid data. Refusing to overwrite the current vault")
+	}
+
 	encryptedData, err := v.Encrypted()
+	if err != nil {
+		return err
+	}
+
+	// Make backup of the vault for now
+	err = os.Rename(v.path, v.path+".backup")
 	if err != nil {
 		return err
 	}

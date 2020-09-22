@@ -6,12 +6,14 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/sirupsen/logrus"
 )
 
 // Service represents a resolver service tied to a specific repository
 type Service struct {
-	repo Repository
+	repo         Repository
+	routingCache *lru.Cache
 }
 
 // AddressInfo is a structure returned by the external resolver system
@@ -39,8 +41,14 @@ type OrganisationInfo struct {
 
 // KeyRetrievalService initialises a key retrieval service.
 func KeyRetrievalService(repo Repository) *Service {
+	c, err := lru.New(64)
+	if err != nil {
+		c = nil
+	}
+
 	return &Service{
-		repo: repo,
+		repo:         repo,
+		routingCache: c,
 	}
 }
 
@@ -66,13 +74,27 @@ func (s *Service) ResolveAddress(addr address.HashAddress) (*AddressInfo, error)
 
 // ResolveRouting resolves a route.
 func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
+	// Fetch from cache if available
+	if s.routingCache != nil {
+		info, ok := s.routingCache.Get(routingID)
+		if ok {
+			logrus.Debugf("Resolving cached %s", routingID)
+			return info.(*RoutingInfo), nil
+		}
+	}
+
 	logrus.Debugf("Resolving %s", routingID)
 	info, err := s.repo.ResolveRouting(routingID)
 	if err != nil {
 		logrus.Debugf("Error while resolving route %s: %s", routingID, err)
+		return nil, err
 	}
 
-	return info, err
+	// Store in cache if available
+	if s.routingCache != nil {
+		_ = s.routingCache.Add(routingID, info)
+	}
+	return info, nil
 }
 
 // ResolveOrganisation resolves a route.
@@ -103,7 +125,6 @@ func (s *Service) UploadAddressInfo(info internal.AccountInfo) error {
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
-
 	return s.repo.UploadRouting(&RoutingInfo{
 		Hash:      info.RoutingID,
 		PublicKey: info.PubKey,

@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"io/ioutil"
+	"os"
+	"os/exec"
 )
 
 type options struct {
@@ -24,15 +26,43 @@ func main() {
 		panic(err)
 	}
 
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "vd-")
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = os.Remove(tmpFile.Name())
+	}()
+
+	_, err = tmpFile.Write(v.RawData)
+	_ = tmpFile.Sync()
+	if err != nil {
+		panic(err)
+	}
+
+	editor := "/usr/bin/nano"
+	if os.Getenv("EDITOR") != "" {
+		editor = os.Getenv("EDITOR")
+	}
+
+	c := exec.Command(editor, tmpFile.Name())
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	err = c.Run()
+	if err != nil {
+		panic(err)
+	}
+	data, err := ioutil.ReadFile(tmpFile.Name())
+
+
+	err = json.Unmarshal(data, &v.Accounts)
+	if err != nil {
+		panic(err)
+	}
+
+
 	err = v.Save()
 	if err != nil {
 		panic(err)
 	}
-
-	buf, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("%s", string(buf))
 }

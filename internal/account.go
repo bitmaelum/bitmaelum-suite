@@ -14,10 +14,10 @@ type AccountInfo struct {
 	Settings map[string]string `json:"settings"` // Additional settings that can be user-defined
 
 	// Communication and encryption information
-	PrivKey   bmcrypto.PrivKey        `json:"priv_key"`      // PEM encoded private key
-	PubKey    bmcrypto.PubKey         `json:"pub_key"`       // PEM encoded public key
-	Pow       proofofwork.ProofOfWork `json:"pow,omitEmpty"` // Proof of work
-	RoutingID string                  `json:"routing_id"`    // ID of the routing used
+	PrivKey   bmcrypto.PrivKey        `json:"priv_key"`        // PEM encoded private key
+	PubKey    bmcrypto.PubKey         `json:"pub_key"`         // PEM encoded public key
+	Pow       proofofwork.ProofOfWork `json:"proof,omitEmpty"` // Proof of work
+	RoutingID string                  `json:"routing_id"`      // ID of the routing used
 }
 
 type RoutingInfo struct {

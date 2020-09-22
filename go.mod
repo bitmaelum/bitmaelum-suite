@@ -14,6 +14,7 @@ require (
 	github.com/gookit/color v1.2.7
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
+	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/juju/fslock v0.0.0-20160525022230-4d5c94c67b4b
 	github.com/mattn/go-colorable v0.1.7 // indirect
