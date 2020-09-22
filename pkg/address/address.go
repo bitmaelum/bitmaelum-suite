@@ -49,7 +49,7 @@ func New(address string) (*Address, error) {
 	}, nil
 }
 
-// NewHash generates a hashaddress based on the given email string
+// NewHash generates a hash address based on the given email string
 func NewHash(address string) (*HashAddress, error) {
 	a, err := New(address)
 	if err != nil {
@@ -99,7 +99,14 @@ func (a *Address) Hash() HashAddress {
 	return HashAddress(hex.EncodeToString(sum[:]))
 }
 
+// NewOrgHash returns a new organisation hash
+func NewOrgHash(org string) string {
+	o := sha256.Sum256([]byte(org))
+	return hex.EncodeToString(o[:])
+}
+
 // OldHash converts an address to a old hashed value
+// @TODO: Obsolete function. Remove
 func (a *Address) OldHash() HashAddress {
 	sum := sha256.Sum256([]byte(a.String()))
 	return HashAddress(hex.EncodeToString(sum[:]))

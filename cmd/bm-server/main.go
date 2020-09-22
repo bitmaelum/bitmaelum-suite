@@ -11,6 +11,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/routing"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -42,6 +43,8 @@ func main() {
 	config.LoadServerConfig(opts.Config)
 	internal.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
 
+	checkAndUpdateRouting()
+
 	logrus.Info("Starting " + internal.VersionString("bm-server"))
 
 	_ = container.GetResolveService()
@@ -66,6 +69,39 @@ func main() {
 	logrus.Tracef("Waiting until context tells us it's done")
 	<-ctx.Done()
 	logrus.Tracef("Context is done. Exiting")
+}
+
+func checkAndUpdateRouting() {
+	// Check if we have a routing file present
+	r, err := routing.ReadRouting(config.Server.Server.RoutingFile)
+	if err != nil {
+		fmt.Print(`Routing file is not found. We need one in order to uniquely identify this mail server on the network.
+
+You can generate a new one by running:
+
+    $ bm-config generate-routing-id
+
+`)
+		os.Exit(1)
+	}
+
+
+	// Check if route exist on the key resolver, and upload new info if needed
+	res := container.GetResolveService()
+	info, err := res.ResolveRouting(r.RoutingID)
+	if err != nil || info.Routing != config.Server.Server.Hostname {
+		// Upload routing
+		err := res.UploadRoutingInfo(internal.RoutingInfo{
+			RoutingID: r.RoutingID,
+			PrivKey:   r.PrivateKey,
+			PubKey:    r.PublicKey,
+			Route:     config.Server.Server.Hostname,
+		})
+		if err != nil {
+			fmt.Print("There is an error while uploading routing information to the key resolver: ", err)
+			os.Exit(1)
+		}
+	}
 }
 
 func setupSignals(cancel context.CancelFunc) {

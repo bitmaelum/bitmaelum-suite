@@ -14,8 +14,16 @@ type AccountInfo struct {
 	Settings map[string]string `json:"settings"` // Additional settings that can be user-defined
 
 	// Communication and encryption information
-	PrivKey bmcrypto.PrivKey        `json:"privKey"`       // PEM encoded private key
-	PubKey  bmcrypto.PubKey         `json:"pubKey"`        // PEM encoded public key
-	Pow     proofofwork.ProofOfWork `json:"pow,omitEmpty"` // Proof of work
-	Routing string                  `json:"server"`        // Mail server hosting this account
+	PrivKey   bmcrypto.PrivKey        `json:"priv_key"`      // PEM encoded private key
+	PubKey    bmcrypto.PubKey         `json:"pub_key"`       // PEM encoded public key
+	Pow       proofofwork.ProofOfWork `json:"pow,omitEmpty"` // Proof of work
+	RoutingID string                  `json:"routing_id"`    // ID of the routing used
+}
+
+type RoutingInfo struct {
+	RoutingID string                  `json:"routing_id"`    // ID
+	PrivKey   bmcrypto.PrivKey        `json:"priv_key"`      // PEM encoded private key
+	PubKey    bmcrypto.PubKey         `json:"pub_key"`       // PEM encoded public key
+	Pow       proofofwork.ProofOfWork `json:"pow,omitEmpty"` // Proof of work
+	Route     string                  `json:"route"`         // Route to server
 }

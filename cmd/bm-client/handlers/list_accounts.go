@@ -31,7 +31,7 @@ func ListAccounts(vault *vault.Vault, displayKeys bool) {
 			def,
 			acc.Address,
 			acc.Name,
-			acc.Routing,
+			acc.RoutingID,
 		}
 		if displayKeys {
 			values = append(values, acc.PrivKey.S, acc.PubKey.S)

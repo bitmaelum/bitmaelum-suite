@@ -11,7 +11,6 @@ import (
 var (
 	resolveService           *resolve.Service
 	sqliteResolverRepository *resolve.Repository
-	dhtResolverRepository    *resolve.Repository
 	chainResolverRepository  *resolve.ChainRepository
 )
 
@@ -34,7 +33,6 @@ func GetResolveService() *resolve.Service {
 	if config.Server.Resolver.Remote.Enabled {
 		_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false))
 	}
-	_ = repo.Add(*getDhtRepository())
 
 	return resolve.KeyRetrievalService(repo)
 }
@@ -56,14 +54,4 @@ func getRemoteRepository(url string, debug bool) *resolve.Repository {
 func getSQLiteRepository(dsn string) (resolve.Repository, error) {
 	repo, err := resolve.NewSqliteRepository(dsn)
 	return repo, err
-}
-
-func getDhtRepository() *resolve.Repository {
-	if dhtResolverRepository != nil {
-		return dhtResolverRepository
-	}
-
-	repo := resolve.NewDHTRepository()
-	dhtResolverRepository = &repo
-	return dhtResolverRepository
 }

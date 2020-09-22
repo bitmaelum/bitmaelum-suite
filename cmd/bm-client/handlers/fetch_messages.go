@@ -7,6 +7,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
@@ -18,9 +19,9 @@ import (
 )
 
 // FetchMessages will display message information from a box or display all boxes
-func FetchMessages(info *internal.AccountInfo, box string, checkOnly bool) {
+func FetchMessages(info *internal.AccountInfo, routingInfo *resolve.RoutingInfo, box string) {
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          info.Routing,
+		Host:          routingInfo.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})

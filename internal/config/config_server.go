@@ -38,13 +38,14 @@ type ServerConfig struct {
 	} `yaml:"paths"`
 
 	Server struct {
-		Name          string `yaml:"hostname"`
+		Hostname      string `yaml:"hostname"`
 		Host          string `yaml:"host"`
 		Port          int    `yaml:"port"`
 		CertFile      string `yaml:"certfile"`
 		KeyFile       string `yaml:"keyfile"`
 		VerboseInfo   bool   `yaml:"verbose_info"`
 		AllowInsecure bool   `yaml:"allow_insecure"`
+		RoutingFile   string `yaml:"routingfile"`
 	} `yaml:"server"`
 
 	Management struct {
@@ -108,6 +109,7 @@ func (c *ServerConfig) LoadConfig(r io.Reader) error {
 	c.Acme.Path, _ = homedir.Expand(c.Acme.Path)
 	c.Server.CertFile, _ = homedir.Expand(c.Server.CertFile)
 	c.Server.KeyFile, _ = homedir.Expand(c.Server.KeyFile)
+	c.Server.RoutingFile, _ = homedir.Expand(c.Server.RoutingFile)
 	c.Bolt.DatabasePath, _ = homedir.Expand(c.Bolt.DatabasePath)
 
 	return nil

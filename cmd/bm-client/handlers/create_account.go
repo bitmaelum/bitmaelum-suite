@@ -14,9 +14,8 @@ import (
 	"os"
 )
 
-// CreateAccount creates a new account locally in the vault, stores it on the mailserver and pushes the public key to the resolver
-func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, token string) {
-
+// CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
+func CreateAccount(vault *vault.Vault, bmAddr, name, routing, token string) {
 	fmt.Printf("* Verifying if address is correct: ")
 	addr, err := address.New(bmAddr)
 	if err != nil {
@@ -28,7 +27,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 
 	fmt.Printf("* Checking if address is already known in the resolver service: ")
 	ks := container.GetResolveService()
-	_, err = ks.Resolve(addr.Hash())
+	_, err = ks.ResolveAddress(addr.Hash())
 	if err == nil {
 		fmt.Printf("\n  X it seems that this address is already in use. Please specify another address.")
 		fmt.Println("")
@@ -65,12 +64,12 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 
 		fmt.Printf("* Adding your new account into the vault: ")
 		info = &internal.AccountInfo{
-			Address: bmAddr,
-			Name:    name,
-			PrivKey: *privKey,
-			PubKey:  *pubKey,
-			Pow:     *proof,
-			Routing: routing,
+			Address:   bmAddr,
+			Name:      name,
+			PrivKey:   *privKey,
+			PubKey:    *pubKey,
+			Pow:       *proof,
+			RoutingID: routing,
 		}
 
 		vault.AddAccount(*info)
@@ -83,9 +82,17 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 		fmt.Printf("done\n")
 	}
 
+	// Fetch routing info
+	routingInfo, err := ks.ResolveRouting(info.RoutingID)
+	if err != nil {
+		fmt.Printf("\n  X routing information is not found: %#v", err)
+		fmt.Println("")
+		os.Exit(1)
+	}
+
 	fmt.Printf("* Sending your account information to the server: ")
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          info.Routing,
+		Host:          routingInfo.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})
@@ -112,7 +119,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 	fmt.Printf("done\n")
 
 	fmt.Printf("* Making your account known to the outside world: ")
-	err = ks.UploadInfo(*info)
+	err = ks.UploadAddressInfo(*info)
 	if err != nil {
 		// We can't remove the account from the vault as we have created it on the mail-server
 

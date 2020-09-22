@@ -9,9 +9,29 @@ import (
 
 var errKeyNotFound = errors.New("hash not found")
 
-// Repository is the interface to manage address resolving
 type Repository interface {
-	Resolve(addr address.HashAddress) (*Info, error)
-	Upload(info *Info, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
-	Delete(info *Info, privKey bmcrypto.PrivKey) error
+	AddressRepository
+	RouteRepository
+	OrganisationRepository
+}
+
+// AddressRepository is the interface to manage address resolving
+type AddressRepository interface {
+	ResolveAddress(addr address.HashAddress) (*AddressInfo, error)
+	UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
+	DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error
+}
+
+// RouteRepository is the interface to manage route resolving
+type RouteRepository interface {
+	ResolveRouting(routingID string) (*RoutingInfo, error)
+	UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error
+	DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error
+}
+
+// OrganisationRepository is the interface to manage organisation resolving
+type OrganisationRepository interface {
+	ResolveOrganisation(orgHash string) (*OrganisationInfo, error)
+	UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
+	DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
@@ -21,12 +22,20 @@ var fetchMessagesCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		handlers.FetchMessages(info, *fmBox, *fmCheckOnly)
+		// Fetch routing info
+		resolver := container.GetResolveService()
+		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
+		if err != nil {
+			logrus.Fatal("Cannot find routing ID for this account")
+			os.Exit(1)
+		}
+
+		handlers.FetchMessages(info, routingInfo, *fmBox)
 	},
 }
 
 var (
-	fmCheckOnly *bool
+	// fmCheckOnly *bool
 	fmAccount   *string
 	fmBox       *string
 )
@@ -36,5 +45,5 @@ func init() {
 
 	fmAccount = fetchMessagesCmd.PersistentFlags().StringP("account", "a", "", "Account")
 	fmBox = fetchMessagesCmd.PersistentFlags().StringP("box", "b", "", "Box to fetch")
-	fmCheckOnly = fetchMessagesCmd.Flags().Bool("check-only", false, "Check only, don't download")
+	// fmCheckOnly = fetchMessagesCmd.Flags().Bool("check-only", false, "Check only, don't download")
 }

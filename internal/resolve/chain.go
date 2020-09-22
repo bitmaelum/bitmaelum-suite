@@ -24,9 +24,31 @@ func (r *ChainRepository) Add(repo Repository) error {
 }
 
 // Resolve an address through the chained repos
-func (r *ChainRepository) Resolve(addr address.HashAddress) (*Info, error) {
+func (r *ChainRepository) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
 	for idx := range r.repos {
-		info, err := r.repos[idx].Resolve(addr)
+		info, err := r.repos[idx].ResolveAddress(addr)
+		if err == nil {
+			return info, nil
+		}
+	}
+
+	return nil, errKeyNotFound
+}
+
+func (r *ChainRepository) ResolveRouting(routingID string) (*RoutingInfo, error) {
+	for idx := range r.repos {
+		info, err := r.repos[idx].ResolveRouting(routingID)
+		if err == nil {
+			return info, nil
+		}
+	}
+
+	return nil, errKeyNotFound
+}
+
+func (r *ChainRepository) ResolveOrganisation(orgHash string) (*OrganisationInfo, error) {
+	for idx := range r.repos {
+		info, err := r.repos[idx].ResolveOrganisation(orgHash)
 		if err == nil {
 			return info, nil
 		}
@@ -36,9 +58,31 @@ func (r *ChainRepository) Resolve(addr address.HashAddress) (*Info, error) {
 }
 
 // Upload public key through the chained repos
-func (r *ChainRepository) Upload(info *Info, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
+func (r *ChainRepository) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
 	for idx := range r.repos {
-		err := r.repos[idx].Upload(info, privKey, pow)
+		err := r.repos[idx].UploadAddress(info, privKey, pow)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *ChainRepository) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
+	for idx := range r.repos {
+		err := r.repos[idx].UploadRouting(info, privKey)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *ChainRepository) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
+	for idx := range r.repos {
+		err := r.repos[idx].UploadOrganisation(info, privKey, pow)
 		if err != nil {
 			return err
 		}
@@ -48,9 +92,31 @@ func (r *ChainRepository) Upload(info *Info, privKey bmcrypto.PrivKey, pow proof
 }
 
 // Delete from repos
-func (r *ChainRepository) Delete(info *Info, privKey bmcrypto.PrivKey) error {
+func (r *ChainRepository) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
 	for idx := range r.repos {
-		err := r.repos[idx].Delete(info, privKey)
+		err := r.repos[idx].DeleteAddress(info, privKey)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *ChainRepository) DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
+	for idx := range r.repos {
+		err := r.repos[idx].DeleteRouting(info, privKey)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *ChainRepository) DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error {
+	for idx := range r.repos {
+		err := r.repos[idx].DeleteOrganisation(info, privKey)
 		if err != nil {
 			return err
 		}

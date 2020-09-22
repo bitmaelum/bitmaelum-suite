@@ -34,7 +34,7 @@ func main() {
 	}
 
 	rs := container.GetResolveService()
-	err := rs.UploadInfo(*info)
+	err := rs.UploadAddressInfo(*info)
 	if err != nil {
 		fmt.Printf("Error for account %s: %s\n", info.Address, err)
 	}
