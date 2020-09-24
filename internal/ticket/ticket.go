@@ -2,6 +2,8 @@ package ticket
 
 import (
 	"encoding/json"
+	"fmt"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -92,4 +94,10 @@ type Repository interface {
 	Fetch(ticketID string) (*Ticket, error)
 	Store(ticket *Ticket) error
 	Remove(ticketID string)
+}
+
+// createTicketKey creates a key based on the given ID. This is needed otherwise we might send any data as ticket-id
+// to redis in order to extract other kind of data (and you don't want that).
+func createTicketKey(id string) string {
+	return fmt.Sprintf("ticket-%s", id)
 }

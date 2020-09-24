@@ -1,6 +1,10 @@
 package subscription
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
@@ -26,4 +30,12 @@ type Repository interface {
 	Has(sub *Subscription) bool
 	Store(sub *Subscription) error
 	Remove(sub *Subscription) error
+}
+
+// Generate a key that can be used for reading / writing the subscription info
+func createKey(sub *Subscription) string {
+	data := fmt.Sprintf("%s-%s-%s", sub.From.String(), sub.To.String(), sub.SubscriptionID)
+
+	h := sha256.New()
+	return "subscription-" + hex.EncodeToString(h.Sum([]byte(data)))
 }

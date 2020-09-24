@@ -3,9 +3,10 @@ package invite
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/go-redis/redis/v8"
-	"time"
 )
 
 type redisRepo struct {
@@ -44,8 +45,4 @@ func (r *redisRepo) Get(addr address.HashAddress) (string, error) {
 // Remove deletes an invite from redis
 func (r *redisRepo) Remove(addr address.HashAddress) error {
 	return r.client.Del(r.client.Context(), createInviteKey(addr)).Err()
-}
-
-func createInviteKey(addr address.HashAddress) string {
-	return "invite." + addr.String()
 }

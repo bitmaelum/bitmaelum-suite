@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/mitchellh/go-homedir"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
+
+	"github.com/mitchellh/go-homedir"
+	"gopkg.in/yaml.v2"
 )
 
 // Server keeps all server configuration settings
@@ -62,6 +63,10 @@ type ServerConfig struct {
 		Host string `yaml:"host"`
 		Db   int    `yaml:"port"`
 	} `yaml:"redis"`
+
+	Bolt struct {
+		DatabasePath string `yaml:"database_path"`
+	} `yaml:"bolt"`
 
 	Resolver struct {
 		Sqlite struct {
