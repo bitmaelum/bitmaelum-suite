@@ -4,7 +4,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/go-redis/redis/v8"
-	"github.com/mitchellh/go-homedir"
 )
 
 // GetAPIKeyRepo returns the repository for storing and fetching api keys
@@ -20,7 +19,6 @@ func GetAPIKeyRepo() apikey.Repository {
 	}
 
 	//If redis is not set then it will use BoltDB as default
-	dbPath, _ := homedir.Expand(config.Server.Bolt.DatabasePath)
-	return apikey.NewBoltRepository(&dbPath)
+	return apikey.NewBoltRepository(&config.Server.Bolt.DatabasePath)
 
 }

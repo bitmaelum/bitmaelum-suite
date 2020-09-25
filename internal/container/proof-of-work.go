@@ -4,7 +4,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/storage"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/go-redis/redis/v8"
-	"github.com/mitchellh/go-homedir"
 )
 
 var powService storage.Storable
@@ -24,8 +23,7 @@ func GetProofOfWorkService() storage.Storable {
 
 		powService = storage.NewRedis(&opts)
 	} else {
-		dbPath, _ := homedir.Expand(config.Server.Bolt.DatabasePath)
-		powService = storage.NewBolt(&dbPath)
+		powService = storage.NewBolt(&config.Server.Bolt.DatabasePath)
 	}
 
 	return powService

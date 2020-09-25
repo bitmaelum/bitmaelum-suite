@@ -108,6 +108,7 @@ func (c *ServerConfig) LoadConfig(r io.Reader) error {
 	c.Acme.Path, _ = homedir.Expand(c.Acme.Path)
 	c.Server.CertFile, _ = homedir.Expand(c.Server.CertFile)
 	c.Server.KeyFile, _ = homedir.Expand(c.Server.KeyFile)
+	c.Bolt.DatabasePath, _ = homedir.Expand(c.Bolt.DatabasePath)
 
 	return nil
 }

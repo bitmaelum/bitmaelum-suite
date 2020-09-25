@@ -3,7 +3,6 @@ package container
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
-	"github.com/mitchellh/go-homedir"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -22,6 +21,5 @@ func GetTicketRepo() ticket.Repository {
 	}
 
 	//If redis is not set then it will use BoltDB as default
-	dbPath, _ := homedir.Expand(config.Server.Bolt.DatabasePath)
-	return ticket.NewBoltRepository(&dbPath)
+	return ticket.NewBoltRepository(&config.Server.Bolt.DatabasePath)
 }

@@ -4,7 +4,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/go-redis/redis/v8"
-	"github.com/mitchellh/go-homedir"
 )
 
 // GetSubscriptionRepo returns the repository for storing and fetching subscriptions
@@ -21,6 +20,5 @@ func GetSubscriptionRepo() subscription.Repository {
 	}
 
 	//If redis is not set then it will use BoltDB as default
-	dbPath, _ := homedir.Expand(config.Server.Bolt.DatabasePath)
-	return subscription.NewBoltRepository(&dbPath)
+	return subscription.NewBoltRepository(&config.Server.Bolt.DatabasePath)
 }
