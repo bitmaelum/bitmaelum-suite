@@ -8,6 +8,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -15,7 +16,7 @@ import (
 )
 
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
-func CreateAccount(vault *vault.Vault, bmAddr, name, routing, token string) {
+func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	fmt.Printf("* Verifying if address is correct: ")
 	addr, err := address.New(bmAddr)
 	if err != nil {
@@ -34,6 +35,25 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, routing, token string) {
 		os.Exit(1)
 	}
 	fmt.Printf("not found. This is a good thing.\n")
+
+
+	// Check token
+	fmt.Printf("* Checking token format and extracting data: ")
+	it, err := invite.ParseInviteToken(token)
+	if err != nil {
+		fmt.Printf("\n  X it seems that this token is invalid")
+		fmt.Println("")
+		os.Exit(1)
+	}
+	// Check address matches the one in the token
+	if it.Address.String() != addr.Hash().String() {
+		fmt.Printf("\n  X this token is not for %s", addr.String())
+		fmt.Println("")
+		os.Exit(1)
+	}
+
+	fmt.Printf("token is valid.\n")
+
 
 	fmt.Printf("* Checking if the account is already present in the vault: ")
 	var info *internal.AccountInfo
@@ -69,7 +89,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, routing, token string) {
 			PrivKey:   *privKey,
 			PubKey:    *pubKey,
 			Pow:       *proof,
-			RoutingID: routing,
+			RoutingID: it.RoutingID,        // Fetch from token
 		}
 
 		vault.AddAccount(*info)
@@ -83,7 +103,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, routing, token string) {
 	}
 
 	// Fetch routing info
-	routingInfo, err := ks.ResolveRouting(info.RoutingID)
+	routingInfo, err := ks.ResolveRouting(it.RoutingID)
 	if err != nil {
 		fmt.Printf("\n  X routing information is not found: %#v", err)
 		fmt.Println("")
@@ -129,10 +149,6 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, routing, token string) {
 		os.Exit(1)
 	}
 	fmt.Printf("done\n")
-
-	// Done with the invite, let's remove
-	inviteRepo := container.GetInviteRepo()
-	_ = inviteRepo.Remove(addr.Hash())
 
 	fmt.Printf("\n")
 	fmt.Printf("* All done")

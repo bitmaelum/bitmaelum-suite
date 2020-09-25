@@ -123,8 +123,8 @@ func (r *sqliteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 
 func (r *sqliteRepo) ResolveOrganisation(orgHash string) (*OrganisationInfo, error) {
 	var (
-		h  string
-		p  string
+		h string
+		p string
 	)
 
 	query := fmt.Sprintf("SELECT hash, pubkey FROM %s WHERE hash LIKE ?", organisationTableName)

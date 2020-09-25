@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/routing"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
@@ -28,13 +27,13 @@ This command creates a new routing file if one does not exist.`,
 		}
 
 		// Generate new routing
-		r, err := routing.Generate()
+		r, err := config.Generate()
 		if err != nil {
 			logrus.Fatalf("Error while generating routing file: %v", err)
 		}
 
 		// Save routing
-		err = routing.SaveRouting(config.Server.Server.RoutingFile, r)
+		err = config.SaveRouting(config.Server.Server.RoutingFile, r)
 		if err != nil {
 			logrus.Fatalf("Error while creating routing file: %v", err)
 		}

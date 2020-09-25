@@ -9,6 +9,7 @@ import (
 
 var errKeyNotFound = errors.New("hash not found")
 
+// Repository is a complete key resolver repository with the different parts
 type Repository interface {
 	AddressRepository
 	RouteRepository

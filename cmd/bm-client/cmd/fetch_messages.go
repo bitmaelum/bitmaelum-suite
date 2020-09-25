@@ -36,8 +36,8 @@ var fetchMessagesCmd = &cobra.Command{
 
 var (
 	// fmCheckOnly *bool
-	fmAccount   *string
-	fmBox       *string
+	fmAccount *string
+	fmBox     *string
 )
 
 func init() {

@@ -67,7 +67,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 
 	// Otherwise, read vault data, if possible
 	err = v.unlockVault()
-	return v, nil
+	return v, err
 }
 
 // unlockVault unlocks the vault by the given password

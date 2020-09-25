@@ -18,6 +18,7 @@ type wrappedServerConfig struct {
 
 // ServerConfig is the representation of the server configuration
 type ServerConfig struct {
+	Routing *Routing // Filled in when reading the routing configuration
 	Logging struct {
 		Level   string `yaml:"log_level"`
 		LogPath string `yaml:"log_path" default:"stdout"`

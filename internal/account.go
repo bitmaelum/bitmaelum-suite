@@ -20,6 +20,7 @@ type AccountInfo struct {
 	RoutingID string                  `json:"routing_id"`      // ID of the routing used
 }
 
+// RoutingInfo represents a routing configuration for a server
 type RoutingInfo struct {
 	RoutingID string                  `json:"routing_id"`    // ID
 	PrivKey   bmcrypto.PrivKey        `json:"priv_key"`      // PEM encoded private key

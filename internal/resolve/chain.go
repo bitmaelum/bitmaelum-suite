@@ -23,7 +23,7 @@ func (r *ChainRepository) Add(repo Repository) error {
 	return nil
 }
 
-// Resolve an address through the chained repos
+// ResolveAddress an address through the chained repos
 func (r *ChainRepository) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
 	for idx := range r.repos {
 		info, err := r.repos[idx].ResolveAddress(addr)
@@ -35,6 +35,7 @@ func (r *ChainRepository) ResolveAddress(addr address.HashAddress) (*AddressInfo
 	return nil, errKeyNotFound
 }
 
+// ResolveRouting resolves routing
 func (r *ChainRepository) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	for idx := range r.repos {
 		info, err := r.repos[idx].ResolveRouting(routingID)
@@ -46,6 +47,7 @@ func (r *ChainRepository) ResolveRouting(routingID string) (*RoutingInfo, error)
 	return nil, errKeyNotFound
 }
 
+// ResolveOrganisation resolves organisation
 func (r *ChainRepository) ResolveOrganisation(orgHash string) (*OrganisationInfo, error) {
 	for idx := range r.repos {
 		info, err := r.repos[idx].ResolveOrganisation(orgHash)
@@ -57,7 +59,7 @@ func (r *ChainRepository) ResolveOrganisation(orgHash string) (*OrganisationInfo
 	return nil, errKeyNotFound
 }
 
-// Upload public key through the chained repos
+// UploadAddress public key through the chained repos
 func (r *ChainRepository) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
 	for idx := range r.repos {
 		err := r.repos[idx].UploadAddress(info, privKey, pow)
@@ -69,6 +71,7 @@ func (r *ChainRepository) UploadAddress(info *AddressInfo, privKey bmcrypto.Priv
 	return nil
 }
 
+// UploadRouting uploads routing information
 func (r *ChainRepository) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
 	for idx := range r.repos {
 		err := r.repos[idx].UploadRouting(info, privKey)
@@ -80,6 +83,7 @@ func (r *ChainRepository) UploadRouting(info *RoutingInfo, privKey bmcrypto.Priv
 	return nil
 }
 
+// UploadOrganisation uploads organisation information
 func (r *ChainRepository) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
 	for idx := range r.repos {
 		err := r.repos[idx].UploadOrganisation(info, privKey, pow)
@@ -91,7 +95,7 @@ func (r *ChainRepository) UploadOrganisation(info *OrganisationInfo, privKey bmc
 	return nil
 }
 
-// Delete from repos
+// DeleteAddress from repos
 func (r *ChainRepository) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
 	for idx := range r.repos {
 		err := r.repos[idx].DeleteAddress(info, privKey)
@@ -103,6 +107,7 @@ func (r *ChainRepository) DeleteAddress(info *AddressInfo, privKey bmcrypto.Priv
 	return nil
 }
 
+// DeleteRouting from repos
 func (r *ChainRepository) DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
 	for idx := range r.repos {
 		err := r.repos[idx].DeleteRouting(info, privKey)
@@ -114,6 +119,7 @@ func (r *ChainRepository) DeleteRouting(info *RoutingInfo, privKey bmcrypto.Priv
 	return nil
 }
 
+// DeleteOrganisation from repos
 func (r *ChainRepository) DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error {
 	for idx := range r.repos {
 		err := r.repos[idx].DeleteOrganisation(info, privKey)

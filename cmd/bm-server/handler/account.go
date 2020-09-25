@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -42,14 +42,10 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if token exists for the given address
-	inviteRepo := container.GetInviteRepo()
-	registeredToken, err := inviteRepo.Get(input.Addr)
-	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "token not found")
-		return
-	}
-	if subtle.ConstantTimeCompare([]byte(registeredToken), []byte(input.Token)) != 1 {
-		ErrorOut(w, http.StatusBadRequest, "incorrect token")
+	// Verify token
+	it, err := invite.ParseInviteToken(input.Token)
+	if err != nil || !it.Verify(config.Server.Routing.RoutingID, config.Server.Routing.PublicKey) {
+		ErrorOut(w, http.StatusBadRequest, "cannot validate token")
 		return
 	}
 

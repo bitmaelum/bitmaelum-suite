@@ -53,13 +53,14 @@ func main() {
 		panic(err)
 	}
 	data, err := ioutil.ReadFile(tmpFile.Name())
-
+	if err != nil {
+		panic(err)
+	}
 
 	err = json.Unmarshal(data, &v.Accounts)
 	if err != nil {
 		panic(err)
 	}
-
 
 	err = v.Save()
 	if err != nil {

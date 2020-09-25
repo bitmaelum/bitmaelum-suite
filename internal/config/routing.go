@@ -1,4 +1,4 @@
-package routing
+package config
 
 import (
 	"crypto/sha256"
@@ -12,36 +12,36 @@ import (
 	"path/filepath"
 )
 
-type RoutingType struct {
+// Routing holds routing configuration for the mail server
+type Routing struct {
 	RoutingID  string           `json:"routing_id"`
 	PrivateKey bmcrypto.PrivKey `json:"private_key"`
 	PublicKey  bmcrypto.PubKey  `json:"public_key"`
 }
 
-
-// ReadRouting will read the routing file
-func ReadRouting(p string) (*RoutingType, error) {
+// ReadRouting will read the routing file and merge it into the server configuration
+func ReadRouting(p string) error {
 	f, err := os.Open(p)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	routing := &RoutingType{}
-	err = json.Unmarshal(data, routing)
+	Server.Routing = &Routing{}
+	err = json.Unmarshal(data, Server.Routing)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return routing, nil
+	return nil
 }
 
 // SaveRouting will save the routing into a file. It will overwrite if exists
-func SaveRouting(p string, routing *RoutingType) error {
+func SaveRouting(p string, routing *Routing) error {
 	data, err := json.MarshalIndent(routing, "", "  ")
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func SaveRouting(p string, routing *RoutingType) error {
 }
 
 // Generate generates a new routing structure
-func Generate() (*RoutingType, error) {
+func Generate() (*Routing, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -65,13 +65,12 @@ func Generate() (*RoutingType, error) {
 	sum := sha256.Sum256([]byte(id.String()))
 	routingID := hex.EncodeToString(sum[:])
 
-
 	privKey, pubKey, err := encrypt.GenerateKeyPair(bmcrypto.KeyTypeRSA)
 	if err != nil {
 		return nil, err
 	}
 
-	return &RoutingType{
+	return &Routing{
 		RoutingID:  routingID,
 		PrivateKey: *privKey,
 		PublicKey:  *pubKey,

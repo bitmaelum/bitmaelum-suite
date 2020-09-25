@@ -142,7 +142,7 @@ func (r *remoteRepo) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, 
 		"proof":      proof.String(),
 	}
 
-	url := r.BaseURL+"/address/"+info.Hash
+	url := r.BaseURL + "/address/" + info.Hash
 	return r.upload(url, data, generateAddressSignature(info, privKey))
 }
 
@@ -152,7 +152,7 @@ func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 		"routing":    info.Routing,
 	}
 
-	url := r.BaseURL+"/routing/"+info.Hash
+	url := r.BaseURL + "/routing/" + info.Hash
 	return r.upload(url, data, generateRoutingSignature(info, privKey))
 }
 
@@ -162,7 +162,7 @@ func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto
 		"proof":      proof.String(),
 	}
 
-	url := r.BaseURL+"/organisation/"+info.Hash
+	url := r.BaseURL + "/organisation/" + info.Hash
 	return r.upload(url, data, generateOrganisationSignature(info, privKey))
 }
 
