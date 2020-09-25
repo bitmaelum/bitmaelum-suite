@@ -10,9 +10,12 @@ import (
 
 var (
 	resolveService           *resolve.Service
-	sqliteResolverRepository *resolve.Repository
 	chainResolverRepository  *resolve.ChainRepository
 )
+
+func SetResolveService(s *resolve.Service) {
+	resolveService = s
+}
 
 // GetResolveService retrieves a resolver service
 func GetResolveService() *resolve.Service {

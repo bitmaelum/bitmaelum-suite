@@ -7,6 +7,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
+	"github.com/bitmaelum/bitmaelum-suite/internal/server"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -51,6 +52,12 @@ func ProcessMessage(msgID string) {
 		// probably move the message to the incoming queue
 		// Do stuff locally
 		logrus.Debugf("Message %s can be transferred locally to %s", msgID, res.Hash)
+
+		// Check the serverSignature
+		if !server.VerifyHeader(*header) {
+			logrus.Errorf("message %s destined for %s has failed the server signature check. Seems that this message did not originate from the original mail server. Removing the message.", msgID, header.To.Addr)
+			MoveToRetryQueue(msgID)
+		}
 
 		err := deliverLocal(res, msgID)
 		if err != nil {

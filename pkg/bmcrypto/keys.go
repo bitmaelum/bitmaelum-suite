@@ -78,7 +78,12 @@ func (pk *PubKey) UnmarshalJSON(b []byte) error {
 
 // MarshalJSON marshals a key into bytes
 func (pk *PrivKey) MarshalJSON() ([]byte, error) {
-	return json.Marshal(pk.Type + " " + pk.S)
+	return json.Marshal(pk.String())
+}
+
+// Strings returns the key in a textual representation
+func (pk *PrivKey) String() string {
+	return pk.Type + " " + pk.S
 }
 
 // UnmarshalJSON unmarshals bytes into a key

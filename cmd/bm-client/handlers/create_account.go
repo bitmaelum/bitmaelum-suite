@@ -36,7 +36,6 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	}
 	fmt.Printf("not found. This is a good thing.\n")
 
-
 	// Check token
 	fmt.Printf("* Checking token format and extracting data: ")
 	it, err := invite.ParseInviteToken(token)
@@ -53,7 +52,6 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	}
 
 	fmt.Printf("token is valid.\n")
-
 
 	fmt.Printf("* Checking if the account is already present in the vault: ")
 	var info *internal.AccountInfo
@@ -89,7 +87,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 			PrivKey:   *privKey,
 			PubKey:    *pubKey,
 			Pow:       *proof,
-			RoutingID: it.RoutingID,        // Fetch from token
+			RoutingID: it.RoutingID, // Fetch from token
 		}
 
 		vault.AddAccount(*info)
