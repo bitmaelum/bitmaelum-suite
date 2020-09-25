@@ -14,11 +14,17 @@ func GetProofOfWorkService() storage.Storable {
 		return powService
 	}
 
-	opts := redis.Options{
-		Addr: config.Server.Redis.Host,
-		DB:   config.Server.Redis.Db,
+	//If redis.host is set on the config file it will use redis instead of bolt
+	if config.Server.Redis.Host != "" {
+		opts := redis.Options{
+			Addr: config.Server.Redis.Host,
+			DB:   config.Server.Redis.Db,
+		}
+
+		powService = storage.NewRedis(&opts)
+	} else {
+		powService = storage.NewBolt(&config.Server.Bolt.DatabasePath)
 	}
 
-	powService = storage.NewRedis(&opts)
 	return powService
 }

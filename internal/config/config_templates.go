@@ -107,9 +107,13 @@ config:
         # When enabled, allow remote management through HTTPS instead of only local bm-config
         remote_enabled: false
 
+    bolt:
+        # BoltDB database directory path to store the databases used for internal storage
+        database_path: "~/.bitmaelum/database"
+
     redis:
         # Redis host where we store information
-        host: 127.0.0.1:6379
+        host: 
         # Redis Database Number (defaults to 0)
         db: 0
 

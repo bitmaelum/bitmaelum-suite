@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/mitchellh/go-homedir"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
+
+	"github.com/mitchellh/go-homedir"
+	"gopkg.in/yaml.v2"
 )
 
 // Server keeps all server configuration settings
@@ -63,6 +64,10 @@ type ServerConfig struct {
 		Db   int    `yaml:"port"`
 	} `yaml:"redis"`
 
+	Bolt struct {
+		DatabasePath string `yaml:"database_path"`
+	} `yaml:"bolt"`
+
 	Resolver struct {
 		Sqlite struct {
 			Enabled bool   `yaml:"enabled"`
@@ -103,6 +108,7 @@ func (c *ServerConfig) LoadConfig(r io.Reader) error {
 	c.Acme.Path, _ = homedir.Expand(c.Acme.Path)
 	c.Server.CertFile, _ = homedir.Expand(c.Server.CertFile)
 	c.Server.KeyFile, _ = homedir.Expand(c.Server.KeyFile)
+	c.Bolt.DatabasePath, _ = homedir.Expand(c.Bolt.DatabasePath)
 
 	return nil
 }

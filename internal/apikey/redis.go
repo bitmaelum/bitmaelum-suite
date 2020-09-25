@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/go-redis/redis/v8"
 )
 
@@ -11,8 +12,8 @@ type redisRepo struct {
 	client *redis.Client
 }
 
-// NewRepository initializes a new repository
-func NewRepository(opts *redis.Options) Repository {
+// NewRedisRepository initializes a new repository
+func NewRedisRepository(opts *redis.Options) Repository {
 	return &redisRepo{
 		client: redis.NewClient(opts),
 	}

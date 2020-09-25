@@ -8,10 +8,17 @@ import (
 
 // GetSubscriptionRepo returns the repository for storing and fetching subscriptions
 func GetSubscriptionRepo() subscription.Repository {
-	opts := redis.Options{
-		Addr: config.Server.Redis.Host,
-		DB:   config.Server.Redis.Db,
+
+	//If redis.host is set on the config file it will use redis instead of bolt
+	if config.Server.Redis.Host != "" {
+		opts := redis.Options{
+			Addr: config.Server.Redis.Host,
+			DB:   config.Server.Redis.Db,
+		}
+
+		return subscription.NewRedisRepository(&opts)
 	}
 
-	return subscription.NewRepository(&opts)
+	//If redis is not set then it will use BoltDB as default
+	return subscription.NewBoltRepository(&config.Server.Bolt.DatabasePath)
 }
