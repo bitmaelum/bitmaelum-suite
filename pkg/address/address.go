@@ -105,13 +105,6 @@ func NewOrgHash(org string) string {
 	return hex.EncodeToString(o[:])
 }
 
-// OldHash converts an address to a old hashed value
-// @TODO: Obsolete function. Remove
-func (a *Address) OldHash() HashAddress {
-	sum := sha256.Sum256([]byte(a.String()))
-	return HashAddress(hex.EncodeToString(sum[:]))
-}
-
 // Bytes converts an address to []byte
 func (a *Address) Bytes() []byte {
 	return []byte(a.String())

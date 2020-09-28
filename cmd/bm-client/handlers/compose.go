@@ -12,6 +12,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
@@ -135,7 +136,7 @@ func generateHeader(info internal.AccountInfo, toInfo *resolve.AddressInfo, cata
 	header.Catalog.Size = uint64(len(catalog))
 	header.Catalog.Crypto = "rsa+aes256gcm"
 
-	header.Catalog.EncryptedKey, err = encrypt.Encrypt(toInfo.PublicKey, catalogKey)
+	header.Catalog.EncryptedKey, err = bmcrypto.Encrypt(toInfo.PublicKey, catalogKey)
 	if err != nil {
 		return nil, err
 	}

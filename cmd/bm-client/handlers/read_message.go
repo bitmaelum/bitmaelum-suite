@@ -10,6 +10,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -37,7 +38,7 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolve.RoutingInfo, b
 		logrus.Fatal(err)
 	}
 
-	key, err := encrypt.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
+	key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}

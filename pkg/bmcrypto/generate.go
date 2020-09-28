@@ -1,47 +1,41 @@
-package encrypt
+package bmcrypto
 
 import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
-	"crypto/rand"
 	"crypto/rsa"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"io"
 )
 
 var curveFunc = elliptic.P384
 var rsaBits int = 2048
 
-// Allows for easy mocking
-var randReader io.Reader = rand.Reader
-
 // GenerateKeyPair generates a private/public keypair based on the given type
-func GenerateKeyPair(kt string) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
+func GenerateKeyPair(kt string) (*PrivKey, *PubKey, error) {
 	switch kt {
-	case bmcrypto.KeyTypeRSA:
+	case KeyTypeRSA:
 		return generateKeyPairRSA()
-	case bmcrypto.KeyTypeECDSA:
+	case KeyTypeECDSA:
 		return generateKeyPairECDSA()
-	case bmcrypto.KeyTypeED25519:
+	case KeyTypeED25519:
 		return generateKeyPairED25519()
 	}
 
 	return nil, nil, errors.New("incorrect key type specified")
 }
 
-func generateKeyPairRSA() (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
+func generateKeyPairRSA() (*PrivKey, *PubKey, error) {
 	privRSAKey, err := rsa.GenerateKey(randReader, rsaBits)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	privKey, err := bmcrypto.NewPrivKeyFromInterface(privRSAKey)
+	privKey, err := NewPrivKeyFromInterface(privRSAKey)
 	if err != nil {
 		return nil, nil, err
 	}
-	pubKey, err := bmcrypto.NewPubKeyFromInterface(privKey.K.(*rsa.PrivateKey).Public())
+	pubKey, err := NewPubKeyFromInterface(privKey.K.(*rsa.PrivateKey).Public())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,17 +43,17 @@ func generateKeyPairRSA() (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	return privKey, pubKey, nil
 }
 
-func generateKeyPairECDSA() (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
+func generateKeyPairECDSA() (*PrivKey, *PubKey, error) {
 	privECDSAKey, err := ecdsa.GenerateKey(curveFunc(), randReader)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	privKey, err := bmcrypto.NewPrivKeyFromInterface(privECDSAKey)
+	privKey, err := NewPrivKeyFromInterface(privECDSAKey)
 	if err != nil {
 		return nil, nil, err
 	}
-	pubKey, err := bmcrypto.NewPubKeyFromInterface(privKey.K.(*ecdsa.PrivateKey).Public())
+	pubKey, err := NewPubKeyFromInterface(privKey.K.(*ecdsa.PrivateKey).Public())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -67,17 +61,17 @@ func generateKeyPairECDSA() (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	return privKey, pubKey, nil
 }
 
-func generateKeyPairED25519() (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
+func generateKeyPairED25519() (*PrivKey, *PubKey, error) {
 	pubKey, privKey, err := ed25519.GenerateKey(randReader)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	priv, err := bmcrypto.NewPrivKeyFromInterface(privKey)
+	priv, err := NewPrivKeyFromInterface(privKey)
 	if err != nil {
 		return nil, nil, err
 	}
-	pub, err := bmcrypto.NewPubKeyFromInterface(pubKey)
+	pub, err := NewPubKeyFromInterface(pubKey)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -1,7 +1,6 @@
 package invite
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
@@ -52,7 +51,7 @@ func TestSignature(t *testing.T) {
 	assert.False(t, ok)
 
 	// Check token with differnet public key
-	_, pubKey2, _ := encrypt.GenerateKeyPair(bmcrypto.KeyTypeRSA)
+	_, pubKey2, _ := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
 	it, err = NewInviteToken(*addr, "12345678", time.Date(2010, 01, 04, 12, 34, 56, 0, time.UTC), *privKey)
 	assert.NoError(t, err)
 	ok = it.Verify("12345678", *pubKey2)

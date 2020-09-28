@@ -24,7 +24,7 @@ func main() {
 	v := tools.OpenVault()
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Address", "Old", "New"})
+	table.SetHeader([]string{"Address", "New"})
 
 	for _, acc := range v.Accounts {
 		addr, err := address.New(acc.Address)
@@ -34,7 +34,6 @@ func main() {
 
 		values := []string{
 			addr.String(),
-			addr.OldHash().String(),
 			addr.Hash().String(),
 		}
 

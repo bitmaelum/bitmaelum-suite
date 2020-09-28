@@ -1,10 +1,9 @@
-package encrypt
+package bmcrypto
 
 import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/rsa"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -14,39 +13,39 @@ var (
 )
 
 func TestGenerate(t *testing.T) {
-	privKey, pubKey, err := GenerateKeyPair(bmcrypto.KeyTypeRSA)
+	privKey, pubKey, err := GenerateKeyPair(KeyTypeRSA)
 	assert.Nil(t, err)
 	assert.IsType(t, (*rsa.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (*rsa.PublicKey)(nil), pubKey.K)
 
 	// Check if we can verify with this key
-	sig, err := bmcrypto.Sign(*privKey, message)
+	sig, err := Sign(*privKey, message)
 	assert.Nil(t, err)
-	b, err := bmcrypto.Verify(*pubKey, message, sig)
+	b, err := Verify(*pubKey, message, sig)
 	assert.Nil(t, err)
 	assert.True(t, b)
 
-	privKey, pubKey, err = GenerateKeyPair(bmcrypto.KeyTypeECDSA)
+	privKey, pubKey, err = GenerateKeyPair(KeyTypeECDSA)
 	assert.Nil(t, err)
 	assert.IsType(t, (*ecdsa.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (*ecdsa.PublicKey)(nil), pubKey.K)
 
 	// Check if we can verify with this key
-	sig, err = bmcrypto.Sign(*privKey, message)
+	sig, err = Sign(*privKey, message)
 	assert.Nil(t, err)
-	b, err = bmcrypto.Verify(*pubKey, message, sig)
+	b, err = Verify(*pubKey, message, sig)
 	assert.Nil(t, err)
 	assert.True(t, b)
 
-	privKey, pubKey, err = GenerateKeyPair(bmcrypto.KeyTypeED25519)
+	privKey, pubKey, err = GenerateKeyPair(KeyTypeED25519)
 	assert.Nil(t, err)
 	assert.IsType(t, (ed25519.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (ed25519.PublicKey)(nil), pubKey.K)
 
 	// Check if we can verify with this key
-	sig, err = bmcrypto.Sign(*privKey, message)
+	sig, err = Sign(*privKey, message)
 	assert.Nil(t, err)
-	b, err = bmcrypto.Verify(*pubKey, message, sig)
+	b, err = Verify(*pubKey, message, sig)
 	assert.Nil(t, err)
 	assert.True(t, b)
 

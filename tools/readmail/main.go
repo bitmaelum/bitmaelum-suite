@@ -9,6 +9,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"io/ioutil"
 	"os"
 )
@@ -71,7 +72,7 @@ func main() {
 		panic(err)
 	}
 
-	decryptedKey, err := encrypt.Decrypt(info.PrivKey, header.Catalog.EncryptedKey)
+	decryptedKey, err := bmcrypto.Decrypt(info.PrivKey, header.Catalog.EncryptedKey)
 	if err != nil {
 		panic(err)
 	}

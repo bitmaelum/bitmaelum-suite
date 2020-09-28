@@ -7,7 +7,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -67,7 +66,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 		fmt.Printf("not found. This is a good thing.\n")
 
 		fmt.Printf("* Generating your secret key to send and read mail: ")
-		privKey, pubKey, err := encrypt.GenerateKeyPair(bmcrypto.KeyTypeRSA)
+		privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")

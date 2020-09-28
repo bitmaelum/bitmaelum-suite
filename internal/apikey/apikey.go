@@ -1,7 +1,7 @@
 package apikey
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"math/rand"
 	"strings"
 	"time"
 )
@@ -22,7 +22,7 @@ func NewAdminKey(valid time.Duration) KeyType {
 	}
 
 	return KeyType{
-		ID:          encrypt.GenerateKey("BMK-", 32),
+		ID:          GenerateKey("BMK-", 32),
 		ValidUntil:  until,
 		Permissions: nil,
 		Admin:       true,
@@ -37,7 +37,7 @@ func NewKey(perms []string, valid time.Duration) KeyType {
 	}
 
 	return KeyType{
-		ID:          encrypt.GenerateKey("BMK-", 32),
+		ID:          GenerateKey("BMK-", 32),
 		ValidUntil:  until,
 		Permissions: perms,
 		Admin:       false,
@@ -67,3 +67,16 @@ type Repository interface {
 	Store(key KeyType) error
 	Remove(ID string)
 }
+
+// GenerateKey generates a random key based on a given string length
+func GenerateKey(prefix string, n int) string {
+	var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letter[rand.Intn(len(letter))]
+	}
+
+	return prefix + string(b)
+}
+

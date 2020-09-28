@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/google/uuid"
 	"io/ioutil"
@@ -65,7 +64,7 @@ func Generate() (*Routing, error) {
 	sum := sha256.Sum256([]byte(id.String()))
 	routingID := hex.EncodeToString(sum[:])
 
-	privKey, pubKey, err := encrypt.GenerateKeyPair(bmcrypto.KeyTypeRSA)
+	privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
 	if err != nil {
 		return nil, err
 	}

@@ -1,20 +1,19 @@
-package encrypt
+package bmcrypto
 
 import (
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 // Encrypt a message with the given key
-func Encrypt(key bmcrypto.PubKey, message []byte) ([]byte, error) {
+func Encrypt(key PubKey, message []byte) ([]byte, error) {
 	if !key.CanEncrypt() {
 		return nil, errors.New("This key type is not usable for encryption")
 	}
 
 	switch key.Type {
-	case bmcrypto.KeyTypeRSA:
+	case KeyTypeRSA:
 		return encryptRsa(key.K.(*rsa.PublicKey), message)
 	}
 
@@ -22,13 +21,13 @@ func Encrypt(key bmcrypto.PubKey, message []byte) ([]byte, error) {
 }
 
 // Decrypt a message with the given key
-func Decrypt(key bmcrypto.PrivKey, message []byte) ([]byte, error) {
+func Decrypt(key PrivKey, message []byte) ([]byte, error) {
 	if !key.CanEncrypt() {
 		return nil, errors.New("This key type is not usable for encryption")
 	}
 
 	switch key.Type {
-	case bmcrypto.KeyTypeRSA:
+	case KeyTypeRSA:
 		return decryptRsa(key.K.(*rsa.PrivateKey), message)
 	}
 
