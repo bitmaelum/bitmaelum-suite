@@ -6,10 +6,9 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
-
 type mockRepo struct {
-	address map[string]AddressInfo
-	routing map[string]RoutingInfo
+	address      map[string]AddressInfo
+	routing      map[string]RoutingInfo
 	organisation map[string]OrganisationInfo
 }
 
@@ -64,16 +63,16 @@ func (r *mockRepo) UploadOrganisation(info *OrganisationInfo, _ bmcrypto.PrivKey
 }
 
 func (r *mockRepo) DeleteAddress(info *AddressInfo, _ bmcrypto.PrivKey) error {
-	delete(r.address, info.Hash);
+	delete(r.address, info.Hash)
 	return nil
 }
 
 func (r *mockRepo) DeleteRouting(info *RoutingInfo, _ bmcrypto.PrivKey) error {
-	delete(r.routing, info.Hash);
+	delete(r.routing, info.Hash)
 	return nil
 }
 
 func (r *mockRepo) DeleteOrganisation(info *OrganisationInfo, _ bmcrypto.PrivKey) error {
-	delete(r.organisation, info.Hash);
+	delete(r.organisation, info.Hash)
 	return nil
 }

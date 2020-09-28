@@ -35,7 +35,7 @@ type Repository interface {
 // Generate a key that can be used for reading / writing the subscription info
 func createKey(sub *Subscription) string {
 	data := fmt.Sprintf("%s-%s-%s", sub.From.String(), sub.To.String(), sub.SubscriptionID)
+	h := sha256.Sum256([]byte(data))
 
-	h := sha256.New()
-	return "subscription-" + hex.EncodeToString(h.Sum([]byte(data)))
+	return "sub-" + hex.EncodeToString(h[:])
 }

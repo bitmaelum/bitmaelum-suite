@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/google/uuid"
+	"github.com/spf13/afero"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 )
 
@@ -20,7 +20,7 @@ type Routing struct {
 
 // ReadRouting will read the routing file and merge it into the server configuration
 func ReadRouting(p string) error {
-	f, err := os.Open(p)
+	f, err := fs.Open(p)
 	if err != nil {
 		return err
 	}
@@ -46,12 +46,12 @@ func SaveRouting(p string, routing *Routing) error {
 		return err
 	}
 
-	err = os.MkdirAll(filepath.Dir(p), 755)
+	err = fs.MkdirAll(filepath.Dir(p), 0755)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(p, data, 0600)
+	return afero.WriteFile(fs, p, data, 0600)
 }
 
 // Generate generates a new routing structure

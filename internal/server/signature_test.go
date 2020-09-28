@@ -90,7 +90,6 @@ func setup() {
 	repo, _ := resolve.NewMockRepository()
 	container.SetResolveService(resolve.KeyRetrievalService(repo))
 
-
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 	var (
 		ai resolve.AddressInfo
@@ -122,7 +121,6 @@ func setup() {
 		RoutingInfo: resolve.RoutingInfo{},
 	}
 	_ = repo.UploadAddress(&ai, *privKey, *pow)
-
 
 	// Note: our mail server uses key1
 	privKey, pubKey, err = readTestKey("../../testdata/key-1.json")

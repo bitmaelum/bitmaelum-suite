@@ -99,6 +99,10 @@ func Test_HashAddress(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, ha)
 	assert.Equal(t, "6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840", ha.String())
+
+	ha, err = NewHashFromHash("incorrect hash")
+	assert.Error(t, err)
+	assert.Nil(t, ha)
 }
 
 func Test_Verify(t *testing.T) {
@@ -127,5 +131,13 @@ func Test_Verify(t *testing.T) {
 		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
 		"00000000000c1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 	))
+}
 
+func Test_Remainders(t *testing.T) {
+	h := NewOrgHash("foobar")
+	assert.Equal(t, "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2", h)
+
+	a, err := New("john@foobar!")
+	assert.NoError(t, err)
+	assert.Equal(t, []byte{0x6a, 0x6f, 0x68, 0x6e, 0x40, 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72, 0x21}, a.Bytes())
 }

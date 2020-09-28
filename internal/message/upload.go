@@ -4,7 +4,6 @@ package message
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -13,7 +12,9 @@ import (
 	"regexp"
 )
 
-const uuidv4Regex = "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}"
+var (
+	uuidv4Regex = regexp.MustCompile("[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}")
+)
 
 // FileType is a simple message-id => path combination
 type FileType struct {
@@ -54,11 +55,6 @@ func GetFiles(section Section, msgID string) ([]FileType, error) {
 		return nil, err
 	}
 
-	re := regexp.MustCompile(uuidv4Regex)
-	if re == nil {
-		return nil, errors.New("cannot compile regex")
-	}
-
 	var ret []FileType
 
 	for _, fi := range files {
@@ -68,7 +64,7 @@ func GetFiles(section Section, msgID string) ([]FileType, error) {
 		}
 
 		// Only accept UUIDv4 filenames
-		if !re.MatchString(fi.Name()) {
+		if !uuidv4Regex.MatchString(fi.Name()) {
 			continue
 		}
 

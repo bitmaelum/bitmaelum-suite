@@ -9,10 +9,11 @@ import (
 // We chain them all together with the ChainRepository
 
 var (
-	resolveService           *resolve.Service
-	chainResolverRepository  *resolve.ChainRepository
+	resolveService          *resolve.Service
+	chainResolverRepository *resolve.ChainRepository
 )
 
+// SetResolveService allows you to easily set your own resolve service. Used for unit testing
 func SetResolveService(s *resolve.Service) {
 	resolveService = s
 }

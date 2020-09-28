@@ -79,4 +79,3 @@ func GenerateKey(prefix string, n int) string {
 
 	return prefix + string(b)
 }
-

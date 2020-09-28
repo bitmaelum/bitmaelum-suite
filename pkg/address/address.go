@@ -10,10 +10,10 @@ import (
 	"strings"
 )
 
-const (
+var (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
-	addressRegex string = "(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$"
-	hashRegex    string = "[a-z0-9]{64}"
+	addressRegex = regexp.MustCompile("(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$")
+	hashRegex    = regexp.MustCompile("[a-f0-9]{64}")
 )
 
 // HashAddress is a SHA256'd address
@@ -32,16 +32,11 @@ type Address struct {
 
 // New returns a valid address structure based on the given address
 func New(address string) (*Address, error) {
-	re := regexp.MustCompile(addressRegex)
-	if re == nil {
-		return nil, errors.New("cannot compile regex")
-	}
-
-	if !re.MatchString(strings.ToLower(address)) {
+	if !addressRegex.MatchString(strings.ToLower(address)) {
 		return nil, errors.New("incorrect address format specified")
 	}
 
-	matches := re.FindStringSubmatch(strings.ToLower(address))
+	matches := addressRegex.FindStringSubmatch(strings.ToLower(address))
 
 	return &Address{
 		Local: matches[1],
@@ -62,12 +57,7 @@ func NewHash(address string) (*HashAddress, error) {
 
 // NewHashFromHash generates a hash address based on the given string hash
 func NewHashFromHash(hash string) (*HashAddress, error) {
-	re := regexp.MustCompile(hashRegex)
-	if re == nil {
-		return nil, errors.New("cannot compile regex")
-	}
-
-	if !re.MatchString(strings.ToLower(hash)) {
+	if !hashRegex.MatchString(strings.ToLower(hash)) {
 		return nil, errors.New("incorrect hash address format specified")
 	}
 
