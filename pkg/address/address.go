@@ -13,14 +13,23 @@ import (
 var (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
 	addressRegex = regexp.MustCompile("(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$")
+	orgRegex     = regexp.MustCompile("^[a-z0-9][a-z0-9\\.\\-]{1,63}$")
 	hashRegex    = regexp.MustCompile("[a-f0-9]{64}")
 )
 
 // HashAddress is a SHA256'd address
 type HashAddress string
 
+// HashOrganisation is a SHA256'd organisation
+type HashOrganisation string
+
 // String casts an hash address to string
 func (ha HashAddress) String() string {
+	return string(ha)
+}
+
+// String casts an hash address to string
+func (ha HashOrganisation) String() string {
 	return string(ha)
 }
 
@@ -89,10 +98,28 @@ func (a *Address) Hash() HashAddress {
 	return HashAddress(hex.EncodeToString(sum[:]))
 }
 
+// OrganisationHash converts an address to a hashed value
+func (a *Address) OrganisationHash() HashOrganisation {
+	l := sha256.Sum256([]byte(""))
+	o := sha256.Sum256([]byte(a.Org))
+	sum := sha256.Sum256([]byte(hex.EncodeToString(l[:]) + hex.EncodeToString(o[:])))
+
+	return HashOrganisation(hex.EncodeToString(sum[:]))
+}
+
 // NewOrgHash returns a new organisation hash
-func NewOrgHash(org string) string {
-	o := sha256.Sum256([]byte(org))
-	return hex.EncodeToString(o[:])
+func NewOrgHash(org string) (*HashOrganisation, error) {
+	if !orgRegex.MatchString(strings.ToLower(org)) {
+		return nil, errors.New("incorrect org format specified")
+	}
+
+	a := &Address{
+		Local: "",
+		Org:   strings.ToLower(org),
+	}
+
+	h := a.OrganisationHash()
+	return &h, nil
 }
 
 // Bytes converts an address to []byte

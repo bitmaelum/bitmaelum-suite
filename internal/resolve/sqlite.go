@@ -121,14 +121,14 @@ func (r *sqliteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	}, nil
 }
 
-func (r *sqliteRepo) ResolveOrganisation(orgHash string) (*OrganisationInfo, error) {
+func (r *sqliteRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
 	var (
 		h string
 		p string
 	)
 
 	query := fmt.Sprintf("SELECT hash, pubkey FROM %s WHERE hash LIKE ?", organisationTableName)
-	err := r.conn.QueryRow(query, orgHash).Scan(&h, &p)
+	err := r.conn.QueryRow(query, orgHash.String()).Scan(&h, &p)
 	if err != nil {
 		return nil, err
 	}

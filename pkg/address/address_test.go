@@ -133,10 +133,25 @@ func Test_Verify(t *testing.T) {
 	))
 }
 
-func Test_Remainders(t *testing.T) {
-	h := NewOrgHash("foobar")
-	assert.Equal(t, "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2", h)
+func Test_Organisation(t *testing.T) {
+	h, err := NewOrgHash("foobar")
+	assert.NoError(t, err)
+	assert.Equal(t, "91af59f08863ff86a40bcc78e846c3cc4697ec4d52d606d50d1f2237fcd18523", h.String())
 
+	h, err = NewOrgHash("foobar!")
+	assert.Error(t, err)
+	assert.Nil(t, h)
+
+	h, err = NewOrgHash("f")
+	assert.Error(t, err)
+	assert.Nil(t, h)
+
+	h, err = NewOrgHash("++--")
+	assert.Error(t, err)
+	assert.Nil(t, h)
+}
+
+func Test_Remainders(t *testing.T) {
 	a, err := New("john@foobar!")
 	assert.NoError(t, err)
 	assert.Equal(t, []byte{0x6a, 0x6f, 0x68, 0x6e, 0x40, 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72, 0x21}, a.Bytes())

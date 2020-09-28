@@ -98,7 +98,7 @@ func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
 }
 
 // ResolveOrganisation resolves a route.
-func (s *Service) ResolveOrganisation(orgHash string) (*OrganisationInfo, error) {
+func (s *Service) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
 	logrus.Debugf("Resolving %s", orgHash)
 	info, err := s.repo.ResolveOrganisation(orgHash)
 	if err != nil {

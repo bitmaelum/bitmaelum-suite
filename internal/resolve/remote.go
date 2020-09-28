@@ -90,8 +90,8 @@ func (r *remoteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	}, nil
 }
 
-func (r *remoteRepo) ResolveOrganisation(orgHash string) (*OrganisationInfo, error) {
-	url := r.BaseURL + "/org/" + orgHash
+func (r *remoteRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
+	url := r.BaseURL + "/org/" + orgHash.String()
 
 	kd := &OrganisationDownload{}
 	err := r.resolve(url, &kd)

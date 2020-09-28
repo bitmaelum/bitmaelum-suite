@@ -65,10 +65,13 @@ func resolveRouting(routingID string) {
 }
 
 func resolveOrganisation(org string) {
-	orgHash := address.NewOrgHash(org)
+	orgHash, err := address.NewOrgHash(org)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	svc := container.GetResolveService()
-	info, err := svc.ResolveOrganisation(orgHash)
+	info, err := svc.ResolveOrganisation(*orgHash)
 	if err != nil {
 		logrus.Fatal(err)
 	}
