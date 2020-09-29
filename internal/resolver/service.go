@@ -1,9 +1,10 @@
-package resolve
+package resolver
 
 import (
 	"crypto/sha256"
 	"encoding/base64"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	lru "github.com/hashicorp/golang-lru"
@@ -34,9 +35,10 @@ type RoutingInfo struct {
 
 // OrganisationInfo is a structure returned by the external resolver system
 type OrganisationInfo struct {
-	Hash      string          `json:"hash"`       // Hash of the organisation
-	PublicKey bmcrypto.PubKey `json:"public_key"` // PublicKey of the organisation
-	Pow       string          `json:"pow"`        // Proof of work
+	Hash        string                        `json:"hash"`        // Hash of the organisation
+	PublicKey   bmcrypto.PubKey               `json:"public_key"`  // PublicKey of the organisation
+	Pow         string                        `json:"pow"`         // Proof of work
+	Validations []organisation.ValidationType `json:"validations"` // Validations for this organisation
 }
 
 // KeyRetrievalService initialises a key retrieval service.
@@ -134,15 +136,16 @@ func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
 
 // UploadOrganisationInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
-	a, err := address.NewOrgHash(info.Name)
+	a, err := address.NewOrgHash(info.Addr)
 	if err != nil {
 		return err
 	}
 
 	return s.repo.UploadOrganisation(&OrganisationInfo{
-		Hash:      a.String(),
-		PublicKey: info.PubKey,
-		Pow:       info.Pow.String(),
+		Hash:        a.String(),
+		PublicKey:   info.PubKey,
+		Pow:         info.Pow.String(),
+		Validations: info.Validations,
 	}, info.PrivKey, info.Pow)
 }
 

@@ -3,7 +3,6 @@ package message
 import (
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"os"
 	"path/filepath"
 )
 
@@ -49,7 +48,7 @@ func IncomingPathExists(msgID, file string) bool {
 		return false
 	}
 
-	_, err = os.Stat(p)
+	_, err = fs.Stat(p)
 	return err == nil
 }
 
@@ -60,6 +59,6 @@ func ProcessQueuePathExists(msgID, file string) bool {
 		return false
 	}
 
-	_, err = os.Stat(p)
+	_, err = fs.Stat(p)
 	return err == nil
 }

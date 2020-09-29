@@ -1,4 +1,4 @@
-package resolve
+package resolver
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ var errKeyNotFound = errors.New("hash not found")
 // Repository is a complete key resolver repository with the different parts
 type Repository interface {
 	AddressRepository
-	RouteRepository
+	RoutingRepository
 	OrganisationRepository
 }
 
@@ -23,8 +23,8 @@ type AddressRepository interface {
 	DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error
 }
 
-// RouteRepository is the interface to manage route resolving
-type RouteRepository interface {
+// RoutingRepository is the interface to manage route resolving
+type RoutingRepository interface {
 	ResolveRouting(routingID string) (*RoutingInfo, error)
 	UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error
 	DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -11,8 +12,9 @@ import (
 )
 
 type options struct {
-	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
-	Password string `short:"p" long:"password" description:"Password to your vault"`
+	Config      string `short:"c" long:"config" description:"Path to your configuration file"`
+	Password    string `short:"p" long:"password" description:"Password to your vault"`
+	NewPassword string `short:"n" long:"new-password" description:"New password to your vault"`
 }
 
 var opts options
@@ -62,8 +64,14 @@ func main() {
 		panic(err)
 	}
 
+	if opts.NewPassword != "" {
+		v.ChangePassword(opts.NewPassword)
+	}
+
 	err = v.WriteToDisk()
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("Vault saved to disk")
 }

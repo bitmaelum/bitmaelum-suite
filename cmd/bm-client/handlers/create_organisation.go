@@ -46,17 +46,13 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 	fmt.Printf("* Checking if the organisation is already present in the vault: ")
 	var info *internal.OrganisationInfo
 	if vault.HasOrganisation(*orgAddr) {
-		fmt.Printf("\n  X organisation already present in the vault. Strange, but let's continue...\n")
-		info, err = vault.GetOrganisationInfo(*orgAddr)
-		if err != nil {
-			fmt.Print(err)
-			fmt.Println("")
-			os.Exit(1)
-		}
+		fmt.Printf("\n  X organisation already present in the vault.\n")
+		fmt.Println("")
+		os.Exit(1)
 	} else {
 		fmt.Printf("not found. This is a good thing.\n")
 
-		fmt.Printf("* Generating your secret key to send and read mail: ")
+		fmt.Printf("* Generating organisation public/private key pair: ")
 		privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
 		if err != nil {
 			fmt.Print(err)

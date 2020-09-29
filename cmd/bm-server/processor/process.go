@@ -6,7 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/server"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
@@ -56,7 +56,11 @@ func ProcessMessage(msgID string) {
 		// Check the serverSignature
 		if !server.VerifyHeader(*header) {
 			logrus.Errorf("message %s destined for %s has failed the server signature check. Seems that this message did not originate from the original mail server. Removing the message.", msgID, header.To.Addr)
-			MoveToRetryQueue(msgID)
+
+			err := message.RemoveMessage(message.SectionProcessing, msgID)
+			if err != nil {
+				logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
+			}
 		}
 
 		err := deliverLocal(res, msgID)
@@ -85,7 +89,7 @@ func ProcessMessage(msgID string) {
 
 // deliverLocal moves a message to a local mailbox. This is an easy process as it only needs to move
 // the message to another directory.
-func deliverLocal(info *resolve.AddressInfo, msgID string) error {
+func deliverLocal(info *resolver.AddressInfo, msgID string) error {
 	// Deliver mail to local user's inbox
 	ar := container.GetAccountRepo()
 	err := ar.SendToBox(address.HashAddress(info.Hash), account.BoxInbox, msgID)
@@ -102,7 +106,7 @@ func deliverLocal(info *resolve.AddressInfo, msgID string) error {
 // ticket from that server. Either that ticket is supplied, or we need to do proof-of-work first before
 // we get the ticket. Once we have the ticket, we can upload the message to the server in the same way
 // we upload a message from a client to a server.
-func deliverRemote(header *message.Header, info *resolve.AddressInfo, routingInfo *resolve.RoutingInfo, msgID string) error {
+func deliverRemote(header *message.Header, info *resolver.AddressInfo, routingInfo *resolver.RoutingInfo, msgID string) error {
 	client, err := api.NewAnonymous(api.ClientOpts{
 		Host:          routingInfo.Routing,
 		AllowInsecure: config.Server.Server.AllowInsecure,

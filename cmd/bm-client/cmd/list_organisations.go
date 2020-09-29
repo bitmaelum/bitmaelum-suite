@@ -7,7 +7,7 @@ import (
 
 var listOrganisationsCmd = &cobra.Command{
 	Use:     "list-organisations",
-	Aliases: []string{"list-orgs", "ls", "list"},
+	Aliases: []string{"list-org", "lo"},
 	Short:   "List your organisations",
 	Long:    `Displays a list of all your organisations currently available`,
 	Run: func(cmd *cobra.Command, args []string) {

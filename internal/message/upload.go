@@ -4,10 +4,8 @@ package message
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"io"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"regexp"
 )
@@ -29,7 +27,7 @@ func GetMessageHeader(section Section, msgID string) (*Header, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadFile(p)
+	data, err := afero.ReadFile(fs, p)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +48,7 @@ func GetFiles(section Section, msgID string) ([]FileType, error) {
 		return nil, err
 	}
 
-	files, err := ioutil.ReadDir(p)
+	files, err := afero.ReadDir(fs, p)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +82,7 @@ func RemoveMessage(section Section, msgID string) error {
 		return err
 	}
 
-	return os.RemoveAll(p)
+	return fs.RemoveAll(p)
 }
 
 // StoreBlock stores a message block to disk
@@ -95,13 +93,13 @@ func StoreBlock(msgID, blockID string, r io.Reader) error {
 	}
 
 	// Create path if needed
-	err = os.MkdirAll(filepath.Dir(p), 0777)
+	err = fs.MkdirAll(filepath.Dir(p), 0777)
 	if err != nil {
 		return err
 	}
 
 	// Copy body straight to block file
-	blockFile, err := os.Create(p)
+	blockFile, err := fs.Create(p)
 	if err != nil {
 		return err
 	}
@@ -112,7 +110,7 @@ func StoreBlock(msgID, blockID string, r io.Reader) error {
 	_, err = io.Copy(blockFile, r)
 	if err != nil {
 		// Something went wrong, remove the file just in case something was already written
-		_ = os.Remove(p)
+		_ = fs.Remove(p)
 		return err
 	}
 
@@ -127,13 +125,13 @@ func StoreAttachment(msgID, attachmentID string, r io.Reader) error {
 	}
 
 	// Create path if needed
-	err = os.MkdirAll(filepath.Dir(p), 0777)
+	err = fs.MkdirAll(filepath.Dir(p), 0777)
 	if err != nil {
 		return err
 	}
 
 	// Copy body straight to attachment file
-	attachmentFile, err := os.Create(p)
+	attachmentFile, err := fs.Create(p)
 	if err != nil {
 		return err
 	}
@@ -144,7 +142,7 @@ func StoreAttachment(msgID, attachmentID string, r io.Reader) error {
 	_, err = io.Copy(attachmentFile, r)
 	if err != nil {
 		// Something went wrong, remove the file just in case something was already written
-		_ = os.Remove(p)
+		_ = fs.Remove(p)
 		return err
 	}
 
@@ -159,13 +157,13 @@ func StoreCatalog(msgID string, r io.Reader) error {
 	}
 
 	// Create path if needed
-	err = os.MkdirAll(filepath.Dir(p), 0777)
+	err = fs.MkdirAll(filepath.Dir(p), 0777)
 	if err != nil {
 		return err
 	}
 
 	// Copy body straight to catalog file
-	catFile, err := os.Create(p)
+	catFile, err := fs.Create(p)
 	if err != nil {
 		return err
 	}
@@ -177,7 +175,7 @@ func StoreCatalog(msgID string, r io.Reader) error {
 	_, err = io.Copy(catFile, r)
 	if err != nil {
 		// Something went wrong, remove the file just in case something was already written
-		_ = os.Remove(p)
+		_ = fs.Remove(p)
 		return err
 	}
 
@@ -192,13 +190,13 @@ func StoreHeader(msgID string, header *Header) error {
 	}
 
 	// Create path if needed
-	err = os.MkdirAll(filepath.Dir(p), 0777)
+	err = fs.MkdirAll(filepath.Dir(p), 0777)
 	if err != nil {
 		return err
 	}
 
 	// Copy body straight to catalog file
-	headerFile, err := os.Create(p)
+	headerFile, err := fs.Create(p)
 	if err != nil {
 		return err
 	}
@@ -216,38 +214,31 @@ func StoreHeader(msgID string, header *Header) error {
 	_, err = headerFile.Write(data)
 	if err != nil {
 		// Something went wrong, remove the file just in case something was already written
-		_ = os.Remove(p)
+		_ = fs.Remove(p)
 		return err
 	}
 
 	return nil
 }
 
-// MoveMessage moves a message from a section to another section
-func MoveMessage(fromSection Section, toSection Section, msgID string) error {
-	oldPath, err := GetPath(fromSection, msgID, "")
+// MoveMessage moves a message from a section to another section. Highly unoptimized.
+func MoveMessage(srcSection Section, targetSection Section, msgID string) error {
+	p1, err := GetPath(srcSection, msgID, "")
 	if err != nil {
 		return err
 	}
 
-	newPath, err := GetPath(toSection, msgID, "")
+	// return if source path does not exist
+	if _, err = fs.Stat(p1); err != nil {
+		return err
+	}
+
+	// Create target path directories (if needed)
+	p2, _ := GetPath(targetSection, msgID, "")
+	err = fs.MkdirAll(filepath.Dir(p2), 0755)
 	if err != nil {
 		return err
 	}
 
-	err = os.Rename(oldPath, newPath)
-	if err != nil {
-		logrus.Trace("os.Rename() errored. Let's try and create the path first")
-
-		// Maybe path does not exist yet. Try and create
-		err = os.MkdirAll(filepath.Dir(newPath), 0755)
-		if err != nil {
-			return err
-		}
-
-		// Try again, and fail if needed
-		return os.Rename(oldPath, newPath)
-	}
-
-	return nil
+	return fs.Rename(p1, p2)
 }

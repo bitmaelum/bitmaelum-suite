@@ -22,7 +22,6 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 	// alignment must be set at once
 	table.SetColumnAlignment(align)
 	table.SetHeader(headers)
-	table.SetAutoMergeCells(true)
 
 	for _, org := range vault.Data.Organisations {
 		o, err := internal.InfoToOrg(org)
@@ -30,7 +29,20 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 			continue
 		}
 
-		for _, val := range org.Validations {
+		if len(org.Validations) == 0 {
+			values := []string{
+				"...@" + org.Addr + "!",
+				org.Name,
+				"-",
+			}
+			if displayKeys {
+				values = append(values, org.PrivKey.S, org.PubKey.S)
+			}
+
+			table.Append(values)
+		}
+
+		for i, val := range org.Validations {
 			var valstr string
 			if ok, err := val.Validate(*o); err == nil && ok {
 				valstr = "\U00002713 " + val.String()
@@ -38,11 +50,23 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 				valstr = "\U00002717 " + val.String()
 			}
 
-			values := []string{
-				"@" + org.Addr + "!",
-				org.Name,
-				valstr,
+			var values []string
+			if i == 0 {
+				// First entry
+				values = []string{
+					"...@" + org.Addr + "!",
+					org.Name,
+					valstr,
+				}
+			} else {
+				// Additional validation rows
+				values = []string{
+					"",
+					"",
+					valstr,
+				}
 			}
+
 			if displayKeys {
 				values = append(values, org.PrivKey.S, org.PubKey.S)
 			}

@@ -1,4 +1,4 @@
-package resolve
+package resolver
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -13,7 +13,9 @@ type ChainRepository struct {
 
 // NewChainRepository Return a new chain repository
 func NewChainRepository() *ChainRepository {
-	return &ChainRepository{}
+	return &ChainRepository{
+		repos: []Repository{},
+	}
 }
 
 // Add a new repository to the chain

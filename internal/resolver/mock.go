@@ -1,4 +1,4 @@
-package resolve
+package resolver
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"

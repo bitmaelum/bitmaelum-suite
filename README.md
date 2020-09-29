@@ -15,7 +15,7 @@
            P r i v a c y   i s   y o u r s   a g a i n                                          
 
 
-# What if..
+# What if...
 we could redesign email without any need for backward compatibility. What would it look like? 
 Could we solve the problems we face nowadays like spam, email forgery, phishing emails and, maybe the most important 
 one: privacy?

@@ -2,7 +2,7 @@ package message
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"github.com/spf13/afero"
 	"time"
 )
 
@@ -14,11 +14,14 @@ type RetryInfo struct {
 	MsgID         string    `json:"message_id"`      // Actual message ID (redundant since it's always inside the message directory)
 }
 
+// override for testing purposes
+var timeNow = time.Now
+
 // NewRetryInfo returns a new retry info structure
 func NewRetryInfo(msgID string) *RetryInfo {
 	return &RetryInfo{
-		RetryAt:       time.Now().Add(60 * time.Second),
-		LastRetriedAt: time.Now(),
+		RetryAt:       timeNow().Add(60 * time.Second),
+		LastRetriedAt: timeNow(),
 		Retries:       0,
 		MsgID:         msgID,
 	}
@@ -32,7 +35,7 @@ func GetRetryInfoFromQueue() ([]RetryInfo, error) {
 	}
 
 	// Check all files in the directory
-	files, err := ioutil.ReadDir(p)
+	files, err := afero.ReadDir(fs, p)
 	if err != nil {
 		return []RetryInfo{}, err
 	}
@@ -63,7 +66,7 @@ func GetRetryInfo(section Section, msgID string) (*RetryInfo, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadFile(p)
+	data, err := afero.ReadFile(fs, p)
 	if err != nil {
 		return nil, err
 	}
@@ -89,5 +92,5 @@ func StoreRetryInfo(section Section, msgID string, info RetryInfo) error {
 		return err
 	}
 
-	return ioutil.WriteFile(p, data, 0600)
+	return afero.WriteFile(fs, p, data, 0600)
 }

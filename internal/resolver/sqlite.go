@@ -1,4 +1,4 @@
-package resolve
+package resolver
 
 import (
 	"database/sql"
@@ -52,13 +52,13 @@ func NewSqliteRepository(dsn string) (Repository, error) {
 
 // createTableIfNotExist creates the key table if it doesn't exist already in the database
 func createTableIfNotExist(db *sqliteRepo) {
-	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (hash VARCHAR(32) PRIMARY KEY, pubkey TEXT, routingid VARCHAR(32))", addressTableName)
+	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (hash VARCHAR(64) PRIMARY KEY, pubkey TEXT, routing_id VARCHAR(64))", addressTableName)
 	runTableQuery(db, query)
 
-	query = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (routing_id VARCHAR(32) PRIMARY KEY, pubkey TEXT, routing TEXT)", routingTableName)
+	query = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (routing_id VARCHAR(64) PRIMARY KEY, pubkey TEXT, routing TEXT)", routingTableName)
 	runTableQuery(db, query)
 
-	query = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (hash VARCHAR(32) PRIMARY KEY, pubkey TEXT)", organisationTableName)
+	query = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (hash VARCHAR(64) PRIMARY KEY, pubkey TEXT)", organisationTableName)
 	runTableQuery(db, query)
 }
 
@@ -78,8 +78,8 @@ func (r *sqliteRepo) ResolveAddress(addr address.HashAddress) (*AddressInfo, err
 		rt string
 	)
 
-	query := fmt.Sprintf("SELECT hash, pubkey, routing FROM %s WHERE hash LIKE ?", addressTableName)
-	err := r.conn.QueryRow(query, addr.String).Scan(&h, &p, &rt)
+	query := fmt.Sprintf("SELECT hash, pubkey, routing_id FROM %s WHERE hash LIKE ?", addressTableName)
+	err := r.conn.QueryRow(query, addr.String()).Scan(&h, &p, &rt)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (r *sqliteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 		rt  string
 	)
 
-	query := fmt.Sprintf("SELECT routing_id, pubkey, routing FROM %s WHERE routing_id LIKE ?", addressTableName)
+	query := fmt.Sprintf("SELECT routing_id, pubkey, routing FROM %s WHERE routing_id LIKE ?", routingTableName)
 	err := r.conn.QueryRow(query, routingID).Scan(&rid, &p, &rt)
 	if err != nil {
 		return nil, err
@@ -145,13 +145,13 @@ func (r *sqliteRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*Org
 }
 
 func (r *sqliteRepo) UploadAddress(info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork) error {
-	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , routing) VALUES (?, ?, ?)", addressTableName)
+	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , routing_id) VALUES (?, ?, ?)", addressTableName)
 	st, err := r.conn.Prepare(query)
 	if err != nil {
 		return err
 	}
 
-	_, err = st.Exec(info.Hash, info.PublicKey.S, info.RoutingID)
+	_, err = st.Exec(info.Hash, info.PublicKey.String(), info.RoutingID)
 	return err
 }
 
@@ -162,7 +162,7 @@ func (r *sqliteRepo) UploadRouting(info *RoutingInfo, _ bmcrypto.PrivKey) error 
 		return err
 	}
 
-	_, err = st.Exec(info.Hash, info.PublicKey.S, info.Routing)
+	_, err = st.Exec(info.Hash, info.PublicKey.String(), info.Routing)
 	return err
 }
 
@@ -173,7 +173,7 @@ func (r *sqliteRepo) UploadOrganisation(info *OrganisationInfo, _ bmcrypto.PrivK
 		return err
 	}
 
-	_, err = st.Exec(info.Hash, info.PublicKey.S)
+	_, err = st.Exec(info.Hash, info.PublicKey.String())
 	return err
 }
 

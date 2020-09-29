@@ -257,6 +257,10 @@ func (v *Vault) EncryptContainer() ([]byte, error) {
 	}, "", "  ")
 }
 
+func (v *Vault) ChangePassword(newPassword string) {
+	v.password = []byte(newPassword)
+}
+
 // GetAccountOrDefault find the address from the vault. If address is empty, it will fetch the default address, or the
 // first address in the vault if no default address is present.
 func GetAccountOrDefault(vault *Vault, a string) *internal.AccountInfo {

@@ -10,7 +10,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"golang.org/x/sync/errgroup"
@@ -70,7 +70,7 @@ func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject s
 	return nil
 }
 
-func uploadToServer(info internal.AccountInfo, routingInfo resolve.RoutingInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
+func uploadToServer(info internal.AccountInfo, routingInfo resolver.RoutingInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
 	client, err := api.NewAuthenticated(&info, api.ClientOpts{
 		Host:          routingInfo.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
@@ -123,7 +123,7 @@ func uploadToServer(info internal.AccountInfo, routingInfo resolve.RoutingInfo, 
 }
 
 // Generate a header file based on the info provided
-func generateHeader(info internal.AccountInfo, toInfo *resolve.AddressInfo, catalog []byte, catalogKey []byte) (*message.Header, error) {
+func generateHeader(info internal.AccountInfo, toInfo *resolver.AddressInfo, catalog []byte, catalogKey []byte) (*message.Header, error) {
 	header := &message.Header{}
 
 	// We can add a multitude of checksums here.. whatever we like

@@ -1,10 +1,11 @@
-package resolve
+package resolver
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -25,6 +26,7 @@ type AddressDownload struct {
 	Hash      string          `json:"hash"`
 	PublicKey bmcrypto.PubKey `json:"public_key"`
 	RoutingID string          `json:"routing_id"`
+	Serial    uint64          `json:"serial_number"`
 }
 
 // RoutingDownload is a JSON structure we download from a resolver server
@@ -32,12 +34,15 @@ type RoutingDownload struct {
 	Hash      string          `json:"hash"`
 	PublicKey bmcrypto.PubKey `json:"public_key"`
 	Routing   string          `json:"routing"`
+	Serial    uint64          `json:"serial_number"`
 }
 
 // OrganisationDownload is a JSON structure we download from a resolver server
 type OrganisationDownload struct {
-	Hash      string          `json:"hash"`
-	PublicKey bmcrypto.PubKey `json:"public_key"`
+	Hash        string                        `json:"hash"`
+	PublicKey   bmcrypto.PubKey               `json:"public_key"`
+	Serial      uint64                        `json:"serial_number"`
+	Validations []organisation.ValidationType `json:"validations"`
 }
 
 // NewRemoteRepository creates new remote resolve repository
@@ -100,8 +105,9 @@ func (r *remoteRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*Org
 	}
 
 	return &OrganisationInfo{
-		Hash:      kd.Hash,
-		PublicKey: kd.PublicKey,
+		Hash:        kd.Hash,
+		PublicKey:   kd.PublicKey,
+		Validations: kd.Validations,
 	}, nil
 }
 
@@ -157,9 +163,10 @@ func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 }
 
 func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
-	data := &map[string]string{
-		"public_key": info.PublicKey.String(),
-		"proof":      proof.String(),
+	data := &map[string]interface{}{
+		"public_key":  info.PublicKey.String(),
+		"proof":       proof.String(),
+		"validations": info.Validations,
 	}
 
 	url := r.BaseURL + "/organisation/" + info.Hash

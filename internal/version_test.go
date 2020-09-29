@@ -13,3 +13,7 @@ func TestVersion(t *testing.T) {
 
 	assert.Contains(t, s, "foobar version")
 }
+
+func TestVersionString(t *testing.T) {
+	assert.Equal(t, "foo version 0.0.1 * Built:  * Commit: ", VersionString("foo"))
+}

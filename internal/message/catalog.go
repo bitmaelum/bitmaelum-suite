@@ -9,10 +9,13 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
+	"github.com/spf13/afero"
 	"io"
-	"os"
+	"path"
 	"time"
 )
+
+var fs = afero.NewOsFs()
 
 // BlockType represents a message block as used inside a catalog
 type BlockType struct {
@@ -154,7 +157,7 @@ func (c *Catalog) AddBlock(entry Block) error {
 
 // AddAttachment adds an attachment to a catalog
 func (c *Catalog) AddAttachment(entry Attachment) error {
-	stats, err := os.Stat(entry.Path)
+	stats, err := fs.Stat(entry.Path)
 	if err != nil {
 		return err
 	}
@@ -193,7 +196,7 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 	at := &AttachmentType{
 		ID:          id.String(),
 		MimeType:    mime.String(),
-		FileName:    entry.Path,
+		FileName:    path.Base(entry.Path),
 		Size:        uint64(stats.Size()),
 		Compression: compression,
 		Reader:      reader,

@@ -50,17 +50,30 @@ $(GO_TEST_BIN):
 	go get -u github.com/fzipp/gocyclo
 
 
-test: $(GO_TEST_BIN) ## Runs all tests for the whole repository
+## Runs all tests for the whole repository
+test: $(GO_TEST_BIN) test_fmt test_vet test_staticcheck test_ineffassign test_gocyclo test_unit
+
+test_fmt:
 	echo "Check format"
 	gofmt -l .
+
+test_vet:
 	echo "Check vet"
 	go vet ./...
+
+test_staticcheck:
 	echo "Check static"
 	$(GO_STATCHECK_BIN) ./...
+
+test_ineffassign:
 	echo "Check ineffassign"
 	$(GO_INEFF_BIN) ./*
+
+test_gocyclo:
 	echo "Check gocyclo"
 	$(GO_GOCYCLO_BIN) -over 15 .
+
+test_unit:
 	echo "Check unit tests"
 	go test ./...
 
