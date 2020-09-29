@@ -18,14 +18,17 @@ to your own needs.
 
 This command creates default templates that you can use as a starting point.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		c, _ := cmd.Flags().GetBool("client")
-		s, _ := cmd.Flags().GetBool("server")
+		genC, _ := cmd.Flags().GetBool("client")
+		genS, _ := cmd.Flags().GetBool("server")
 
-		if c == false && s == false || c == true {
+		// If not client or server selected, generate them both
+		genBoth := !genC && !genS
+
+		if genBoth || genC {
 			createFile("./"+config.ClientConfigFile, config.GenerateClientConfig)
 			fmt.Println("Generated client configuration file")
 		}
-		if c == false && s == false || s == true {
+		if genBoth || genS {
 			createFile("./"+config.ServerConfigFile, config.GenerateServerConfig)
 			fmt.Println("Generated server configuration file")
 		}

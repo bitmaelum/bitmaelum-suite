@@ -231,7 +231,7 @@ func (v *Vault) DecryptContainer(container *vaultContainer) error {
 	// Check if HMAC is correct
 	hash := hmac.New(sha256.New, v.password)
 	hash.Write(container.Data)
-	if bytes.Compare(hash.Sum(nil), container.Hmac) != 0 {
+	if !bytes.Equal(hash.Sum(nil), container.Hmac) {
 		return errors.New("incorrect password")
 	}
 

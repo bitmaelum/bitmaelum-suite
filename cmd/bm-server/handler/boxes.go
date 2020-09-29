@@ -152,14 +152,14 @@ func getQueryInt(req *http.Request, key string, def int) int {
 	return i
 }
 
-// Returns the given query key as string, or returns the default value
-func getQueryString(req *http.Request, key string, def string) string {
-	q := req.URL.Query()
-
-	v := q.Get(key)
-	if v == "" {
-		return def
-	}
-
-	return v
-}
+// // Returns the given query key as string, or returns the default value
+// func getQueryString(req *http.Request, key string, def string) string {
+// 	q := req.URL.Query()
+//
+// 	v := q.Get(key)
+// 	if v == "" {
+// 		return def
+// 	}
+//
+// 	return v
+// }

@@ -249,11 +249,11 @@ func logHTTP(v interface{}, err error) {
 
 	var data []byte
 
-	switch v.(type) {
+	switch v := v.(type) {
 	case *http.Request:
-		data, err = httputil.DumpRequest(v.(*http.Request), true)
+		data, err = httputil.DumpRequest(v, true)
 	case *http.Response:
-		data, err = httputil.DumpResponse(v.(*http.Response), true)
+		data, err = httputil.DumpResponse(v, true)
 	}
 	if err != nil {
 		logrus.Tracef("%s\n\n", err)

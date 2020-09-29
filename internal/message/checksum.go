@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
+	//lint:ignore SA1019 we use RIPE only for checksums, not encryption or hashing and is always used together with other checksum hashes
 	"golang.org/x/crypto/ripemd160"
 	"io"
 	"os"

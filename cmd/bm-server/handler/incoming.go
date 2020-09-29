@@ -55,7 +55,6 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(StatusOk("header saved"))
-	return
 }
 
 // IncomingMessageCatalog deals with uploading message catalogs
@@ -76,7 +75,6 @@ func IncomingMessageCatalog(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(StatusOk("saved catalog"))
-	return
 }
 
 // IncomingMessageBlock deals with uploading message blocks
@@ -100,7 +98,6 @@ func IncomingMessageBlock(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(StatusOk("saved message block"))
-	return
 }
 
 // IncomingMessageAttachment deals with uploading message attachments
@@ -124,7 +121,6 @@ func IncomingMessageAttachment(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(StatusOk("saved message attachment"))
-	return
 }
 
 // CompleteIncoming is called whenever everything from a message has been uploaded and can be actually send
@@ -146,7 +142,6 @@ func CompleteIncoming(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	_ = json.NewEncoder(w).Encode(StatusOk("message accepted"))
-	return
 }
 
 // DeleteIncoming is called whenever we want to completely remove a message by user request
@@ -176,7 +171,6 @@ func DeleteIncoming(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(StatusOk("message removed"))
-	return
 }
 
 func readHeaderFromBody(body io.ReadCloser) (*message.Header, error) {

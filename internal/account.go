@@ -17,7 +17,7 @@ type AccountInfo struct {
 	// Communication and encryption information
 	PrivKey   bmcrypto.PrivKey        `json:"priv_key"`        // PEM encoded private key
 	PubKey    bmcrypto.PubKey         `json:"pub_key"`         // PEM encoded public key
-	Pow       proofofwork.ProofOfWork `json:"proof,omitEmpty"` // Proof of work
+	Pow       proofofwork.ProofOfWork `json:"proof,omitempty"` // Proof of work
 	RoutingID string                  `json:"routing_id"`      // ID of the routing used
 }
 
@@ -26,7 +26,7 @@ type OrganisationInfo struct {
 	Name        string                        `json:"name"`          // Full name of the user
 	PrivKey     bmcrypto.PrivKey              `json:"priv_key"`      // PEM encoded private key
 	PubKey      bmcrypto.PubKey               `json:"pub_key"`       // PEM encoded public key
-	Pow         proofofwork.ProofOfWork       `json:"pow,omitEmpty"` // Proof of work
+	Pow         proofofwork.ProofOfWork       `json:"pow,omitempty"` // Proof of work
 	Validations []organisation.ValidationType `json:"validations"`   // Validations
 }
 
@@ -35,6 +35,6 @@ type RoutingInfo struct {
 	RoutingID string                  `json:"routing_id"`    // ID
 	PrivKey   bmcrypto.PrivKey        `json:"priv_key"`      // PEM encoded private key
 	PubKey    bmcrypto.PubKey         `json:"pub_key"`       // PEM encoded public key
-	Pow       proofofwork.ProofOfWork `json:"pow,omitEmpty"` // Proof of work
+	Pow       proofofwork.ProofOfWork `json:"pow,omitempty"` // Proof of work
 	Route     string                  `json:"route"`         // Route to server
 }

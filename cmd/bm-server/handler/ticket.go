@@ -73,7 +73,6 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(ticket.NewSimpleTicket(t))
-	return
 }
 
 // GetServerToServerTicket will try and retrieve a (valid) ticket so we can upload messages. It is only allowed to have a
@@ -158,7 +157,6 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	}
 
 	outputTicket(tckt, w)
-	return
 }
 
 func outputTicket(tckt *ticket.Ticket, w http.ResponseWriter) {
@@ -225,7 +223,7 @@ func fetchTicketHeader(req *http.Request) (*ticket.Ticket, error) {
 	}
 
 	// Only return valid tickets
-	if t.Valid == false {
+	if !t.Valid {
 		return nil, errors.New("invalid ticket")
 	}
 

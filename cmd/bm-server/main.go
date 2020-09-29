@@ -191,7 +191,7 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 
 	// Wrap our router in Apache combined logging if needed
 	var h http.Handler = router
-	if config.Server.Logging.ApacheLogging == true {
+	if config.Server.Logging.ApacheLogging {
 		h = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, router)
 	}
 
@@ -210,14 +210,10 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	logrus.Info("HTTP Server up and running")
 
 	// Wait until the context is done
-	for {
-		select {
-		case <-ctx.Done():
-			logrus.Info("Shutting down the HTTP server...")
-			_ = srv.Close()
-			return
-		}
-	}
+	<-ctx.Done()
+
+	logrus.Info("Shutting down the HTTP server...")
+	_ = srv.Close()
 }
 
 func mainLoop(ctx context.Context) {

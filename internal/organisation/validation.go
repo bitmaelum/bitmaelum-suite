@@ -91,6 +91,6 @@ func (v *ValidationType) Validate(o Organisation) (bool, error) {
 	case TypeDNS:
 		return validateDNS(o, v.Value)
 	default:
-		return false, errors.New("Incorrect validation type")
+		return false, errors.New("incorrect validation type")
 	}
 }

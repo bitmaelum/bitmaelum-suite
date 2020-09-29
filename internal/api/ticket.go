@@ -53,8 +53,7 @@ func (api *API) GetAnonymousTicket(from, to address.HashAddress, subscriptionID 
 		return nil, err
 	}
 
-	url := fmt.Sprintf("/ticket")
-	body, statusCode, err := api.Post(url, data)
+	body, statusCode, err := api.Post("/ticket", data)
 	if err != nil {
 		return nil, err
 	}
@@ -91,8 +90,7 @@ func (api *API) GetAnonymousTicketByProof(from, to address.HashAddress, subscrip
 		return nil, err
 	}
 
-	url := fmt.Sprintf("/ticket")
-	body, statusCode, err := api.Post(url, data)
+	body, statusCode, err := api.Post("/ticket", data)
 	if err != nil {
 		return nil, err
 	}

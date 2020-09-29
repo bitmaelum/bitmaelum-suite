@@ -51,7 +51,7 @@ func (v *Vault) GetDefaultAccount() *internal.AccountInfo {
 
 	// Return account that is set default (the first one, if multiple)
 	for i := range v.Data.Accounts {
-		if v.Data.Accounts[i].Default == true {
+		if v.Data.Accounts[i].Default {
 			return &v.Data.Accounts[i]
 		}
 	}

@@ -44,7 +44,7 @@ func Sign(key PrivKey, message []byte) ([]byte, error) {
 		return ed25519.Sign(key.K.(ed25519.PrivateKey), message), nil
 	}
 
-	return nil, errors.New("Unknown key type for signing")
+	return nil, errors.New("unknown key type for signing")
 }
 
 // Verify if hash compares against the signature of the message
@@ -69,5 +69,5 @@ func Verify(key PubKey, message []byte, sig []byte) (bool, error) {
 		return ed25519.Verify(key.K.(ed25519.PublicKey), message, sig), nil
 	}
 
-	return false, errors.New("Unknown key type for signing")
+	return false, errors.New("unknown key type for signing")
 }

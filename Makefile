@@ -36,8 +36,8 @@ ifndef $(GOARCH)
     export GOARCH
 endif
 
-# path to golint
-GO_LINT_BIN = $(GOPATH)/bin/golint
+# paths to binaries
+GO_STATCHECK_BIN = $(GOPATH)/bin/staticcheck
 GO_INEFF_BIN = $(GOPATH)/bin/ineffassign
 GO_GOCYCLO_BIN = $(GOPATH)/bin/gocyclo
 
@@ -45,7 +45,7 @@ GO_GOCYCLO_BIN = $(GOPATH)/bin/gocyclo
 
 # Downloads external tools as it's not available by default
 $(GO_TEST_BIN):
-	go get -u golang.org/x/lint/golint
+	go get -u honnef.co/go/tools/cmd/staticcheck
 	go get -u github.com/gordonklaus/ineffassign
 	go get -u github.com/fzipp/gocyclo
 
@@ -55,8 +55,8 @@ test: $(GO_TEST_BIN) ## Runs all tests for the whole repository
 	gofmt -l .
 	echo "Check vet"
 	go vet ./...
-	echo "Check lint"
-	$(GO_LINT_BIN) ./...
+	echo "Check static"
+	$(GO_STATCHECK_BIN) ./...
 	echo "Check ineffassign"
 	$(GO_INEFF_BIN) ./*
 	echo "Check gocyclo"

@@ -9,7 +9,7 @@ import (
 // Encrypt a message with the given key
 func Encrypt(key PubKey, message []byte) ([]byte, error) {
 	if !key.CanEncrypt() {
-		return nil, errors.New("This key type is not usable for encryption")
+		return nil, errors.New("this key type is not usable for encryption")
 	}
 
 	switch key.Type {
@@ -23,7 +23,7 @@ func Encrypt(key PubKey, message []byte) ([]byte, error) {
 // Decrypt a message with the given key
 func Decrypt(key PrivKey, message []byte) ([]byte, error) {
 	if !key.CanEncrypt() {
-		return nil, errors.New("This key type is not usable for encryption")
+		return nil, errors.New("this key type is not usable for encryption")
 	}
 
 	switch key.Type {

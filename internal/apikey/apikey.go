@@ -46,7 +46,7 @@ func NewKey(perms []string, valid time.Duration) KeyType {
 
 // HasPermission returns true when this key contains the given permission, or when the key is an admin key (granted all permissions)
 func (key *KeyType) HasPermission(perm string) bool {
-	if key.Admin == true {
+	if key.Admin {
 		return true
 	}
 

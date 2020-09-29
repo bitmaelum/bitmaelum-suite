@@ -54,20 +54,15 @@ func SetLogging(level, path string) {
 	switch level {
 	case "trace":
 		logrus.SetLevel(logrus.TraceLevel)
-		break
 	case "debug":
 		logrus.SetLevel(logrus.DebugLevel)
-		break
 	case "info":
 		logrus.SetLevel(logrus.InfoLevel)
-		break
 	case "warning":
 		logrus.SetLevel(logrus.WarnLevel)
-		break
 	case "error":
 	default:
 		logrus.SetLevel(logrus.ErrorLevel)
-		break
 	}
 
 	logrus.Tracef("setting loglevel to '%s'", config.Server.Logging.Level)
