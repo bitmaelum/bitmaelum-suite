@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
 	"os"
 
@@ -16,9 +17,9 @@ var readCmd = &cobra.Command{
 	Long: `Read message from your account
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		vault := OpenVault()
+		v := vault.OpenVault()
 
-		info := GetAccountOrDefault(vault, *rAccount)
+		info := vault.GetAccountOrDefault(v, *rAccount)
 		if info == nil {
 			logrus.Fatal("No account found in vault")
 			os.Exit(1)

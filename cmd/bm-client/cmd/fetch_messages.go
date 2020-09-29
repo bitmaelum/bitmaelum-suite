@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
@@ -14,9 +15,9 @@ var fetchMessagesCmd = &cobra.Command{
 	Short:   "Retrieves messages from your account(s)",
 	Long:    `Connects to the BitMaelum servers and fetches new emails that are not available on your local system.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		vault := OpenVault()
+		v := vault.OpenVault()
 
-		info := GetAccountOrDefault(vault, *fmAccount)
+		info := vault.GetAccountOrDefault(v, *fmAccount)
 		if info == nil {
 			logrus.Fatal("No account found in vault")
 			os.Exit(1)

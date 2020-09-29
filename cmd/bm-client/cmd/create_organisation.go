@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -11,20 +12,22 @@ var createOrganisationCmd = &cobra.Command{
 
 This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// vault := OpenVault()
+		vault := OpenVault()
 
-		//handlers.CreateOrganisation(vault, *orgName, *orgDefaultRouting)
+		handlers.CreateOrganisation(vault, *orgName, *orgValidations)
 	},
 }
 
-var orgName, orgDefaultRouting *string
+var (
+	orgName        *string
+	orgValidations *[]string
+)
 
 func init() {
 	rootCmd.AddCommand(createOrganisationCmd)
 
-	orgName = createOrganisationCmd.Flags().String("org", "", "Organisation name (...@<name>! part)")
-	orgDefaultRouting = createOrganisationCmd.Flags().String("routing", "", "Default routing info for the organisation")
+	orgName = createOrganisationCmd.Flags().StringP("org", "o", "", "Organisation name (...@<name>! part)")
+	orgValidations = createOrganisationCmd.Flags().StringArrayP("validation", "v", nil, "validations for the organisation")
 
 	_ = createAccountCmd.MarkFlagRequired("org")
-	_ = createAccountCmd.MarkFlagRequired("routing")
 }

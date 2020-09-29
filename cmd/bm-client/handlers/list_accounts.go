@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
 	"os"
 )
@@ -23,7 +23,7 @@ func ListAccounts(vault *vault.Vault, displayKeys bool) {
 	table.SetColumnAlignment(align)
 	table.SetHeader(headers)
 
-	for _, acc := range vault.Accounts {
+	for _, acc := range vault.Data.Accounts {
 		if acc.Default {
 			acc.Address += " (*)"
 		}

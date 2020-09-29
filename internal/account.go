@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
@@ -18,6 +19,15 @@ type AccountInfo struct {
 	PubKey    bmcrypto.PubKey         `json:"pub_key"`         // PEM encoded public key
 	Pow       proofofwork.ProofOfWork `json:"proof,omitEmpty"` // Proof of work
 	RoutingID string                  `json:"routing_id"`      // ID of the routing used
+}
+
+// OrganisationInfo represents a routing configuration for a server
+type OrganisationInfo struct {
+	Name        string                        `json:"name"`          // Full name of the user
+	PrivKey     bmcrypto.PrivKey              `json:"priv_key"`      // PEM encoded private key
+	PubKey      bmcrypto.PubKey               `json:"pub_key"`       // PEM encoded public key
+	Pow         proofofwork.ProofOfWork       `json:"pow,omitEmpty"` // Proof of work
+	Validations []organisation.ValidationType `json:"validations"`   // Validations
 }
 
 // RoutingInfo represents a routing configuration for a server

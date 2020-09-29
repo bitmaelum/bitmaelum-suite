@@ -23,15 +23,15 @@ var setDefaultCmd = &cobra.Command{
 			logrus.Fatal("Address not found in vault")
 		}
 
-		for i := range vault.Accounts {
-			vault.Accounts[i].Default = false
+		for i := range vault.Data.Accounts {
+			vault.Data.Accounts[i].Default = false
 
-			if vault.Accounts[i].Address == *sdFrom {
-				vault.Accounts[i].Default = true
+			if vault.Data.Accounts[i].Address == *sdFrom {
+				vault.Data.Accounts[i].Default = true
 			}
 		}
 
-		err = vault.Save()
+		err = vault.WriteToDisk()
 		if err != nil {
 			logrus.Fatalf("error while saving vault: %s\n", err)
 		}

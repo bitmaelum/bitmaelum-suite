@@ -132,6 +132,20 @@ func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
 	}, info.PrivKey)
 }
 
+// UploadOrganisationInfo uploads resolve information to one (or more) resolvers
+func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
+	a, err := address.NewOrgHash(info.Name)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.UploadOrganisation(&OrganisationInfo{
+		Hash:      a.String(),
+		PublicKey: info.PubKey,
+		Pow:       info.Pow.String(),
+	}, info.PrivKey, info.Pow)
+}
+
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey) string {
 	// Generate token

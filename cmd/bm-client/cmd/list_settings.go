@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -12,9 +13,9 @@ var listSettingsCmd = &cobra.Command{
 	Short: "List settings for your account",
 	Long:  `Displays a list of all your settings`,
 	Run: func(cmd *cobra.Command, args []string) {
-		vault := OpenVault()
+		v := vault.OpenVault()
 
-		info := GetAccountOrDefault(vault, *lsAddr)
+		info := vault.GetAccountOrDefault(v, *lsAddr)
 		if info == nil {
 			logrus.Fatal("No account found in vault")
 			os.Exit(1)

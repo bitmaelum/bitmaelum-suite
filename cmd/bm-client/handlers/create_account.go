@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -90,7 +90,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 		}
 
 		vault.AddAccount(*info)
-		err = vault.Save()
+		err = vault.WriteToDisk()
 		if err != nil {
 			fmt.Printf("\n  X error while saving account into vault: %#v", err)
 			fmt.Println("")
@@ -116,7 +116,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		vault.RemoveAccount(*addr)
-		_ = vault.Save()
+		_ = vault.WriteToDisk()
 
 		fmt.Printf("cannot initialize API")
 		fmt.Println("")
@@ -127,7 +127,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		vault.RemoveAccount(*addr)
-		_ = vault.Save()
+		_ = vault.WriteToDisk()
 
 		fmt.Printf("\n  X error from API while trying to create account: " + err.Error())
 		fmt.Println("")

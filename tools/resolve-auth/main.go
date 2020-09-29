@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	tools "github.com/bitmaelum/bitmaelum-suite/tools/internal"
 	"github.com/sirupsen/logrus"
 	"os"
 )
@@ -23,9 +23,9 @@ func main() {
 	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
 
-	v := tools.OpenVault()
+	v := vault.OpenVault()
 
-	info := tools.GetAccountOrDefault(v, opts.Address)
+	info := vault.GetAccountOrDefault(v, opts.Address)
 	if info == nil {
 		logrus.Fatal("No account found in vault")
 		os.Exit(1)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,9 +20,9 @@ var composeCmd = &cobra.Command{
 	Short:   "Compose a new message",
 	Long:    `This command will allow you to compose a new message and send it through your BitMaelum server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		vault := OpenVault()
+		v := vault.OpenVault()
 
-		fromInfo := GetAccountOrDefault(vault, *from)
+		fromInfo := vault.GetAccountOrDefault(v, *from)
 		if fromInfo == nil {
 			logrus.Fatal("No account found in vault")
 			os.Exit(1)

@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -57,12 +57,12 @@ func main() {
 		panic(err)
 	}
 
-	err = json.Unmarshal(data, &v.Accounts)
+	err = json.Unmarshal(data, &v.Data)
 	if err != nil {
 		panic(err)
 	}
 
-	err = v.Save()
+	err = v.WriteToDisk()
 	if err != nil {
 		panic(err)
 	}
