@@ -22,6 +22,22 @@ type ValidationType struct {
 	Value string
 }
 
+// NewValidationTypeFromStringArray generates validation types based on an array of strings
+func NewValidationTypeFromStringArray(arr []string) ([]ValidationType, error) {
+	vals := []ValidationType{}
+
+	for _, s := range arr {
+		v, err := NewValidationTypeFromString(s)
+		if err != nil {
+			return nil, errors.New(s)
+		}
+
+		vals = append(vals, *v)
+	}
+
+	return vals, nil
+}
+
 // NewValidationTypeFromString creates a new validation type from the given string
 func NewValidationTypeFromString(s string) (*ValidationType, error) {
 	v := &ValidationType{}

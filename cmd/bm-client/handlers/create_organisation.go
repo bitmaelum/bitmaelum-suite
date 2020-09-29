@@ -5,6 +5,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -13,15 +14,24 @@ import (
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
-func CreateOrganisation(vault *vault.Vault, name string, orgValidations []string) {
+func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidations []string) {
 	fmt.Printf("* Verifying if organisation name is valid: ")
-	orgAddr, err := address.NewOrgHash(name)
+	orgAddr, err := address.NewOrgHash(orgName)
 	if err != nil {
 		fmt.Printf("not a valid organisation")
 		fmt.Println("")
 		os.Exit(1)
 	}
 	fmt.Printf("ok\n")
+
+	fmt.Printf("* Checking if your validations are correct: ")
+	val, err := organisation.NewValidationTypeFromStringArray(orgValidations)
+	if err != nil {
+		fmt.Print("\n  X it seems that one of your validations is wrong: ", err)
+		fmt.Println("")
+		os.Exit(1)
+	}
+	fmt.Printf("ok.\n")
 
 	fmt.Printf("* Checking if organisation is already known in the resolver service: ")
 	ks := container.GetResolveService()
@@ -62,10 +72,12 @@ func CreateOrganisation(vault *vault.Vault, name string, orgValidations []string
 
 		fmt.Printf("* Adding your new organisation into the vault: ")
 		info = &internal.OrganisationInfo{
-			Name:    name,
-			PrivKey: *privKey,
-			PubKey:  *pubKey,
-			Pow:     *proof,
+			Addr:        orgName,
+			Name:        fullName,
+			PrivKey:     *privKey,
+			PubKey:      *pubKey,
+			Pow:         *proof,
+			Validations: val,
 		}
 
 		vault.AddOrganisation(*info)

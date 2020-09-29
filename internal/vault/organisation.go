@@ -15,7 +15,7 @@ func (v *Vault) AddOrganisation(organisation internal.OrganisationInfo) {
 func (v *Vault) GetOrganisationInfo(org address.HashOrganisation) (*internal.OrganisationInfo, error) {
 
 	for i := range v.Data.Organisations {
-		h, err := address.NewOrgHash(v.Data.Organisations[i].Name)
+		h, err := address.NewOrgHash(v.Data.Organisations[i].Addr)
 		if err != nil {
 			continue
 		}

@@ -27,21 +27,21 @@ const (
 
 const (
 	// VersionV1 is the first version that uses versioning
-	VersionV1 = iota + 1
+	VersionV0 = iota
+	VersionV1
 )
 
 // VaultPassword is the given password through the commandline for opening the vault
 var VaultPassword string
 
 // VaultData hold the actual data that is encrypted inside the vault
-type VaultData struct { //nolint
+type VaultData struct {
 	Accounts      []internal.AccountInfo      `json:"accounts"`
 	Organisations []internal.OrganisationInfo `json:"organisations"`
 }
 
 // Vault defines our vault with path and password. Only the accounts should be exported
 type Vault struct {
-	Version  int // Version of the vault data. Should increase on changes so we can easily migrate if needed
 	Data     VaultData
 	RawData  []byte
 	password []byte
@@ -50,10 +50,11 @@ type Vault struct {
 
 // vaultContainer is a json wrapper that encrypts the actual vault data
 type vaultContainer struct {
-	Data []byte `json:"data"`
-	Salt []byte `json:"salt"`
-	Iv   []byte `json:"iv"`
-	Hmac []byte `json:"hmac"`
+	Version int    `json:"version"`
+	Data    []byte `json:"data"`
+	Salt    []byte `json:"salt"`
+	Iv      []byte `json:"iv"`
+	Hmac    []byte `json:"hmac"`
 }
 
 // New instantiates a new vault
@@ -61,7 +62,6 @@ func New(p string, pwd []byte) (*Vault, error) {
 	var err error
 
 	v := &Vault{
-		Version: VersionV1,
 		Data: VaultData{
 			Accounts:      []internal.AccountInfo{},
 			Organisations: []internal.OrganisationInfo{},
@@ -94,72 +94,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 	}
 
 	return v, nil
-
-	// // Decrypt the encrypted vault and return its data
-	// data, err = v.readEncryptedData()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// // Populate the vault based on the data
-	// v, err := decodeVaultJSON(data)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// switch v.(type) {
-	// case OldVault:
-	// 	v.Data.Accounts = v.Accounts
-	// default:
-	// 	logrus.Error("unknown vault data encountered")
-	// 	return nil, err
-	// }
-	//
-	//
-	//
-	// // Otherwise, read vault data, if possible
-	// err = v.readVault()
-	// return v, err
 }
-
-// // readVault decrypts and reads the vault
-// func (v *Vault) readVault() error {
-// 	data, err := readFileData(v.path)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	container := &vaultContainer{}
-// 	err = json.Unmarshal(data, &container)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	// Check if HMAC is correct
-// 	hash := hmac.New(sha256.New, v.password)
-// 	hash.Write(container.Data)
-// 	if bytes.Compare(hash.Sum(nil), container.Hmac) != 0 {
-// 		return errors.New("incorrect password")
-// 	}
-//
-// 	// Generate key based on password
-// 	derivedAESKey := pbkdf2.Key(v.password, container.Salt, pbkdfIterations, 32, sha256.New)
-// 	aes256, err := aes.NewCipher(derivedAESKey)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	// Decrypt vault data
-// 	plainText := make([]byte, len(container.Data))
-// 	ctr := cipher.NewCTR(aes256, container.Iv)
-// 	ctr.XORKeyStream(plainText, container.Data)
-//
-// 	// store raw data. This makes editing through vault-edit easier
-// 	v.RawData = plainText
-//
-// 	v.populateVaultDataFromRaw()
-// 	return nil
-// }
 
 // sanityCheck checks if the vault contains correct data. It might be the accounts are in some kind of invalid state,
 // so we should not save any data once we detected this.
@@ -228,6 +163,7 @@ func (v *Vault) ReadFromDisk() error {
 
 // DecryptContainer decrypts a container and fills the values in v.Data
 func (v *Vault) DecryptContainer(container *vaultContainer) error {
+
 	// Check if HMAC is correct
 	hash := hmac.New(sha256.New, v.password)
 	hash.Write(container.Data)
@@ -249,6 +185,28 @@ func (v *Vault) DecryptContainer(container *vaultContainer) error {
 
 	// store raw data. This makes editing through vault-edit tool easier
 	v.RawData = plainText
+
+	if container.Version == VersionV0 {
+		// Unmarshal "old" style, with no organisations present
+		var accounts []internal.AccountInfo
+		err = json.Unmarshal(plainText, &accounts)
+		if err == nil {
+			v.Data.Accounts = accounts
+			v.Data.Organisations = []internal.OrganisationInfo{}
+
+			// Write back to disk in a newer format
+			return v.WriteToDisk()
+		}
+	}
+
+	// Version 1 has organisation info
+	if container.Version == VersionV1 {
+		err = json.Unmarshal(plainText, &v.Data)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -291,10 +249,11 @@ func (v *Vault) EncryptContainer() ([]byte, error) {
 
 	// Generate the vault structure for disk
 	return json.MarshalIndent(&vaultContainer{
-		Data: cipherText,
-		Salt: salt,
-		Iv:   iv,
-		Hmac: hash.Sum(nil),
+		Version: VersionV1,
+		Data:    cipherText,
+		Salt:    salt,
+		Iv:      iv,
+		Hmac:    hash.Sum(nil),
 	}, "", "  ")
 }
 
