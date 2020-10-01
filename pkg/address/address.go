@@ -127,6 +127,7 @@ func (a *Address) Bytes() []byte {
 	return []byte(a.String())
 }
 
+// IsOrganisationAddress returns true when the address is an organisational address (user@org!)
 func (a *Address) IsOrganisationAddress() bool {
 	return len(a.Org) > 0
 }
