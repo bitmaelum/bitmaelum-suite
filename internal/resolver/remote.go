@@ -41,8 +41,8 @@ type RoutingDownload struct {
 type OrganisationDownload struct {
 	Hash        string                        `json:"hash"`
 	PublicKey   bmcrypto.PubKey               `json:"public_key"`
-	Serial      uint64                        `json:"serial_number"`
 	Validations []organisation.ValidationType `json:"validations"`
+	Serial      uint64                        `json:"serial_number"`
 }
 
 // NewRemoteRepository creates new remote resolve repository
@@ -64,10 +64,7 @@ func NewRemoteRepository(baseURL string, debug bool) Repository {
 
 // Resolve
 func (r *remoteRepo) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
-	url := r.BaseURL + "/address/" + addr.String()
-
-	kd := &AddressDownload{}
-	err := r.resolve(url, &kd)
+	kd, err := r.fetchAddress(addr)
 	if err != nil {
 		return nil, err
 	}
@@ -80,10 +77,7 @@ func (r *remoteRepo) ResolveAddress(addr address.HashAddress) (*AddressInfo, err
 }
 
 func (r *remoteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
-	url := r.BaseURL + "/routing/" + routingID
-
-	kd := &RoutingDownload{}
-	err := r.resolve(url, &kd)
+	kd, err := r.fetchRouting(routingID)
 	if err != nil {
 		return nil, err
 	}
@@ -96,10 +90,7 @@ func (r *remoteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 }
 
 func (r *remoteRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
-	url := r.BaseURL + "/org/" + orgHash.String()
-
-	kd := &OrganisationDownload{}
-	err := r.resolve(url, &kd)
+	kd, err := r.fetchOrganisation(orgHash)
 	if err != nil {
 		return nil, err
 	}
@@ -142,6 +133,16 @@ func (r *remoteRepo) resolve(url string, v interface{}) error {
 }
 
 func (r *remoteRepo) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
+	// Do a prefetch so we can get the current serial number
+	addr, err := address.NewHashFromHash(info.Hash)
+	if err != nil {
+		return err
+	}
+	kd, err := r.fetchAddress(*addr)
+	if err != nil {
+		return err
+	}
+
 	data := &map[string]string{
 		"public_key": info.PublicKey.String(),
 		"routing_id": info.RoutingID,
@@ -149,20 +150,36 @@ func (r *remoteRepo) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, 
 	}
 
 	url := r.BaseURL + "/address/" + info.Hash
-	return r.upload(url, data, generateAddressSignature(info, privKey))
+	return r.upload(url, data, generateAddressSignature(info, privKey, kd.Serial))
 }
 
 func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
+	// Do a prefetch so we can get the current serial number
+	kd, err := r.fetchRouting(info.Hash)
+	if err != nil {
+		return err
+	}
+
 	data := &map[string]string{
 		"public_key": info.PublicKey.String(),
 		"routing":    info.Routing,
 	}
 
 	url := r.BaseURL + "/routing/" + info.Hash
-	return r.upload(url, data, generateRoutingSignature(info, privKey))
+	return r.upload(url, data, generateRoutingSignature(info, privKey, kd.Serial))
 }
 
 func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
+	// Do a prefetch so we can get the current serial number
+	org, err := address.NewOrgHash(info.Hash)
+	if err != nil {
+		return err
+	}
+	kd, err := r.fetchOrganisation(*org)
+	if err != nil {
+		return err
+	}
+
 	data := &map[string]interface{}{
 		"public_key":  info.PublicKey.String(),
 		"proof":       proof.String(),
@@ -170,7 +187,7 @@ func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto
 	}
 
 	url := r.BaseURL + "/organisation/" + info.Hash
-	return r.upload(url, data, generateOrganisationSignature(info, privKey))
+	return r.upload(url, data, generateOrganisationSignature(info, privKey, kd.Serial))
 }
 
 func (r *remoteRepo) upload(url string, v interface{}, sig string) error {
@@ -207,18 +224,44 @@ func (r *remoteRepo) upload(url string, v interface{}, sig string) error {
 }
 
 func (r *remoteRepo) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
+	// Do a prefetch so we can get the current serial number
+	addr, err := address.NewHashFromHash(info.Hash)
+	if err != nil {
+		return err
+	}
+	kd, err := r.fetchAddress(*addr)
+	if err != nil {
+		return err
+	}
+
 	url := r.BaseURL + "/address/" + info.Hash
-	return r.delete(url, generateAddressSignature(info, privKey))
+	return r.delete(url, generateAddressSignature(info, privKey, kd.Serial))
 }
 
 func (r *remoteRepo) DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
+	// Do a prefetch so we can get the current serial number
+	kd, err := r.fetchRouting(info.Hash)
+	if err != nil {
+		return err
+	}
+
 	url := r.BaseURL + "/routing/" + info.Hash
-	return r.delete(url, generateRoutingSignature(info, privKey))
+	return r.delete(url, generateRoutingSignature(info, privKey, kd.Serial))
 }
 
 func (r *remoteRepo) DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error {
-	url := r.BaseURL + "/org/" + info.Hash
-	return r.delete(url, generateOrganisationSignature(info, privKey))
+	// Do a prefetch so we can get the current serial number
+	org, err := address.NewOrgHash(info.Hash)
+	if err != nil {
+		return err
+	}
+	kd, err := r.fetchOrganisation(*org)
+	if err != nil {
+		return err
+	}
+
+	url := r.BaseURL + "/organisation/" + info.Hash
+	return r.delete(url, generateOrganisationSignature(info, privKey, kd.Serial))
 }
 
 func (r *remoteRepo) delete(url, sig string) error {
@@ -268,4 +311,41 @@ func logHTTP(v interface{}, err error) {
 	}
 
 	logrus.Tracef("%s\n\n", data)
+}
+
+
+func (r *remoteRepo) fetchAddress(addr address.HashAddress) (*AddressDownload, error) {
+	url := r.BaseURL + "/address/" + addr.String()
+
+	kd := &AddressDownload{}
+	err := r.resolve(url, &kd)
+	if err != nil {
+		return nil, err
+	}
+
+	return kd, nil
+}
+
+func (r *remoteRepo) fetchRouting(routingID string) (*RoutingDownload, error) {
+	url := r.BaseURL + "/routing/" + routingID
+
+	rd := &RoutingDownload{}
+	err := r.resolve(url, &rd)
+	if err != nil {
+		return nil, err
+	}
+
+	return rd, nil
+}
+
+func (r *remoteRepo) fetchOrganisation(addr address.HashOrganisation) (*OrganisationDownload, error) {
+	url := r.BaseURL + "/organisation/" + addr.String()
+
+	od := &OrganisationDownload{}
+	err := r.resolve(url, &od)
+	if err != nil {
+		return nil, err
+	}
+
+	return od, nil
 }

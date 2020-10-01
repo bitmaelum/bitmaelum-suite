@@ -9,6 +9,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/sirupsen/logrus"
+	"strconv"
 )
 
 // Service represents a resolver service tied to a specific repository
@@ -150,9 +151,9 @@ func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
 }
 
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver
-func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey) string {
+func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash + info.RoutingID))
+	hash := sha256.Sum256([]byte(info.Hash + info.RoutingID + strconv.FormatUint(serial, 10)))
 	signature, err := bmcrypto.Sign(privKey, hash[:])
 	if err != nil {
 		return ""
@@ -162,9 +163,9 @@ func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey) strin
 }
 
 // generateRoutingSignature generates a signature with the accounts private key that can be used for authentication on the resolver
-func generateRoutingSignature(info *RoutingInfo, privKey bmcrypto.PrivKey) string {
+func generateRoutingSignature(info *RoutingInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash))
+	hash := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
 	signature, err := bmcrypto.Sign(privKey, hash[:])
 	if err != nil {
 		return ""
@@ -174,9 +175,9 @@ func generateRoutingSignature(info *RoutingInfo, privKey bmcrypto.PrivKey) strin
 }
 
 // generateOrganisationSignature generates a signature with the accounts private key that can be used for authentication on the resolver
-func generateOrganisationSignature(info *OrganisationInfo, privKey bmcrypto.PrivKey) string {
+func generateOrganisationSignature(info *OrganisationInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash))
+	hash := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
 	signature, err := bmcrypto.Sign(privKey, hash[:])
 	if err != nil {
 		return ""
