@@ -1,12 +1,13 @@
 package message
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 func TestGetMessageHeader(t *testing.T) {

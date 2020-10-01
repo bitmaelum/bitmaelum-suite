@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
@@ -10,7 +12,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
-	"os"
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver

@@ -3,12 +3,13 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 type jsonOut map[string]interface{}

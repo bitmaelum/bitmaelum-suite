@@ -2,6 +2,10 @@ package message
 
 import (
 	"errors"
+	"io"
+	"path"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
@@ -10,9 +14,6 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"github.com/spf13/afero"
-	"io"
-	"path"
-	"time"
 )
 
 var fs = afero.NewOsFs()

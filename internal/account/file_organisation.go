@@ -2,6 +2,7 @@ package account
 
 import (
 	"encoding/json"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 

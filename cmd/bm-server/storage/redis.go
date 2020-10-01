@@ -2,8 +2,9 @@ package storage
 
 import (
 	"encoding/json"
-	"github.com/go-redis/redis/v8"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type redisStorage struct {

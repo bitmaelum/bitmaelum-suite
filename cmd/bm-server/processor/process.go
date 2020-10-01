@@ -1,6 +1,9 @@
 package processor
 
 import (
+	"io/ioutil"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -11,8 +14,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	"io/ioutil"
-	"os"
 )
 
 // ProcessMessage will process a message found in the processing queue.

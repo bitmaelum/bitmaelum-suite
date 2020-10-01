@@ -1,11 +1,12 @@
 package apikey
 
 import (
-	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateKey(t *testing.T) {

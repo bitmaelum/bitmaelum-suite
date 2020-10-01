@@ -4,11 +4,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"io/ioutil"
+	"path/filepath"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/google/uuid"
 	"github.com/spf13/afero"
-	"io/ioutil"
-	"path/filepath"
 )
 
 // Routing holds routing configuration for the mail server

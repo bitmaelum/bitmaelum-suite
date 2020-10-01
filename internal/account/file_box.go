@@ -3,11 +3,12 @@ package account
 import (
 	"errors"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 // Create a new mailbox in this account

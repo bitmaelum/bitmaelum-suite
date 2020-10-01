@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 var setCmd = &cobra.Command{

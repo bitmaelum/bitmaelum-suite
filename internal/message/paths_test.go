@@ -1,11 +1,12 @@
 package message
 
 import (
+	"path/filepath"
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
-	"path/filepath"
-	"testing"
 )
 
 func TestGetPath(t *testing.T) {

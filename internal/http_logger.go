@@ -2,11 +2,12 @@ package internal
 
 import (
 	"bytes"
-	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // HTTPLogger is a structure that allows to log HTTP requests and responses

@@ -2,8 +2,9 @@ package internal
 
 import (
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"io/ioutil"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 func ReadTestKey(p string) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {

@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
-	"os"
 )
 
 // ListAccounts displays the current accounts available in the vault

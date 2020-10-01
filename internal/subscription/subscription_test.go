@@ -1,9 +1,10 @@
 package subscription
 
 import (
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestSubscription(t *testing.T) {

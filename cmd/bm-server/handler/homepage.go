@@ -3,10 +3,11 @@ package handler
 import (
 	"bytes"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"net/http"
 	"strings"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 )
 
 // HomePage Information header on root /

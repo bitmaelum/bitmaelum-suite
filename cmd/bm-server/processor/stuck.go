@@ -1,10 +1,11 @@
 package processor
 
 import (
+	"io/ioutil"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 )
 
 // ProcessStuckIncomingMessages will process stuck message found in the incoming queue.

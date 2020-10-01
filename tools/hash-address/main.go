@@ -3,9 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"os"
 	"strings"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 func main() {

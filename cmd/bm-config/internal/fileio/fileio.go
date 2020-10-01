@@ -3,10 +3,11 @@ package fileio
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 )
 
 // SaveCertFiles saves the given cert and key PEM strings into the configured cert and key file. Old files are backed

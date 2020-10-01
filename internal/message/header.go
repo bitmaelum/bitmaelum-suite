@@ -2,8 +2,9 @@ package message
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
-import pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 
 // ChecksumList is a list of key/value pairs of checksums. ie: ["sha1"] = "123456abcde"
 type ChecksumList map[string]string

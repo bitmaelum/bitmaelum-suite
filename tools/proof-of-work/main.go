@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"os"
 	"strconv"
+
+	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
 func main() {

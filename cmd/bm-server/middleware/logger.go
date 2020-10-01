@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Logger is a middleware that logs the timing of the given call

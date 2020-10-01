@@ -1,9 +1,10 @@
 package internal
 
 import (
-	"github.com/juju/fslock"
 	"io/ioutil"
 	"os"
+
+	"github.com/juju/fslock"
 )
 
 // WriteFileWithLock writes data by safely writing to a temp file first

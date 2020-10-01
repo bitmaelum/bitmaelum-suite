@@ -127,6 +127,10 @@ func (a *Address) Bytes() []byte {
 	return []byte(a.String())
 }
 
+func (a *Address) IsOrganisationAddress() bool {
+	return len(a.Org) > 0
+}
+
 // VerifyHash will check if the hashes for local and org found matches the actual target hash
 func VerifyHash(target, local, org string) bool {
 	sum := sha256.Sum256([]byte(local + org))

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )

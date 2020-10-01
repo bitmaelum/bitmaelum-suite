@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/gorilla/mux"
 )
 
 type jsonOut map[string]interface{}

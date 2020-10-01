@@ -2,14 +2,15 @@ package account
 
 import (
 	"encoding/json"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/sirupsen/logrus"
 )
 
 const (

@@ -2,8 +2,9 @@ package internal
 
 import (
 	"fmt"
-	"github.com/jessevdk/go-flags"
 	"os"
+
+	"github.com/jessevdk/go-flags"
 )
 
 // ParseOptions will parse the commandline options given by opts. It will exit when issues arise or help is wanted

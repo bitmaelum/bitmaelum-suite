@@ -2,8 +2,9 @@ package message
 
 import (
 	"encoding/json"
-	"github.com/spf13/afero"
 	"time"
+
+	"github.com/spf13/afero"
 )
 
 // RetryInfo is a structure that holds information about when a message has been retried or when it needs to be retried

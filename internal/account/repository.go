@@ -1,11 +1,12 @@
 package account
 
 import (
+	"io"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"io"
-	"time"
 )
 
 // Message is a simple message structure that we return as a list

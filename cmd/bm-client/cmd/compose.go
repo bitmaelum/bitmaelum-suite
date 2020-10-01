@@ -3,15 +3,16 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"os"
-	"os/exec"
 )
 
 var composeCmd = &cobra.Command{

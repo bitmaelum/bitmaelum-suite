@@ -1,12 +1,13 @@
 package config
 
 import (
+	"io/ioutil"
+	"testing"
+
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"testing"
 )
 
 var (

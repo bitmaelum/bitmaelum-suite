@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"github.com/sirupsen/logrus"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Tracer is a middleware that logs the URL / status code of the call

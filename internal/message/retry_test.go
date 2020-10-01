@@ -1,11 +1,12 @@
 package message
 
 import (
+	"testing"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestGetRetryInfoFromQueue(t *testing.T) {

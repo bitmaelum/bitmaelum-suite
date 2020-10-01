@@ -1,13 +1,14 @@
 package account
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
 func (r *fileRepo) FetchMessageHeader(addr address.HashAddress, box int, messageID string) (*message.Header, error) {

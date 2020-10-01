@@ -3,6 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler/mgmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
@@ -14,12 +21,6 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"math/rand"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 type options struct {

@@ -3,11 +3,12 @@ package internal
 import (
 	"crypto/subtle"
 	"errors"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 	"github.com/vtolstov/jwt-go"
-	"time"
 )
 
 // type jwtClaims struct {

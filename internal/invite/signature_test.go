@@ -1,11 +1,12 @@
 package invite
 
 import (
+	"testing"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestSignature(t *testing.T) {

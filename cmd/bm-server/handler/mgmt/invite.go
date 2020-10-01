@@ -2,13 +2,14 @@ package mgmt
 
 import (
 	"encoding/json"
+	"net/http"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"net/http"
-	"time"
 )
 
 type inputInviteType struct {

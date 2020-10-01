@@ -1,11 +1,12 @@
 package account
 
 import (
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	"os"
 )
 
 // Create a new account for this address

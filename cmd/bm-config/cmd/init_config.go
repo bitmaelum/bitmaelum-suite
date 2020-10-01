@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io"
-	"os"
 )
 
 // initConfigCmd represents the initConfig command

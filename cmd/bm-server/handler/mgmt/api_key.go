@@ -3,11 +3,12 @@ package mgmt
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
-	"net/http"
 )
 
 type inputAPIKeyType struct {

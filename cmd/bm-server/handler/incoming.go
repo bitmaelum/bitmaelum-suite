@@ -2,14 +2,15 @@ package handler
 
 import (
 	"encoding/json"
+	"io"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/server"
 	"github.com/gorilla/mux"
-	"io"
-	"io/ioutil"
-	"net/http"
 )
 
 /*

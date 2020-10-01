@@ -1,9 +1,10 @@
 package resolver
 
 import (
+	"testing"
+
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestSqLiteAddress(t *testing.T) {

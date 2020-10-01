@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
-	"os"
 
 	"github.com/spf13/cobra"
 )

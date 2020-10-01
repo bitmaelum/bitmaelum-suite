@@ -3,6 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
@@ -11,7 +13,6 @@ import (
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 type inputCreateAccount struct {

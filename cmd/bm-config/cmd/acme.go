@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal/fileio"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal/letsencrypt"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal/fileio"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal/letsencrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/spf13/cobra"
 )
 
 // letsEncryptCmd represents the lets encrypt  command

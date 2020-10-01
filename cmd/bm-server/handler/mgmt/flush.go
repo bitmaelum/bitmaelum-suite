@@ -2,11 +2,12 @@ package mgmt
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
-	"net/http"
 )
 
 // FlushQueues handler will flush all the queues normally on tickers

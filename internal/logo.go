@@ -1,9 +1,10 @@
 package internal
 
 import (
-	"github.com/gookit/color"
 	"os"
 	"runtime"
+
+	"github.com/gookit/color"
 )
 
 var asciiLogo = " ____  _ _   __  __            _\n" +
