@@ -3,11 +3,11 @@ package server
 import (
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
+	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +16,7 @@ func Test_signHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}
-	_ = internal.ReadHeader("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadHeader("../../testdata/header-001.json", &header)
 	assert.Empty(t, header.ServerSignature)
 	err := SignHeader(header)
 	assert.NoError(t, err)
@@ -24,7 +24,7 @@ func Test_signHeader(t *testing.T) {
 	assert.Equal(t, "lNSBxGYk7Gn9laP+jA1GSDd+KJxz1hx26MCJSPBkV5tMZ3QGxIKSkpAMc2fmZfnCm4dZrGOiorNuTdJAgT87FodVH0Q7OiU7lMJq8FpxgbMrQq2FIp0PKoQ3XfVvrj3S6pY23W5aMMRa8Qn2y67PSu4KZsSYJzjMU1PHEQMUCoVTsM/a/5FmCFnTy5e7FpnU5ssEn9joYQWFGvu1kYUhJwuqfmr467acJBvyN3OME0t3M5csRZucOeSZBU9TvMrt9dv85ATvUthyM/aTEnxEqemTJDfag/+5gyUmSUtDnGwWQkGBESkeUC7YaXIGpcMutzJmvSo5RhQ8KuAG8jjo9g==", header.ServerSignature)
 
 	// Already present, don't overwrite
-	_ = internal.ReadHeader("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadHeader("../../testdata/header-001.json", &header)
 	assert.NotEmpty(t, header.ServerSignature)
 	header.ServerSignature = "foobar"
 	err = SignHeader(header)
@@ -37,7 +37,7 @@ func Test_VerifyHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}
-	_ = internal.ReadHeader("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadHeader("../../testdata/header-001.json", &header)
 	assert.Empty(t, header.ServerSignature)
 	err := SignHeader(header)
 	assert.NoError(t, err)
@@ -65,7 +65,7 @@ func Test_VerifyHeader(t *testing.T) {
 
 func setup() {
 	// Note: our mail server uses key1
-	privKey, pubKey, err := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, err := bmtest.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +85,7 @@ func setup() {
 		ri resolver.RoutingInfo
 	)
 
-	privKey, pubKey, err = internal.ReadTestKey("../../testdata/key-2.json")
+	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-2.json")
 	if err != nil {
 		panic(err)
 	}
@@ -98,7 +98,7 @@ func setup() {
 	}
 	_ = repo.UploadAddress(&ai, *privKey, *pow)
 
-	privKey, pubKey, err = internal.ReadTestKey("../../testdata/key-3.json")
+	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-3.json")
 	if err != nil {
 		panic(err)
 	}
@@ -112,7 +112,7 @@ func setup() {
 	_ = repo.UploadAddress(&ai, *privKey, *pow)
 
 	// Note: our mail server uses key1
-	privKey, pubKey, err = internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
 		panic(err)
 	}
