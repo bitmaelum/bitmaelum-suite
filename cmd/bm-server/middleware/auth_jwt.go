@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"strings"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/vtolstov/jwt-go"
-	"net/http"
-	"strings"
 )
 
 // JwtToken is a middleware that automatically verifies given JWT token

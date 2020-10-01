@@ -7,11 +7,12 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"math/big"
 	"os"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 // generateCertCmd represents the generateCert command

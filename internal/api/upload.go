@@ -3,9 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
-	"io"
 )
 
 // UploadHeader uploads a header

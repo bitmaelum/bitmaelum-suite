@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )

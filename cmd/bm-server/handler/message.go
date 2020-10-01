@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"io"
+	"net/http"
+	"strconv"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"io"
-	"net/http"
-	"strconv"
 )
 
 // GetMessage will return a message header and catalog

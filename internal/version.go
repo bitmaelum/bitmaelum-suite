@@ -3,9 +3,10 @@ package internal
 import (
 	"bytes"
 	"fmt"
-	"github.com/coreos/go-semver/semver"
 	"io"
 	"strings"
+
+	"github.com/coreos/go-semver/semver"
 )
 
 const (

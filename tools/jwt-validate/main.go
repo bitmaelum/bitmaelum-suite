@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
-	"os"
-	"strings"
 )
 
 func main() {

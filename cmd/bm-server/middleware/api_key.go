@@ -3,11 +3,12 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 )
 
 // APIKey is a middleware that automatically verifies given API key

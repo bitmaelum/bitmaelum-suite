@@ -3,12 +3,13 @@ package resolver
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+	"sync"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
-	"strings"
-	"sync"
 )
 
 const (

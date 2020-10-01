@@ -3,9 +3,10 @@ package password
 import (
 	"bytes"
 	"fmt"
+	"os"
+
 	"github.com/zalando/go-keyring"
 	"golang.org/x/crypto/ssh/terminal"
-	"os"
 )
 
 const (

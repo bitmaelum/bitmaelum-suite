@@ -2,8 +2,9 @@ package message
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"path/filepath"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 )
 
 /*

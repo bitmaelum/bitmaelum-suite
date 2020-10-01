@@ -2,11 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"io"
+	"net/http"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/sirupsen/logrus"
-	"io"
-	"net/http"
 )
 
 // OutputResponse is a generic output response

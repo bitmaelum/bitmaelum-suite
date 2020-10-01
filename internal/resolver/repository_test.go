@@ -1,11 +1,12 @@
 package resolver
 
 import (
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func testRepoAddress(t *testing.T, repo AddressRepository) {
@@ -74,7 +75,6 @@ func testRepoRouting(t *testing.T, repo RoutingRepository) {
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, r)
 }
-
 
 func testRepoOrganisation(t *testing.T, repo OrganisationRepository) {
 	org, _ := address.NewOrgHash("acme")

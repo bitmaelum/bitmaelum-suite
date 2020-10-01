@@ -3,10 +3,11 @@ package organisation
 import (
 	"encoding/json"
 	"errors"
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestNewValidationTypeFromString(t *testing.T) {

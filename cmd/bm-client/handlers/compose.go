@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"strings"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -14,9 +18,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"golang.org/x/sync/errgroup"
-	"io"
-	"os"
-	"strings"
 )
 
 // ComposeMessage composes a new message from the given account Info to the "to" with given subject, blocks and attachments

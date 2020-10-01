@@ -1,8 +1,9 @@
 package address
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_ValidAddress(t *testing.T) {
@@ -155,4 +156,12 @@ func Test_Remainders(t *testing.T) {
 	a, err := New("john@foobar!")
 	assert.NoError(t, err)
 	assert.Equal(t, []byte{0x6a, 0x6f, 0x68, 0x6e, 0x40, 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72, 0x21}, a.Bytes())
+
+	a, err = New("john!")
+	assert.NoError(t, err)
+	assert.False(t, a.IsOrganisationAddress())
+
+	a, err = New("john@acme!")
+	assert.NoError(t, err)
+	assert.True(t, a.IsOrganisationAddress())
 }

@@ -4,6 +4,7 @@ package internal
 
 import (
 	"errors"
+
 	"github.com/sirupsen/logrus"
 )
 

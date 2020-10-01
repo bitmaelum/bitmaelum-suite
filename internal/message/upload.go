@@ -4,10 +4,11 @@ package message
 
 import (
 	"encoding/json"
-	"github.com/spf13/afero"
 	"io"
 	"path/filepath"
 	"regexp"
+
+	"github.com/spf13/afero"
 )
 
 var (

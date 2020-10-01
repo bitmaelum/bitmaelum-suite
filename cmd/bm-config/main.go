@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/cmd"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/cmd"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 )
 
 type options struct {

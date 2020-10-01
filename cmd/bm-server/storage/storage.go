@@ -3,10 +3,11 @@ package storage
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/google/uuid"
 	"io"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/google/uuid"
 )
 
 // ProofOfWork is the structure that keeps information about proof-of-work done for incoming messages. It connects

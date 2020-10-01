@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/mitchellh/go-homedir"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
+
+	"github.com/mitchellh/go-homedir"
+	"gopkg.in/yaml.v2"
 )
 
 // Client keeps all client configuration settings

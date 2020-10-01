@@ -1,12 +1,13 @@
 package internal
 
 import (
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )
 
 var fs = afero.NewOsFs()

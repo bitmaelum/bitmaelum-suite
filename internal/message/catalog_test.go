@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"io"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
-	"io"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestCatalog_NewCatalog(t *testing.T) {

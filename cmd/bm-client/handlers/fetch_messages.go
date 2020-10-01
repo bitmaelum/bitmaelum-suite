@@ -2,6 +2,11 @@ package handlers
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -13,10 +18,6 @@ import (
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
-	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // FetchMessages will display message information from a box or display all boxes

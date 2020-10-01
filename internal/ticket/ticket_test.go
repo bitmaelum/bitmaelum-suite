@@ -1,10 +1,11 @@
 package ticket
 
 import (
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestTicket(t *testing.T) {

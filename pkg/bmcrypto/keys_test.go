@@ -5,9 +5,10 @@ import (
 	"crypto/ed25519"
 	"crypto/rsa"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var TestKeySet1 = []string{

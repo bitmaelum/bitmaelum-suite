@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -11,7 +13,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
-	"os"
 )
 
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver

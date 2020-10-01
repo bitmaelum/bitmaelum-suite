@@ -3,13 +3,14 @@ package resolver
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"strconv"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/sirupsen/logrus"
-	"strconv"
 )
 
 // Service represents a resolver service tied to a specific repository

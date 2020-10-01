@@ -2,10 +2,11 @@ package api
 
 import (
 	"fmt"
+	"io"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
-	"io"
 )
 
 // Message is a standard structure that returns a message header + catalog

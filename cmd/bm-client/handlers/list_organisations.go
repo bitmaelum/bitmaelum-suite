@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
-	"os"
 )
 
 // ListOrganisations displays the current accounts available in the vault

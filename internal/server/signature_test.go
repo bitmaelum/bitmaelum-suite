@@ -1,6 +1,8 @@
 package server
 
 import (
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
@@ -8,7 +10,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_signHeader(t *testing.T) {

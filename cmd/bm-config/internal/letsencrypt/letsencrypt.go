@@ -13,10 +13,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal/fileio"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"golang.org/x/crypto/acme"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -25,6 +21,11 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-config/internal/fileio"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"golang.org/x/crypto/acme"
 )
 
 // LetsEncrypt structure holds everything for generating certificates through the LetsEncrypt ACME provider

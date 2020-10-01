@@ -1,10 +1,11 @@
 package resolver
 
 import (
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_generateAddressSignature(t *testing.T) {

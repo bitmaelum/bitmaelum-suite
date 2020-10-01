@@ -1,12 +1,13 @@
 package main
 
 import (
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/olekukonko/tablewriter"
-	"os"
 )
 
 type options struct {

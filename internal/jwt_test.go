@@ -1,13 +1,14 @@
 package internal
 
 import (
+	"io/ioutil"
+	"testing"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/vtolstov/jwt-go"
-	"io/ioutil"
-	"testing"
-	"time"
 )
 
 const (

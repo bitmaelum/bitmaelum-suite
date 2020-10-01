@@ -2,13 +2,14 @@ package config
 
 import (
 	"errors"
-	"github.com/mitchellh/go-homedir"
-	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/mitchellh/go-homedir"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 )
-import "github.com/spf13/afero"
 
 var fs = afero.NewOsFs()
 

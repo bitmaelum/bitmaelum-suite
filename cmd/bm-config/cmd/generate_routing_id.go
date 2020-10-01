@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // initRoutingConfigCmd represents the initRoutingConfig command

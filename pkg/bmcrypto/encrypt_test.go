@@ -1,9 +1,10 @@
 package bmcrypto
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEncrypt(t *testing.T) {

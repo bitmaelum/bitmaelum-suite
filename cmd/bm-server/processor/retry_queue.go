@@ -1,9 +1,10 @@
 package processor
 
 import (
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 const (

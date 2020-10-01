@@ -1,10 +1,11 @@
 package vault
 
 import (
+	"testing"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestVault_AddOrganisation(t *testing.T) {

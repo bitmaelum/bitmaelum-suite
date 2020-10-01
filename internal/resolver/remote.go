@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"net/http"
+	"net/http/httputil"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -11,9 +15,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/ernesto-jimenez/httplogger"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"net/http/httputil"
 )
 
 type remoteRepo struct {
@@ -312,7 +313,6 @@ func logHTTP(v interface{}, err error) {
 
 	logrus.Tracef("%s\n\n", data)
 }
-
 
 func (r *remoteRepo) fetchAddress(addr address.HashAddress) (*AddressDownload, error) {
 	url := r.BaseURL + "/address/" + addr.String()

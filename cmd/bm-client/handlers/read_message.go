@@ -3,6 +3,8 @@ package handlers
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -13,7 +15,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 )
 
 // ReadMessage will read a specific message blocks

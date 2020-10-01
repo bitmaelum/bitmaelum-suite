@@ -2,11 +2,12 @@ package parse
 
 import (
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
-	"github.com/xhit/go-str2duration/v2"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/xhit/go-str2duration/v2"
 )
 
 // ValidDuration gets a time duration string and return the time duration. Accepts single int as days

@@ -1,12 +1,13 @@
 package internal
 
 import (
+	"os"
+	"testing"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/spf13/afero/mem"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 func TestSetLogging(t *testing.T) {

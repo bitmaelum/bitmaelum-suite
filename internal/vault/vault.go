@@ -10,15 +10,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/password"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/pbkdf2"
-	"io"
-	"os"
-	"path/filepath"
 )
 
 const (
@@ -257,8 +259,28 @@ func (v *Vault) EncryptContainer() ([]byte, error) {
 	}, "", "  ")
 }
 
+// ChangePassword allows us to change the vault password. Will take effect on writing to disk
 func (v *Vault) ChangePassword(newPassword string) {
 	v.password = []byte(newPassword)
+}
+
+// FindShortRoutingId will find a short routing ID in the vault and expand it to the full routing ID. So we can use
+// "12345" instead of "1234567890123456789012345678901234567890".
+// Will not return anything when multiple candidates are found.
+func (v *Vault) FindShortRoutingId(id string) string {
+	var found = ""
+	for _, acc := range v.Data.Accounts {
+		if strings.HasPrefix(acc.RoutingID, id) {
+			// Found something else that matches
+			if found != "" && found != acc.RoutingID {
+				// Multiple entries are found, don't return them
+				return ""
+			}
+			found = acc.RoutingID
+		}
+	}
+
+	return found
 }
 
 // GetAccountOrDefault find the address from the vault. If address is empty, it will fetch the default address, or the

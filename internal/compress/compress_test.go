@@ -2,9 +2,10 @@ package compress
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var src = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas sagittis sapien non risus sollicitudin malesuada."

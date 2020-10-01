@@ -3,11 +3,12 @@ package invite
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 // override for testing purposes

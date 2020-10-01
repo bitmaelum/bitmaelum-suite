@@ -5,16 +5,17 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/ernesto-jimenez/httplogger"
 	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/ernesto-jimenez/httplogger"
 )
 
 type jsonOut map[string]interface{}

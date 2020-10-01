@@ -2,11 +2,12 @@ package account
 
 import (
 	"encoding/json"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/nightlyone/lockfile"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 // Store the public key for this account
