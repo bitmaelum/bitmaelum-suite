@@ -18,13 +18,13 @@ func Test_FindShortRoutingId(t *testing.T) {
 
 	v, _ := New("", []byte{})
 
-	acc = internal.AccountInfo{ Address: "example!", RoutingID: "123456780000" }
+	acc = internal.AccountInfo{Address: "example!", RoutingID: "123456780000"}
 	v.AddAccount(acc)
-	acc = internal.AccountInfo{ Address: "example!", RoutingID: "123456780001" }
+	acc = internal.AccountInfo{Address: "example!", RoutingID: "123456780001"}
 	v.AddAccount(acc)
-	acc = internal.AccountInfo{ Address: "example!", RoutingID: "123456780002" }
+	acc = internal.AccountInfo{Address: "example!", RoutingID: "123456780002"}
 	v.AddAccount(acc)
-	acc = internal.AccountInfo{ Address: "example!", RoutingID: "154353535335" }
+	acc = internal.AccountInfo{Address: "example!", RoutingID: "154353535335"}
 	v.AddAccount(acc)
 
 	assert.Equal(t, "154353535335", v.FindShortRoutingId("154"))
