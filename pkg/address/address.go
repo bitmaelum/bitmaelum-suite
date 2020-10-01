@@ -12,8 +12,8 @@ import (
 
 var (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
-	addressRegex = regexp.MustCompile(`^([a-z0-9][a-z0-9.\-]{1,62}[a-z0-9])(?:@([a-z0-9][a-z0-9.\-]{,62}[a-z0-9]))?!$`)
-	orgRegex     = regexp.MustCompile(`^[a-z0-9][a-z0-9.\-]{,62}[a-z0-9]$`)
+	addressRegex = regexp.MustCompile(`^([a-z0-9][a-z0-9.\-]{1,62}[a-z0-9])(?:@([a-z0-9][a-z0-9.\-]{0,62}[a-z0-9]))?!$`)
+	orgRegex     = regexp.MustCompile(`^[a-z0-9][a-z0-9.\-]{0,62}[a-z0-9]$`)
 	hashRegex    = regexp.MustCompile(`^[a-f0-9]{64}$`)
 )
 
