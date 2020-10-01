@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/spf13/afero"
@@ -188,7 +189,7 @@ func TestCatalog_AddBlock(t *testing.T) {
 }
 
 func genCatalog() *Catalog {
-	privKey, pubKey, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 
 	info := internal.AccountInfo{
 		Default:   true,

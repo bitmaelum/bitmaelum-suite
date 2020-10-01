@@ -3,7 +3,7 @@ package resolver
 import (
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ func testRepoAddress(t *testing.T, repo AddressRepository) {
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, addr)
 
-	privKey, pubKey, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 	pow := proofofwork.New(22, "foobar", 1234)
 
 	ai := AddressInfo{
@@ -53,7 +53,7 @@ func testRepoRouting(t *testing.T, repo RoutingRepository) {
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, r)
 
-	privKey, pubKey, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 
 	ri := RoutingInfo{
 		Hash:      "12345678",
@@ -83,7 +83,7 @@ func testRepoOrganisation(t *testing.T, repo OrganisationRepository) {
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, r)
 
-	privKey, pubKey, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 	pow := proofofwork.New(22, "foo", 1)
 
 	oi := OrganisationInfo{
