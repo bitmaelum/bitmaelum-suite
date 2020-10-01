@@ -10,17 +10,26 @@ import (
 	"strings"
 )
 
-const (
+var (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
-	addressRegex string = "(^[a-z0-9][a-z0-9\\.\\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\\-]{1,63}))?!$"
-	hashRegex    string = "[a-z0-9]{64}"
+	addressRegex = regexp.MustCompile(`(^[a-z0-9][a-z0-9\.\-]{2,63})(?:@([a-z0-9][a-z0-9\\.\-]{1,63}))?!$`)
+	orgRegex     = regexp.MustCompile(`^[a-z0-9][a-z0-9\.\-]{1,63}$`)
+	hashRegex    = regexp.MustCompile(`[a-f0-9]{64}`)
 )
 
 // HashAddress is a SHA256'd address
 type HashAddress string
 
+// HashOrganisation is a SHA256'd organisation
+type HashOrganisation string
+
 // String casts an hash address to string
 func (ha HashAddress) String() string {
+	return string(ha)
+}
+
+// String casts an hash address to string
+func (ha HashOrganisation) String() string {
 	return string(ha)
 }
 
@@ -32,16 +41,11 @@ type Address struct {
 
 // New returns a valid address structure based on the given address
 func New(address string) (*Address, error) {
-	re := regexp.MustCompile(addressRegex)
-	if re == nil {
-		return nil, errors.New("cannot compile regex")
-	}
-
-	if !re.MatchString(strings.ToLower(address)) {
+	if !addressRegex.MatchString(strings.ToLower(address)) {
 		return nil, errors.New("incorrect address format specified")
 	}
 
-	matches := re.FindStringSubmatch(strings.ToLower(address))
+	matches := addressRegex.FindStringSubmatch(strings.ToLower(address))
 
 	return &Address{
 		Local: matches[1],
@@ -49,7 +53,7 @@ func New(address string) (*Address, error) {
 	}, nil
 }
 
-// NewHash generates a hashaddress based on the given email string
+// NewHash generates a hash address based on the given email string
 func NewHash(address string) (*HashAddress, error) {
 	a, err := New(address)
 	if err != nil {
@@ -62,12 +66,7 @@ func NewHash(address string) (*HashAddress, error) {
 
 // NewHashFromHash generates a hash address based on the given string hash
 func NewHashFromHash(hash string) (*HashAddress, error) {
-	re := regexp.MustCompile(hashRegex)
-	if re == nil {
-		return nil, errors.New("cannot compile regex")
-	}
-
-	if !re.MatchString(strings.ToLower(hash)) {
+	if !hashRegex.MatchString(strings.ToLower(hash)) {
 		return nil, errors.New("incorrect hash address format specified")
 	}
 
@@ -99,10 +98,28 @@ func (a *Address) Hash() HashAddress {
 	return HashAddress(hex.EncodeToString(sum[:]))
 }
 
-// OldHash converts an address to a old hashed value
-func (a *Address) OldHash() HashAddress {
-	sum := sha256.Sum256([]byte(a.String()))
-	return HashAddress(hex.EncodeToString(sum[:]))
+// OrganisationHash converts an address to a hashed value
+func (a *Address) OrganisationHash() HashOrganisation {
+	l := sha256.Sum256([]byte(""))
+	o := sha256.Sum256([]byte(a.Org))
+	sum := sha256.Sum256([]byte(hex.EncodeToString(l[:]) + hex.EncodeToString(o[:])))
+
+	return HashOrganisation(hex.EncodeToString(sum[:]))
+}
+
+// NewOrgHash returns a new organisation hash
+func NewOrgHash(org string) (*HashOrganisation, error) {
+	if !orgRegex.MatchString(strings.ToLower(org)) {
+		return nil, errors.New("incorrect org format specified")
+	}
+
+	a := &Address{
+		Local: "",
+		Org:   strings.ToLower(org),
+	}
+
+	h := a.OrganisationHash()
+	return &h, nil
 }
 
 // Bytes converts an address to []byte

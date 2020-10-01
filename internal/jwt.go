@@ -10,10 +10,10 @@ import (
 	"time"
 )
 
-type jwtClaims struct {
-	Address string `json:"address"`
-	jwt.StandardClaims
-}
+// type jwtClaims struct {
+// 	Address string `json:"address"`
+// 	jwt.StandardClaims
+// }
 
 /*
  * @TODO

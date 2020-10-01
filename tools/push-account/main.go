@@ -5,7 +5,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	tools "github.com/bitmaelum/bitmaelum-suite/tools/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
 	"os"
 )
@@ -24,17 +24,17 @@ func main() {
 
 	logrus.SetLevel(logrus.TraceLevel)
 
-	tools.VaultPassword = opts.Password
-	v := tools.OpenVault()
+	vault.VaultPassword = opts.Password
+	v := vault.OpenVault()
 
-	info := tools.GetAccountOrDefault(v, opts.Address)
+	info := vault.GetAccountOrDefault(v, opts.Address)
 	if info == nil {
 		logrus.Fatal("No account found in vault")
 		os.Exit(1)
 	}
 
 	rs := container.GetResolveService()
-	err := rs.UploadInfo(*info)
+	err := rs.UploadAddressInfo(*info)
 	if err != nil {
 		fmt.Printf("Error for account %s: %s\n", info.Address, err)
 	}

@@ -5,6 +5,6 @@ package config
 func getSearchPaths() []string {
 	return []string{
 		"./",
-		"/etc/bitmaelum",
+		"/etc/bitmaelum/",
 	}
 }

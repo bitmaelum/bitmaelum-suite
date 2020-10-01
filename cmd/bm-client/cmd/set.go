@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"strings"
@@ -12,8 +13,8 @@ var setCmd = &cobra.Command{
 	Short: "Create or update a specific setting in your vault",
 	Long:  `Your vault accounts can have additional settings. With this command you can easily manage these.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		vault := OpenVault()
-		info := GetAccountOrDefault(vault, *sAddress)
+		v := vault.OpenVault()
+		info := vault.GetAccountOrDefault(v, *sAddress)
 
 		var msg string
 
@@ -37,7 +38,7 @@ var setCmd = &cobra.Command{
 			}
 		}
 
-		err := vault.Save()
+		err := v.WriteToDisk()
 		if err != nil {
 			logrus.Fatalf("error while saving vault: %s\n", err)
 		}

@@ -22,7 +22,7 @@ func HomePage(w http.ResponseWriter, req *http.Request) {
 
 	logo := internal.GetMonochromeASCIILogo()
 	if config.Server.Server.VerboseInfo {
-		host := fmt.Sprintf("<<< %s >>>", config.Server.Server.Name)
+		host := fmt.Sprintf("<<< %s >>>", config.Server.Server.Hostname)
 		host = fmt.Sprintf("%*s ", (49+len(host))/2, host)
 		logo = internal.GetMonochromeASCIILogo() + "\n\n" + host + "\n\n"
 

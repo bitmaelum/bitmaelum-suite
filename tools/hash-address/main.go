@@ -24,7 +24,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("OLD: %s\n", a.OldHash().String())
 		fmt.Printf("NEW: %s\n", a.Hash().String())
 	}
 }

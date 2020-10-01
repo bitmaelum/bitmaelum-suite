@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	tools "github.com/bitmaelum/bitmaelum-suite/tools/internal"
 	"github.com/olekukonko/tablewriter"
 	"os"
 )
@@ -20,13 +20,13 @@ func main() {
 	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
 
-	tools.VaultPassword = opts.Password
-	v := tools.OpenVault()
+	vault.VaultPassword = opts.Password
+	v := vault.OpenVault()
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Address", "Old", "New"})
+	table.SetHeader([]string{"Address", "New"})
 
-	for _, acc := range v.Accounts {
+	for _, acc := range v.Data.Accounts {
 		addr, err := address.New(acc.Address)
 		if err != nil {
 			panic(err)
@@ -34,7 +34,6 @@ func main() {
 
 		values := []string{
 			addr.String(),
-			addr.OldHash().String(),
 			addr.Hash().String(),
 		}
 

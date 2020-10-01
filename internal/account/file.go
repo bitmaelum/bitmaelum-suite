@@ -51,13 +51,13 @@ func (r *fileRepo) pathExists(addr address.HashAddress, path string) bool {
 	return !os.IsNotExist(err)
 }
 
-// Delete path in account
-func (r *fileRepo) delete(addr address.HashAddress, path string) error {
-	fullPath := r.getPath(addr, path)
-	logrus.Debugf("deleting file %s", fullPath)
-
-	return os.Remove(fullPath)
-}
+// // Delete path in account
+// func (r *fileRepo) delete(addr address.HashAddress, path string) error {
+// 	fullPath := r.getPath(addr, path)
+// 	logrus.Debugf("deleting file %s", fullPath)
+//
+// 	return os.Remove(fullPath)
+// }
 
 // Retrieve data on path in account
 func (r *fileRepo) fetch(addr address.HashAddress, path string) ([]byte, error) {

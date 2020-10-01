@@ -29,7 +29,7 @@ to another (non-privileged) port.
 This command will store LetsEncrypt account information in your acme path and store the 
 certificate and key in the paths you defined in your config.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if config.Server.Acme.Enabled == false {
+		if !config.Server.Acme.Enabled {
 			fmt.Println("LetsEncrypt certificate generation is disabled. Check your configuration for more information.")
 			os.Exit(1)
 		}

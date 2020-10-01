@@ -2,21 +2,20 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
+	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"os"
 )
 
-// CreateAccount creates a new account locally in the vault, stores it on the mailserver and pushes the public key to the resolver
-func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, token string) {
-
+// CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
+func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	fmt.Printf("* Verifying if address is correct: ")
 	addr, err := address.New(bmAddr)
 	if err != nil {
@@ -28,13 +27,30 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 
 	fmt.Printf("* Checking if address is already known in the resolver service: ")
 	ks := container.GetResolveService()
-	_, err = ks.Resolve(addr.Hash())
+	_, err = ks.ResolveAddress(addr.Hash())
 	if err == nil {
 		fmt.Printf("\n  X it seems that this address is already in use. Please specify another address.")
 		fmt.Println("")
 		os.Exit(1)
 	}
 	fmt.Printf("not found. This is a good thing.\n")
+
+	// Check token
+	fmt.Printf("* Checking token format and extracting data: ")
+	it, err := invite.ParseInviteToken(token)
+	if err != nil {
+		fmt.Printf("\n  X it seems that this token is invalid")
+		fmt.Println("")
+		os.Exit(1)
+	}
+	// Check address matches the one in the token
+	if it.Address.String() != addr.Hash().String() {
+		fmt.Printf("\n  X this token is not for %s", addr.String())
+		fmt.Println("")
+		os.Exit(1)
+	}
+
+	fmt.Printf("token is valid.\n")
 
 	fmt.Printf("* Checking if the account is already present in the vault: ")
 	var info *internal.AccountInfo
@@ -50,7 +66,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 		fmt.Printf("not found. This is a good thing.\n")
 
 		fmt.Printf("* Generating your secret key to send and read mail: ")
-		privKey, pubKey, err := encrypt.GenerateKeyPair(bmcrypto.KeyTypeRSA)
+		privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
@@ -65,16 +81,16 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 
 		fmt.Printf("* Adding your new account into the vault: ")
 		info = &internal.AccountInfo{
-			Address: bmAddr,
-			Name:    name,
-			PrivKey: *privKey,
-			PubKey:  *pubKey,
-			Pow:     *proof,
-			Routing: routing,
+			Address:   bmAddr,
+			Name:      name,
+			PrivKey:   *privKey,
+			PubKey:    *pubKey,
+			Pow:       *proof,
+			RoutingID: it.RoutingID, // Fetch from token
 		}
 
 		vault.AddAccount(*info)
-		err = vault.Save()
+		err = vault.WriteToDisk()
 		if err != nil {
 			fmt.Printf("\n  X error while saving account into vault: %#v", err)
 			fmt.Println("")
@@ -83,16 +99,24 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 		fmt.Printf("done\n")
 	}
 
+	// Fetch routing info
+	routingInfo, err := ks.ResolveRouting(it.RoutingID)
+	if err != nil {
+		fmt.Printf("\n  X routing information is not found: %#v", err)
+		fmt.Println("")
+		os.Exit(1)
+	}
+
 	fmt.Printf("* Sending your account information to the server: ")
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          info.Routing,
+		Host:          routingInfo.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		vault.RemoveAccount(*addr)
-		_ = vault.Save()
+		_ = vault.WriteToDisk()
 
 		fmt.Printf("cannot initialize API")
 		fmt.Println("")
@@ -103,7 +127,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		vault.RemoveAccount(*addr)
-		_ = vault.Save()
+		_ = vault.WriteToDisk()
 
 		fmt.Printf("\n  X error from API while trying to create account: " + err.Error())
 		fmt.Println("")
@@ -112,7 +136,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 	fmt.Printf("done\n")
 
 	fmt.Printf("* Making your account known to the outside world: ")
-	err = ks.UploadInfo(*info)
+	err = ks.UploadAddressInfo(*info)
 	if err != nil {
 		// We can't remove the account from the vault as we have created it on the mail-server
 
@@ -122,10 +146,6 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, organisation, routing, toke
 		os.Exit(1)
 	}
 	fmt.Printf("done\n")
-
-	// Done with the invite, let's remove
-	inviteRepo := container.GetInviteRepo()
-	_ = inviteRepo.Remove(addr.Hash())
 
 	fmt.Printf("\n")
 	fmt.Printf("* All done")

@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
 	"os"
 )
@@ -10,8 +11,8 @@ import (
 func ListAccounts(vault *vault.Vault, displayKeys bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 
-	headers := []string{"Default", "Address", "Name", "Server"}
-	align := []int{tablewriter.ALIGN_CENTER, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT}
+	headers := []string{"Address", "Name", "Routing ID", "Route Host"}
+	align := []int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT}
 
 	if displayKeys {
 		headers = append(headers, "Private Key", "Public Key")
@@ -22,16 +23,25 @@ func ListAccounts(vault *vault.Vault, displayKeys bool) {
 	table.SetColumnAlignment(align)
 	table.SetHeader(headers)
 
-	for _, acc := range vault.Accounts {
-		def := ""
+	for _, acc := range vault.Data.Accounts {
 		if acc.Default {
-			def = "*"
+			acc.Address += " (*)"
 		}
+
+		var route string
+		resolver := container.GetResolveService()
+		r, err := resolver.ResolveRouting(acc.RoutingID)
+		if err != nil {
+			route = "route not found"
+		} else {
+			route = r.Routing
+		}
+
 		values := []string{
-			def,
 			acc.Address,
 			acc.Name,
-			acc.Routing,
+			acc.RoutingID[:10],
+			route,
 		}
 		if displayKeys {
 			values = append(values, acc.PrivKey.S, acc.PubKey.S)

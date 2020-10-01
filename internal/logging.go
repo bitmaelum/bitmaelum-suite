@@ -1,13 +1,15 @@
 package internal
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"os"
 	"strings"
 	"time"
 )
+
+var fs = afero.NewOsFs()
 
 // SetLogging will set the correct level and log path
 func SetLogging(level, path string) {
@@ -43,7 +45,7 @@ func SetLogging(level, path string) {
 		}
 	} else {
 		// Default to a path
-		w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
+		w, err := fs.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
 		if err != nil {
 			w = os.Stderr
 		}
@@ -54,21 +56,17 @@ func SetLogging(level, path string) {
 	switch level {
 	case "trace":
 		logrus.SetLevel(logrus.TraceLevel)
-		break
 	case "debug":
 		logrus.SetLevel(logrus.DebugLevel)
-		break
 	case "info":
 		logrus.SetLevel(logrus.InfoLevel)
-		break
 	case "warning":
 		logrus.SetLevel(logrus.WarnLevel)
-		break
 	case "error":
+		logrus.SetLevel(logrus.ErrorLevel)
 	default:
 		logrus.SetLevel(logrus.ErrorLevel)
-		break
 	}
 
-	logrus.Tracef("setting loglevel to '%s'", config.Server.Logging.Level)
+	logrus.Tracef("setting loglevel to '%s'", level)
 }

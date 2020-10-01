@@ -8,6 +8,9 @@ import (
 	"os"
 	"path/filepath"
 )
+import "github.com/spf13/afero"
+
+var fs = afero.NewOsFs()
 
 var errNotFound = errors.New("cannot find config file")
 
@@ -50,7 +53,7 @@ func LoadClientConfigOrPass(configPath string) error {
 	// Try custom path first
 	if configPath != "" {
 		err = readConfigPath(configPath, Client.LoadConfig)
-		if err == nil || err != errNotFound {
+		if err != nil {
 			return err
 		}
 	}
@@ -82,7 +85,7 @@ func LoadServerConfigOrPass(configPath string) error {
 	// Try custom path first
 	if configPath != "" {
 		err = readConfigPath(configPath, Server.LoadConfig)
-		if err == nil || err != errNotFound {
+		if err != nil {
 			return err
 		}
 	}
@@ -113,7 +116,7 @@ func readConfigPath(p string, loader func(r io.Reader) error) error {
 
 	triedPaths = append(triedPaths, p)
 
-	f, err := os.Open(p)
+	f, err := fs.Open(p)
 	if err != nil {
 		return errNotFound
 	}

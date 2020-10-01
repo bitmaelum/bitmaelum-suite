@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"io/ioutil"
 	"os"
 )
@@ -71,7 +72,7 @@ func main() {
 		panic(err)
 	}
 
-	decryptedKey, err := encrypt.Decrypt(info.PrivKey, header.Catalog.EncryptedKey)
+	decryptedKey, err := bmcrypto.Decrypt(info.PrivKey, header.Catalog.EncryptedKey)
 	if err != nil {
 		panic(err)
 	}

@@ -14,6 +14,6 @@ func (*Logger) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		t := time.Now()
 		next.ServeHTTP(w, req)
-		logrus.Tracef("execution time: %s", time.Now().Sub(t).String())
+		logrus.Tracef("execution time: %s", time.Since(t).String())
 	})
 }

@@ -29,7 +29,7 @@ func AskDoublePassword() []byte {
 		p2, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Printf("\n")
 
-		if bytes.Compare(p1, p2) == 0 {
+		if bytes.Equal(p1, p2) {
 			return p1
 		}
 

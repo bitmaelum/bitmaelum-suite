@@ -42,6 +42,8 @@ func main() {
 	config.LoadServerConfig(opts.Config)
 	internal.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
 
+	checkAndUpdateRouting()
+
 	logrus.Info("Starting " + internal.VersionString("bm-server"))
 
 	_ = container.GetResolveService()
@@ -66,6 +68,38 @@ func main() {
 	logrus.Tracef("Waiting until context tells us it's done")
 	<-ctx.Done()
 	logrus.Tracef("Context is done. Exiting")
+}
+
+func checkAndUpdateRouting() {
+	// Check if we have a routing file present
+	err := config.ReadRouting(config.Server.Server.RoutingFile)
+	if err != nil {
+		fmt.Print(`Routing file is not found. We need one in order to uniquely identify this mail server on the network.
+
+You can generate a new one by running:
+
+    $ bm-config generate-routing-id
+
+`)
+		os.Exit(1)
+	}
+
+	// Check if route exist on the key resolver, and upload new info if needed
+	res := container.GetResolveService()
+	info, err := res.ResolveRouting(config.Server.Routing.RoutingID)
+	if err != nil || info.Routing != config.Server.Server.Hostname {
+		// Upload routing
+		err := res.UploadRoutingInfo(internal.RoutingInfo{
+			RoutingID: config.Server.Routing.RoutingID,
+			PrivKey:   config.Server.Routing.PrivateKey,
+			PubKey:    config.Server.Routing.PublicKey,
+			Route:     config.Server.Server.Hostname,
+		})
+		if err != nil {
+			fmt.Print("There is an error while uploading routing information to the key resolver: ", err)
+			os.Exit(1)
+		}
+	}
 }
 
 func setupSignals(cancel context.CancelFunc) {
@@ -157,7 +191,7 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 
 	// Wrap our router in Apache combined logging if needed
 	var h http.Handler = router
-	if config.Server.Logging.ApacheLogging == true {
+	if config.Server.Logging.ApacheLogging {
 		h = wrapWithApacheLogging(config.Server.Logging.ApacheLogPath, router)
 	}
 
@@ -176,14 +210,10 @@ func runHTTPService(ctx context.Context, cancel context.CancelFunc, addr string)
 	logrus.Info("HTTP Server up and running")
 
 	// Wait until the context is done
-	for {
-		select {
-		case <-ctx.Done():
-			logrus.Info("Shutting down the HTTP server...")
-			_ = srv.Close()
-			return
-		}
-	}
+	<-ctx.Done()
+
+	logrus.Info("Shutting down the HTTP server...")
+	_ = srv.Close()
 }
 
 func mainLoop(ctx context.Context) {

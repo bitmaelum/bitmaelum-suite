@@ -2,12 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/pkg/vault"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/password"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -56,26 +53,4 @@ func OpenVault() *vault.Vault {
 	}
 
 	return v
-}
-
-// GetAccountOrDefault find the address from the vault. If address is empty, it will fetch the default address, or the
-// first address in the vault if no default address is present.
-func GetAccountOrDefault(vault *vault.Vault, a string) *internal.AccountInfo {
-	if a == "" {
-		return vault.GetDefaultAccount()
-	}
-
-	addr, err := address.New(a)
-	if err != nil {
-		logrus.Fatal(err)
-		os.Exit(1)
-	}
-
-	info, err := vault.GetAccountInfo(*addr)
-	if err != nil {
-		logrus.Fatal("Address not found in vault")
-		os.Exit(1)
-	}
-
-	return info
 }

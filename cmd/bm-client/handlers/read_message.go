@@ -8,16 +8,18 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 )
 
 // ReadMessage will read a specific message blocks
-func ReadMessage(info *internal.AccountInfo, box, messageID, blockType string) {
+func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID, blockType string) {
 	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          info.Routing,
+		Host:          routingInfo.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})
@@ -36,7 +38,7 @@ func ReadMessage(info *internal.AccountInfo, box, messageID, blockType string) {
 		logrus.Fatal(err)
 	}
 
-	key, err := encrypt.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
+	key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}

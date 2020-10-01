@@ -6,7 +6,7 @@ REPO="github.com/bitmaelum/bitmaelum-suite"
 
 # Our defined apps and tools
 APPS := bm-server bm-client bm-config
-TOOLS := hash-address jwt proof-of-work readmail push-account resolve vault-create vault-display resolve-auth update-pow jwt-validate migrate-hash
+TOOLS := hash-address jwt proof-of-work readmail push-account resolve vault-edit resolve-auth update-pow jwt-validate migrate-hash check-org
 
 CROSS_APPS := $(foreach app,$(APPS),cross-$(app))
 CROSS_TOOLS := $(foreach tool,$(TOOLS),cross-$(tool))
@@ -36,8 +36,8 @@ ifndef $(GOARCH)
     export GOARCH
 endif
 
-# path to golint
-GO_LINT_BIN = $(GOPATH)/bin/golint
+# paths to binaries
+GO_STATCHECK_BIN = $(GOPATH)/bin/staticcheck
 GO_INEFF_BIN = $(GOPATH)/bin/ineffassign
 GO_GOCYCLO_BIN = $(GOPATH)/bin/gocyclo
 
@@ -45,22 +45,35 @@ GO_GOCYCLO_BIN = $(GOPATH)/bin/gocyclo
 
 # Downloads external tools as it's not available by default
 $(GO_TEST_BIN):
-	go get -u golang.org/x/lint/golint
+	go get -u honnef.co/go/tools/cmd/staticcheck
 	go get -u github.com/gordonklaus/ineffassign
 	go get -u github.com/fzipp/gocyclo
 
 
-test: $(GO_TEST_BIN) ## Runs all tests for the whole repository
+## Runs all tests for the whole repository
+test: $(GO_TEST_BIN) test_fmt test_vet test_staticcheck test_ineffassign test_gocyclo test_unit
+
+test_fmt:
 	echo "Check format"
 	gofmt -l .
+
+test_vet:
 	echo "Check vet"
 	go vet ./...
-	echo "Check lint"
-	$(GO_LINT_BIN) ./...
+
+test_staticcheck:
+	echo "Check static"
+	$(GO_STATCHECK_BIN) ./...
+
+test_ineffassign:
 	echo "Check ineffassign"
 	$(GO_INEFF_BIN) ./*
+
+test_gocyclo:
 	echo "Check gocyclo"
 	$(GO_GOCYCLO_BIN) -over 15 .
+
+test_unit:
 	echo "Check unit tests"
 	go test ./...
 

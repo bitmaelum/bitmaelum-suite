@@ -10,8 +10,9 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
@@ -22,7 +23,7 @@ import (
 func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject string, b, a []string) error {
 	// Resolve public key for our recipient
 	resolver := container.GetResolveService()
-	toInfo, err := resolver.Resolve(toAddr.Hash())
+	toInfo, err := resolver.ResolveAddress(toAddr.Hash())
 	if err != nil {
 		return fmt.Errorf("cannot retrieve public key for '%s'", toAddr.String())
 	}
@@ -55,17 +56,23 @@ func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject s
 		return err
 	}
 
-	fmt.Printf("  Sending message to: %s\n", info.Routing)
-	err = uploadToServer(info, header, encryptedCatalog, catalog)
+	// Fetch routing info for the SENDER, as we send to the sender's mailserver (not the recipient)
+	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
+	if err != nil {
+		return err
+	}
+
+	// and finally send
+	err = uploadToServer(info, *routingInfo, header, encryptedCatalog, catalog)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func uploadToServer(info internal.AccountInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
+func uploadToServer(info internal.AccountInfo, routingInfo resolver.RoutingInfo, header *message.Header, encryptedCatalog []byte, catalog *message.Catalog) error {
 	client, err := api.NewAuthenticated(&info, api.ClientOpts{
-		Host:          info.Routing,
+		Host:          routingInfo.Routing,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})
@@ -116,7 +123,7 @@ func uploadToServer(info internal.AccountInfo, header *message.Header, encrypted
 }
 
 // Generate a header file based on the info provided
-func generateHeader(info internal.AccountInfo, toInfo *resolve.Info, catalog []byte, catalogKey []byte) (*message.Header, error) {
+func generateHeader(info internal.AccountInfo, toInfo *resolver.AddressInfo, catalog []byte, catalogKey []byte) (*message.Header, error) {
 	header := &message.Header{}
 
 	// We can add a multitude of checksums here.. whatever we like
@@ -129,7 +136,7 @@ func generateHeader(info internal.AccountInfo, toInfo *resolve.Info, catalog []b
 	header.Catalog.Size = uint64(len(catalog))
 	header.Catalog.Crypto = "rsa+aes256gcm"
 
-	header.Catalog.EncryptedKey, err = encrypt.Encrypt(toInfo.PublicKey, catalogKey)
+	header.Catalog.EncryptedKey, err = bmcrypto.Encrypt(toInfo.PublicKey, catalogKey)
 	if err != nil {
 		return nil, err
 	}

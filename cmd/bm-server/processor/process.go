@@ -6,7 +6,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/resolve"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
+	"github.com/bitmaelum/bitmaelum-suite/internal/server"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -37,7 +38,7 @@ func ProcessMessage(msgID string) {
 	}
 
 	rs := container.GetResolveService()
-	res, err := rs.Resolve(header.To.Addr)
+	res, err := rs.ResolveAddress(header.To.Addr)
 	if err != nil {
 		logrus.Trace(err)
 		logrus.Warnf("cannot resolve address %s for message %s. Retrying.", header.To.Addr, msgID)
@@ -52,6 +53,16 @@ func ProcessMessage(msgID string) {
 		// Do stuff locally
 		logrus.Debugf("Message %s can be transferred locally to %s", msgID, res.Hash)
 
+		// Check the serverSignature
+		if !server.VerifyHeader(*header) {
+			logrus.Errorf("message %s destined for %s has failed the server signature check. Seems that this message did not originate from the original mail server. Removing the message.", msgID, header.To.Addr)
+
+			err := message.RemoveMessage(message.SectionProcessing, msgID)
+			if err != nil {
+				logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
+			}
+		}
+
 		err := deliverLocal(res, msgID)
 		if err != nil {
 			logrus.Warnf("cannot deliver message %s locally to %s. Retrying.", msgID, header.To.Addr)
@@ -60,9 +71,16 @@ func ProcessMessage(msgID string) {
 		return
 	}
 
+	routingRes, err := rs.ResolveRouting(res.RoutingID)
+	if err != nil {
+		logrus.Warnf("cannot find routing ID %s for %s. Retrying.", res.RoutingID, header.To.Addr)
+		MoveToRetryQueue(msgID)
+		return
+	}
+
 	// Otherwise, send to outgoing server
-	logrus.Debugf("Message %s is remote, transferring to %s", msgID, res.Routing)
-	err = deliverRemote(header, res, msgID)
+	logrus.Debugf("Message %s is remote, transferring to %s", msgID, routingRes.Routing)
+	err = deliverRemote(header, res, routingRes, msgID)
 	if err != nil {
 		logrus.Warnf("cannot deliver message %s remotely to %s. Retrying.", msgID, header.To.Addr)
 		MoveToRetryQueue(msgID)
@@ -71,7 +89,7 @@ func ProcessMessage(msgID string) {
 
 // deliverLocal moves a message to a local mailbox. This is an easy process as it only needs to move
 // the message to another directory.
-func deliverLocal(info *resolve.Info, msgID string) error {
+func deliverLocal(info *resolver.AddressInfo, msgID string) error {
 	// Deliver mail to local user's inbox
 	ar := container.GetAccountRepo()
 	err := ar.SendToBox(address.HashAddress(info.Hash), account.BoxInbox, msgID)
@@ -88,9 +106,9 @@ func deliverLocal(info *resolve.Info, msgID string) error {
 // ticket from that server. Either that ticket is supplied, or we need to do proof-of-work first before
 // we get the ticket. Once we have the ticket, we can upload the message to the server in the same way
 // we upload a message from a client to a server.
-func deliverRemote(header *message.Header, info *resolve.Info, msgID string) error {
+func deliverRemote(header *message.Header, info *resolver.AddressInfo, routingInfo *resolver.RoutingInfo, msgID string) error {
 	client, err := api.NewAnonymous(api.ClientOpts{
-		Host:          info.Routing,
+		Host:          routingInfo.Routing,
 		AllowInsecure: config.Server.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})

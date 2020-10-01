@@ -40,19 +40,19 @@ func TestRSAPubKey(t *testing.T) {
 	assert.Equal(t, "", pk.Description)
 
 	// Without type
-	pk, err = NewPubKey(TestKeySet1[1])
+	_, err = NewPubKey(TestKeySet1[1])
 	assert.EqualError(t, err, "incorrect key format")
 
 	// Incorrect too
-	pk, err = NewPubKey(TestKeySet1[2])
+	_, err = NewPubKey(TestKeySet1[2])
 	assert.EqualError(t, err, "incorrect key format")
 
 	// right type, wrong data
-	pk, err = NewPubKey(TestKeySet1[3])
+	_, err = NewPubKey(TestKeySet1[3])
 	assert.EqualError(t, err, "incorrect key data")
 
 	// wrong type, right data
-	pk, err = NewPubKey(TestKeySet1[4])
+	_, err = NewPubKey(TestKeySet1[4])
 	assert.EqualError(t, err, "incorrect key type")
 
 	pk, _ = NewPubKey(TestKeySet1[0])
@@ -98,7 +98,7 @@ func TestECDSAPub(t *testing.T) {
 	assert.Equal(t, "", pk.Description)
 
 	// Check private key data
-	pk, err = NewPubKey(TestKeySet4[0])
+	_, err = NewPubKey(TestKeySet4[0])
 	assert.EqualError(t, err, "incorrect key data")
 }
 

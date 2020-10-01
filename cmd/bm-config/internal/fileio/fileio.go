@@ -104,7 +104,7 @@ func SaveFile(p string, v interface{}) error {
 		return err
 	}
 
-	err = os.MkdirAll(filepath.Dir(p), 755)
+	err = os.MkdirAll(filepath.Dir(p), 0755)
 	if err != nil {
 		return err
 	}

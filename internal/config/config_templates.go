@@ -103,6 +103,9 @@ config:
         certfile: "~/.bitmaelum/certs/server.cert"
         keyfile: "~/.bitmaelum/certs/server.key"
 
+        # Routing file holds the server's keypair and routing ID.
+        routingfile: "~/.bitmaelum/private/routing.json"
+
     management: 
         # When enabled, allow remote management through HTTPS instead of only local bm-config
         remote_enabled: false

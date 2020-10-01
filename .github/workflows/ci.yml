@@ -21,11 +21,11 @@ jobs:
     - name: Go vet
       run: |
         go vet ./...
-    - name: Go lint
+    - name: Go static check
       run: |
-        go get -u golang.org/x/lint/golint
+        go get honnef.co/go/tools/cmd/staticcheck
         GOPATH=`go env GOPATH`
-        $GOPATH/bin/golint ./...
+        $GOPATH/bin/staticcheck ./...
     - name: Go ineffassign
       run: |
         go get -u github.com/gordonklaus/ineffassign

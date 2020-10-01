@@ -78,7 +78,12 @@ func (pk *PubKey) UnmarshalJSON(b []byte) error {
 
 // MarshalJSON marshals a key into bytes
 func (pk *PrivKey) MarshalJSON() ([]byte, error) {
-	return json.Marshal(pk.Type + " " + pk.S)
+	return json.Marshal(pk.String())
+}
+
+// Strings returns the key in a textual representation
+func (pk *PrivKey) String() string {
+	return pk.Type + " " + pk.S
 }
 
 // UnmarshalJSON unmarshals bytes into a key
@@ -111,20 +116,12 @@ func (pk *PrivKey) UnmarshalJSON(b []byte) error {
 
 // CanEncrypt returns true if the key(type) is able to be used for encryption/decryption
 func (pk *PubKey) CanEncrypt() bool {
-	if pk.Type == KeyTypeRSA {
-		return true
-	}
-
-	return false
+	return pk.Type == KeyTypeRSA
 }
 
 // CanEncrypt returns true if the key(type) is able to be used for encryption/decryption
 func (pk *PrivKey) CanEncrypt() bool {
-	if pk.Type == KeyTypeRSA {
-		return true
-	}
-
-	return false
+	return pk.Type == KeyTypeRSA
 }
 
 // NewPubKey creates a new public key based on the string data "<type> <key> <description>"

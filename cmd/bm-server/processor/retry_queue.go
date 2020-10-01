@@ -70,11 +70,7 @@ func MoveToRetryQueue(msgID string) {
 
 // canRetryNow returns true if we can retry the message right now
 func canRetryNow(info message.RetryInfo) bool {
-	if info.RetryAt.Unix() < time.Now().Unix() {
-		return true
-	}
-
-	return false
+	return info.RetryAt.Unix() < time.Now().Unix()
 }
 
 // calculateNextRetryTime will return the next time a message can be retried again

@@ -100,5 +100,4 @@ func ErrorOut(w http.ResponseWriter, code int, msg string) {
 		Error:  true,
 		Status: msg,
 	})
-	return
 }

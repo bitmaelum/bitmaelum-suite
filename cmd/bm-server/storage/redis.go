@@ -36,7 +36,7 @@ func (r *redisStorage) Store(pow *ProofOfWork) error {
 	// pow.Expires is an absolute time, we need delta time for redis
 	var expiry time.Duration = 0
 	if pow.Expires.Unix() > 0 {
-		expiry = pow.Expires.Sub(time.Now())
+		expiry = time.Until(pow.Expires)
 	}
 
 	data, err := json.Marshal(pow)
