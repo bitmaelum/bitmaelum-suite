@@ -26,9 +26,8 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	}
 	fmt.Printf("ok\n")
 
-	if addr.IsOrganisationAddress() {
-
-	}
+	// if addr.IsOrganisationAddress() {
+	// }
 
 	fmt.Printf("* Checking if address is already known in the resolver service: ")
 	ks := container.GetResolveService()
