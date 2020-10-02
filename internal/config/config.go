@@ -54,7 +54,7 @@ func LoadClientConfigOrPass(configPath string) error {
 	// Try custom path first
 	if configPath != "" {
 		err = readConfigPath(configPath, Client.LoadConfig)
-		if err != nil {
+		if err == nil || err != errNotFound {
 			return err
 		}
 	}
@@ -86,7 +86,7 @@ func LoadServerConfigOrPass(configPath string) error {
 	// Try custom path first
 	if configPath != "" {
 		err = readConfigPath(configPath, Server.LoadConfig)
-		if err != nil {
+		if err == nil || err != errNotFound {
 			return err
 		}
 	}
