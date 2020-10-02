@@ -24,7 +24,7 @@ import (
 )
 
 type options struct {
-	Config  string `short:"c" long:"config" description:"Configuration file" default:"./server-config.yml"`
+	Config  string `short:"c" long:"config" description:"Configuration file"`
 	Version bool   `short:"v" long:"version" description:"Display version information"`
 }
 
