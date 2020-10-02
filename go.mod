@@ -34,7 +34,7 @@ require (
 	github.com/zalando/go-keyring v0.1.0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/tools v0.0.0-20201001104356-43ebab892c4c // indirect
+	golang.org/x/tools v0.0.0-20201002055958-0d28ed0cbe40 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 )
