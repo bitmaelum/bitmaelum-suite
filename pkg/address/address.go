@@ -133,9 +133,14 @@ func (a *Address) IsOrganisationAddress() bool {
 }
 
 // VerifyHash will check if the hashes for local and org found matches the actual target hash
-func VerifyHash(target, local, org string) bool {
-	sum := sha256.Sum256([]byte(local + org))
+func VerifyHash(targetHash, userHash, orgHash string) bool {
+	// If no org hash is given, assume sha256 hash of empty string
+	if orgHash == "" {
+		sum := sha256.Sum256([]byte{})
+		orgHash = string(sum[:])
+	}
+	sum := sha256.Sum256([]byte(userHash + orgHash))
 	hash := hex.EncodeToString(sum[:])
 
-	return subtle.ConstantTimeCompare([]byte(hash), []byte(target)) == 1
+	return subtle.ConstantTimeCompare([]byte(hash), []byte(targetHash)) == 1
 }
