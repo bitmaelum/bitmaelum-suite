@@ -54,7 +54,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	var pubKey bmcrypto.PubKey = config.Server.Routing.PublicKey
 	if input.OrgHash != "" {
 		r := container.GetResolveService()
-		oh, err := address.NewOrgHash(input.OrgHash)
+		oh, err := address.NewOrganisationHash(input.OrgHash)
 		if err != nil {
 			ErrorOut(w, http.StatusBadRequest, "incorrect org hash")
 			return

@@ -83,7 +83,7 @@ func TestValidationType_String(t *testing.T) {
 func TestValidate(t *testing.T) {
 	v, _ := NewValidationTypeFromString("dns bitmaelum.org")
 
-	a, _ := address.NewOrgHash("bitmaelum")
+	a, _ := address.NewOrganisationHash("bitmaelum")
 
 	o := &Organisation{
 		Addr:       *a,

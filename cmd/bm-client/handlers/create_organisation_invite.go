@@ -12,7 +12,7 @@ import (
 )
 
 func CreateOrganisationInvite(vault *vault.Vault, orgName, addr, shortRoutingID string) {
-	org, err := address.NewOrgHash(orgName)
+	org, err := address.NewOrganisationHash(orgName)
 	if err != nil {
 		fmt.Println("Incorrect organisation name")
 		os.Exit(1)

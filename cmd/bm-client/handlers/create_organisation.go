@@ -17,7 +17,7 @@ import (
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
 func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidations []string) {
 	fmt.Printf("* Verifying if organisation name is valid: ")
-	orgAddr, err := address.NewOrgHash(orgName)
+	orgAddr, err := address.NewOrganisationHash(orgName)
 	if err != nil {
 		fmt.Printf("not a valid organisation")
 		fmt.Println("")

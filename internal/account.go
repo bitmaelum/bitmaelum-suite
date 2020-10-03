@@ -42,7 +42,7 @@ type RoutingInfo struct {
 }
 
 func InfoToOrg(info OrganisationInfo) (*organisation.Organisation, error) {
-	a, err := address.NewOrgHash(info.Addr)
+	a, err := address.NewOrganisationHash(info.Addr)
 	if err != nil {
 		return nil, err
 	}

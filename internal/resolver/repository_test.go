@@ -77,7 +77,7 @@ func testRepoRouting(t *testing.T, repo RoutingRepository) {
 }
 
 func testRepoOrganisation(t *testing.T, repo OrganisationRepository) {
-	org, _ := address.NewOrgHash("acme")
+	org, _ := address.NewOrganisationHash("acme")
 
 	r, err := repo.ResolveOrganisation(*org)
 	assert.Errorf(t, err, "sql: no rows in result set")

@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewHash(t *testing.T) {
-	var h *Hash
+	var h Hash
 
 	h = NewHash("joshua!")
 	assert.Equal(t, "2f92571b5567b4557b94ac5701fc48e552ba9970d6dac89f7c2ebce92f1cd836", h.String())

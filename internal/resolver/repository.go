@@ -33,7 +33,7 @@ type RoutingRepository interface {
 
 // OrganisationRepository is the interface to manage organisation resolving
 type OrganisationRepository interface {
-	ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error)
+	ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error)
 	UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
 	DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error
 }

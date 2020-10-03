@@ -122,7 +122,7 @@ func (r *sqliteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	}, nil
 }
 
-func (r *sqliteRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
+func (r *sqliteRepo) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
 	var (
 		h string
 		p string

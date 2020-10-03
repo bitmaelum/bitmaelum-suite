@@ -1,8 +1,6 @@
 package address
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"regexp"
@@ -51,22 +49,17 @@ func (a *Address) String() string {
 
 // Hash converts an address to a hashed value
 func (a *Address) Hash() Hash {
-	l := []byte(a.LocalHash())
-	o := []byte(a.OrgHash())
-	sum := sha256.Sum256(bytes.Join([][]byte{l, o}, []byte{}))
-
-	h := NewHash(string(sum[:]))
-	return *h
+	return NewHash(a.LocalHash().String() + a.OrgHash().String())
 }
 
 // LocalHash returns the hash of the local/user part of the address
-func (a *Address) LocalHash() string {
-	return NewHash(a.Local).String()
+func (a *Address) LocalHash() Hash {
+	return NewHash(a.Local)
 }
 
 // OrgHash returns the hash of the organisation part of the address
-func (a *Address) OrgHash() string {
-	return NewHash(a.Org).String()
+func (a *Address) OrgHash() Hash {
+	return NewHash(a.Org)
 }
 
 // Bytes converts an address to []byte

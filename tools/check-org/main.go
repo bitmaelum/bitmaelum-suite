@@ -27,7 +27,7 @@ func main() {
 	v1, _ := organisation.NewValidationTypeFromString("dns bitmaelum.org")
 	v2, _ := organisation.NewValidationTypeFromString("dns bitmaelum.com")
 	v3, _ := organisation.NewValidationTypeFromString("dns evil-domain.xyz")
-	a, _ := address.NewOrgHash("bitmaelum")
+	a, _ := address.NewOrganisationHash("bitmaelum")
 
 	o := organisation.Organisation{
 		Addr:       *a,

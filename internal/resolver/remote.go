@@ -90,7 +90,7 @@ func (r *remoteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	}, nil
 }
 
-func (r *remoteRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
+func (r *remoteRepo) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
 	kd, err := r.fetchOrganisation(orgHash)
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 
 func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
 	// Do a prefetch so we can get the current serial number
-	org, err := address.NewOrgHash(info.Hash)
+	org, err := address.NewOrganisationHash(info.Hash)
 	if err != nil {
 		return err
 	}
@@ -252,7 +252,7 @@ func (r *remoteRepo) DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 
 func (r *remoteRepo) DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error {
 	// Do a prefetch so we can get the current serial number
-	org, err := address.NewOrgHash(info.Hash)
+	org, err := address.NewOrganisationHash(info.Hash)
 	if err != nil {
 		return err
 	}
@@ -338,7 +338,7 @@ func (r *remoteRepo) fetchRouting(routingID string) (*RoutingDownload, error) {
 	return rd, nil
 }
 
-func (r *remoteRepo) fetchOrganisation(addr address.HashOrganisation) (*OrganisationDownload, error) {
+func (r *remoteRepo) fetchOrganisation(addr address.OrganisationHash) (*OrganisationDownload, error) {
 	url := r.BaseURL + "/organisation/" + addr.String()
 
 	od := &OrganisationDownload{}

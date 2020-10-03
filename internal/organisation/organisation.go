@@ -7,7 +7,7 @@ import (
 
 // Organisation is a structure that defines an organiation
 type Organisation struct {
-	Addr       address.HashOrganisation `json:"address"`
+	Addr       address.OrganisationHash `json:"address"`
 	Name       string                   `json:"name"`
 	PublicKey  bmcrypto.PubKey          `json:"public_key"`
 	Validation []ValidationType         `json:"validations"`

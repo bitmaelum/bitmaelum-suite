@@ -50,7 +50,7 @@ func (r *ChainRepository) ResolveRouting(routingID string) (*RoutingInfo, error)
 }
 
 // ResolveOrganisation resolves organisation
-func (r *ChainRepository) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
+func (r *ChainRepository) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
 	for idx := range r.repos {
 		info, err := r.repos[idx].ResolveOrganisation(orgHash)
 		if err == nil {

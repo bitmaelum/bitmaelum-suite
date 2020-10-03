@@ -1,7 +1,6 @@
 package address
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,19 +8,19 @@ import (
 
 
 func Test_Organisation(t *testing.T) {
-	h, err := NewOrgHash("foobar")
+	h, err := NewOrganisationHash("foobar")
 	assert.NoError(t, err)
 	assert.Equal(t, "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2", h.String())
 
-	h, err = NewOrgHash("foobar!")
+	h, err = NewOrganisationHash("foobar!")
 	assert.Error(t, err)
 	assert.Nil(t, h)
 
-	h, err = NewOrgHash("f")
+	h, err = NewOrganisationHash("f")
 	assert.Error(t, err)
 	assert.Nil(t, h)
 
-	h, err = NewOrgHash("++--")
+	h, err = NewOrganisationHash("++--")
 	assert.Error(t, err)
 	assert.Nil(t, h)
 }
@@ -46,16 +45,9 @@ func TestAddress_OrganisationHash(t *testing.T) {
 }
 
 func Test_Verify(t *testing.T) {
-
-	a, _ := NewAddress("joshua@bitmaelum!")
-	fmt.Println(a.Hash().String())
-	fmt.Println(a.LocalHash())
-	fmt.Println(a.OrgHash())
-
-
 	// joshua@bitmaelum!
 	assert.True(t, VerifyHash(
-		"68433f537c388686507649f75395a90c2d3b267eb2dc21f2443ca9006d31ad39",
+		"6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840",
 		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
 		"49aa67181f4a3176f9b65605390bb81126e8ff1f6d03b1bd220c53e7a6b36d3e",
 	))
@@ -68,13 +60,13 @@ func Test_Verify(t *testing.T) {
 
 	// joshua!
 	assert.True(t, VerifyHash(
-		"a368fedac33ac19d2d59164197aeb05c412a2759ec7e86a1b62f7dc0371fe730",
+		"66c94b6643ada5661b2d940eb87502b5af0f47f40fd45ce0fa125502dfa9c1ee",
 		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
 		"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 	))
 
 	assert.False(t, VerifyHash(
-		"a368fedac33ac19d2d59164197aeb05c412a2759ec7e86a1b62f7dc0371fe730",
+		"66c94b6643ada5661b2d940eb87502b5af0f47f40fd45ce0fa125502dfa9c1ee",
 		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
 		"00000000000c1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 	))

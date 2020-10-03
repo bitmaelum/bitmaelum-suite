@@ -39,7 +39,7 @@ func (r *mockRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	return nil, errKeyNotFound
 }
 
-func (r *mockRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
+func (r *mockRepo) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
 	if oi, ok := r.organisation[orgHash.String()]; ok {
 		return &oi, nil
 	}

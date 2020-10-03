@@ -66,7 +66,7 @@ func resolveRouting(routingID string) {
 }
 
 func resolveOrganisation(org string) {
-	orgHash, err := address.NewOrgHash(org)
+	orgHash, err := address.NewOrganisationHash(org)
 	if err != nil {
 		logrus.Fatal(err)
 	}

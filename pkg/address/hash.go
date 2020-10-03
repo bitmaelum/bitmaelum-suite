@@ -16,11 +16,10 @@ var (
 type Hash string
 
 // NewHash generates a regular hash. Assumes you know what you are hashing
-func NewHash(s string) *Hash {
+func NewHash(s string) Hash {
 	sum := sha256.Sum256([]byte(s))
 
-	h := Hash(hex.EncodeToString(sum[:]))
-	return &h
+	return Hash(hex.EncodeToString(sum[:]))
 }
 
 // HashFromString generates a hash address based on the given string hash
