@@ -15,7 +15,7 @@ import (
 func main() {
 	logrus.SetLevel(logrus.TraceLevel)
 
-	addr, err := address.NewHashFromHash(os.Args[1])
+	addr, err := address.HashFromString(os.Args[1])
 	if err != nil {
 		panic(err)
 	}

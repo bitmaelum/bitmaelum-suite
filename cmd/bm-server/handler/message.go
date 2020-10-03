@@ -14,7 +14,7 @@ import (
 
 // GetMessage will return a message header and catalog
 func GetMessage(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := address.HashFromString(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
@@ -43,7 +43,7 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 
 // GetMessageBlock will return a message block
 func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := address.HashFromString(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
@@ -72,7 +72,7 @@ func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 
 // GetMessageAttachment will return a message attachment
 func GetMessageAttachment(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := address.HashFromString(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return

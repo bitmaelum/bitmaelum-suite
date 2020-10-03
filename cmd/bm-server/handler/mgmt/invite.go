@@ -34,7 +34,7 @@ func NewInvite(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	addr, err := address.NewHashFromHash(input.Addr)
+	addr, err := address.HashFromString(input.Addr)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return

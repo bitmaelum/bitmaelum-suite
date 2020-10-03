@@ -37,7 +37,7 @@ func ParseInviteToken(data string) (*Token, error) {
 	}
 
 	// Convert all parts to the correct formats
-	a, err := address.NewHashFromHash(parts[0])
+	a, err := address.HashFromString(parts[0])
 	if err != nil {
 		return nil, err
 	}

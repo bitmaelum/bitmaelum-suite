@@ -27,7 +27,7 @@ var ErrTokenNotValidated = errors.New("token could not be validated")
 // Middleware JWT token authentication
 func (*JwtToken) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+		haddr, err := address.HashFromString(mux.Vars(req)["addr"])
 		if err != nil {
 			logrus.Trace("auth: no address specified")
 			ErrorOut(w, http.StatusUnauthorized, "Cannot authorize without address")

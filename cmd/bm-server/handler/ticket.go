@@ -246,7 +246,7 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 	}
 
 	// Validate from / to address
-	requestInfo.From, err = address.NewHashFromHash(requestInfo.FromAddr)
+	requestInfo.From, err = address.HashFromString(requestInfo.FromAddr)
 	if err != nil {
 		logrus.Trace("cannot create address: ", err)
 
@@ -256,7 +256,7 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 		}
 	}
 
-	requestInfo.To, err = address.NewHashFromHash(requestInfo.ToAddr)
+	requestInfo.To, err = address.HashFromString(requestInfo.ToAddr)
 	if err != nil {
 		logrus.Trace("cannot create address: ", err)
 

@@ -1,9 +1,8 @@
 package address
 
 import (
+	"bytes"
 	"crypto/sha256"
-	"crypto/subtle"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"regexp"
@@ -13,25 +12,7 @@ import (
 var (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
 	addressRegex = regexp.MustCompile(`^([a-z0-9][a-z0-9.\-]{1,62}[a-z0-9])(?:@([a-z0-9][a-z0-9.\-]{0,62}[a-z0-9]))?!$`)
-	orgRegex     = regexp.MustCompile(`^[a-z0-9][a-z0-9.\-]{0,62}[a-z0-9]$`)
-	hashRegex    = regexp.MustCompile(`^[a-f0-9]{64}$`)
 )
-
-// HashAddress is a SHA256'd address
-type HashAddress string
-
-// HashOrganisation is a SHA256'd organisation
-type HashOrganisation string
-
-// String casts an hash address to string
-func (ha HashAddress) String() string {
-	return string(ha)
-}
-
-// String casts an hash address to string
-func (ha HashOrganisation) String() string {
-	return string(ha)
-}
 
 // Address represents a bitMaelum address
 type Address struct {
@@ -40,7 +21,7 @@ type Address struct {
 }
 
 // New returns a valid address structure based on the given address
-func New(address string) (*Address, error) {
+func NewAddress(address string) (*Address, error) {
 	if !addressRegex.MatchString(strings.ToLower(address)) {
 		return nil, errors.New("incorrect address format specified")
 	}
@@ -53,30 +34,9 @@ func New(address string) (*Address, error) {
 	}, nil
 }
 
-// NewHash generates a hash address based on the given email string
-func NewHash(address string) (*HashAddress, error) {
-	a, err := New(address)
-	if err != nil {
-		return nil, err
-	}
-
-	h := a.Hash()
-	return &h, nil
-}
-
-// NewHashFromHash generates a hash address based on the given string hash
-func NewHashFromHash(hash string) (*HashAddress, error) {
-	if !hashRegex.MatchString(strings.ToLower(hash)) {
-		return nil, errors.New("incorrect hash address format specified")
-	}
-
-	h := HashAddress(hash)
-	return &h, nil
-}
-
 // IsValidAddress returns true when the given string is a valid BitMaelum address
 func IsValidAddress(address string) bool {
-	_, err := New(address)
+	_, err := NewAddress(address)
 	return err == nil
 }
 
@@ -90,57 +50,26 @@ func (a *Address) String() string {
 }
 
 // Hash converts an address to a hashed value
-func (a *Address) Hash() HashAddress {
-	l := sha256.Sum256([]byte(a.Local))
-	o := sha256.Sum256([]byte(a.Org))
-	sum := sha256.Sum256([]byte(hex.EncodeToString(l[:]) + hex.EncodeToString(o[:])))
+func (a *Address) Hash() Hash {
+	l := []byte(a.LocalHash())
+	o := []byte(a.OrgHash())
+	sum := sha256.Sum256(bytes.Join([][]byte{l, o}, []byte{}))
 
-	return HashAddress(hex.EncodeToString(sum[:]))
+	h := NewHash(string(sum[:]))
+	return *h
 }
 
-// OrganisationHash converts an address to a hashed value
-func (a *Address) OrganisationHash() HashOrganisation {
-	l := sha256.Sum256([]byte(""))
-	o := sha256.Sum256([]byte(a.Org))
-	sum := sha256.Sum256([]byte(hex.EncodeToString(l[:]) + hex.EncodeToString(o[:])))
-
-	return HashOrganisation(hex.EncodeToString(sum[:]))
+// LocalHash returns the hash of the local/user part of the address
+func (a *Address) LocalHash() string {
+	return NewHash(a.Local).String()
 }
 
-// NewOrgHash returns a new organisation hash
-func NewOrgHash(org string) (*HashOrganisation, error) {
-	if !orgRegex.MatchString(strings.ToLower(org)) {
-		return nil, errors.New("incorrect org format specified")
-	}
-
-	a := &Address{
-		Local: "",
-		Org:   strings.ToLower(org),
-	}
-
-	h := a.OrganisationHash()
-	return &h, nil
+// OrgHash returns the hash of the organisation part of the address
+func (a *Address) OrgHash() string {
+	return NewHash(a.Org).String()
 }
 
 // Bytes converts an address to []byte
 func (a *Address) Bytes() []byte {
 	return []byte(a.String())
-}
-
-// IsOrganisationAddress returns true when the address is an organisational address (user@org!)
-func (a *Address) IsOrganisationAddress() bool {
-	return len(a.Org) > 0
-}
-
-// VerifyHash will check if the hashes for local and org found matches the actual target hash
-func VerifyHash(targetHash, userHash, orgHash string) bool {
-	// If no org hash is given, assume sha256 hash of empty string
-	if orgHash == "" {
-		sum := sha256.Sum256([]byte{})
-		orgHash = string(sum[:])
-	}
-	sum := sha256.Sum256([]byte(userHash + orgHash))
-	hash := hex.EncodeToString(sum[:])
-
-	return subtle.ConstantTimeCompare([]byte(hash), []byte(targetHash)) == 1
 }

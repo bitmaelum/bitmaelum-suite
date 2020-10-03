@@ -5,7 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
@@ -29,22 +30,20 @@ func CreateOrganisationInvite(vault *vault.Vault, orgName, addr, shortRoutingID 
 	}
 	fmt.Println("Found Routing ID: ", routingID)
 
-	// svc := container.GetResolveService()
-	// ri, err := svc.ResolveRouting(routingID)
-	// if err != nil {
-	// 	fmt.Println("Cannot find the specified routing ID on the resolver")
-	// 	os.Exit(1)
-	// }
-	//
-	// spew.Dump(oi)
-	// spew.Dump(ri)
+	// Verify the routing ID exists
+	svc := container.GetResolveService()
+	_, err = svc.ResolveRouting(routingID)
+	if err != nil {
+		fmt.Println("Cannot find the specified routing ID on the resolver")
+		os.Exit(1)
+	}
 
 	hashAddr, err := address.New(addr)
 	if err != nil {
 		fmt.Printf("Doesn't seem like '%s' is a valid BitMealum address", addr)
 		os.Exit(1)
 	}
-	if !hashAddr.IsOrganisationAddress() {
+	if !hashAddr.HasOrganisationPart() {
 		fmt.Printf("Doesn't seem like '%s' is not a BitMealum organisation address", addr)
 		os.Exit(1)
 	}
@@ -55,11 +54,11 @@ func CreateOrganisationInvite(vault *vault.Vault, orgName, addr, shortRoutingID 
 	}
 
 	validUntil := time.Now().Add(7 * 24 * time.Hour)
-	token, err := organisation.GenerateInviteToken(hashAddr, routingID, validUntil, oi.PrivKey)
+	token, err := invite.NewInviteToken(hashAddr.Hash(), routingID, validUntil, oi.PrivKey)
 	if err != nil {
 		fmt.Println("Error while generating token: ", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Token: " + token)
+	fmt.Print("Token: ", token.String())
 }

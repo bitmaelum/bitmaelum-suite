@@ -135,7 +135,7 @@ func (r *remoteRepo) resolve(url string, v interface{}) error {
 
 func (r *remoteRepo) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
 	// Do a prefetch so we can get the current serial number
-	addr, err := address.NewHashFromHash(info.Hash)
+	addr, err := address.HashFromString(info.Hash)
 	if err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func (r *remoteRepo) upload(url string, v interface{}, sig string) error {
 
 func (r *remoteRepo) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
 	// Do a prefetch so we can get the current serial number
-	addr, err := address.NewHashFromHash(info.Hash)
+	addr, err := address.HashFromString(info.Hash)
 	if err != nil {
 		return err
 	}

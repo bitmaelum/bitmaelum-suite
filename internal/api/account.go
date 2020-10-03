@@ -28,8 +28,10 @@ func (api *API) GetPublicKey(addr address.HashAddress) (string, error) {
 
 // CreateAccount creates new account on server
 func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
-	type InputCreateAccount struct {
+	type inputCreateAccount struct {
 		Addr        address.HashAddress `json:"address"`
+		UserHash    string              `json:"user_hash"`
+		OrgHash     string              `json:"org_hash"`
 		Token       string              `json:"token"`
 		PublicKey   bmcrypto.PubKey     `json:"public_key"`
 		ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
@@ -37,8 +39,10 @@ func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
 
 	addr, _ := address.New(info.Address)
 
-	input := &InputCreateAccount{
+	input := &inputCreateAccount{
 		Addr:        addr.Hash(),
+		UserHash:    addr.LocalHash(),
+		OrgHash:     addr.OrgHash(),
 		Token:       token,
 		PublicKey:   info.PubKey,
 		ProofOfWork: info.Pow,
