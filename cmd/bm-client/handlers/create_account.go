@@ -18,7 +18,7 @@ import (
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
 func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	fmt.Printf("* Verifying if address is correct: ")
-	addr, err := address.New(bmAddr)
+	addr, err := address.NewAddress(bmAddr)
 	if err != nil {
 		fmt.Printf("not a valid address")
 		fmt.Println("")

@@ -77,7 +77,6 @@ func Test_Hashes(t *testing.T) {
 	assert.Equal(t, "fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4", a.LocalHash().String())
 	assert.Equal(t, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", a.OrgHash().String())
 
-
 	a, _ = NewAddress("example!")
 	assert.Equal(t, "2244643da7475120bf84d744435d15ea297c36ca165ea0baaa69ec818d0e952f", a.Hash().String())
 
@@ -93,7 +92,6 @@ func Test_Hashes(t *testing.T) {
 	a, _ = NewAddress("hello@example!")
 	assert.Equal(t, "a5098c40c4b7e272403f94d752026f45faeab26b4d67804c887969461b032074", a.Hash().String())
 }
-
 
 func Test_Remainders(t *testing.T) {
 	a, err := NewAddress("john@foobar!")

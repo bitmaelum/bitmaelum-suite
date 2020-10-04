@@ -29,7 +29,7 @@ var composeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		toAddr, err := address.New(*to)
+		toAddr, err := address.NewAddress(*to)
 		if err != nil {
 			logrus.Fatal(err)
 		}

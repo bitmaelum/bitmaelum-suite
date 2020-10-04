@@ -32,11 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ha, err := address.NewHash(info.Address)
-	if err != nil {
-		logrus.Fatal("Incorrect address")
-		os.Exit(1)
-	}
+	ha := address.NewHash(info.Address)
 	hashed := []byte(ha.String() + info.RoutingID)
 	sig, err := bmcrypto.Sign(info.PrivKey, hashed)
 	if err != nil {

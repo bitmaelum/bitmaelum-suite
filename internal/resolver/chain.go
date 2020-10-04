@@ -26,7 +26,7 @@ func (r *ChainRepository) Add(repo Repository) error {
 }
 
 // ResolveAddress an address through the chained repos
-func (r *ChainRepository) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
+func (r *ChainRepository) ResolveAddress(addr address.Hash) (*AddressInfo, error) {
 	for idx := range r.repos {
 		info, err := r.repos[idx].ResolveAddress(addr)
 		if err == nil {
@@ -50,7 +50,7 @@ func (r *ChainRepository) ResolveRouting(routingID string) (*RoutingInfo, error)
 }
 
 // ResolveOrganisation resolves organisation
-func (r *ChainRepository) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
+func (r *ChainRepository) ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, error) {
 	for idx := range r.repos {
 		info, err := r.repos[idx].ResolveOrganisation(orgHash)
 		if err == nil {

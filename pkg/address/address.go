@@ -14,11 +14,11 @@ var (
 
 // Address represents a bitMaelum address
 type Address struct {
-	Local string
-	Org   string
+	Local string // Local part is either <local>!  or  <local>@<organisation>!
+	Org   string // Org part is either "" in case of <local>!  or <local>@<organisation>!
 }
 
-// New returns a valid address structure based on the given address
+// NewAddress returns a valid address structure based on the given address
 func NewAddress(address string) (*Address, error) {
 	if !addressRegex.MatchString(strings.ToLower(address)) {
 		return nil, errors.New("incorrect address format specified")
@@ -60,6 +60,11 @@ func (a *Address) LocalHash() Hash {
 // OrgHash returns the hash of the organisation part of the address
 func (a *Address) OrgHash() Hash {
 	return NewHash(a.Org)
+}
+
+// HasOrganisationPart returns true when the address is an organisational address (user@org!)
+func (a *Address) HasOrganisationPart() bool {
+	return len(a.Org) > 0
 }
 
 // Bytes converts an address to []byte

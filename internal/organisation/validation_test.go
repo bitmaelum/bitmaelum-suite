@@ -83,10 +83,9 @@ func TestValidationType_String(t *testing.T) {
 func TestValidate(t *testing.T) {
 	v, _ := NewValidationTypeFromString("dns bitmaelum.org")
 
-	a, _ := address.NewOrganisationHash("bitmaelum")
-
+	a := address.NewHash("bitmaelum")
 	o := &Organisation{
-		Addr:       *a,
+		Addr:       a,
 		Name:       "BitMaelum",
 		PublicKey:  bmcrypto.PubKey{},
 		Validation: []ValidationType{*v},
@@ -102,7 +101,7 @@ func TestValidate(t *testing.T) {
 	resolver.SetCallbackTXT(func() ([]string, error) {
 		return []string{
 			"00000000004a3176f9b65605390bb81126e8ff1f6d03b1bd220c53e7a6b36d3e",
-			"948956a5b8703d218a9691be0d2ffea113fc3fb6c6407c1ad9c6edca090728c2",
+			"49aa67181f4a3176f9b65605390bb81126e8ff1f6d03b1bd220c53e7a6b36d3e",
 		}, nil
 	})
 	ok, err = v.Validate(*o)

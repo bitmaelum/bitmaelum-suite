@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	mockToken     = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODU2OTYsImlhdCI6MTU3Nzg4MjA5NiwibmJmIjoxNTc3ODgyMDk2LCJzdWIiOiJhNjlhNDM1NjM4MjViOTU3MzRlYWQ1NTVmNDg1YjdiYTM5M2QyOTEzNTYwMjUwOWQxYWRkYWQ3N2QyNGYxMDUxIn0.jtnAY2WUfQHBtDGduWQaig25c1uQClYXPEkYoU5cXkSQaiewoR1sU9zRLctEPN1nKuTSig6SNnXPrkBGEOg3Z69WlldubklG8k_f5DSZ3qjiWxS_mDiGhAqWhjBMe-IBWvp8oiblEqV2upRfR89XcMKHbBEQ20awrdSbI5zXbFw"
-	mockSignature = "jtnAY2WUfQHBtDGduWQaig25c1uQClYXPEkYoU5cXkSQaiewoR1sU9zRLctEPN1nKuTSig6SNnXPrkBGEOg3Z69WlldubklG8k_f5DSZ3qjiWxS_mDiGhAqWhjBMe-IBWvp8oiblEqV2upRfR89XcMKHbBEQ20awrdSbI5zXbFw"
+	mockToken     = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODU2OTYsImlhdCI6MTU3Nzg4MjA5NiwibmJmIjoxNTc3ODgyMDk2LCJzdWIiOiIxODgyYjkxYjdmNDlkNDc5Y2YxZWMyZjFlY2VlMzBkMGU1MzkyZTk2M2EyMTA5MDE1YjcxNDliZjcxMmFkMWI2In0.e9osJ5LRAkz6hgFMb9hSJe9SDcefi3l3t7q5NGXm4BisNKQa0lfmefVZXAdi5U8PKD3laSFjtkgIoN97TWc5o7b4KxFPziAb1KZ0JHz0oD8MBjFf0ebrlWv5GLsEozyFfyID9onvOVI6purY4ZBmiap3ncp2gHip7KFZQweVcR4"
+	mockSignature = "e9osJ5LRAkz6hgFMb9hSJe9SDcefi3l3t7q5NGXm4BisNKQa0lfmefVZXAdi5U8PKD3laSFjtkgIoN97TWc5o7b4KxFPziAb1KZ0JHz0oD8MBjFf0ebrlWv5GLsEozyFfyID9onvOVI6purY4ZBmiap3ncp2gHip7KFZQweVcR4"
 )
 
 func TestGenerateJWTToken(t *testing.T) {
@@ -21,9 +21,9 @@ func TestGenerateJWTToken(t *testing.T) {
 	privKey, err := bmcrypto.NewPrivKey(string(data))
 	assert.Nil(t, err)
 
-	haddr, _ := address.NewHash("test!")
+	haddr := address.NewHash("test!")
 
-	token, err := GenerateJWTToken(*haddr, *privKey)
+	token, err := GenerateJWTToken(haddr, *privKey)
 	assert.Nil(t, err)
 	assert.Equal(t, mockToken, token)
 }
@@ -32,9 +32,9 @@ func TestValidateJWTToken(t *testing.T) {
 	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
 	pubKey, _ := bmcrypto.NewPubKey(string(data))
 
-	haddr, _ := address.NewHash("test!")
+	haddr := address.NewHash("test!")
 
-	token, err := ValidateJWTToken(mockToken, *haddr, *pubKey)
+	token, err := ValidateJWTToken(mockToken, haddr, *pubKey)
 	assert.Nil(t, err)
 	assert.True(t, token.Valid)
 	assert.Equal(t, "RS256", token.Method.Alg())

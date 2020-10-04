@@ -35,13 +35,10 @@ func main() {
 }
 
 func resolveAddress(a string) {
-	addr, err := address.NewHash(a)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	addr := address.NewHash(a)
 
 	svc := container.GetResolveService()
-	info, err := svc.ResolveAddress(*addr)
+	info, err := svc.ResolveAddress(addr)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -66,13 +63,10 @@ func resolveRouting(routingID string) {
 }
 
 func resolveOrganisation(org string) {
-	orgHash, err := address.NewOrganisationHash(org)
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	orgHash := address.NewHash(org)
 
 	svc := container.GetResolveService()
-	info, err := svc.ResolveOrganisation(*orgHash)
+	info, err := svc.ResolveOrganisation(orgHash)
 	if err != nil {
 		logrus.Fatal(err)
 	}

@@ -72,7 +72,7 @@ func runTableQuery(db *sqliteRepo, query string) {
 	_, _ = st.Exec()
 }
 
-func (r *sqliteRepo) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
+func (r *sqliteRepo) ResolveAddress(addr address.Hash) (*AddressInfo, error) {
 	var (
 		h  string
 		p  string
@@ -122,7 +122,7 @@ func (r *sqliteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	}, nil
 }
 
-func (r *sqliteRepo) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
+func (r *sqliteRepo) ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, error) {
 	var (
 		h string
 		p string

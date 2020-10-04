@@ -23,7 +23,7 @@ func NewMockRepository() (Repository, error) {
 
 }
 
-func (r *mockRepo) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
+func (r *mockRepo) ResolveAddress(addr address.Hash) (*AddressInfo, error) {
 	if ai, ok := r.address[addr.String()]; ok {
 		return &ai, nil
 	}
@@ -39,7 +39,7 @@ func (r *mockRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	return nil, errKeyNotFound
 }
 
-func (r *mockRepo) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
+func (r *mockRepo) ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, error) {
 	if oi, ok := r.organisation[orgHash.String()]; ok {
 		return &oi, nil
 	}

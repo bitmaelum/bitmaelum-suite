@@ -290,7 +290,7 @@ func GetAccountOrDefault(vault *Vault, a string) *internal.AccountInfo {
 		return vault.GetDefaultAccount()
 	}
 
-	addr, err := address.New(a)
+	addr, err := address.NewAddress(a)
 	if err != nil {
 		logrus.Fatal(err)
 		os.Exit(1)

@@ -30,3 +30,27 @@ func TestHashFromString(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "102d0177f8ce6b0f5ada79780043ec90440529a53c98bd6043419e64c1d4274f", h.String())
 }
+
+func Test_Verify(t *testing.T) {
+	// joshua@bitmaelum!
+	h, _ := HashFromString("6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840")
+	assert.True(t, h.Verify(
+		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
+		"49aa67181f4a3176f9b65605390bb81126e8ff1f6d03b1bd220c53e7a6b36d3e",
+	))
+	assert.False(t, h.Verify(
+		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
+		"0000000000000006f9b65605390bb81126e8ff1f6d03b1bd220c53e7a6b36d3e",
+	))
+
+	// joshua!
+	h, _ = HashFromString("66c94b6643ada5661b2d940eb87502b5af0f47f40fd45ce0fa125502dfa9c1ee")
+	assert.True(t, h.Verify(
+		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
+		"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+	))
+	assert.False(t, h.Verify(
+		"fc52fabe94c0e037d2df4498e87481a6438960c9f73d517584a7a5c564535ac4",
+		"00000000000c1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+	))
+}

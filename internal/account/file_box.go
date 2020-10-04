@@ -12,19 +12,19 @@ import (
 )
 
 // Create a new mailbox in this account
-func (r *fileRepo) CreateBox(addr address.HashAddress, box int) error {
+func (r *fileRepo) CreateBox(addr address.Hash, box int) error {
 	fullPath := r.getPath(addr, getBoxAsString(box))
 
 	return os.MkdirAll(fullPath, 0700)
 }
 
 // Returns true when the given mailbox exists in this account
-func (r *fileRepo) ExistsBox(addr address.HashAddress, box int) bool {
+func (r *fileRepo) ExistsBox(addr address.Hash, box int) bool {
 	return r.pathExists(addr, getBoxAsString(box))
 }
 
 // Delete a given mailbox in the account
-func (r *fileRepo) DeleteBox(addr address.HashAddress, box int) error {
+func (r *fileRepo) DeleteBox(addr address.Hash, box int) error {
 	if box <= MaxMandatoryBoxID {
 		return errors.New("cannot delete mandatory box")
 	}
@@ -40,7 +40,7 @@ func (r *fileRepo) DeleteBox(addr address.HashAddress, box int) error {
 }
 
 // Retrieve a single mailbox
-func (r *fileRepo) GetBoxInfo(addr address.HashAddress, box int) (*BoxInfo, error) {
+func (r *fileRepo) GetBoxInfo(addr address.Hash, box int) (*BoxInfo, error) {
 	mbi := &BoxInfo{
 		ID: box,
 	}
@@ -60,7 +60,7 @@ func (r *fileRepo) GetBoxInfo(addr address.HashAddress, box int) (*BoxInfo, erro
 	return mbi, nil
 }
 
-func (r *fileRepo) GetAllBoxes(addr address.HashAddress) ([]BoxInfo, error) {
+func (r *fileRepo) GetAllBoxes(addr address.Hash) ([]BoxInfo, error) {
 	var list []BoxInfo
 
 	files, err := ioutil.ReadDir(r.getPath(addr, ""))

@@ -2,6 +2,7 @@ package address
 
 import (
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/hex"
 	"errors"
 	"regexp"
@@ -9,10 +10,11 @@ import (
 )
 
 var (
-	hashRegex    = regexp.MustCompile(`^[a-f0-9]{64}$`)
+	hashRegex = regexp.MustCompile(`^[a-f0-9]{64}$`)
 )
 
-// Hash is a SHA256'd address
+// Hash is a hashed entity. This could be an address, localpart, organisation part or anything else. Currently only
+// sha256 is supported
 type Hash string
 
 // NewHash generates a regular hash. Assumes you know what you are hashing
@@ -40,4 +42,11 @@ func (ha Hash) String() string {
 // Byte casts an hash address to string
 func (ha Hash) Byte() []byte {
 	return []byte(ha)
+}
+
+// VerifyHash will check if the hashes for local and org found matches the actual target hash
+func (ha Hash) Verify(localHash, orgHash Hash) bool {
+	target := NewHash(localHash.String() + orgHash.String())
+
+	return subtle.ConstantTimeCompare(ha.Byte(), target.Byte()) == 1
 }

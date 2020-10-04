@@ -57,7 +57,7 @@ func KeyRetrievalService(repo Repository) *Service {
 }
 
 // ResolveAddress resolves an address.
-func (s *Service) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
+func (s *Service) ResolveAddress(addr address.Hash) (*AddressInfo, error) {
 	logrus.Debugf("Resolving address %s", addr.String())
 	info, err := s.repo.ResolveAddress(addr)
 	if err != nil {
@@ -102,7 +102,7 @@ func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
 }
 
 // ResolveOrganisation resolves a route.
-func (s *Service) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
+func (s *Service) ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, error) {
 	logrus.Debugf("Resolving %s", orgHash)
 	info, err := s.repo.ResolveOrganisation(orgHash)
 	if err != nil {
@@ -114,10 +114,7 @@ func (s *Service) ResolveOrganisation(orgHash address.OrganisationHash) (*Organi
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadAddressInfo(info internal.AccountInfo) error {
-	hashAddr, err := address.NewHash(info.Address)
-	if err != nil {
-		return err
-	}
+	hashAddr := address.NewHash(info.Address)
 
 	return s.repo.UploadAddress(&AddressInfo{
 		Hash:      hashAddr.String(),
@@ -138,10 +135,7 @@ func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
 
 // UploadOrganisationInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
-	a, err := address.NewOrganisationHash(info.Addr)
-	if err != nil {
-		return err
-	}
+	a := address.NewHash(info.Addr)
 
 	return s.repo.UploadOrganisation(&OrganisationInfo{
 		Hash:        a.String(),

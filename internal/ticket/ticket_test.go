@@ -11,12 +11,12 @@ import (
 func TestTicket(t *testing.T) {
 	config.Server.Accounts.ProofOfWork = 4
 
-	from, _ := address.NewHash("foo!")
-	to, _ := address.NewHash("bar!")
-	tckt := NewUnvalidated(*from, *to, "foobar")
+	from := address.NewHash("foo!")
+	to := address.NewHash("bar!")
+	tckt := NewUnvalidated(from, to, "foobar")
 
-	assert.Equal(t, *from, tckt.From)
-	assert.Equal(t, *to, tckt.To)
+	assert.Equal(t, from, tckt.From)
+	assert.Equal(t, to, tckt.To)
 	assert.Equal(t, "foobar", tckt.SubscriptionID)
 	assert.NotEmpty(t, tckt.ID)
 	assert.False(t, tckt.Valid)
@@ -27,12 +27,12 @@ func TestTicket(t *testing.T) {
 func TestValidTicket(t *testing.T) {
 	config.Server.Accounts.ProofOfWork = 4
 
-	from, _ := address.NewHash("foo!")
-	to, _ := address.NewHash("bar!")
-	tckt := NewValidated(*from, *to, "foobar")
+	from := address.NewHash("foo!")
+	to := address.NewHash("bar!")
+	tckt := NewValidated(from, to, "foobar")
 
-	assert.Equal(t, *from, tckt.From)
-	assert.Equal(t, *to, tckt.To)
+	assert.Equal(t, from, tckt.From)
+	assert.Equal(t, to, tckt.To)
 	assert.Equal(t, "foobar", tckt.SubscriptionID)
 	assert.NotEmpty(t, tckt.ID)
 	assert.True(t, tckt.Valid)
@@ -41,9 +41,9 @@ func TestValidTicket(t *testing.T) {
 func TestNewSimpleTicket(t *testing.T) {
 	config.Server.Accounts.ProofOfWork = 4
 
-	from, _ := address.NewHash("foo!")
-	to, _ := address.NewHash("bar!")
-	tckt := NewValidated(*from, *to, "foobar")
+	from := address.NewHash("foo!")
+	to := address.NewHash("bar!")
+	tckt := NewValidated(from, to, "foobar")
 
 	tckt2 := NewSimpleTicket(tckt)
 	assert.Equal(t, tckt.ID, tckt2.ID)

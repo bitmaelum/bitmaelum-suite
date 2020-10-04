@@ -60,7 +60,7 @@ func TestCatalog_SetToAddress(t *testing.T) {
 
 	assert.Empty(t, c.To)
 
-	addr, err := address.New("jane!")
+	addr, err := address.NewAddress("jane!")
 	assert.NoError(t, err)
 	c.SetToAddress(*addr, "Jane Doe")
 	assert.Equal(t, "jane!", c.To.Address)

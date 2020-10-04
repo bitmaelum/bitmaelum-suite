@@ -9,7 +9,7 @@ import (
 )
 
 // GetTicket retrieves a ticket that can be used for uploading a message
-func (api *API) GetTicket(from, to address.HashAddress, subscriptionID string) (*ticket.Ticket, error) {
+func (api *API) GetTicket(from, to address.Hash, subscriptionID string) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
 		"from_addr":       from.String(),
 		"to_addr":         to.String(),
@@ -44,7 +44,7 @@ func (api *API) GetTicket(from, to address.HashAddress, subscriptionID string) (
 }
 
 // GetAnonymousTicket retrieves a ticket that can be used for uploading a message
-func (api *API) GetAnonymousTicket(from, to address.HashAddress, subscriptionID string) (*ticket.Ticket, error) {
+func (api *API) GetAnonymousTicket(from, to address.Hash, subscriptionID string) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
 		"from_addr":       from.String(),
 		"to_addr":         to.String(),
@@ -79,7 +79,7 @@ func (api *API) GetAnonymousTicket(from, to address.HashAddress, subscriptionID 
 
 // GetAnonymousTicketByProof will send proof of work for a given ticket ID. If correct, the server will
 // return the validated ticket back. From that point on we can use the ticket to send a message.
-func (api *API) GetAnonymousTicketByProof(from, to address.HashAddress, subscriptionID, ticketID string, proof uint64) (*ticket.Ticket, error) {
+func (api *API) GetAnonymousTicketByProof(from, to address.Hash, subscriptionID, ticketID string, proof uint64) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
 		"from_addr":      from.String(),
 		"to_addr":        to.String(),

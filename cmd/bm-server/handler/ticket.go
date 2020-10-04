@@ -30,8 +30,8 @@ Tickets works as follows:
 */
 
 type requestInfoType struct {
-	From           *address.HashAddress
-	To             *address.HashAddress
+	From           address.Hash
+	To             address.Hash
 	FromAddr       string `json:"from_addr"`
 	ToAddr         string `json:"to_addr"`
 	SubscriptionID string `json:"subscription_id"`
@@ -61,7 +61,7 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	// Create new ticket, no need to validation
 	// @TODO: subscription ID is empty here, but we probably want to fetch this directly from the server, not from the
 	//  ticket body request (clients do not know anything about subscription ids)
-	t := ticket.NewValidated(*requestInfo.From, *requestInfo.To, requestInfo.SubscriptionID)
+	t := ticket.NewValidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
 	ticketRepo := container.GetTicketRepo()
 	err = ticketRepo.Store(t)
 	if err != nil {
@@ -94,7 +94,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	logrus.Tracef("INFO FROM REQUEST: %#v", requestInfo)
 
 	// Check if the recipient address is valid
-	err = validateLocalAddress(*requestInfo.To)
+	err = validateLocalAddress(requestInfo.To)
 	if err != nil {
 		ErrorOut(w, err.(*httpError).StatusCode, err.Error())
 		return
@@ -117,7 +117,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 		logrus.Trace("empty tckt.ID, creating new unvalidated ticket...")
 
 		// Create new unvalidated ticket
-		tckt := ticket.NewUnvalidated(*requestInfo.From, *requestInfo.To, requestInfo.SubscriptionID)
+		tckt := ticket.NewUnvalidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
 
 		// Store ticket
 		ticketRepo := container.GetTicketRepo()
@@ -175,7 +175,7 @@ func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
 	subscriptionRepo := container.GetSubscriptionRepo()
 
 	// Check if we have the subscription stored
-	sub := subscription.New(*requestInfo.From, *requestInfo.To, requestInfo.SubscriptionID)
+	sub := subscription.New(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
 	if !subscriptionRepo.Has(&sub) {
 		return nil, &httpError{
 			err:        "invalid subscription",
@@ -184,7 +184,7 @@ func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
 	}
 
 	// Subscription is valid, create a new validated ticket
-	tckt := ticket.NewValidated(*requestInfo.From, *requestInfo.To, requestInfo.SubscriptionID)
+	tckt := ticket.NewValidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
 
 	// Store the new validated ticket back in the repo
 	ticketRepo := container.GetTicketRepo()
@@ -201,7 +201,7 @@ func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
 }
 
 // validateLocalAddress checks if the recipient in the ticket is a local address. Returns error if not
-func validateLocalAddress(addr address.HashAddress) error {
+func validateLocalAddress(addr address.Hash) error {
 	ar := container.GetAccountRepo()
 	if ar.Exists(addr) {
 		return nil
@@ -246,7 +246,7 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 	}
 
 	// Validate from / to address
-	requestInfo.From, err = address.HashFromString(requestInfo.FromAddr)
+	h, err := address.HashFromString(requestInfo.FromAddr)
 	if err != nil {
 		logrus.Trace("cannot create address: ", err)
 
@@ -255,8 +255,9 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 			StatusCode: http.StatusBadRequest,
 		}
 	}
+	requestInfo.From = *h
 
-	requestInfo.To, err = address.HashFromString(requestInfo.ToAddr)
+	h, err = address.HashFromString(requestInfo.ToAddr)
 	if err != nil {
 		logrus.Trace("cannot create address: ", err)
 
@@ -265,6 +266,7 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 			StatusCode: http.StatusBadRequest,
 		}
 	}
+	requestInfo.To = *h
 
 	// Return info
 	return requestInfo, nil

@@ -11,13 +11,13 @@ import (
 // Subscription is a tuple that can be used to identify a mailing list user. If one is found, we are allowed to skip
 // proof-of-work during uploading messages.
 type Subscription struct {
-	From           address.HashAddress
-	To             address.HashAddress
+	From           address.Hash
+	To             address.Hash
 	SubscriptionID string
 }
 
 // New returns a new subscription
-func New(from, to address.HashAddress, subscriptionID string) Subscription {
+func New(from, to address.Hash, subscriptionID string) Subscription {
 	return Subscription{
 		From:           from,
 		To:             to,

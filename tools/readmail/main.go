@@ -38,7 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	addr, err := address.New(opts.Addr)
+	addr, err := address.NewAddress(opts.Addr)
 	if err != nil {
 		panic(err)
 	}
@@ -47,10 +47,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	hash, err := address.NewHash(info.Address)
-	if err != nil {
-		panic(err)
-	}
+	hash := address.NewHash(info.Address)
 	fmt.Printf("Reading message for user %s (%s) (%s)\n", info.Name, info.Address, hash.String())
 
 	data, err := ioutil.ReadFile(opts.Path + "/header.json")

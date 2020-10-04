@@ -41,7 +41,7 @@ type MailboxMessages struct {
 }
 
 // GetMailboxList returns a list of mailboxes
-func (api *API) GetMailboxList(addr address.HashAddress) (*MailboxList, error) {
+func (api *API) GetMailboxList(addr address.Hash) (*MailboxList, error) {
 	in := &MailboxList{}
 
 	resp, statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/boxes", addr.String()), in)
@@ -57,7 +57,7 @@ func (api *API) GetMailboxList(addr address.HashAddress) (*MailboxList, error) {
 }
 
 // GetMailboxMessages returns a list of message within a specific mailbox
-func (api *API) GetMailboxMessages(addr address.HashAddress, box string) (*MailboxMessages, error) {
+func (api *API) GetMailboxMessages(addr address.Hash, box string) (*MailboxMessages, error) {
 	in := &MailboxMessages{}
 
 	body, statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s", addr.String(), box), in)

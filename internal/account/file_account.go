@@ -10,7 +10,7 @@ import (
 )
 
 // Create a new account for this address
-func (r *fileRepo) Create(addr address.HashAddress, pubKey bmcrypto.PubKey) error {
+func (r *fileRepo) Create(addr address.Hash, pubKey bmcrypto.PubKey) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 
@@ -42,12 +42,12 @@ func (r *fileRepo) Create(addr address.HashAddress, pubKey bmcrypto.PubKey) erro
 }
 
 // Returns true when the given account for this address exists
-func (r *fileRepo) Exists(addr address.HashAddress) bool {
+func (r *fileRepo) Exists(addr address.Hash) bool {
 	return r.pathExists(addr, "")
 }
 
 // Delete an account
-func (r *fileRepo) Delete(addr address.HashAddress) error {
+func (r *fileRepo) Delete(addr address.Hash) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 

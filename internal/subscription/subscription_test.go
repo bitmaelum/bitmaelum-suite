@@ -8,19 +8,19 @@ import (
 )
 
 func TestSubscription(t *testing.T) {
-	from, _ := address.NewHash("foo!")
-	to, _ := address.NewHash("bar!")
-	sub := New(*from, *to, "foobar")
+	from := address.NewHash("foo!")
+	to := address.NewHash("bar!")
+	sub := New(from, to, "foobar")
 
-	assert.Equal(t, *from, sub.From)
-	assert.Equal(t, *to, sub.To)
+	assert.Equal(t, from, sub.From)
+	assert.Equal(t, to, sub.To)
 	assert.Equal(t, "foobar", sub.SubscriptionID)
 }
 
 func TestCreateKey(t *testing.T) {
-	from, _ := address.NewHash("foo!")
-	to, _ := address.NewHash("bar!")
-	sub := New(*from, *to, "foobar")
+	from := address.NewHash("foo!")
+	to := address.NewHash("bar!")
+	sub := New(from, to, "foobar")
 
-	assert.Equal(t, "sub-40ab5cfb7bee2e2f2eb3e7b05a83ecba03a82a7920a182e614c0bce67602bfea", createKey(&sub))
+	assert.Equal(t, "sub-a6ca63d14d1c6c31ab71f60e7cd453aeac441e78372cddaa19667c05e45761e8", createKey(&sub))
 }

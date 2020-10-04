@@ -31,19 +31,15 @@ func FetchMessages(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo
 		logrus.Fatal(err)
 	}
 
-	addr, err := address.NewHash(info.Address)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
+	addr := address.NewHash(info.Address)
 	if box == "" || box == "0" {
-		displayBoxList(client, *addr)
+		displayBoxList(client, addr)
 	} else {
-		displayBox(client, *addr, info, box)
+		displayBox(client, addr, info, box)
 	}
 }
 
-func displayBoxList(client *api.API, addr address.HashAddress) {
+func displayBoxList(client *api.API, addr address.Hash) {
 	mbl, err := client.GetMailboxList(addr)
 	if err != nil {
 		logrus.Fatal(err)
@@ -65,7 +61,7 @@ func displayBoxList(client *api.API, addr address.HashAddress) {
 	table.Render()
 }
 
-func displayBox(client *api.API, addr address.HashAddress, info *internal.AccountInfo, box string) {
+func displayBox(client *api.API, addr address.Hash, info *internal.AccountInfo, box string) {
 	mb, err := client.GetMailboxMessages(addr, box)
 	if err != nil {
 		logrus.Fatal(err)

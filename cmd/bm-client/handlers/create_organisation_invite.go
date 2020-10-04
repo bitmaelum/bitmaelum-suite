@@ -12,13 +12,9 @@ import (
 )
 
 func CreateOrganisationInvite(vault *vault.Vault, orgName, addr, shortRoutingID string) {
-	org, err := address.NewOrganisationHash(orgName)
-	if err != nil {
-		fmt.Println("Incorrect organisation name")
-		os.Exit(1)
-	}
+	org := address.NewHash(orgName)
 
-	oi, err := vault.GetOrganisationInfo(*org)
+	oi, err := vault.GetOrganisationInfo(org)
 	if err != nil {
 		fmt.Println("Organisation not found in the vault")
 		os.Exit(1)
@@ -38,7 +34,7 @@ func CreateOrganisationInvite(vault *vault.Vault, orgName, addr, shortRoutingID 
 		os.Exit(1)
 	}
 
-	hashAddr, err := address.New(addr)
+	hashAddr, err := address.NewAddress(addr)
 	if err != nil {
 		fmt.Printf("Doesn't seem like '%s' is a valid BitMealum address", addr)
 		os.Exit(1)

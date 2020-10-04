@@ -57,7 +57,7 @@ func (*JwtToken) Middleware(next http.Handler) http.Handler {
 }
 
 // Check if the authorization contains a valid JWT token for the given address
-func checkToken(auth string, addr address.HashAddress) (*jwt.Token, error) {
+func checkToken(auth string, addr address.Hash) (*jwt.Token, error) {
 	if auth == "" {
 		logrus.Trace("auth: empty auth string")
 		return nil, ErrTokenNotValidated

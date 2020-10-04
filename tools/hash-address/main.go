@@ -21,7 +21,7 @@ func main() {
 			break
 		}
 
-		a, err := address.New(addr)
+		a, err := address.NewAddress(addr)
 		if err != nil {
 			panic(err)
 		}

@@ -8,7 +8,7 @@ import (
 )
 
 // GetPublicKey gets public key for given address on the mail server
-func (api *API) GetPublicKey(addr address.HashAddress) (string, error) {
+func (api *API) GetPublicKey(addr address.Hash) (string, error) {
 	type PubKeyOutput struct {
 		PublicKey string `json:"public_key"`
 	}
@@ -29,15 +29,18 @@ func (api *API) GetPublicKey(addr address.HashAddress) (string, error) {
 // CreateAccount creates new account on server
 func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
 	type inputCreateAccount struct {
-		Addr        address.HashAddress `json:"address"`
-		UserHash    string              `json:"user_hash"`
-		OrgHash     string              `json:"org_hash"`
-		Token       string              `json:"token"`
-		PublicKey   bmcrypto.PubKey     `json:"public_key"`
-		ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
+		Addr        address.Hash    `json:"address"`
+		UserHash    address.Hash    `json:"user_hash"`
+		OrgHash     address.Hash    `json:"org_hash"`
+		Token       string          `json:"token"`
+		PublicKey   bmcrypto.PubKey `json:"public_key"`
+		ProofOfWork pow.ProofOfWork `json:"proof_of_work"`
 	}
 
-	addr, _ := address.New(info.Address)
+	addr, err := address.NewAddress(info.Address)
+	if err != nil {
+		return err
+	}
 
 	input := &inputCreateAccount{
 		Addr:        addr.Hash(),

@@ -19,7 +19,7 @@ type Repository interface {
 
 // AddressRepository is the interface to manage address resolving
 type AddressRepository interface {
-	ResolveAddress(addr address.HashAddress) (*AddressInfo, error)
+	ResolveAddress(addr address.Hash) (*AddressInfo, error)
 	UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
 	DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error
 }
@@ -33,7 +33,7 @@ type RoutingRepository interface {
 
 // OrganisationRepository is the interface to manage organisation resolving
 type OrganisationRepository interface {
-	ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error)
+	ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, error)
 	UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
 	DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error
 }

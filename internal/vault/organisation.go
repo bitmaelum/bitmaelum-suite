@@ -13,13 +13,10 @@ func (v *Vault) AddOrganisation(organisation internal.OrganisationInfo) {
 }
 
 // GetOrganisationInfo tries to find the given organisation and returns the organisation from the vault
-func (v *Vault) GetOrganisationInfo(org address.OrganisationHash) (*internal.OrganisationInfo, error) {
+func (v *Vault) GetOrganisationInfo(org address.Hash) (*internal.OrganisationInfo, error) {
 
 	for i := range v.Data.Organisations {
-		h, err := address.NewOrganisationHash(v.Data.Organisations[i].Addr)
-		if err != nil {
-			continue
-		}
+		h := address.NewHash(v.Data.Organisations[i].Addr)
 		if h.String() == org.String() {
 			return &v.Data.Organisations[i], nil
 		}
@@ -29,7 +26,7 @@ func (v *Vault) GetOrganisationInfo(org address.OrganisationHash) (*internal.Org
 }
 
 // HasOrganisation returns true when the vault has an organisation for the given address
-func (v *Vault) HasOrganisation(org address.OrganisationHash) bool {
+func (v *Vault) HasOrganisation(org address.Hash) bool {
 	_, err := v.GetOrganisationInfo(org)
 
 	return err == nil

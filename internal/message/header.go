@@ -12,12 +12,12 @@ type ChecksumList map[string]string
 // Header represents a message header
 type Header struct {
 	From struct {
-		Addr        address.HashAddress `json:"address"`
-		PublicKey   string              `json:"public_key"`
-		ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
+		Addr        address.Hash    `json:"address"`
+		PublicKey   string          `json:"public_key"`
+		ProofOfWork pow.ProofOfWork `json:"proof_of_work"`
 	} `json:"from"`
 	To struct {
-		Addr address.HashAddress `json:"address"`
+		Addr address.Hash `json:"address"`
 	} `json:"to"`
 	Catalog struct {
 		Size         uint64       `json:"size"`

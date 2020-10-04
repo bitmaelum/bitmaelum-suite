@@ -64,7 +64,7 @@ func NewRemoteRepository(baseURL string, debug bool) Repository {
 }
 
 // Resolve
-func (r *remoteRepo) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
+func (r *remoteRepo) ResolveAddress(addr address.Hash) (*AddressInfo, error) {
 	kd, err := r.fetchAddress(addr)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (r *remoteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	}, nil
 }
 
-func (r *remoteRepo) ResolveOrganisation(orgHash address.OrganisationHash) (*OrganisationInfo, error) {
+func (r *remoteRepo) ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, error) {
 	kd, err := r.fetchOrganisation(orgHash)
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 
 func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
 	// Do a prefetch so we can get the current serial number
-	org, err := address.NewOrganisationHash(info.Hash)
+	org, err := address.HashFromString(info.Hash)
 	if err != nil {
 		return err
 	}
@@ -252,7 +252,7 @@ func (r *remoteRepo) DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 
 func (r *remoteRepo) DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error {
 	// Do a prefetch so we can get the current serial number
-	org, err := address.NewOrganisationHash(info.Hash)
+	org, err := address.HashFromString(info.Hash)
 	if err != nil {
 		return err
 	}
@@ -314,7 +314,7 @@ func logHTTP(v interface{}, err error) {
 	logrus.Tracef("%s\n\n", data)
 }
 
-func (r *remoteRepo) fetchAddress(addr address.HashAddress) (*AddressDownload, error) {
+func (r *remoteRepo) fetchAddress(addr address.Hash) (*AddressDownload, error) {
 	url := r.BaseURL + "/address/" + addr.String()
 
 	kd := &AddressDownload{}
@@ -338,7 +338,7 @@ func (r *remoteRepo) fetchRouting(routingID string) (*RoutingDownload, error) {
 	return rd, nil
 }
 
-func (r *remoteRepo) fetchOrganisation(addr address.OrganisationHash) (*OrganisationDownload, error) {
+func (r *remoteRepo) fetchOrganisation(addr address.Hash) (*OrganisationDownload, error) {
 	url := r.BaseURL + "/organisation/" + addr.String()
 
 	od := &OrganisationDownload{}

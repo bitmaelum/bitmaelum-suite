@@ -16,12 +16,12 @@ import (
 )
 
 type inputCreateAccount struct {
-	Addr        address.HashAddress `json:"address"`
-	UserHash    string              `json:"user_hash"`
-	OrgHash     string              `json:"org_hash"`
-	Token       string              `json:"token"`
-	PublicKey   bmcrypto.PubKey     `json:"public_key"`
-	ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
+	Addr        address.Hash    `json:"address"`
+	UserHash    string          `json:"user_hash"`
+	OrgHash     string          `json:"org_hash"`
+	Token       string          `json:"token"`
+	PublicKey   bmcrypto.PubKey `json:"public_key"`
+	ProofOfWork pow.ProofOfWork `json:"proof_of_work"`
 }
 
 // CreateAccount will create a new account
@@ -45,7 +45,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if the user+org matches our actual hash address
-	if !address.VerifyHash(input.Addr.String(), input.UserHash, input.OrgHash) {
+	if !input.Addr.Verify(address.NewHash(input.UserHash), address.NewHash(input.OrgHash)) {
 		ErrorOut(w, http.StatusBadRequest, "cant verify the address hashes")
 		return
 	}
@@ -54,7 +54,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	var pubKey bmcrypto.PubKey = config.Server.Routing.PublicKey
 	if input.OrgHash != "" {
 		r := container.GetResolveService()
-		oh, err := address.NewOrganisationHash(input.OrgHash)
+		oh, err := address.HashFromString(input.OrgHash)
 		if err != nil {
 			ErrorOut(w, http.StatusBadRequest, "incorrect org hash")
 			return

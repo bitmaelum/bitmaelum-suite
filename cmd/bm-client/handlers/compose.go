@@ -142,14 +142,8 @@ func generateHeader(info internal.AccountInfo, toInfo *resolver.AddressInfo, cat
 		return nil, err
 	}
 
-	header.To.Addr = address.HashAddress(toInfo.Hash)
-
-	h, err := address.NewHash(info.Address)
-	if err != nil {
-		return nil, err
-	}
-	header.From.Addr = *h
-
+	header.To.Addr = address.NewHash(toInfo.Hash)
+	header.From.Addr = address.NewHash(info.Address)
 	header.From.PublicKey = info.PubKey.S
 	header.From.ProofOfWork.Bits = info.Pow.Bits
 	header.From.ProofOfWork.Proof = info.Pow.Proof

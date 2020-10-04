@@ -93,7 +93,7 @@ func ProcessMessage(msgID string) {
 func deliverLocal(info *resolver.AddressInfo, msgID string) error {
 	// Deliver mail to local user's inbox
 	ar := container.GetAccountRepo()
-	err := ar.SendToBox(address.HashAddress(info.Hash), account.BoxInbox, msgID)
+	err := ar.SendToBox(address.NewHash(info.Hash), account.BoxInbox, msgID)
 	if err != nil {
 		// Something went wrong.. let's try and move the message back to the retry queue
 		logrus.Warnf("cannot deliver %s locally. Moving to retry queue", msgID)
@@ -118,8 +118,8 @@ func deliverRemote(header *message.Header, info *resolver.AddressInfo, routingIn
 	}
 
 	// Get upload ticket
-	logrus.Tracef("getting ticket for %s:%s:%s", header.From.Addr, address.HashAddress(info.Hash), "")
-	t, err := client.GetAnonymousTicket(header.From.Addr, address.HashAddress(info.Hash), "")
+	logrus.Tracef("getting ticket for %s:%s:%s", header.From.Addr, address.NewHash(info.Hash), "")
+	t, err := client.GetAnonymousTicket(header.From.Addr, address.NewHash(info.Hash), "")
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 func testRepoAddress(t *testing.T, repo AddressRepository) {
-	a, err := address.New("example!")
+	a, err := address.NewAddress("example!")
 	assert.NoError(t, err)
 
 	addr, err := repo.ResolveAddress(a.Hash())
@@ -77,9 +77,9 @@ func testRepoRouting(t *testing.T, repo RoutingRepository) {
 }
 
 func testRepoOrganisation(t *testing.T, repo OrganisationRepository) {
-	org, _ := address.NewOrganisationHash("acme")
+	org := address.NewHash("acme")
 
-	r, err := repo.ResolveOrganisation(*org)
+	r, err := repo.ResolveOrganisation(org)
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, r)
 
@@ -96,14 +96,14 @@ func testRepoOrganisation(t *testing.T, repo OrganisationRepository) {
 	err = repo.UploadOrganisation(&oi, *privKey, *pow)
 	assert.NoError(t, err)
 
-	r, err = repo.ResolveOrganisation(*org)
+	r, err = repo.ResolveOrganisation(org)
 	assert.NoError(t, err)
 	assert.Equal(t, org.String(), r.Hash)
 
 	err = repo.DeleteOrganisation(&oi, *privKey)
 	assert.NoError(t, err)
 
-	r, err = repo.ResolveOrganisation(*org)
+	r, err = repo.ResolveOrganisation(org)
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, r)
 }
