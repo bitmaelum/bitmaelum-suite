@@ -62,6 +62,7 @@ func Test_New(t *testing.T) {
 	// Open vault with wrong password
 	v, err = New("/my/dir/vault.json", []byte("incorrect password"))
 	assert.Errorf(t, err, "incorrect password")
+	assert.Nil(t, v)
 
 	// Open vault with correct password
 	v, err = New("/my/dir/vault.json", []byte("secret"))
