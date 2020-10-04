@@ -12,7 +12,7 @@ import (
 func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 
-	headers := []string{"Organisation", "Name", "Validation"}
+	headers := []string{"Organisation", "Name", "ID", "Validation"}
 	align := []int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT}
 
 	if displayKeys {
@@ -35,6 +35,7 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 				"...@" + org.Addr + "!",
 				org.Name,
 				"-",
+				o.Addr.String(),
 			}
 			if displayKeys {
 				values = append(values, org.PrivKey.S, org.PubKey.S)
@@ -58,6 +59,7 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 					"...@" + org.Addr + "!",
 					org.Name,
 					valstr,
+					o.Addr.String(),
 				}
 			} else {
 				// Additional validation rows
@@ -65,6 +67,7 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 					"",
 					"",
 					valstr,
+					"",
 				}
 			}
 

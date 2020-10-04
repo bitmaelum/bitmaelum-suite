@@ -20,6 +20,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/password"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -32,6 +33,9 @@ const (
 	VersionV0 = iota
 	VersionV1
 )
+
+// Override for testing purposes
+var fs = afero.NewOsFs()
 
 // VaultPassword is the given password through the commandline for opening the vault
 var VaultPassword string
@@ -79,9 +83,9 @@ func New(p string, pwd []byte) (*Vault, error) {
 	}
 
 	// Create new vault when we cannot find the one specified
-	_, err = os.Stat(p)
+	_, err = fs.Stat(p)
 	if _, ok := err.(*os.PathError); ok {
-		err = os.MkdirAll(filepath.Dir(p), 0777)
+		err = fs.MkdirAll(filepath.Dir(p), 0777)
 		if err != nil {
 			return nil, err
 		}
@@ -128,8 +132,12 @@ func (v *Vault) sanityCheck() bool {
 
 // WriteToDisk saves the vault data back to disk
 func (v *Vault) WriteToDisk() error {
-	if !v.sanityCheck() {
-		return errors.New("Vault seems to have invalid data. Refusing to overwrite the current vault")
+	// Only do sanity chck when file is already present
+	_, err := fs.Stat(v.path)
+	fileExists := err == nil
+
+	if fileExists && !v.sanityCheck() {
+		return errors.New("vault seems to have invalid data. Refusing to overwrite the current vault")
 	}
 
 	container, err := v.EncryptContainer()
@@ -138,18 +146,21 @@ func (v *Vault) WriteToDisk() error {
 	}
 
 	// Make backup of the vault for now
-	err = os.Rename(v.path, v.path+".backup")
-	if err != nil {
-		return err
+	if fileExists {
+		err = fs.Rename(v.path, v.path+".backup")
+		if err != nil {
+			return err
+		}
 	}
 
-	// Write vault container back through temp file
-	return internal.WriteFileWithLock(v.path, container, 0600)
+	// Write vault container back
+	err = afero.WriteFile(fs, v.path, container, 0600)
+	return err
 }
 
 // ReadFromDisk will read the account data from disk and stores this into the vault data
 func (v *Vault) ReadFromDisk() error {
-	data, err := internal.ReadFileWithLock(v.path)
+	data, err := afero.ReadFile(fs, v.path)
 	if err != nil {
 		return err
 	}
