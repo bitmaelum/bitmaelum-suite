@@ -4,11 +4,13 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+	"github.com/davecgh/go-spew/spew"
 )
 
 // GetPublicKey gets public key for given address on the mail server
-func (api *API) GetPublicKey(addr address.Hash) (string, error) {
+func (api *API) GetPublicKey(addr hash.Hash) (string, error) {
 	type PubKeyOutput struct {
 		PublicKey string `json:"public_key"`
 	}
@@ -29,9 +31,9 @@ func (api *API) GetPublicKey(addr address.Hash) (string, error) {
 // CreateAccount creates new account on server
 func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
 	type inputCreateAccount struct {
-		Addr        address.Hash    `json:"address"`
-		UserHash    address.Hash    `json:"user_hash"`
-		OrgHash     address.Hash    `json:"org_hash"`
+		Addr        hash.Hash       `json:"address"`
+		UserHash    hash.Hash       `json:"user_hash"`
+		OrgHash     hash.Hash       `json:"org_hash"`
 		Token       string          `json:"token"`
 		PublicKey   bmcrypto.PubKey `json:"public_key"`
 		ProofOfWork pow.ProofOfWork `json:"proof_of_work"`
@@ -50,6 +52,8 @@ func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
 		PublicKey:   info.PubKey,
 		ProofOfWork: info.Pow,
 	}
+
+	spew.Dump(input)
 
 	resp, statusCode, err := api.PostJSON("/account", input)
 	if err != nil {

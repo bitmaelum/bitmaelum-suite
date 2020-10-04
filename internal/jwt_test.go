@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 	"github.com/vtolstov/jwt-go"
 )
@@ -21,7 +21,7 @@ func TestGenerateJWTToken(t *testing.T) {
 	privKey, err := bmcrypto.NewPrivKey(string(data))
 	assert.Nil(t, err)
 
-	haddr := address.NewHash("test!")
+	haddr := hash.New("test!")
 
 	token, err := GenerateJWTToken(haddr, *privKey)
 	assert.Nil(t, err)
@@ -32,7 +32,7 @@ func TestValidateJWTToken(t *testing.T) {
 	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
 	pubKey, _ := bmcrypto.NewPubKey(string(data))
 
-	haddr := address.NewHash("test!")
+	haddr := hash.New("test!")
 
 	token, err := ValidateJWTToken(mockToken, haddr, *pubKey)
 	assert.Nil(t, err)

@@ -17,6 +17,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -142,8 +143,8 @@ func generateHeader(info internal.AccountInfo, toInfo *resolver.AddressInfo, cat
 		return nil, err
 	}
 
-	header.To.Addr = address.NewHash(toInfo.Hash)
-	header.From.Addr = address.NewHash(info.Address)
+	header.To.Addr = hash.New(toInfo.Hash)
+	header.From.Addr = hash.New(info.Address)
 	header.From.PublicKey = info.PubKey.S
 	header.From.ProofOfWork.Bits = info.Pow.Bits
 	header.From.ProofOfWork.Proof = info.Pow.Proof

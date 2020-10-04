@@ -1,13 +1,12 @@
 package config
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/google/uuid"
 	"github.com/spf13/afero"
 )
@@ -62,16 +61,13 @@ func Generate() (*Routing, error) {
 		return nil, err
 	}
 
-	sum := sha256.Sum256([]byte(id.String()))
-	routingID := hex.EncodeToString(sum[:])
-
 	privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Routing{
-		RoutingID:  routingID,
+		RoutingID:  hash.New(id.String()).String(),
 		PrivateKey: *privKey,
 		PublicKey:  *pubKey,
 	}, nil

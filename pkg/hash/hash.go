@@ -1,4 +1,4 @@
-package address
+package hash
 
 import (
 	"crypto/sha256"
@@ -17,15 +17,15 @@ var (
 // sha256 is supported
 type Hash string
 
-// NewHash generates a regular hash. Assumes you know what you are hashing
-func NewHash(s string) Hash {
+// New generates a regular hash. Assumes you know what you are hashing
+func New(s string) Hash {
 	sum := sha256.Sum256([]byte(s))
 
 	return Hash(hex.EncodeToString(sum[:]))
 }
 
-// HashFromString generates a hash address based on the given string hash
-func HashFromString(hash string) (*Hash, error) {
+// NewFromHash generates a hash address based on the given string hash
+func NewFromHash(hash string) (*Hash, error) {
 	if !hashRegex.MatchString(strings.ToLower(hash)) {
 		return nil, errors.New("incorrect hash address format specified")
 	}
@@ -46,7 +46,7 @@ func (ha Hash) Byte() []byte {
 
 // VerifyHash will check if the hashes for local and org found matches the actual target hash
 func (ha Hash) Verify(localHash, orgHash Hash) bool {
-	target := NewHash(localHash.String() + orgHash.String())
+	target := New(localHash.String() + orgHash.String())
 
 	return subtle.ConstantTimeCompare(ha.Byte(), target.Byte()) == 1
 }

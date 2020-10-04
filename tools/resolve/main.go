@@ -6,7 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,7 +35,7 @@ func main() {
 }
 
 func resolveAddress(a string) {
-	addr := address.NewHash(a)
+	addr := hash.New(a)
 
 	svc := container.GetResolveService()
 	info, err := svc.ResolveAddress(addr)
@@ -63,7 +63,7 @@ func resolveRouting(routingID string) {
 }
 
 func resolveOrganisation(org string) {
-	orgHash := address.NewHash(org)
+	orgHash := hash.New(org)
 
 	svc := container.GetResolveService()
 	info, err := svc.ResolveOrganisation(orgHash)

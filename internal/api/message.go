@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +17,7 @@ type Message struct {
 }
 
 // GetMessage retrieves a message header + catalog from a message box
-func (api *API) GetMessage(addr address.Hash, box, messageID string) (*Message, error) {
+func (api *API) GetMessage(addr hash.Hash, box, messageID string) (*Message, error) {
 	in := &Message{}
 
 	url := fmt.Sprintf("/account/%s/box/%s/message/%s", addr.String(), box, messageID)
@@ -35,7 +35,7 @@ func (api *API) GetMessage(addr address.Hash, box, messageID string) (*Message, 
 }
 
 // GetMessageBlock retrieves a message block
-func (api *API) GetMessageBlock(addr address.Hash, box, messageID, blockID string) ([]byte, error) {
+func (api *API) GetMessageBlock(addr hash.Hash, box, messageID, blockID string) ([]byte, error) {
 	body, statusCode, err := api.Get(fmt.Sprintf("/account/%s/box/%s/message/%s/block/%s", addr.String(), box, messageID, blockID))
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (api *API) GetMessageBlock(addr address.Hash, box, messageID, blockID strin
 }
 
 // GetMessageAttachment retrieves a message attachment reader
-func (api *API) GetMessageAttachment(addr address.Hash, box, messageID, attachmentID string) (io.Reader, error) {
+func (api *API) GetMessageAttachment(addr hash.Hash, box, messageID, attachmentID string) (io.Reader, error) {
 	r, statusCode, err := api.GetReader(fmt.Sprintf("/account/%s/box/%s/message/%s/attachment/%s", addr.String(), box, messageID, attachmentID))
 	if err != nil {
 		return nil, err

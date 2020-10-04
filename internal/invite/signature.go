@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // override for testing purposes
@@ -16,7 +16,7 @@ var timeNow = time.Now
 
 // Token holds all info for an invitation
 type Token struct {
-	Address   address.Hash
+	Address   hash.Hash
 	RoutingID string
 	Expiry    time.Time
 	Signature []byte
@@ -37,7 +37,7 @@ func ParseInviteToken(data string) (*Token, error) {
 	}
 
 	// Convert all parts to the correct formats
-	a, err := address.HashFromString(parts[0])
+	a, err := hash.NewFromHash(parts[0])
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func ParseInviteToken(data string) (*Token, error) {
 }
 
 // NewInviteToken will create a new invitation token that can be used to create an address on a mailserver
-func NewInviteToken(addr address.Hash, routingID string, validUntil time.Time, pk bmcrypto.PrivKey) (*Token, error) {
+func NewInviteToken(addr hash.Hash, routingID string, validUntil time.Time, pk bmcrypto.PrivKey) (*Token, error) {
 	h := generateHash(addr, routingID, validUntil)
 	sig, err := bmcrypto.Sign(pk, h)
 	if err != nil {
@@ -99,7 +99,7 @@ func (token *Token) Verify(routingID string, pubKey bmcrypto.PubKey) bool {
 	return ok
 }
 
-func generateHash(addr address.Hash, routingID string, validUntil time.Time) []byte {
+func generateHash(addr hash.Hash, routingID string, validUntil time.Time) []byte {
 	h := sha256.Sum256([]byte(addr.String() + routingID + strconv.FormatInt(validUntil.Unix(), 10)))
 
 	return h[:]

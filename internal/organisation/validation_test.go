@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -83,7 +83,7 @@ func TestValidationType_String(t *testing.T) {
 func TestValidate(t *testing.T) {
 	v, _ := NewValidationTypeFromString("dns bitmaelum.org")
 
-	a := address.NewHash("bitmaelum")
+	a := hash.New("bitmaelum")
 	o := &Organisation{
 		Addr:       a,
 		Name:       "BitMaelum",

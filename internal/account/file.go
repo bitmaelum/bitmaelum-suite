@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,7 +35,7 @@ func NewFileRepository(basePath string) Repository {
 }
 
 // Store data on the given account path
-func (r *fileRepo) store(addr address.Hash, path string, data []byte) error {
+func (r *fileRepo) store(addr hash.Hash, path string, data []byte) error {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("storing file on %s", fullPath)
 
@@ -43,7 +43,7 @@ func (r *fileRepo) store(addr address.Hash, path string, data []byte) error {
 }
 
 // Check if path in account exists
-func (r *fileRepo) pathExists(addr address.Hash, path string) bool {
+func (r *fileRepo) pathExists(addr hash.Hash, path string) bool {
 	logrus.Trace("ADDR: ", addr)
 	logrus.Trace("PATH: ", path)
 	fullPath := r.getPath(addr, path)
@@ -53,7 +53,7 @@ func (r *fileRepo) pathExists(addr address.Hash, path string) bool {
 }
 
 // // Delete path in account
-// func (r *fileRepo) delete(addr address.Hash, path string) error {
+// func (r *fileRepo) delete(addr hash.Hash, path string) error {
 // 	fullPath := r.getPath(addr, path)
 // 	logrus.Debugf("deleting file %s", fullPath)
 //
@@ -61,7 +61,7 @@ func (r *fileRepo) pathExists(addr address.Hash, path string) bool {
 // }
 
 // Retrieve data on path in account
-func (r *fileRepo) fetch(addr address.Hash, path string) ([]byte, error) {
+func (r *fileRepo) fetch(addr hash.Hash, path string) ([]byte, error) {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file %s", fullPath)
 
@@ -74,7 +74,7 @@ func (r *fileRepo) fetch(addr address.Hash, path string) ([]byte, error) {
 	return b, nil
 }
 
-func (r *fileRepo) fetchReader(addr address.Hash, path string) (rdr io.ReadCloser, size int64, err error) {
+func (r *fileRepo) fetchReader(addr hash.Hash, path string) (rdr io.ReadCloser, size int64, err error) {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file reader %s", fullPath)
 
@@ -92,7 +92,7 @@ func (r *fileRepo) fetchReader(addr address.Hash, path string) (rdr io.ReadClose
 }
 
 // Retrieves a data structure based on JSON
-func (r *fileRepo) fetchJSON(addr address.Hash, path string, v interface{}) error {
+func (r *fileRepo) fetchJSON(addr hash.Hash, path string, v interface{}) error {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file %s", fullPath)
 
@@ -111,7 +111,7 @@ func (r *fileRepo) fetchJSON(addr address.Hash, path string, v interface{}) erro
 }
 
 // Generate the path in account
-func (r *fileRepo) getPath(addr address.Hash, suffix string) string {
+func (r *fileRepo) getPath(addr hash.Hash, suffix string) string {
 	strAddr := strings.ToLower(addr.String())
 	suffix = strings.ToLower(suffix)
 

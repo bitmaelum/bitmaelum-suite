@@ -2,8 +2,8 @@ package internal
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
@@ -42,7 +42,7 @@ type RoutingInfo struct {
 }
 
 func InfoToOrg(info OrganisationInfo) (*organisation.Organisation, error) {
-	a := address.NewHash(info.Addr)
+	a := hash.New(info.Addr)
 
 	return &organisation.Organisation{
 		Addr:       a,

@@ -3,14 +3,14 @@ package account
 import (
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
 
 // Create a new account for this address
-func (r *fileRepo) Create(addr address.Hash, pubKey bmcrypto.PubKey) error {
+func (r *fileRepo) Create(addr hash.Hash, pubKey bmcrypto.PubKey) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 
@@ -42,12 +42,12 @@ func (r *fileRepo) Create(addr address.Hash, pubKey bmcrypto.PubKey) error {
 }
 
 // Returns true when the given account for this address exists
-func (r *fileRepo) Exists(addr address.Hash) bool {
+func (r *fileRepo) Exists(addr hash.Hash) bool {
 	return r.pathExists(addr, "")
 }
 
 // Delete an account
-func (r *fileRepo) Delete(addr address.Hash) error {
+func (r *fileRepo) Delete(addr hash.Hash) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 

@@ -25,13 +25,10 @@ func Test_New(t *testing.T) {
 	ok, _ := afero.Exists(fs, "/my/dir/vault.json")
 	assert.True(t, ok)
 
-
 	// Reopen again
 	v, err = New("/my/dir/vault.json", []byte("secret"))
 	assert.NoError(t, err)
 	assert.NotNil(t, v)
-
-
 
 	// refuse to overwrite vault with empty vault
 	err = v.WriteToDisk()

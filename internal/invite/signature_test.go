@@ -4,13 +4,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSignature(t *testing.T) {
-	addr := address.NewHash("john@acme!")
+	addr := hash.New("john@acme!")
 
 	privKey, err := bmcrypto.NewPrivKey("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
 	assert.NoError(t, err)
@@ -37,7 +37,7 @@ func TestSignature(t *testing.T) {
 	assert.NoError(t, err)
 	ok = it.Verify("12345678", *pubKey)
 	assert.True(t, ok)
-	it.Address = address.NewHash("doctor@evil!")
+	it.Address = hash.New("doctor@evil!")
 	ok = it.Verify("12345678", *pubKey)
 	assert.False(t, ok)
 
@@ -78,14 +78,14 @@ func TestParseInviteToken(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "12345678", tok.RoutingID)
 	assert.Equal(t, int64(1262608496), tok.Expiry.Unix())
-	assert.Equal(t, address.Hash("1342d10eddfbdd98c6c4b93dd676073c50c6bed8f63819044ef9c6a6ff371966"), tok.Address)
+	assert.Equal(t, hash.Hash("1342d10eddfbdd98c6c4b93dd676073c50c6bed8f63819044ef9c6a6ff371966"), tok.Address)
 	assert.Equal(t, []byte{0x6e, 0x1f, 0x15, 0x17, 0xa7, 0x25, 0x4a, 0x5a, 0x6e, 0x2, 0x7e, 0xb5, 0xf7, 0xbf, 0x87, 0xef, 0xb8, 0xe0, 0xfb, 0x66, 0x82, 0x94, 0xfc, 0x8, 0xc9, 0x61, 0x3a, 0xbd, 0xc5, 0xeb, 0xc2, 0x51, 0xd1, 0x9, 0xc2, 0xeb, 0x33, 0x28, 0xf8, 0x19, 0x16, 0x5c, 0x9b, 0x5b, 0x3d, 0x13, 0x31, 0x15, 0x86, 0x17, 0x43, 0x82, 0x90, 0x73, 0x5a, 0x53, 0xd9, 0x2e, 0xf, 0x30, 0xac, 0x39, 0xb, 0xe}, tok.Signature)
 }
 
 /*
 
 func TestSignature(t *testing.T) {
-	addr, _ := address.NewHash("john@acme!")
+	addr, _ := address.New("john@acme!")
 
 	privKey, err := bmcrypto.NewPrivKey("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
 	assert.NoError(t, err)

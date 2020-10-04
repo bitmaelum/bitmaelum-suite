@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // GetTicket retrieves a ticket that can be used for uploading a message
-func (api *API) GetTicket(from, to address.Hash, subscriptionID string) (*ticket.Ticket, error) {
+func (api *API) GetTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
 		"from_addr":       from.String(),
 		"to_addr":         to.String(),
@@ -44,7 +44,7 @@ func (api *API) GetTicket(from, to address.Hash, subscriptionID string) (*ticket
 }
 
 // GetAnonymousTicket retrieves a ticket that can be used for uploading a message
-func (api *API) GetAnonymousTicket(from, to address.Hash, subscriptionID string) (*ticket.Ticket, error) {
+func (api *API) GetAnonymousTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
 		"from_addr":       from.String(),
 		"to_addr":         to.String(),
@@ -79,7 +79,7 @@ func (api *API) GetAnonymousTicket(from, to address.Hash, subscriptionID string)
 
 // GetAnonymousTicketByProof will send proof of work for a given ticket ID. If correct, the server will
 // return the validated ticket back. From that point on we can use the ticket to send a message.
-func (api *API) GetAnonymousTicketByProof(from, to address.Hash, subscriptionID, ticketID string, proof uint64) (*ticket.Ticket, error) {
+func (api *API) GetAnonymousTicketByProof(from, to hash.Hash, subscriptionID, ticketID string, proof uint64) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
 		"from_addr":      from.String(),
 		"to_addr":        to.String(),

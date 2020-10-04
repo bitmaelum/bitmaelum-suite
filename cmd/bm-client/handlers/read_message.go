@@ -11,8 +11,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 )
@@ -29,7 +29,7 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 	}
 
 	// Fetch message from API
-	addr := address.NewHash(info.Address)
+	addr := hash.New(info.Address)
 	msg, err := client.GetMessage(addr, box, messageID)
 	if err != nil {
 		logrus.Fatal(err)

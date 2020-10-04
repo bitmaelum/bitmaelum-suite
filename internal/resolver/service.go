@@ -7,8 +7,8 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/sirupsen/logrus"
 )
@@ -57,7 +57,7 @@ func KeyRetrievalService(repo Repository) *Service {
 }
 
 // ResolveAddress resolves an address.
-func (s *Service) ResolveAddress(addr address.Hash) (*AddressInfo, error) {
+func (s *Service) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 	logrus.Debugf("Resolving address %s", addr.String())
 	info, err := s.repo.ResolveAddress(addr)
 	if err != nil {
@@ -102,7 +102,7 @@ func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
 }
 
 // ResolveOrganisation resolves a route.
-func (s *Service) ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, error) {
+func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
 	logrus.Debugf("Resolving %s", orgHash)
 	info, err := s.repo.ResolveOrganisation(orgHash)
 	if err != nil {
@@ -114,7 +114,10 @@ func (s *Service) ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, 
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadAddressInfo(info internal.AccountInfo) error {
-	hashAddr := address.NewHash(info.Address)
+	hashAddr, err := hash.NewFromHash(info.Address)
+	if err != nil {
+		return err
+	}
 
 	return s.repo.UploadAddress(&AddressInfo{
 		Hash:      hashAddr.String(),
@@ -135,7 +138,7 @@ func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
 
 // UploadOrganisationInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
-	a := address.NewHash(info.Addr)
+	a := hash.New(info.Addr)
 
 	return s.repo.UploadOrganisation(&OrganisationInfo{
 		Hash:        a.String(),

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 var (
@@ -48,18 +50,18 @@ func (a *Address) String() string {
 }
 
 // Hash converts an address to a hashed value
-func (a *Address) Hash() Hash {
-	return NewHash(a.LocalHash().String() + a.OrgHash().String())
+func (a *Address) Hash() hash.Hash {
+	return hash.New(a.LocalHash().String() + a.OrgHash().String())
 }
 
 // LocalHash returns the hash of the local/user part of the address
-func (a *Address) LocalHash() Hash {
-	return NewHash(a.Local)
+func (a *Address) LocalHash() hash.Hash {
+	return hash.New(a.Local)
 }
 
 // OrgHash returns the hash of the organisation part of the address
-func (a *Address) OrgHash() Hash {
-	return NewHash(a.Org)
+func (a *Address) OrgHash() hash.Hash {
+	return hash.New(a.Org)
 }
 
 // HasOrganisationPart returns true when the address is an organisational address (user@org!)

@@ -5,19 +5,19 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // Subscription is a tuple that can be used to identify a mailing list user. If one is found, we are allowed to skip
 // proof-of-work during uploading messages.
 type Subscription struct {
-	From           address.Hash
-	To             address.Hash
+	From           hash.Hash
+	To             hash.Hash
 	SubscriptionID string
 }
 
 // New returns a new subscription
-func New(from, to address.Hash, subscriptionID string) Subscription {
+func New(from, to hash.Hash, subscriptionID string) Subscription {
 	return Subscription{
 		From:           from,
 		To:             to,

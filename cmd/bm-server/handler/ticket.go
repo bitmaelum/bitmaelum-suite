@@ -8,7 +8,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,8 +30,8 @@ Tickets works as follows:
 */
 
 type requestInfoType struct {
-	From           address.Hash
-	To             address.Hash
+	From           hash.Hash
+	To             hash.Hash
 	FromAddr       string `json:"from_addr"`
 	ToAddr         string `json:"to_addr"`
 	SubscriptionID string `json:"subscription_id"`
@@ -201,7 +201,7 @@ func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
 }
 
 // validateLocalAddress checks if the recipient in the ticket is a local address. Returns error if not
-func validateLocalAddress(addr address.Hash) error {
+func validateLocalAddress(addr hash.Hash) error {
 	ar := container.GetAccountRepo()
 	if ar.Exists(addr) {
 		return nil
@@ -246,7 +246,7 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 	}
 
 	// Validate from / to address
-	h, err := address.HashFromString(requestInfo.FromAddr)
+	h, err := hash.NewFromHash(requestInfo.FromAddr)
 	if err != nil {
 		logrus.Trace("cannot create address: ", err)
 
@@ -257,7 +257,7 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 	}
 	requestInfo.From = *h
 
-	h, err = address.HashFromString(requestInfo.ToAddr)
+	h, err = hash.NewFromHash(requestInfo.ToAddr)
 	if err != nil {
 		logrus.Trace("cannot create address: ", err)
 

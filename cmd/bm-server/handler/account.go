@@ -8,15 +8,15 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
 type inputCreateAccount struct {
-	Addr        address.Hash    `json:"address"`
+	Addr        hash.Hash       `json:"address"`
 	UserHash    string          `json:"user_hash"`
 	OrgHash     string          `json:"org_hash"`
 	Token       string          `json:"token"`
@@ -45,7 +45,17 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if the user+org matches our actual hash address
-	if !input.Addr.Verify(address.NewHash(input.UserHash), address.NewHash(input.OrgHash)) {
+	userHash, err := hash.NewFromHash(input.UserHash)
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "invalid body: user_hash")
+		return
+	}
+	orgHash, err := hash.NewFromHash(input.OrgHash)
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "invalid body: org_hash")
+		return
+	}
+	if !input.Addr.Verify(*userHash, *orgHash) {
 		ErrorOut(w, http.StatusBadRequest, "cant verify the address hashes")
 		return
 	}
@@ -54,7 +64,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	var pubKey bmcrypto.PubKey = config.Server.Routing.PublicKey
 	if input.OrgHash != "" {
 		r := container.GetResolveService()
-		oh, err := address.HashFromString(input.OrgHash)
+		oh, err := hash.NewFromHash(input.OrgHash)
 		if err != nil {
 			ErrorOut(w, http.StatusBadRequest, "incorrect org hash")
 			return
@@ -96,7 +106,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 
 // RetrieveOrganisation is the handler that will retrieve organisation settings
 func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.HashFromString(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
@@ -123,7 +133,7 @@ func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
 
 // RetrieveKeys is the handler that will retrieve public keys directly from the mailserver
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.HashFromString(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,18 +22,18 @@ func TestVault_AddOrganisation(t *testing.T) {
 	assert.Len(t, v.Data.Organisations, 1)
 	assert.Equal(t, "example", v.Data.Organisations[0].Addr)
 
-	a := address.NewHash("example")
+	a := hash.New("example")
 	assert.True(t, v.HasOrganisation(a))
 
-	a = address.NewHash("notexist")
+	a = hash.New("notexist")
 	assert.False(t, v.HasOrganisation(a))
 
-	a = address.NewHash("example")
+	a = hash.New("example")
 	o, err := v.GetOrganisationInfo(a)
 	assert.NoError(t, err)
 	assert.Equal(t, "example", o.Addr)
 
-	a = address.NewHash("notexist")
+	a = hash.New("notexist")
 	o, err = v.GetOrganisationInfo(a)
 	assert.Error(t, err)
 	assert.Nil(t, o)

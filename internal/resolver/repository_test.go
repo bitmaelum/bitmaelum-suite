@@ -5,6 +5,7 @@ import (
 
 	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
 )
@@ -77,7 +78,7 @@ func testRepoRouting(t *testing.T, repo RoutingRepository) {
 }
 
 func testRepoOrganisation(t *testing.T, repo OrganisationRepository) {
-	org := address.NewHash("acme")
+	org := hash.New("acme")
 
 	r, err := repo.ResolveOrganisation(org)
 	assert.Errorf(t, err, "sql: no rows in result set")

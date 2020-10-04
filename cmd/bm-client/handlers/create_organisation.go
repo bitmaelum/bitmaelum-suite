@@ -9,15 +9,15 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
 func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidations []string) {
 	fmt.Printf("* Verifying if organisation name is valid: ")
-	orgAddr := address.NewHash(orgName)
+	orgAddr := hash.New(orgName)
 
 	fmt.Printf("* Checking if your validations are correct: ")
 	val, err := organisation.NewValidationTypeFromStringArray(orgValidations)

@@ -3,10 +3,10 @@ package account
 import (
 	"encoding/json"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-func (r *fileRepo) StoreOrganisationSettings(addr address.Hash, settings OrganisationSettings) error {
+func (r *fileRepo) StoreOrganisationSettings(addr hash.Hash, settings OrganisationSettings) error {
 	data, err := json.MarshalIndent(settings, "", "  ")
 	if err != nil {
 		return err
@@ -16,7 +16,7 @@ func (r *fileRepo) StoreOrganisationSettings(addr address.Hash, settings Organis
 	return r.store(addr, organisationFile, data)
 }
 
-func (r *fileRepo) FetchOrganisationSettings(addr address.Hash) (*OrganisationSettings, error) {
+func (r *fileRepo) FetchOrganisationSettings(addr hash.Hash) (*OrganisationSettings, error) {
 	settings := &OrganisationSettings{}
 	err := r.fetchJSON(addr, keysFile, settings)
 	if err != nil {

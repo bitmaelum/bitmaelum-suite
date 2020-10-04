@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // AddOrganisation adds an organisation to the vault
@@ -13,10 +13,10 @@ func (v *Vault) AddOrganisation(organisation internal.OrganisationInfo) {
 }
 
 // GetOrganisationInfo tries to find the given organisation and returns the organisation from the vault
-func (v *Vault) GetOrganisationInfo(org address.Hash) (*internal.OrganisationInfo, error) {
+func (v *Vault) GetOrganisationInfo(org hash.Hash) (*internal.OrganisationInfo, error) {
 
 	for i := range v.Data.Organisations {
-		h := address.NewHash(v.Data.Organisations[i].Addr)
+		h := hash.New(v.Data.Organisations[i].Addr)
 		if h.String() == org.String() {
 			return &v.Data.Organisations[i], nil
 		}
@@ -26,7 +26,7 @@ func (v *Vault) GetOrganisationInfo(org address.Hash) (*internal.OrganisationInf
 }
 
 // HasOrganisation returns true when the vault has an organisation for the given address
-func (v *Vault) HasOrganisation(org address.Hash) bool {
+func (v *Vault) HasOrganisation(org hash.Hash) bool {
 	_, err := v.GetOrganisationInfo(org)
 
 	return err == nil

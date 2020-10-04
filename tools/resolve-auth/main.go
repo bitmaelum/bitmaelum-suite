@@ -8,8 +8,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ha := address.NewHash(info.Address)
+	ha := hash.New(info.Address)
 	hashed := []byte(ha.String() + info.RoutingID)
 	sig, err := bmcrypto.Sign(info.PrivKey, hashed)
 	if err != nil {

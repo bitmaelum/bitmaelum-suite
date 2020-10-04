@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	_ "github.com/mattn/go-sqlite3" // SQLite driver
 )
@@ -72,7 +72,7 @@ func runTableQuery(db *sqliteRepo, query string) {
 	_, _ = st.Exec()
 }
 
-func (r *sqliteRepo) ResolveAddress(addr address.Hash) (*AddressInfo, error) {
+func (r *sqliteRepo) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 	var (
 		h  string
 		p  string
@@ -122,7 +122,7 @@ func (r *sqliteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	}, nil
 }
 
-func (r *sqliteRepo) ResolveOrganisation(orgHash address.Hash) (*OrganisationInfo, error) {
+func (r *sqliteRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
 	var (
 		h string
 		p string

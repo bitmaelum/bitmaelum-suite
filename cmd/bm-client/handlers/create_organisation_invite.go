@@ -9,10 +9,11 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 func CreateOrganisationInvite(vault *vault.Vault, orgName, addr, shortRoutingID string) {
-	org := address.NewHash(orgName)
+	org := hash.New(orgName)
 
 	oi, err := vault.GetOrganisationInfo(org)
 	if err != nil {

@@ -4,15 +4,15 @@ import (
 	"testing"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTicket(t *testing.T) {
 	config.Server.Accounts.ProofOfWork = 4
 
-	from := address.NewHash("foo!")
-	to := address.NewHash("bar!")
+	from := hash.New("foo!")
+	to := hash.New("bar!")
 	tckt := NewUnvalidated(from, to, "foobar")
 
 	assert.Equal(t, from, tckt.From)
@@ -27,8 +27,8 @@ func TestTicket(t *testing.T) {
 func TestValidTicket(t *testing.T) {
 	config.Server.Accounts.ProofOfWork = 4
 
-	from := address.NewHash("foo!")
-	to := address.NewHash("bar!")
+	from := hash.New("foo!")
+	to := hash.New("bar!")
 	tckt := NewValidated(from, to, "foobar")
 
 	assert.Equal(t, from, tckt.From)
@@ -41,8 +41,8 @@ func TestValidTicket(t *testing.T) {
 func TestNewSimpleTicket(t *testing.T) {
 	config.Server.Accounts.ProofOfWork = 4
 
-	from := address.NewHash("foo!")
-	to := address.NewHash("bar!")
+	from := hash.New("foo!")
+	to := hash.New("bar!")
 	tckt := NewValidated(from, to, "foobar")
 
 	tckt2 := NewSimpleTicket(tckt)
