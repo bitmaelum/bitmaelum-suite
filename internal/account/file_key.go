@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/nightlyone/lockfile"
 	"github.com/sirupsen/logrus"
 )
 
 // Store the public key for this account
-func (r *fileRepo) StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error {
+func (r *fileRepo) StoreKey(addr hash.Hash, key bmcrypto.PubKey) error {
 	// Lock our key file for writing
 	lockfilePath := r.getPath(addr, keysFile+".lock")
 	lock, err := lockfile.New(lockfilePath)
@@ -52,7 +52,7 @@ func (r *fileRepo) StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error
 }
 
 // Retrieve the public keys for this account
-func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]bmcrypto.PubKey, error) {
+func (r *fileRepo) FetchKeys(addr hash.Hash) ([]bmcrypto.PubKey, error) {
 	pk := &PubKeys{}
 	err := r.fetchJSON(addr, keysFile, pk)
 	if err != nil && os.IsNotExist(err) {
@@ -66,7 +66,7 @@ func (r *fileRepo) FetchKeys(addr address.HashAddress) ([]bmcrypto.PubKey, error
 }
 
 // Create file because it doesn't exist yet
-func (r *fileRepo) createPubKeyFile(addr address.HashAddress) error {
+func (r *fileRepo) createPubKeyFile(addr hash.Hash) error {
 	p := r.getPath(addr, keysFile)
 	f, err := os.Create(p)
 	if err != nil {

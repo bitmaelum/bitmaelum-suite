@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/spf13/afero"
@@ -59,7 +60,7 @@ func TestCatalog_SetToAddress(t *testing.T) {
 
 	assert.Empty(t, c.To)
 
-	addr, err := address.New("jane!")
+	addr, err := address.NewAddress("jane!")
 	assert.NoError(t, err)
 	c.SetToAddress(*addr, "Jane Doe")
 	assert.Equal(t, "jane!", c.To.Address)
@@ -188,7 +189,7 @@ func TestCatalog_AddBlock(t *testing.T) {
 }
 
 func genCatalog() *Catalog {
-	privKey, pubKey, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 
 	info := internal.AccountInfo{
 		Default:   true,

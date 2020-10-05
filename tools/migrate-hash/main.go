@@ -28,7 +28,7 @@ func main() {
 	table.SetHeader([]string{"Address", "New"})
 
 	for _, acc := range v.Data.Accounts {
-		addr, err := address.New(acc.Address)
+		addr, err := address.NewAddress(acc.Address)
 		if err != nil {
 			panic(err)
 		}

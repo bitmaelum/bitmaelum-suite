@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -24,12 +24,12 @@ type SimpleTicket struct {
 
 // Ticket is a structure that defines if a client or server is allowed to upload a message, or if additional work has to be done first
 type Ticket struct {
-	ID             string              `json:"ticket_id"`       // ticket ID. Will be used as the message ID when uploading
-	Proof          *pow.ProofOfWork    `json:"proof_of_work"`   // proof of work that must be completed
-	Valid          bool                `json:"is_valid"`        // true if the ticket is valid
-	From           address.HashAddress `json:"from_addr"`       // From address for this ticket
-	To             address.HashAddress `json:"to_addr"`         // To address for this ticket
-	SubscriptionID string              `json:"subscription_id"` // mailing list subscription ID (if any)
+	ID             string           `json:"ticket_id"`       // ticket ID. Will be used as the message ID when uploading
+	Proof          *pow.ProofOfWork `json:"proof_of_work"`   // proof of work that must be completed
+	Valid          bool             `json:"is_valid"`        // true if the ticket is valid
+	From           hash.Hash        `json:"from_addr"`       // From address for this ticket
+	To             hash.Hash        `json:"to_addr"`         // To address for this ticket
+	SubscriptionID string           `json:"subscription_id"` // mailing list subscription ID (if any)
 }
 
 // MarshalBinary converts a ticket to binary format so it can be stored in Redis
@@ -43,7 +43,7 @@ func (t *Ticket) UnmarshalBinary(data []byte) error {
 }
 
 // NewUnvalidated creates a new unvalidated ticket with proof of work
-func NewUnvalidated(from, to address.HashAddress, subscriptionID string) *Ticket {
+func NewUnvalidated(from, to hash.Hash, subscriptionID string) *Ticket {
 	logrus.Trace("Generating new unvalidated ticket")
 
 	// Generate Ticket ID
@@ -73,7 +73,7 @@ func NewUnvalidated(from, to address.HashAddress, subscriptionID string) *Ticket
 }
 
 // NewValidated returns a new ticket that is validated (without proof-of-work)
-func NewValidated(from, to address.HashAddress, subscriptionID string) *Ticket {
+func NewValidated(from, to hash.Hash, subscriptionID string) *Ticket {
 	tckt := NewUnvalidated(from, to, subscriptionID)
 	tckt.Valid = true
 

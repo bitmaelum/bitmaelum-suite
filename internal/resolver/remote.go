@@ -10,8 +10,8 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/ernesto-jimenez/httplogger"
 	"github.com/sirupsen/logrus"
@@ -64,7 +64,7 @@ func NewRemoteRepository(baseURL string, debug bool) Repository {
 }
 
 // Resolve
-func (r *remoteRepo) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
+func (r *remoteRepo) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 	kd, err := r.fetchAddress(addr)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (r *remoteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	}, nil
 }
 
-func (r *remoteRepo) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
+func (r *remoteRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
 	kd, err := r.fetchOrganisation(orgHash)
 	if err != nil {
 		return nil, err
@@ -135,13 +135,16 @@ func (r *remoteRepo) resolve(url string, v interface{}) error {
 
 func (r *remoteRepo) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
 	// Do a prefetch so we can get the current serial number
-	addr, err := address.NewHashFromHash(info.Hash)
+	addr, err := hash.NewFromHash(info.Hash)
 	if err != nil {
 		return err
 	}
+
+	// Fetch the current serial number (if record is present)
+	var serial uint64
 	kd, err := r.fetchAddress(*addr)
-	if err != nil {
-		return err
+	if err == nil {
+		serial = kd.Serial
 	}
 
 	data := &map[string]string{
@@ -151,14 +154,16 @@ func (r *remoteRepo) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, 
 	}
 
 	url := r.BaseURL + "/address/" + info.Hash
-	return r.upload(url, data, generateAddressSignature(info, privKey, kd.Serial))
+	return r.upload(url, data, generateAddressSignature(info, privKey, serial))
 }
 
 func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
-	// Do a prefetch so we can get the current serial number
+	var serial uint64
+
+	// Fetch the current serial number (if record is present)
 	kd, err := r.fetchRouting(info.Hash)
-	if err != nil {
-		return err
+	if err == nil {
+		serial = kd.Serial
 	}
 
 	data := &map[string]string{
@@ -167,18 +172,21 @@ func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 	}
 
 	url := r.BaseURL + "/routing/" + info.Hash
-	return r.upload(url, data, generateRoutingSignature(info, privKey, kd.Serial))
+	return r.upload(url, data, generateRoutingSignature(info, privKey, serial))
 }
 
 func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
 	// Do a prefetch so we can get the current serial number
-	org, err := address.NewOrgHash(info.Hash)
+	org, err := hash.NewFromHash(info.Hash)
 	if err != nil {
 		return err
 	}
+
+	// Fetch the current serial number (if record is present)
+	var serial uint64
 	kd, err := r.fetchOrganisation(*org)
-	if err != nil {
-		return err
+	if err == nil {
+		serial = kd.Serial
 	}
 
 	data := &map[string]interface{}{
@@ -188,7 +196,7 @@ func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto
 	}
 
 	url := r.BaseURL + "/organisation/" + info.Hash
-	return r.upload(url, data, generateOrganisationSignature(info, privKey, kd.Serial))
+	return r.upload(url, data, generateOrganisationSignature(info, privKey, serial))
 }
 
 func (r *remoteRepo) upload(url string, v interface{}, sig string) error {
@@ -226,7 +234,7 @@ func (r *remoteRepo) upload(url string, v interface{}, sig string) error {
 
 func (r *remoteRepo) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
 	// Do a prefetch so we can get the current serial number
-	addr, err := address.NewHashFromHash(info.Hash)
+	addr, err := hash.NewFromHash(info.Hash)
 	if err != nil {
 		return err
 	}
@@ -252,7 +260,7 @@ func (r *remoteRepo) DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 
 func (r *remoteRepo) DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error {
 	// Do a prefetch so we can get the current serial number
-	org, err := address.NewOrgHash(info.Hash)
+	org, err := hash.NewFromHash(info.Hash)
 	if err != nil {
 		return err
 	}
@@ -314,7 +322,7 @@ func logHTTP(v interface{}, err error) {
 	logrus.Tracef("%s\n\n", data)
 }
 
-func (r *remoteRepo) fetchAddress(addr address.HashAddress) (*AddressDownload, error) {
+func (r *remoteRepo) fetchAddress(addr hash.Hash) (*AddressDownload, error) {
 	url := r.BaseURL + "/address/" + addr.String()
 
 	kd := &AddressDownload{}
@@ -338,7 +346,7 @@ func (r *remoteRepo) fetchRouting(routingID string) (*RoutingDownload, error) {
 	return rd, nil
 }
 
-func (r *remoteRepo) fetchOrganisation(addr address.HashOrganisation) (*OrganisationDownload, error) {
+func (r *remoteRepo) fetchOrganisation(addr hash.Hash) (*OrganisationDownload, error) {
 	url := r.BaseURL + "/organisation/" + addr.String()
 
 	od := &OrganisationDownload{}

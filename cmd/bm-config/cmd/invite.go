@@ -25,7 +25,7 @@ server. Only the specified address can register the account`,
 		d, _ := cmd.Flags().GetString("duration")
 		asJSON, _ := cmd.Flags().GetBool("json")
 
-		addr, err := address.New(s)
+		addr, err := address.NewAddress(s)
 		if err != nil {
 			outError("incorrect address specified", asJSON)
 			return

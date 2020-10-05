@@ -3,14 +3,14 @@ package resolver
 import (
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_generateAddressSignature(t *testing.T) {
-	privKey1, pubKey1, _ := internal.ReadTestKey("../../testdata/key-1.json")
-	_, pubKey2, _ := internal.ReadTestKey("../../testdata/key-2.json")
+	privKey1, pubKey1, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
+	_, pubKey2, _ := bmtest.ReadTestKey("../../testdata/key-2.json")
 
 	info := AddressInfo{
 		Hash:      "12345",
@@ -34,7 +34,7 @@ func Test_generateAddressSignature(t *testing.T) {
 }
 
 func Test_generateOrganisationSignature(t *testing.T) {
-	privKey1, pubKey1, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey1, pubKey1, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 
 	info := OrganisationInfo{
 		Hash:        "12345",
@@ -53,7 +53,7 @@ func Test_generateOrganisationSignature(t *testing.T) {
 }
 
 func Test_generateRoutingSignature(t *testing.T) {
-	privKey1, pubKey1, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey1, pubKey1, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 
 	info := RoutingInfo{
 		Hash:      "12345",

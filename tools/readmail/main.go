@@ -13,6 +13,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	hash2 "github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 type options struct {
@@ -38,7 +39,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	addr, err := address.New(opts.Addr)
+	addr, err := address.NewAddress(opts.Addr)
 	if err != nil {
 		panic(err)
 	}
@@ -47,10 +48,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	hash, err := address.NewHash(info.Address)
-	if err != nil {
-		panic(err)
-	}
+	hash := hash2.New(info.Address)
 	fmt.Printf("Reading message for user %s (%s) (%s)\n", info.Name, info.Address, hash.String())
 
 	data, err := ioutil.ReadFile(opts.Path + "/header.json")

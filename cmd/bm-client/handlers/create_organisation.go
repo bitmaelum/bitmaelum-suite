@@ -9,21 +9,15 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
 func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidations []string) {
 	fmt.Printf("* Verifying if organisation name is valid: ")
-	orgAddr, err := address.NewOrgHash(orgName)
-	if err != nil {
-		fmt.Printf("not a valid organisation")
-		fmt.Println("")
-		os.Exit(1)
-	}
-	fmt.Printf("ok\n")
+	orgAddr := hash.New(orgName)
 
 	fmt.Printf("* Checking if your validations are correct: ")
 	val, err := organisation.NewValidationTypeFromStringArray(orgValidations)
@@ -36,7 +30,7 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 
 	fmt.Printf("* Checking if organisation is already known in the resolver service: ")
 	ks := container.GetResolveService()
-	_, err = ks.ResolveOrganisation(*orgAddr)
+	_, err = ks.ResolveOrganisation(orgAddr)
 	if err == nil {
 		fmt.Printf("\n  X it seems that this organisation is already in use. Please specify another organisation.")
 		fmt.Println("")
@@ -46,7 +40,7 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 
 	fmt.Printf("* Checking if the organisation is already present in the vault: ")
 	var info *internal.OrganisationInfo
-	if vault.HasOrganisation(*orgAddr) {
+	if vault.HasOrganisation(orgAddr) {
 		fmt.Printf("\n  X organisation already present in the vault.\n")
 		fmt.Println("")
 		os.Exit(1)

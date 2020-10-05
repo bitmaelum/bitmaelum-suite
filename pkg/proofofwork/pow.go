@@ -180,23 +180,7 @@ func (pow *ProofOfWork) UnmarshalJSON(b []byte) error {
 
 	err := json.Unmarshal(b, &s)
 	if err != nil {
-		// Seems incorrect, try "regular json"
-		type powtype struct {
-			Bits  int
-			Data  string
-			Proof uint64
-		}
-
-		pt := powtype{}
-		err := json.Unmarshal(b, &pt)
-		if err != nil {
-			return err
-		}
-
-		pow.Bits = pt.Bits
-		pow.Data = pt.Data
-		pow.Proof = pt.Proof
-		return nil
+		return err
 	}
 
 	powCopy, err := NewFromString(s)

@@ -16,7 +16,7 @@ var setDefaultCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		vault := OpenVault()
 
-		fromAddr, err := address.New(*sdFrom)
+		fromAddr, err := address.NewAddress(*sdFrom)
 		if err != nil {
 			logrus.Fatal(err)
 		}

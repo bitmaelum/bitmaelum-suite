@@ -14,7 +14,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	hash2 "github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/ernesto-jimenez/httplogger"
 )
 
@@ -80,11 +80,9 @@ func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error)
 
 	if info != nil {
 		// Create JWT token based on the private key of the user
-		hash, err := address.NewHash(info.Address)
-		if err != nil {
-			return nil, err
-		}
-		jwtToken, err = internal.GenerateJWTToken(*hash, info.PrivKey)
+		hash := hash2.New(info.Address)
+		var err error
+		jwtToken, err = internal.GenerateJWTToken(hash, info.PrivKey)
 		if err != nil {
 			return nil, err
 		}

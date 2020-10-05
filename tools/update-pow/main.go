@@ -31,7 +31,7 @@ func main() {
 
 		if len(v.Data.Accounts[i].Pow.Data) == 0 {
 			var err error
-			addr, err := address.New(v.Data.Accounts[i].Address)
+			addr, err := address.NewAddress(v.Data.Accounts[i].Address)
 			if err != nil {
 				panic(err)
 			}

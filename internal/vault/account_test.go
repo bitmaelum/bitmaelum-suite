@@ -22,28 +22,28 @@ func TestVault_Account(t *testing.T) {
 	assert.Len(t, v.Data.Accounts, 1)
 	assert.Equal(t, "example!", v.Data.Accounts[0].Address)
 
-	a, _ := address.New("example!")
+	a, _ := address.NewAddress("example!")
 	assert.True(t, v.HasAccount(*a))
 
-	a, _ = address.New("notexists!")
+	a, _ = address.NewAddress("notexists!")
 	assert.False(t, v.HasAccount(*a))
 
-	a, _ = address.New("example!")
+	a, _ = address.NewAddress("example!")
 	o, err := v.GetAccountInfo(*a)
 	assert.NoError(t, err)
 	assert.Equal(t, "example!", o.Address)
 
-	a, _ = address.New("notexist!")
+	a, _ = address.NewAddress("notexist!")
 	o, err = v.GetAccountInfo(*a)
 	assert.Error(t, err)
 	assert.Nil(t, o)
 
 	assert.Len(t, v.Data.Accounts, 1)
-	a, _ = address.New("notexist!")
+	a, _ = address.NewAddress("notexist!")
 	v.RemoveAccount(*a)
 	assert.Len(t, v.Data.Accounts, 1)
 
-	a, _ = address.New("example!")
+	a, _ = address.NewAddress("example!")
 	v.RemoveAccount(*a)
 	assert.Len(t, v.Data.Accounts, 0)
 }

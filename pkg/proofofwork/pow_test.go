@@ -83,6 +83,10 @@ func TestWorkData(t *testing.T) {
 
 func TestMaxCores(t *testing.T) {
 	assert.GreaterOrEqual(t, maxCores(), 1)
+
+	pow := NewWithoutProof(10, "foobar")
+	pow.WorkMulticore()
+	assert.True(t, pow.IsValid())
 }
 
 func TestMarshalling(t *testing.T) {
@@ -102,7 +106,11 @@ func TestMarshalling(t *testing.T) {
 	assert.Equal(t, uint64(149), pow.Proof)
 	assert.Equal(t, 8, pow.Bits)
 	assert.Equal(t, "john@example!", pow.Data)
+}
 
+func TestNewWithoutProof(t *testing.T) {
+	pow := NewWithoutProof(22, "foo")
+	assert.False(t, pow.IsValid())
 }
 
 type dummyReader struct{}

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 	"github.com/vtolstov/jwt-go"
 )
@@ -25,7 +25,7 @@ import (
  */
 
 // GenerateJWTToken generates a JWT token with the address and singed by the given private key
-func GenerateJWTToken(addr address.HashAddress, key bmcrypto.PrivKey) (string, error) {
+func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 	claims := &jwt.StandardClaims{
 		ExpiresAt: jwt.TimeFunc().Add(time.Hour * time.Duration(1)).Unix(),
 		IssuedAt:  jwt.TimeFunc().Unix(),
@@ -39,7 +39,7 @@ func GenerateJWTToken(addr address.HashAddress, key bmcrypto.PrivKey) (string, e
 }
 
 // ValidateJWTToken validates a JWT token with the given public key and address
-func ValidateJWTToken(tokenString string, addr address.HashAddress, key bmcrypto.PubKey) (*jwt.Token, error) {
+func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (*jwt.Token, error) {
 	logrus.Tracef("validating JWT token: %s %s %s", tokenString, addr.String(), key.S)
 
 	kf := func(token *jwt.Token) (interface{}, error) {

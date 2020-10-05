@@ -11,8 +11,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 )
@@ -28,13 +28,9 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 		logrus.Fatal(err)
 	}
 
-	addr, err := address.NewHash(info.Address)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
 	// Fetch message from API
-	msg, err := client.GetMessage(*addr, box, messageID)
+	addr := hash.New(info.Address)
+	msg, err := client.GetMessage(addr, box, messageID)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -106,7 +102,7 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 		fmt.Printf("Block %02d: %-20s %8s\n", idx, b.Type, datasize.ByteSize(b.Size))
 		fmt.Printf("\n")
 
-		data, err := client.GetMessageBlock(*addr, box, messageID, b.ID)
+		data, err := client.GetMessageBlock(addr, box, messageID, b.ID)
 		if err != nil {
 			panic(err)
 		}
