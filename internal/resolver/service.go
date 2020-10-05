@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	lru "github.com/hashicorp/golang-lru"
@@ -114,13 +115,13 @@ func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, err
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadAddressInfo(info internal.AccountInfo) error {
-	hashAddr, err := hash.NewFromHash(info.Address)
+	addr, err := address.NewAddress(info.Address)
 	if err != nil {
 		return err
 	}
 
 	return s.repo.UploadAddress(&AddressInfo{
-		Hash:      hashAddr.String(),
+		Hash:      addr.Hash().String(),
 		PublicKey: info.PubKey,
 		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
@@ -138,10 +139,10 @@ func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
 
 // UploadOrganisationInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
-	a := hash.New(info.Addr)
+	h := hash.New(info.Addr)
 
 	return s.repo.UploadOrganisation(&OrganisationInfo{
-		Hash:        a.String(),
+		Hash:        h.String(),
 		PublicKey:   info.PubKey,
 		Pow:         info.Pow.String(),
 		Validations: info.Validations,
@@ -151,8 +152,8 @@ func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash + info.RoutingID + strconv.FormatUint(serial, 10)))
-	signature, err := bmcrypto.Sign(privKey, hash[:])
+	h := sha256.Sum256([]byte(info.Hash + info.RoutingID + strconv.FormatUint(serial, 10)))
+	signature, err := bmcrypto.Sign(privKey, h[:])
 	if err != nil {
 		return ""
 	}
@@ -163,8 +164,8 @@ func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey, seria
 // generateRoutingSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateRoutingSignature(info *RoutingInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
-	signature, err := bmcrypto.Sign(privKey, hash[:])
+	h := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
+	signature, err := bmcrypto.Sign(privKey, h[:])
 	if err != nil {
 		return ""
 	}
@@ -175,8 +176,8 @@ func generateRoutingSignature(info *RoutingInfo, privKey bmcrypto.PrivKey, seria
 // generateOrganisationSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateOrganisationSignature(info *OrganisationInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
-	signature, err := bmcrypto.Sign(privKey, hash[:])
+	h := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
+	signature, err := bmcrypto.Sign(privKey, h[:])
 	if err != nil {
 		return ""
 	}
