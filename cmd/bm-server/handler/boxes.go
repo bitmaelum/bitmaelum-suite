@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 )
 
@@ -18,7 +18,7 @@ type boxIn struct {
 
 // CreateBox creates a new box under a specific parent box or 0 for a root box
 func CreateBox(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
@@ -44,7 +44,7 @@ func CreateBox(w http.ResponseWriter, req *http.Request) {
 
 // DeleteBox deletes a given box with all messages (note: what about child boxes??)
 func DeleteBox(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
@@ -69,7 +69,7 @@ func DeleteBox(w http.ResponseWriter, req *http.Request) {
 
 // RetrieveBoxes retrieves all message boxes for the given account
 func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
@@ -96,7 +96,7 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 
 // RetrieveMessagesFromBox retrieves info about the given mailbox
 func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return

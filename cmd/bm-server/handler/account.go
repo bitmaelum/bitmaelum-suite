@@ -8,18 +8,20 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
 type inputCreateAccount struct {
-	Addr        address.HashAddress `json:"address"`
-	Token       string              `json:"token"`
-	PublicKey   bmcrypto.PubKey     `json:"public_key"`
-	ProofOfWork pow.ProofOfWork     `json:"proof_of_work"`
+	Addr        hash.Hash       `json:"address"`
+	UserHash    string          `json:"user_hash"`
+	OrgHash     string          `json:"org_hash"`
+	Token       string          `json:"token"`
+	PublicKey   bmcrypto.PubKey `json:"public_key"`
+	ProofOfWork pow.ProofOfWork `json:"proof_of_work"`
 }
 
 // CreateAccount will create a new account
@@ -42,10 +44,42 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Check if token exists for the given address
+	// Check if the user+org matches our actual hash address
+	userHash, err := hash.NewFromHash(input.UserHash)
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "invalid body: user_hash")
+		return
+	}
+	orgHash, err := hash.NewFromHash(input.OrgHash)
+	if err != nil {
+		ErrorOut(w, http.StatusBadRequest, "invalid body: org_hash")
+		return
+	}
+	if !input.Addr.Verify(*userHash, *orgHash) {
+		ErrorOut(w, http.StatusBadRequest, "cant verify the address hashes")
+		return
+	}
+
+	// Check if we need to verify against the mailserver key, or the organisation key
+	var pubKey bmcrypto.PubKey = config.Server.Routing.PublicKey
+	if input.OrgHash != "" {
+		r := container.GetResolveService()
+		oh, err := hash.NewFromHash(input.OrgHash)
+		if err != nil {
+			ErrorOut(w, http.StatusBadRequest, "incorrect org hash")
+			return
+		}
+		oi, err := r.ResolveOrganisation(*oh)
+		if err != nil {
+			ErrorOut(w, http.StatusBadRequest, "cannot find organisation")
+			return
+		}
+		pubKey = oi.PublicKey
+	}
+
 	// Verify token
 	it, err := invite.ParseInviteToken(input.Token)
-	if err != nil || !it.Verify(config.Server.Routing.RoutingID, config.Server.Routing.PublicKey) {
+	if err != nil || !it.Verify(config.Server.Routing.RoutingID, pubKey) {
 		ErrorOut(w, http.StatusBadRequest, "cannot validate token")
 		return
 	}
@@ -72,7 +106,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 
 // RetrieveOrganisation is the handler that will retrieve organisation settings
 func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
@@ -99,7 +133,7 @@ func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
 
 // RetrieveKeys is the handler that will retrieve public keys directly from the mailserver
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return

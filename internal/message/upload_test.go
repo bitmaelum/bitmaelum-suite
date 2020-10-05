@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +14,7 @@ func TestGetMessageHeader(t *testing.T) {
 	config.Server.Paths.Incoming = "/datastore/incoming/"
 
 	fs = afero.NewMemMapFs()
-	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/header.json", internal.ReadTestFile("../../testdata/header-001.json"), 0644)
+	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/header.json", bmtest.ReadTestFile("../../testdata/header-001.json"), 0644)
 	_ = afero.WriteFile(fs, "/datastore/incoming/33333333-912d-4c64-91f1-bd6a99c03375/header.json", []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), 0644)
 
 	h, err := GetMessageHeader(SectionIncoming, "2f9011bf-912d-4c64-91f1-bd6a99c03375")
@@ -38,9 +38,9 @@ func TestRemoveMessage(t *testing.T) {
 	config.Server.Paths.Incoming = "/datastore/incoming/"
 
 	fs = afero.NewMemMapFs()
-	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/header.json", internal.ReadTestFile("../../testdata/header-001.json"), 0644)
-	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/test.json", internal.ReadTestFile("../../testdata/header-001.json"), 0644)
-	_ = afero.WriteFile(fs, "/datastore/incoming/33333333-912d-4c64-91f1-bd6a99c03375/header.json", internal.ReadTestFile("../../testdata/header-001.json"), 0644)
+	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/header.json", bmtest.ReadTestFile("../../testdata/header-001.json"), 0644)
+	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/test.json", bmtest.ReadTestFile("../../testdata/header-001.json"), 0644)
+	_ = afero.WriteFile(fs, "/datastore/incoming/33333333-912d-4c64-91f1-bd6a99c03375/header.json", bmtest.ReadTestFile("../../testdata/header-001.json"), 0644)
 
 	err := RemoveMessage(SectionIncoming, "2f9011bf-912d-4c64-91f1-bd6a99c03375")
 	assert.NoError(t, err)
@@ -64,9 +64,9 @@ func TestMoveMessage(t *testing.T) {
 	config.Server.Paths.Retry = "/datastore/retry/"
 
 	fs = afero.NewMemMapFs()
-	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/header.json", internal.ReadTestFile("../../testdata/header-001.json"), 0644)
-	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/test.json", internal.ReadTestFile("../../testdata/header-001.json"), 0644)
-	_ = afero.WriteFile(fs, "/datastore/incoming/33333333-912d-4c64-91f1-bd6a99c03375/header.json", internal.ReadTestFile("../../testdata/header-001.json"), 0644)
+	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/header.json", bmtest.ReadTestFile("../../testdata/header-001.json"), 0644)
+	_ = afero.WriteFile(fs, "/datastore/incoming/2f9011bf-912d-4c64-91f1-bd6a99c03375/test.json", bmtest.ReadTestFile("../../testdata/header-001.json"), 0644)
+	_ = afero.WriteFile(fs, "/datastore/incoming/33333333-912d-4c64-91f1-bd6a99c03375/header.json", bmtest.ReadTestFile("../../testdata/header-001.json"), 0644)
 
 	err := MoveMessage(SectionRetry, SectionIncoming, "2f9011bf-912d-4c64-91f1-bd6a99c03375")
 	assert.Error(t, err)
@@ -90,7 +90,7 @@ func TestStoreHeader(t *testing.T) {
 	_ = fs.MkdirAll("/datastore/incoming", 0755)
 
 	h := &Header{}
-	_ = internal.ReadHeader("../../testdata/header-001.json", h)
+	_ = bmtest.ReadHeader("../../testdata/header-001.json", h)
 	err := StoreHeader("2f9011bf-912d-4c64-91f1-bd6a99c03375", h)
 	assert.NoError(t, err)
 

@@ -13,8 +13,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
@@ -31,19 +31,15 @@ func FetchMessages(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo
 		logrus.Fatal(err)
 	}
 
-	addr, err := address.NewHash(info.Address)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
+	addr := hash.New(info.Address)
 	if box == "" || box == "0" {
-		displayBoxList(client, *addr)
+		displayBoxList(client, addr)
 	} else {
-		displayBox(client, *addr, info, box)
+		displayBox(client, addr, info, box)
 	}
 }
 
-func displayBoxList(client *api.API, addr address.HashAddress) {
+func displayBoxList(client *api.API, addr hash.Hash) {
 	mbl, err := client.GetMailboxList(addr)
 	if err != nil {
 		logrus.Fatal(err)
@@ -65,7 +61,7 @@ func displayBoxList(client *api.API, addr address.HashAddress) {
 	table.Render()
 }
 
-func displayBox(client *api.API, addr address.HashAddress, info *internal.AccountInfo, box string) {
+func displayBox(client *api.API, addr hash.Hash, info *internal.AccountInfo, box string) {
 	mb, err := client.GetMailboxMessages(addr, box)
 	if err != nil {
 		logrus.Fatal(err)

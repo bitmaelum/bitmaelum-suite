@@ -7,14 +7,14 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
 // GetMessage will return a message header and catalog
 func GetMessage(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
@@ -43,7 +43,7 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 
 // GetMessageBlock will return a message block
 func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return
@@ -72,7 +72,7 @@ func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 
 // GetMessageAttachment will return a message attachment
 func GetMessageAttachment(w http.ResponseWriter, req *http.Request) {
-	haddr, err := address.NewHashFromHash(mux.Vars(req)["addr"])
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
 		return

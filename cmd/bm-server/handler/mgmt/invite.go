@@ -9,7 +9,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 type inputInviteType struct {
@@ -34,7 +34,7 @@ func NewInvite(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	addr, err := address.NewHashFromHash(input.Addr)
+	addr, err := hash.NewFromHash(input.Addr)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return

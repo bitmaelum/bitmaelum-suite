@@ -9,6 +9,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/sirupsen/logrus"
 )
@@ -57,7 +58,7 @@ func KeyRetrievalService(repo Repository) *Service {
 }
 
 // ResolveAddress resolves an address.
-func (s *Service) ResolveAddress(addr address.HashAddress) (*AddressInfo, error) {
+func (s *Service) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 	logrus.Debugf("Resolving address %s", addr.String())
 	info, err := s.repo.ResolveAddress(addr)
 	if err != nil {
@@ -102,7 +103,7 @@ func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
 }
 
 // ResolveOrganisation resolves a route.
-func (s *Service) ResolveOrganisation(orgHash address.HashOrganisation) (*OrganisationInfo, error) {
+func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
 	logrus.Debugf("Resolving %s", orgHash)
 	info, err := s.repo.ResolveOrganisation(orgHash)
 	if err != nil {
@@ -114,13 +115,13 @@ func (s *Service) ResolveOrganisation(orgHash address.HashOrganisation) (*Organi
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadAddressInfo(info internal.AccountInfo) error {
-	hashAddr, err := address.NewHash(info.Address)
+	addr, err := address.NewAddress(info.Address)
 	if err != nil {
 		return err
 	}
 
 	return s.repo.UploadAddress(&AddressInfo{
-		Hash:      hashAddr.String(),
+		Hash:      addr.Hash().String(),
 		PublicKey: info.PubKey,
 		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
@@ -138,13 +139,10 @@ func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
 
 // UploadOrganisationInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
-	a, err := address.NewOrgHash(info.Addr)
-	if err != nil {
-		return err
-	}
+	h := hash.New(info.Addr)
 
 	return s.repo.UploadOrganisation(&OrganisationInfo{
-		Hash:        a.String(),
+		Hash:        h.String(),
 		PublicKey:   info.PubKey,
 		Pow:         info.Pow.String(),
 		Validations: info.Validations,
@@ -154,8 +152,8 @@ func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash + info.RoutingID + strconv.FormatUint(serial, 10)))
-	signature, err := bmcrypto.Sign(privKey, hash[:])
+	h := sha256.Sum256([]byte(info.Hash + info.RoutingID + strconv.FormatUint(serial, 10)))
+	signature, err := bmcrypto.Sign(privKey, h[:])
 	if err != nil {
 		return ""
 	}
@@ -166,8 +164,8 @@ func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey, seria
 // generateRoutingSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateRoutingSignature(info *RoutingInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
-	signature, err := bmcrypto.Sign(privKey, hash[:])
+	h := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
+	signature, err := bmcrypto.Sign(privKey, h[:])
 	if err != nil {
 		return ""
 	}
@@ -178,8 +176,8 @@ func generateRoutingSignature(info *RoutingInfo, privKey bmcrypto.PrivKey, seria
 // generateOrganisationSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateOrganisationSignature(info *OrganisationInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
-	hash := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
-	signature, err := bmcrypto.Sign(privKey, hash[:])
+	h := sha256.Sum256([]byte(info.Hash + strconv.FormatUint(serial, 10)))
+	signature, err := bmcrypto.Sign(privKey, h[:])
 	if err != nil {
 		return ""
 	}

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // Message is a simple message structure that we return as a list
@@ -47,44 +47,44 @@ type Repository interface {
 
 // AddressRepository creates, checks or deletes complete accounts. Address is not the correct word for this.
 type AddressRepository interface {
-	Create(addr address.HashAddress, pubKey bmcrypto.PubKey) error
-	Exists(addr address.HashAddress) bool
-	Delete(addr address.HashAddress) error
+	Create(addr hash.Hash, pubKey bmcrypto.PubKey) error
+	Exists(addr hash.Hash) bool
+	Delete(addr hash.Hash) error
 }
 
 // KeyRepository gets and sets public keys into an account
 type KeyRepository interface {
 	// Public key
-	StoreKey(addr address.HashAddress, key bmcrypto.PubKey) error
-	FetchKeys(addr address.HashAddress) ([]bmcrypto.PubKey, error)
+	StoreKey(addr hash.Hash, key bmcrypto.PubKey) error
+	FetchKeys(addr hash.Hash) ([]bmcrypto.PubKey, error)
 }
 
 // OrganisationRepository gets and sets organisation settings into an account
 type OrganisationRepository interface {
-	StoreOrganisationSettings(addr address.HashAddress, settings OrganisationSettings) error
-	FetchOrganisationSettings(addr address.HashAddress) (*OrganisationSettings, error)
+	StoreOrganisationSettings(addr hash.Hash, settings OrganisationSettings) error
+	FetchOrganisationSettings(addr hash.Hash) (*OrganisationSettings, error)
 }
 
 // BoxRepository deals with message boxes insides an account
 type BoxRepository interface {
-	CreateBox(addr address.HashAddress, parentBox int) error
-	ExistsBox(addr address.HashAddress, box int) bool
-	DeleteBox(addr address.HashAddress, box int) error
-	GetBoxInfo(addr address.HashAddress, box int) (*BoxInfo, error)
-	GetAllBoxes(addr address.HashAddress) ([]BoxInfo, error)
+	CreateBox(addr hash.Hash, parentBox int) error
+	ExistsBox(addr hash.Hash, box int) bool
+	DeleteBox(addr hash.Hash, box int) error
+	GetBoxInfo(addr hash.Hash, box int) (*BoxInfo, error)
+	GetAllBoxes(addr hash.Hash) ([]BoxInfo, error)
 }
 
 // MessageRepository deals with message within boxes
 type MessageRepository interface {
-	SendToBox(addr address.HashAddress, box int, msgID string) error
-	MoveToBox(addr address.HashAddress, srcBox, dstBox int, msgID string) error
+	SendToBox(addr hash.Hash, box int, msgID string) error
+	MoveToBox(addr hash.Hash, srcBox, dstBox int, msgID string) error
 
 	// Message boxes
-	FetchListFromBox(addr address.HashAddress, box int, since time.Time, offset, limit int) (*MessageList, error)
+	FetchListFromBox(addr hash.Hash, box int, since time.Time, offset, limit int) (*MessageList, error)
 
 	// Fetch specific message contents
-	FetchMessageHeader(addr address.HashAddress, box int, messageID string) (*message.Header, error)
-	FetchMessageCatalog(addr address.HashAddress, box int, messageID string) ([]byte, error)
-	FetchMessageBlock(addr address.HashAddress, box int, messageID, blockID string) ([]byte, error)
-	FetchMessageAttachment(addr address.HashAddress, box int, messageID, attachmentID string) (r io.ReadCloser, size int64, err error)
+	FetchMessageHeader(addr hash.Hash, box int, messageID string) (*message.Header, error)
+	FetchMessageCatalog(addr hash.Hash, box int, messageID string) ([]byte, error)
+	FetchMessageBlock(addr hash.Hash, box int, messageID, blockID string) ([]byte, error)
+	FetchMessageAttachment(addr hash.Hash, box int, messageID, attachmentID string) (r io.ReadCloser, size int64, err error)
 }

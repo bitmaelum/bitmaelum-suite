@@ -23,7 +23,7 @@ func main() {
 	config.LoadClientConfig(opts.Config)
 
 	// Convert strings into addresses
-	fromAddr, err := address.New(opts.Addr)
+	fromAddr, err := address.NewAddress(opts.Addr)
 	if err != nil {
 		logrus.Fatal(err)
 	}

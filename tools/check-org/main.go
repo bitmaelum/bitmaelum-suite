@@ -6,8 +6,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,10 +27,10 @@ func main() {
 	v1, _ := organisation.NewValidationTypeFromString("dns bitmaelum.org")
 	v2, _ := organisation.NewValidationTypeFromString("dns bitmaelum.com")
 	v3, _ := organisation.NewValidationTypeFromString("dns evil-domain.xyz")
-	a, _ := address.NewOrgHash("bitmaelum")
+	a := hash.New("bitmaelum")
 
 	o := organisation.Organisation{
-		Addr:       *a,
+		Addr:       a,
 		Name:       "BitMaelum Org.",
 		PublicKey:  bmcrypto.PubKey{},
 		Validation: []organisation.ValidationType{*v1, *v2, *v3},

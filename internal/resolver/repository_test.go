@@ -3,21 +3,22 @@ package resolver
 import (
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
 )
 
 func testRepoAddress(t *testing.T, repo AddressRepository) {
-	a, err := address.New("example!")
+	a, err := address.NewAddress("example!")
 	assert.NoError(t, err)
 
 	addr, err := repo.ResolveAddress(a.Hash())
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, addr)
 
-	privKey, pubKey, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 	pow := proofofwork.New(22, "foobar", 1234)
 
 	ai := AddressInfo{
@@ -53,7 +54,7 @@ func testRepoRouting(t *testing.T, repo RoutingRepository) {
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, r)
 
-	privKey, pubKey, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 
 	ri := RoutingInfo{
 		Hash:      "12345678",
@@ -77,13 +78,13 @@ func testRepoRouting(t *testing.T, repo RoutingRepository) {
 }
 
 func testRepoOrganisation(t *testing.T, repo OrganisationRepository) {
-	org, _ := address.NewOrgHash("acme")
+	org := hash.New("acme")
 
-	r, err := repo.ResolveOrganisation(*org)
+	r, err := repo.ResolveOrganisation(org)
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, r)
 
-	privKey, pubKey, _ := internal.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 	pow := proofofwork.New(22, "foo", 1)
 
 	oi := OrganisationInfo{
@@ -96,14 +97,14 @@ func testRepoOrganisation(t *testing.T, repo OrganisationRepository) {
 	err = repo.UploadOrganisation(&oi, *privKey, *pow)
 	assert.NoError(t, err)
 
-	r, err = repo.ResolveOrganisation(*org)
+	r, err = repo.ResolveOrganisation(org)
 	assert.NoError(t, err)
 	assert.Equal(t, org.String(), r.Hash)
 
 	err = repo.DeleteOrganisation(&oi, *privKey)
 	assert.NoError(t, err)
 
-	r, err = repo.ResolveOrganisation(*org)
+	r, err = repo.ResolveOrganisation(org)
 	assert.Errorf(t, err, "sql: no rows in result set")
 	assert.Nil(t, r)
 }
