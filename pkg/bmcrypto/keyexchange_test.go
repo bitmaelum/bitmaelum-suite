@@ -63,8 +63,8 @@ func TestKeyExchange(t *testing.T) {
 
 	// ed25519 key exchange (ecdh on curve 25519) bob->alice
 	privBobK, _ = NewPrivKey(TestKeyExchangeSet3[0])
-	pubAliceK, _ = NewPubKey(TestKeyExchangeSet2[0])
-	k, err = KeyExchange(*privAliceK, *pubBobK)
+	pubAliceK, _ = NewPubKey(TestKeyExchangeSet2[1])
+	k, err = KeyExchange(*privBobK, *pubAliceK)
 	assert.NoError(t, err)
 	assert.Equal(t, ed25519SharedSecret, k)
 
