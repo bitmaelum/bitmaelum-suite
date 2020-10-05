@@ -124,6 +124,22 @@ func (pk *PrivKey) CanEncrypt() bool {
 	return pk.Type == KeyTypeRSA
 }
 
+// CanKeyExchange returns true if the key(type) is able to be used for key exchange
+func (pk *PrivKey) CanKeyExchange() bool {
+	if pk.Type == KeyTypeED25519 || pk.Type == KeyTypeECDSA {
+		return true
+	}
+	return false
+}
+
+// CanKeyExchange returns true if the key(type) is able to be used for key exchange
+func (pk *PubKey) CanKeyExchange() bool {
+	if pk.Type == KeyTypeED25519 || pk.Type == KeyTypeECDSA {
+		return true
+	}
+	return false
+}
+
 // NewPubKey creates a new public key based on the string data "<type> <key> <description>"
 func NewPubKey(data string) (*PubKey, error) {
 	pk := &PubKey{}
