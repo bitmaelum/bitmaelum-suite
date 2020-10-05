@@ -35,6 +35,7 @@ func EdPrivToX25519(privateKey ed25519.PrivateKey) []byte {
 	h.Reset()
 
 	// From https://cr.yp.to/ecdh.html (I don't think this is really needed in this case)
+	// more info here: https://www.reddit.com/r/crypto/comments/66b3dp/how_do_is_a_curve25519_key_pair_generated/
 	digest[0] &= 248
 	digest[31] &= 127
 	digest[31] |= 64
