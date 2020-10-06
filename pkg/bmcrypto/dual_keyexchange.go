@@ -43,6 +43,10 @@ func TxIdFromString(s string) (*TransactionId, error) {
 // for alice and bob to communicate through a non-deterministic DH.
 // It returns the (shared) secret, a transaction ID that needs to be send over to the other user.
 func DualKeyExchange(pub PubKey) ([]byte, *TransactionId, error) {
+	if pub.Type != KeyTypeED25519 {
+		return nil, nil, errors.New("can only use ed25519 keys in dual key exchange")
+	}
+
 	r := ed25519.NewKeyFromSeed(generateRandomScalar())
 	R := r.Public()
 
@@ -66,14 +70,18 @@ func DualKeyExchange(pub PubKey) ([]byte, *TransactionId, error) {
 
 // DualKeyVerify verifies if the transaction ID matches our private key. If so, it will return the
 // secret that has been exchanged
-func DualKeyGetSecret(priv PrivKey, txId TransactionId) ([]byte, bool) {
+func DualKeyGetSecret(priv PrivKey, txId TransactionId) ([]byte, bool, error) {
+	if priv.Type != KeyTypeED25519 {
+		return nil, false, errors.New("can only use ed25519 keys in dual key exchange")
+	}
+
 	// Step 1-3: D' = aR
 	Dprime, err := curve25519.X25519(
 		EdPrivToX25519(priv.K.(ed25519.PrivateKey).Seed()),
 		EdPubToX25519(txId.R),
 	)
 	if err != nil {
-		return nil, false
+		return nil, false, err
 	}
 
 	fprime := hs(Dprime)        // Step 4: f' = Hs(D')
@@ -81,10 +89,10 @@ func DualKeyGetSecret(priv PrivKey, txId TransactionId) ([]byte, bool) {
 
 	// If Pprime = P, then we know both alice and bob uses D (and Dprime) as the secret
 	if subtle.ConstantTimeCompare(txId.P, Pprime.(ed25519.PublicKey)) == 1 {
-		return Dprime, true
+		return Dprime, true, nil
 	}
 
-	return nil, false
+	return nil, false, nil
 }
 
 func generateRandomScalar() []byte {
