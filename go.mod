@@ -16,7 +16,6 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/juju/fslock v0.0.0-20160525022230-4d5c94c67b4b
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/mattn/go-sqlite3 v1.14.1
@@ -28,13 +27,14 @@ require (
 	github.com/spf13/afero v1.1.2
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
+	github.com/tyler-smith/go-bip39 v1.0.2
 	github.com/vtolstov/jwt-go v3.2.0+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xhit/go-str2duration/v2 v2.0.0
 	github.com/zalando/go-keyring v0.1.0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
+	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/tools v0.0.0-20201002055958-0d28ed0cbe40 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	honnef.co/go/tools v0.0.1-2020.1.5 // indirect
 )

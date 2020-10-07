@@ -1,13 +1,14 @@
 package config
 
 import (
+	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/google/uuid"
 	"github.com/spf13/afero"
 )
 
@@ -55,19 +56,15 @@ func SaveRouting(p string, routing *Routing) error {
 }
 
 // Generate generates a new routing structure
-func Generate() (*Routing, error) {
-	id, err := uuid.NewRandom()
+func GenerateRouting() (string, *Routing, error) {
+	seed, privKey, pubKey, err := bmcrypto.GenerateKeypairWithSeed()
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
-	privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Routing{
-		RoutingID:  hash.New(id.String()).String(),
+	id := hex.EncodeToString(pubKey.K.(ed25519.PublicKey))
+	return seed, &Routing{
+		RoutingID:  hash.New(id).String(),
 		PrivateKey: *privKey,
 		PublicKey:  *pubKey,
 	}, nil
