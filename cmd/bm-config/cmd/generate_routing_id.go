@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/sirupsen/logrus"
@@ -28,7 +30,7 @@ This command creates a new routing file if one does not exist.`,
 		}
 
 		// Generate new routing
-		r, err := config.Generate()
+		seed, r, err := config.GenerateRouting()
 		if err != nil {
 			logrus.Fatalf("Error while generating routing file: %v", err)
 		}
@@ -40,9 +42,50 @@ This command creates a new routing file if one does not exist.`,
 		}
 
 		logrus.Printf("Generated routing file: %s", config.Server.Server.RoutingFile)
+
+		fmt.Println(`
+*****************************************************************************
+!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
+*****************************************************************************
+
+We have generated a private key which allows you to control your server. If, 
+for any reason, you lose this key, you will need to use the following words 
+in order to recreate the key:
+
+`)
+		fmt.Println(wordWrap(seed, 78))
+		fmt.Println(`
+
+Write these words down and store them in a secure environment. They are the 
+ONLY way to recover your private key in case you lose it.
+`)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(initRoutingConfigCmd)
+}
+
+func wordWrap(s string, limit int) string {
+	if strings.TrimSpace(s) == "" {
+		return s
+	}
+
+	words := strings.Fields(strings.ToUpper(s))
+
+	var result, line string
+	for len(words) > 0 {
+		if len(line) + len(words[0]) > limit {
+			result += strings.TrimSpace(line) + "\n"
+			line = ""
+		}
+
+		line = line + words[0] + " "
+		words = words[1:]
+	}
+	if line != "" {
+		result += strings.TrimSpace(line)
+	}
+
+	return result
 }
