@@ -13,6 +13,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/c2h5oh/datasize"
@@ -31,11 +32,12 @@ func FetchMessages(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo
 		logrus.Fatal(err)
 	}
 
-	addr := hash.New(info.Address)
+	addr, _ := address.NewAddress(info.Address)
+	addressHash := addr.Hash()
 	if box == "" || box == "0" {
-		displayBoxList(client, addr)
+		displayBoxList(client, addressHash)
 	} else {
-		displayBox(client, addr, info, box)
+		displayBox(client, addressHash, info, box)
 	}
 }
 
