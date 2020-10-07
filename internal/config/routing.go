@@ -2,18 +2,14 @@ package config
 
 import (
 	"crypto/ed25519"
-	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"path/filepath"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/spf13/afero"
-	"github.com/tyler-smith/go-bip39"
-	"golang.org/x/crypto/hkdf"
 )
 
 // Routing holds routing configuration for the mail server
@@ -61,39 +57,14 @@ func SaveRouting(p string, routing *Routing) error {
 
 // Generate generates a new routing structure
 func GenerateRouting() (string, *Routing, error) {
-	// Generate large enough random string
-	e, err := bip39.NewEntropy(192)
+	seed, privKey, pubKey, err := bmcrypto.GenerateKeypairWithSeed()
 	if err != nil {
 		return "", nil, err
 	}
 
-	// Generate seed words
-	seed, err := bip39.NewMnemonic(e)
-	if err != nil {
-		return "", nil, err
-	}
-
-	// Stretch 192 bits to 256 bits
-	rd := hkdf.New(sha256.New, e, []byte{}, []byte{})
-	expbuf := make([]byte, 32)
-	_, err = io.ReadFull(rd, expbuf)
-	if err != nil {
-		return "", nil, err
-	}
-
-	// Generate keypair
-	r := ed25519.NewKeyFromSeed(expbuf[:32])
-	privKey, err := bmcrypto.NewPrivKeyFromInterface(r)
-	if err != nil {
-		return "", nil, err
-	}
-	pubKey, err := bmcrypto.NewPubKeyFromInterface(r.Public())
-	if err != nil {
-		return "", nil, err
-	}
-
+	id := hex.EncodeToString(pubKey.K.(ed25519.PublicKey))
 	return seed, &Routing{
-		RoutingID:  hash.New(hex.EncodeToString(expbuf)).String(),
+		RoutingID:  hash.New(id).String(),
 		PrivateKey: *privKey,
 		PublicKey:  *pubKey,
 	}, nil
