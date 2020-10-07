@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -28,7 +30,7 @@ This command creates a new routing file if one does not exist.`,
 		}
 
 		// Generate new routing
-		r, err := config.Generate()
+		seed, r, err := config.GenerateRouting()
 		if err != nil {
 			logrus.Fatalf("Error while generating routing file: %v", err)
 		}
@@ -40,6 +42,23 @@ This command creates a new routing file if one does not exist.`,
 		}
 
 		logrus.Printf("Generated routing file: %s", config.Server.Server.RoutingFile)
+
+		fmt.Print(`
+*****************************************************************************
+!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
+*****************************************************************************
+
+We have generated a private key which allows you to control your server. If, 
+for any reason, you lose this key, you will need to use the following words 
+in order to recreate the key:
+
+`)
+		fmt.Print(internal.WordWrap(seed, 78))
+		fmt.Print(`
+
+Write these words down and store them in a secure environment. They are the 
+ONLY way to recover your private key in case you lose it.
+`)
 	},
 }
 

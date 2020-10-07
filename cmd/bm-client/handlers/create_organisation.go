@@ -38,6 +38,8 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 	}
 	fmt.Printf("not found. This is a good thing.\n")
 
+	var seed string
+
 	fmt.Printf("* Checking if the organisation is already present in the vault: ")
 	var info *internal.OrganisationInfo
 	if vault.HasOrganisation(orgAddr) {
@@ -48,7 +50,12 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 		fmt.Printf("not found. This is a good thing.\n")
 
 		fmt.Printf("* Generating organisation public/private key pair: ")
-		privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
+
+		var (
+			privKey *bmcrypto.PrivKey
+			pubKey  *bmcrypto.PubKey
+		)
+		seed, privKey, pubKey, err = bmcrypto.GenerateKeypairWithSeed()
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
@@ -95,4 +102,25 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 
 	fmt.Printf("\n")
 	fmt.Printf("* All done")
+
+	if len(seed) > 0 {
+		fmt.Print(`
+*****************************************************************************
+!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
+*****************************************************************************
+
+We have generated a private key which allows you to control the organisation. 
+If, for any reason, you lose this key, you will need to use the following 
+words in order to recreate the key:
+
+`)
+		fmt.Print(internal.WordWrap(seed, 78))
+		fmt.Print(`
+
+Write these words down and store them in a secure environment. They are the 
+ONLY way to recover your private key in case you lose it.
+
+WITHOUT THESE WORDS, ALL ACCESS TO YOUR ORGANISATION IS LOST!
+`)
+	}
 }
