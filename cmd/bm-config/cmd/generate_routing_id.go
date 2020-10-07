@@ -43,7 +43,7 @@ This command creates a new routing file if one does not exist.`,
 
 		logrus.Printf("Generated routing file: %s", config.Server.Server.RoutingFile)
 
-		fmt.Println(`
+		fmt.Print(`
 *****************************************************************************
 !IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
 *****************************************************************************
@@ -53,8 +53,8 @@ for any reason, you lose this key, you will need to use the following words
 in order to recreate the key:
 
 `)
-		fmt.Println(wordWrap(seed, 78))
-		fmt.Println(`
+		fmt.Print(wordWrap(seed, 78))
+		fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 
 ONLY way to recover your private key in case you lose it.
@@ -75,7 +75,7 @@ func wordWrap(s string, limit int) string {
 
 	var result, line string
 	for len(words) > 0 {
-		if len(line) + len(words[0]) > limit {
+		if len(line)+len(words[0]) > limit {
 			result += strings.TrimSpace(line) + "\n"
 			line = ""
 		}

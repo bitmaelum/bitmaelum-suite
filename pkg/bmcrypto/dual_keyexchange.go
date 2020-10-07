@@ -19,7 +19,7 @@ type TransactionId struct {
 	R []byte
 }
 
-func (txId TransactionId)ToHex() string {
+func (txId TransactionId) ToHex() string {
 	return hex.EncodeToString(bytes.Join([][]byte{txId.P, txId.R}, []byte{}))
 }
 
@@ -59,8 +59,8 @@ func DualKeyExchange(pub PubKey) ([]byte, *TransactionId, error) {
 		return nil, nil, err
 	}
 
-	f := hs(D)          // Step 2: f = Hs(D)
-	P := f.Public()	    // Step 3-5: convert F into private Key (F=fG)
+	f := hs(D)      // Step 2: f = Hs(D)
+	P := f.Public() // Step 3-5: convert F into private Key (F=fG)
 
 	return D, &TransactionId{
 		P: P.(ed25519.PublicKey)[:32],
@@ -84,8 +84,8 @@ func DualKeyGetSecret(priv PrivKey, txId TransactionId) ([]byte, bool, error) {
 		return nil, false, err
 	}
 
-	fprime := hs(Dprime)        // Step 4: f' = Hs(D')
-	Pprime := fprime.Public()   // Step 5-6: P = F' = f'G
+	fprime := hs(Dprime)      // Step 4: f' = Hs(D')
+	Pprime := fprime.Public() // Step 5-6: P = F' = f'G
 
 	// If Pprime = P, then we know both alice and bob uses D (and Dprime) as the secret
 	if subtle.ConstantTimeCompare(txId.P, Pprime.(ed25519.PublicKey)) == 1 {
@@ -96,7 +96,7 @@ func DualKeyGetSecret(priv PrivKey, txId TransactionId) ([]byte, bool, error) {
 }
 
 func generateRandomScalar() []byte {
-    // get 256bits/32bytes of random data
+	// get 256bits/32bytes of random data
 	buf := make([]byte, 32)
 	_, err := io.ReadFull(randReader, buf)
 	if err != nil {
@@ -312,4 +312,3 @@ func scReduce32(s *[32]byte) {
 	s[30] = byte(s11 >> 9)
 	s[31] = byte(s11 >> 17)
 }
-
