@@ -72,13 +72,13 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 			return nil, errors.New("incorrect signing method")
 		}
 	case bmcrypto.KeyTypeECDSA:
-		_, ok := token.Method.(*jwt.SigningMethodRSA)
+		_, ok := token.Method.(*jwt.SigningMethodECDSA)
 		if !ok {
 			logrus.Tracef("auth: jwt: incorrect signing method")
 			return nil, errors.New("incorrect signing method")
 		}
 	case bmcrypto.KeyTypeED25519:
-		_, ok := token.Method.(*jwt.SigningMethodRSA)
+		_, ok := token.Method.(*SigningMethodEdDSA)
 		if !ok {
 			logrus.Tracef("auth: jwt: incorrect signing method")
 			return nil, errors.New("incorrect signing method")
