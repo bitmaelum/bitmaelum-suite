@@ -16,7 +16,7 @@ var timeNow = time.Now
 
 // Token holds all info for an invitation
 type Token struct {
-	Address   hash.Hash
+	AddrHash  hash.Hash
 	RoutingID string
 	Expiry    time.Time
 	Signature []byte
@@ -37,11 +37,11 @@ func ParseInviteToken(data string) (*Token, error) {
 	}
 
 	// Convert all parts to the correct formats
-	a, err := hash.NewFromHash(parts[0])
+	h, err := hash.NewFromHash(parts[0])
 	if err != nil {
 		return nil, err
 	}
-	it.Address = *a
+	it.AddrHash = *h
 
 	it.RoutingID = parts[1]
 	i, err := strconv.ParseInt(parts[2], 10, 64)
@@ -56,15 +56,15 @@ func ParseInviteToken(data string) (*Token, error) {
 }
 
 // NewInviteToken will create a new invitation token that can be used to create an address on a mailserver
-func NewInviteToken(addr hash.Hash, routingID string, validUntil time.Time, pk bmcrypto.PrivKey) (*Token, error) {
-	h := generateHash(addr, routingID, validUntil)
+func NewInviteToken(addrHash hash.Hash, routingID string, validUntil time.Time, pk bmcrypto.PrivKey) (*Token, error) {
+	h := generateHash(addrHash, routingID, validUntil)
 	sig, err := bmcrypto.Sign(pk, h)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Token{
-		Address:   addr,
+		AddrHash:  addrHash,
 		RoutingID: routingID,
 		Expiry:    validUntil,
 		Signature: sig,
@@ -73,14 +73,14 @@ func NewInviteToken(addr hash.Hash, routingID string, validUntil time.Time, pk b
 
 // String converts a invite token to a string representation
 func (token *Token) String() string {
-	s := token.Address.String() + ":" + token.RoutingID + ":" + strconv.FormatInt(token.Expiry.Unix(), 10) + ":" + string(token.Signature)
+	s := token.AddrHash.String() + ":" + token.RoutingID + ":" + strconv.FormatInt(token.Expiry.Unix(), 10) + ":" + string(token.Signature)
 	return base64.StdEncoding.EncodeToString([]byte(s))
 }
 
 // Verify will verify a token/signature against the given data
 func (token *Token) Verify(routingID string, pubKey bmcrypto.PubKey) bool {
 	// check signature
-	h := generateHash(token.Address, token.RoutingID, token.Expiry)
+	h := generateHash(token.AddrHash, token.RoutingID, token.Expiry)
 	ok, err := bmcrypto.Verify(pubKey, h, token.Signature)
 	if err != nil {
 		return false
@@ -99,8 +99,8 @@ func (token *Token) Verify(routingID string, pubKey bmcrypto.PubKey) bool {
 	return ok
 }
 
-func generateHash(addr hash.Hash, routingID string, validUntil time.Time) []byte {
-	h := sha256.Sum256([]byte(addr.String() + routingID + strconv.FormatInt(validUntil.Unix(), 10)))
+func generateHash(addrHash hash.Hash, routingID string, validUntil time.Time) []byte {
+	h := sha256.Sum256([]byte(addrHash.String() + routingID + strconv.FormatInt(validUntil.Unix(), 10)))
 
 	return h[:]
 }
