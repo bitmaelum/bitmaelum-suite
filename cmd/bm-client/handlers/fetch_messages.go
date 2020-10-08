@@ -33,11 +33,11 @@ func FetchMessages(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo
 	}
 
 	addr, _ := address.NewAddress(info.Address)
-	addressHash := addr.Hash()
+	addrHash := addr.Hash()
 	if box == "" || box == "0" {
-		displayBoxList(client, addressHash)
+		displayBoxList(client, addrHash)
 	} else {
-		displayBox(client, addressHash, info, box)
+		displayBox(client, addrHash, info, box)
 	}
 }
 
@@ -75,7 +75,7 @@ func displayBox(client *api.API, addr hash.Hash, info *internal.AccountInfo, box
 	table.SetHeader(headers)
 
 	for _, msg := range mb.Messages {
-		key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
+		key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.Crypto, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			logrus.Fatal(err)
 		}

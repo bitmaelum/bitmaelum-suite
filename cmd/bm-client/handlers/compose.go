@@ -136,9 +136,7 @@ func generateHeader(info internal.AccountInfo, toInfo *resolver.AddressInfo, cat
 		return nil, err
 	}
 	header.Catalog.Size = uint64(len(catalog))
-	header.Catalog.Crypto = "rsa+aes256gcm"
-
-	header.Catalog.EncryptedKey, err = bmcrypto.Encrypt(toInfo.PublicKey, catalogKey)
+	header.Catalog.EncryptedKey, header.Catalog.Crypto, err = bmcrypto.Encrypt(toInfo.PublicKey, info.PrivKey, catalogKey)
 	if err != nil {
 		return nil, err
 	}
