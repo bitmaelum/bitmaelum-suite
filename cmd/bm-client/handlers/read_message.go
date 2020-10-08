@@ -38,7 +38,7 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 		logrus.Fatal(err)
 	}
 
-	key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
+	key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.Crypto, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
