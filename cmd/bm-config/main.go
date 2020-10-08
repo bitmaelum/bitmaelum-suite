@@ -34,6 +34,7 @@ func main() {
 
 	_ = config.LoadClientConfigOrPass("")
 	_ = config.LoadServerConfigOrPass("")
+	_ = config.ReadRouting(config.Server.Server.RoutingFile)
 
 	cmd.Execute()
 }
