@@ -61,7 +61,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if we need to verify against the mailserver key, or the organisation key
-	var pubKey bmcrypto.PubKey = config.Server.Routing.PublicKey
+	var pubKey bmcrypto.PubKey = config.Routing.PublicKey
 	if input.OrgHash != "" {
 		r := container.GetResolveService()
 		oh, err := hash.NewFromHash(input.OrgHash)
@@ -79,7 +79,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 
 	// Verify token
 	it, err := invite.ParseInviteToken(input.Token)
-	if err != nil || !it.Verify(config.Server.Routing.RoutingID, pubKey) {
+	if err != nil || !it.Verify(config.Routing.RoutingID, pubKey) {
 		ErrorOut(w, http.StatusBadRequest, "cannot validate token")
 		return
 	}

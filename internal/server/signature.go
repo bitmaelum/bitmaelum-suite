@@ -18,15 +18,13 @@ func SignHeader(header *message.Header) error {
 		return nil
 	}
 
-	r := config.Server.Routing
-
 	data, err := json.Marshal(header)
 	if err != nil {
 		return err
 	}
 
 	h := sha256.Sum256(data)
-	sig, err := bmcrypto.Sign(r.PrivateKey, h[:])
+	sig, err := bmcrypto.Sign(config.Routing.PrivateKey, h[:])
 	if err != nil {
 		return err
 	}

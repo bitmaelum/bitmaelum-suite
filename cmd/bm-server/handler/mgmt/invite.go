@@ -41,7 +41,7 @@ func NewInvite(w http.ResponseWriter, req *http.Request) {
 	}
 
 	validUntil := time.Now().Add(time.Duration(input.Days) * 24 * time.Hour)
-	token, err := invite.NewInviteToken(*addr, config.Server.Routing.RoutingID, validUntil, config.Server.Routing.PrivateKey)
+	token, err := invite.NewInviteToken(*addr, config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusInternalServerError, "cannot generate invite token")
 		return

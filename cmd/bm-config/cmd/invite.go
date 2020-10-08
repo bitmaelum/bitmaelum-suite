@@ -38,7 +38,7 @@ server. Only the specified address can register the account`,
 		}
 
 		validUntil := time.Now().Add(duration)
-		token, err := invite.NewInviteToken(addr.Hash(), config.Server.Routing.RoutingID, validUntil, config.Server.Routing.PrivateKey)
+		token, err := invite.NewInviteToken(addr.Hash(), config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
 		if err != nil {
 			msg := fmt.Sprintf("error while inviting address: %s", err)
 			outError(msg, asJSON)

@@ -27,5 +27,5 @@ func TestReadSaveRouting(t *testing.T) {
 
 	err = ReadRouting("/generated/routing.json")
 	assert.NoError(t, err)
-	assert.Equal(t, r.RoutingID, Server.Routing.RoutingID)
+	assert.Equal(t, r.RoutingID, Routing.RoutingID)
 }
