@@ -71,7 +71,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 		fmt.Printf("not found. This is a good thing.\n")
 
 		fmt.Printf("* Generating your secret key to send and read mail: ")
-		privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeED25519)
+		seed, privKey, pubKey, err = bmcrypto.GenerateKeypairWithSeed()
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
@@ -154,4 +154,25 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 
 	fmt.Printf("\n")
 	fmt.Printf("* All done")
+
+	if len(seed) > 0 {
+		fmt.Print(`
+*****************************************************************************
+!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
+*****************************************************************************
+
+We have generated a private key which allows you to control the organisation. 
+If, for any reason, you lose this key, you will need to use the following 
+words in order to recreate the key:
+
+`)
+		fmt.Print(internal.WordWrap(seed, 78))
+		fmt.Print(`
+
+Write these words down and store them in a secure environment. They are the 
+ONLY way to recover your private key in case you lose it.
+
+WITHOUT THESE WORDS, ALL ACCESS TO YOUR ORGANISATION IS LOST!
+`)
+	}
 }
