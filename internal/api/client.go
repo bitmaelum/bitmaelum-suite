@@ -135,7 +135,7 @@ func (api *API) GetJSON(path string, v interface{}) (body []byte, status int, er
 		return body, status, err
 	}
 
-	err = json.Unmarshal(body, v)
+	err = json.Unmarshal(body, &v)
 	if err != nil {
 		return body, status, err
 	}

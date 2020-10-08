@@ -9,6 +9,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/sirupsen/logrus"
 )
 
 func (r *fileRepo) FetchMessageHeader(addr hash.Hash, box int, messageID string) (*message.Header, error) {
@@ -71,10 +72,12 @@ func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, of
 		header := &message.Header{}
 		err := r.fetchJSON(addr, filepath.Join(getBoxAsString(box), f.Name(), "header.json"), header)
 		if err != nil {
+			logrus.Trace("cannot find header.json")
 			continue
 		}
 		catalog, err := r.fetch(addr, filepath.Join(getBoxAsString(box), f.Name(), "catalog"))
 		if err != nil {
+			logrus.Trace("cannot find catalog")
 			continue
 		}
 

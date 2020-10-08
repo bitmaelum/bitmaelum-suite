@@ -10,6 +10,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
@@ -48,11 +49,11 @@ type AttachmentType struct {
 // actual message, blocks and attachments.
 type Catalog struct {
 	From struct {
-		Address      string                  `json:"address"`       // BitMaelum address of the sender
-		Name         string                  `json:"name"`          // Name of the sender
-		Organisation string                  `json:"organisation"`  // Organisation of the sender
-		ProofOfWork  proofofwork.ProofOfWork `json:"proof_of_work"` // Sender's proof of work
-		PublicKey    string                  `json:"public_key"`    // Public key of the sender
+		Address      string                   `json:"address"`       // BitMaelum address of the sender
+		Name         string                   `json:"name"`          // Name of the sender
+		Organisation string                   `json:"organisation"`  // Organisation of the sender
+		ProofOfWork  *proofofwork.ProofOfWork `json:"proof_of_work"` // Sender's proof of work
+		PublicKey    *bmcrypto.PubKey         `json:"public_key"`    // Public key of the sender
 	} `json:"from"`
 	To struct {
 		Address string `json:"address"` // Address of the recipient
@@ -89,9 +90,8 @@ func NewCatalog(info *internal.AccountInfo) *Catalog {
 
 	c.From.Address = info.Address
 	c.From.Name = info.Name
-	c.From.ProofOfWork.Bits = info.Pow.Bits
-	c.From.ProofOfWork.Proof = info.Pow.Proof
-	c.From.PublicKey = info.PubKey.S
+	c.From.ProofOfWork = &info.Pow
+	c.From.PublicKey = &info.PubKey
 
 	return c
 }
