@@ -33,11 +33,11 @@ func FetchMessages(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo
 	}
 
 	addr, _ := address.NewAddress(info.Address)
-	addressHash := addr.Hash()
+	addrHash := addr.Hash()
 	if box == "" || box == "0" {
-		displayBoxList(client, addressHash)
+		displayBoxList(client, addrHash)
 	} else {
-		displayBox(client, addressHash, info, box)
+		displayBox(client, addrHash, info, box)
 	}
 }
 

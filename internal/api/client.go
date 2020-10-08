@@ -81,9 +81,9 @@ func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error)
 	if info != nil {
 		// Create JWT token based on the private key of the user
 		addr, _ := address.NewAddress(info.Address)
-		hash := addr.Hash()
+		addrHash := addr.Hash()
 		var err error
-		jwtToken, err = internal.GenerateJWTToken(hash, info.PrivKey)
+		jwtToken, err = internal.GenerateJWTToken(addrHash, info.PrivKey)
 		if err != nil {
 			return nil, err
 		}
