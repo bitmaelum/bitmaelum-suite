@@ -163,7 +163,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 !IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
 *****************************************************************************
 
-We have generated a private key which allows you to control the organisation. 
+We have generated a private key which allows you to control your account. 
 If, for any reason, you lose this key, you will need to use the following 
 words in order to recreate the key:
 
@@ -174,7 +174,7 @@ words in order to recreate the key:
 Write these words down and store them in a secure environment. They are the 
 ONLY way to recover your private key in case you lose it.
 
-WITHOUT THESE WORDS, ALL ACCESS TO YOUR ORGANISATION IS LOST!
+WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
 `)
 	}
 }
