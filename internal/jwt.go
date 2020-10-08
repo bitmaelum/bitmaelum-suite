@@ -11,11 +11,6 @@ import (
 	"github.com/vtolstov/jwt-go"
 )
 
-// type jwtClaims struct {
-// 	Address string `json:"address"`
-// 	jwt.StandardClaims
-// }
-
 /*
  * @TODO
  * I don't really like this. Suppose we get access to a single JWT token. We can use the same token for every
@@ -33,7 +28,17 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 		Subject:   addr.String(),
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	var signMethod jwt.SigningMethod
+	switch key.Type {
+	case bmcrypto.KeyTypeRSA:
+		signMethod = jwt.SigningMethodRS256
+	case bmcrypto.KeyTypeECDSA:
+		signMethod = jwt.SigningMethodES256
+	case bmcrypto.KeyTypeED25519:
+		sm := &SigningMethodEdDSA{}
+		signMethod = sm
+	}
+	token := jwt.NewWithClaims(signMethod, claims)
 
 	return token.SignedString(key.K)
 }
@@ -67,13 +72,13 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 			return nil, errors.New("incorrect signing method")
 		}
 	case bmcrypto.KeyTypeECDSA:
-		_, ok := token.Method.(*jwt.SigningMethodRSA)
+		_, ok := token.Method.(*jwt.SigningMethodECDSA)
 		if !ok {
 			logrus.Tracef("auth: jwt: incorrect signing method")
 			return nil, errors.New("incorrect signing method")
 		}
 	case bmcrypto.KeyTypeED25519:
-		_, ok := token.Method.(*jwt.SigningMethodRSA)
+		_, ok := token.Method.(*SigningMethodEdDSA)
 		if !ok {
 			logrus.Tracef("auth: jwt: incorrect signing method")
 			return nil, errors.New("incorrect signing method")

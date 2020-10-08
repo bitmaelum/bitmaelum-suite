@@ -60,9 +60,9 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Check if we need to verify against the mailserver key, or the organisation key
-	var pubKey bmcrypto.PubKey = config.Server.Routing.PublicKey
-	if input.OrgHash != "" {
+	// Check if we need to verify against the mail server key, or the organisation key
+	var pubKey = config.Routing.PublicKey
+	if input.OrgHash != hash.EmptyOrgHash.String() {
 		r := container.GetResolveService()
 		oh, err := hash.NewFromHash(input.OrgHash)
 		if err != nil {
@@ -74,12 +74,14 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 			ErrorOut(w, http.StatusBadRequest, "cannot find organisation")
 			return
 		}
+
+		// Use the organisation public key for signature verification
 		pubKey = oi.PublicKey
 	}
 
 	// Verify token
 	it, err := invite.ParseInviteToken(input.Token)
-	if err != nil || !it.Verify(config.Server.Routing.RoutingID, pubKey) {
+	if err != nil || !it.Verify(config.Routing.RoutingID, pubKey) {
 		ErrorOut(w, http.StatusBadRequest, "cannot validate token")
 		return
 	}

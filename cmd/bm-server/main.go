@@ -87,13 +87,13 @@ You can generate a new one by running:
 
 	// Check if route exist on the key resolver, and upload new info if needed
 	res := container.GetResolveService()
-	info, err := res.ResolveRouting(config.Server.Routing.RoutingID)
+	info, err := res.ResolveRouting(config.Routing.RoutingID)
 	if err != nil || info.Routing != config.Server.Server.Hostname {
 		// Upload routing
 		err := res.UploadRoutingInfo(internal.RoutingInfo{
-			RoutingID: config.Server.Routing.RoutingID,
-			PrivKey:   config.Server.Routing.PrivateKey,
-			PubKey:    config.Server.Routing.PublicKey,
+			RoutingID: config.Routing.RoutingID,
+			PrivKey:   config.Routing.PrivateKey,
+			PubKey:    config.Routing.PublicKey,
 			Route:     config.Server.Server.Hostname,
 		})
 		if err != nil {

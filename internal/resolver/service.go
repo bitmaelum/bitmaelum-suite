@@ -139,10 +139,8 @@ func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
 
 // UploadOrganisationInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
-	h := hash.New(info.Addr)
-
 	return s.repo.UploadOrganisation(&OrganisationInfo{
-		Hash:        h.String(),
+		Hash:        hash.New(info.Addr).String(),
 		PublicKey:   info.PubKey,
 		Pow:         info.Pow.String(),
 		Validations: info.Validations,

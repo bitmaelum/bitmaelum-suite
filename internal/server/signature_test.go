@@ -69,7 +69,7 @@ func setup() {
 	if err != nil {
 		panic(err)
 	}
-	config.Server.Routing = &config.Routing{
+	config.Routing = config.RoutingConfig{
 		RoutingID:  "12345678",
 		PrivateKey: *privKey,
 		PublicKey:  *pubKey,

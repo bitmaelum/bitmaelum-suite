@@ -49,7 +49,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 		os.Exit(1)
 	}
 	// Check address matches the one in the token
-	if it.Address.String() != addr.Hash().String() {
+	if it.AddrHash.String() != addr.Hash().String() {
 		fmt.Printf("\n  X this token is not for %s", addr.String())
 		fmt.Println("")
 		os.Exit(1)

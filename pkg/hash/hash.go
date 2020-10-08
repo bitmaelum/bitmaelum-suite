@@ -13,6 +13,11 @@ var (
 	hashRegex = regexp.MustCompile(`^[a-f0-9]{64}$`)
 )
 
+var (
+	// EmptyOrgHash is a hash of an empty string. Used for checking against empty org hashes
+	EmptyOrgHash = New("")
+)
+
 // Hash is a hashed entity. This could be an address, localpart, organisation part or anything else. Currently only
 // sha256 is supported
 type Hash string

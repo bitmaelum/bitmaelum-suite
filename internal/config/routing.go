@@ -12,12 +12,15 @@ import (
 	"github.com/spf13/afero"
 )
 
-// Routing holds routing configuration for the mail server
-type Routing struct {
+// RoutingConfig holds routing configuration for the mail server
+type RoutingConfig struct {
 	RoutingID  string           `json:"routing_id"`
 	PrivateKey bmcrypto.PrivKey `json:"private_key"`
 	PublicKey  bmcrypto.PubKey  `json:"public_key"`
 }
+
+// Routing keeps the routing ID and keys
+var Routing RoutingConfig
 
 // ReadRouting will read the routing file and merge it into the server configuration
 func ReadRouting(p string) error {
@@ -31,8 +34,8 @@ func ReadRouting(p string) error {
 		return err
 	}
 
-	Server.Routing = &Routing{}
-	err = json.Unmarshal(data, Server.Routing)
+	Routing = RoutingConfig{}
+	err = json.Unmarshal(data, &Routing)
 	if err != nil {
 		return err
 	}
@@ -41,7 +44,7 @@ func ReadRouting(p string) error {
 }
 
 // SaveRouting will save the routing into a file. It will overwrite if exists
-func SaveRouting(p string, routing *Routing) error {
+func SaveRouting(p string, routing *RoutingConfig) error {
 	data, err := json.MarshalIndent(routing, "", "  ")
 	if err != nil {
 		return err
@@ -56,14 +59,14 @@ func SaveRouting(p string, routing *Routing) error {
 }
 
 // GenerateRouting generates a new routing structure
-func GenerateRouting() (string, *Routing, error) {
+func GenerateRouting() (string, *RoutingConfig, error) {
 	seed, privKey, pubKey, err := bmcrypto.GenerateKeypairWithSeed()
 	if err != nil {
 		return "", nil, err
 	}
 
 	id := hex.EncodeToString(pubKey.K.(ed25519.PublicKey))
-	return seed, &Routing{
+	return seed, &RoutingConfig{
 		RoutingID:  hash.New(id).String(),
 		PrivateKey: *privKey,
 		PublicKey:  *pubKey,

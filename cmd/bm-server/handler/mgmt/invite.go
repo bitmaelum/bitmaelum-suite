@@ -13,8 +13,8 @@ import (
 )
 
 type inputInviteType struct {
-	Addr string `json:"address"`
-	Days int    `json:"days"`
+	AddrHash string `json:"address"`
+	Days     int    `json:"days"`
 }
 
 type jsonOut map[string]interface{}
@@ -34,14 +34,14 @@ func NewInvite(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	addr, err := hash.NewFromHash(input.Addr)
+	addrHash, err := hash.NewFromHash(input.AddrHash)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
 	}
 
 	validUntil := time.Now().Add(time.Duration(input.Days) * 24 * time.Hour)
-	token, err := invite.NewInviteToken(*addr, config.Server.Routing.RoutingID, validUntil, config.Server.Routing.PrivateKey)
+	token, err := invite.NewInviteToken(*addrHash, config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusInternalServerError, "cannot generate invite token")
 		return
@@ -50,8 +50,8 @@ func NewInvite(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(jsonOut{
-		"address": addr.String(),
-		"token":   token.String(),
-		"expiry":  validUntil.Unix(),
+		"hash":   addrHash.String(),
+		"token":  token.String(),
+		"expiry": validUntil.Unix(),
 	})
 }
