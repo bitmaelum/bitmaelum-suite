@@ -33,9 +33,9 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 		if len(org.Validations) == 0 {
 			values := []string{
 				"...@" + org.Addr + "!",
-				org.Name,
+				org.FullName,
 				"-",
-				o.Addr.String(),
+				o.Hash.String(),
 			}
 			if displayKeys {
 				values = append(values, org.PrivKey.S, org.PubKey.S)
@@ -57,9 +57,9 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 				// First entry
 				values = []string{
 					"...@" + org.Addr + "!",
-					org.Name,
+					org.FullName,
 					valstr,
-					o.Addr.String(),
+					o.Hash.String(),
 				}
 			} else {
 				// Additional validation rows

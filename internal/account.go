@@ -25,7 +25,7 @@ type AccountInfo struct {
 // OrganisationInfo represents a organisation configuration for a server
 type OrganisationInfo struct {
 	Addr        string                        `json:"addr"`          // org part from the bitmaelum address
-	Name        string                        `json:"name"`          // Full name of the organisation
+	FullName    string                        `json:"name"`          // Full name of the organisation
 	PrivKey     bmcrypto.PrivKey              `json:"priv_key"`      // PEM encoded private key
 	PubKey      bmcrypto.PubKey               `json:"pub_key"`       // PEM encoded public key
 	Pow         proofofwork.ProofOfWork       `json:"pow,omitempty"` // Proof of work
@@ -42,11 +42,9 @@ type RoutingInfo struct {
 }
 
 func InfoToOrg(info OrganisationInfo) (*organisation.Organisation, error) {
-	a := hash.New(info.Addr)
-
 	return &organisation.Organisation{
-		Addr:       a,
-		Name:       info.Name,
+		Hash:       hash.New(info.Addr),
+		FullName:   info.FullName,
 		PublicKey:  info.PubKey,
 		Validation: info.Validations,
 	}, nil

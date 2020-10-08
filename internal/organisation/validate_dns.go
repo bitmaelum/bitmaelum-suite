@@ -9,7 +9,7 @@ import (
 var resolver DNSResolver = &DefaultResolver{}
 
 func validateDNS(o Organisation, domain string) (bool, error) {
-	oa := strings.ToLower(o.Addr.String())
+	oa := strings.ToLower(o.Hash.String())
 
 	recs, err := resolver.LookupTXT("_bitmaelum." + domain)
 	if err != nil {

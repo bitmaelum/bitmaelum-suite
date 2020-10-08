@@ -12,10 +12,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-func CreateOrganisationInvite(vault *vault.Vault, orgName, addr, shortRoutingID string) {
-	org := hash.New(orgName)
-
-	oi, err := vault.GetOrganisationInfo(org)
+func CreateOrganisationInvite(vault *vault.Vault, orgAddr, inviteAddr, shortRoutingID string) {
+	oi, err := vault.GetOrganisationInfo(hash.New(orgAddr))
 	if err != nil {
 		fmt.Println("Organisation not found in the vault")
 		os.Exit(1)
@@ -35,18 +33,18 @@ func CreateOrganisationInvite(vault *vault.Vault, orgName, addr, shortRoutingID 
 		os.Exit(1)
 	}
 
-	hashAddr, err := address.NewAddress(addr)
+	hashAddr, err := address.NewAddress(inviteAddr)
 	if err != nil {
-		fmt.Printf("Doesn't seem like '%s' is a valid BitMealum address", addr)
+		fmt.Printf("Doesn't seem like '%s' is a valid BitMealum address", inviteAddr)
 		os.Exit(1)
 	}
 	if !hashAddr.HasOrganisationPart() {
-		fmt.Printf("Doesn't seem like '%s' is not a BitMealum organisation address", addr)
+		fmt.Printf("Doesn't seem like '%s' is not a BitMealum organisation address", inviteAddr)
 		os.Exit(1)
 	}
 
-	if hashAddr.Org != orgName {
-		fmt.Printf("Address '%s' does not match your organisation '%s'", addr, orgName)
+	if hashAddr.Org != orgAddr {
+		fmt.Printf("Address '%s' does not match your organisation '%s'", inviteAddr, orgAddr)
 		os.Exit(1)
 	}
 
