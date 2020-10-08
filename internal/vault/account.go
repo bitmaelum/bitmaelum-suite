@@ -9,26 +9,26 @@ import (
 
 // AddAccount adds a new account to the vault
 func (v *Vault) AddAccount(account internal.AccountInfo) {
-	v.Data.Accounts = append(v.Data.Accounts, account)
+	v.Store.Accounts = append(v.Store.Accounts, account)
 }
 
 // RemoveAccount removes the given account from the vault
 func (v *Vault) RemoveAccount(addr address.Address) {
 	k := 0
-	for _, acc := range v.Data.Accounts {
+	for _, acc := range v.Store.Accounts {
 		if acc.Address != addr.String() {
-			v.Data.Accounts[k] = acc
+			v.Store.Accounts[k] = acc
 			k++
 		}
 	}
-	v.Data.Accounts = v.Data.Accounts[:k]
+	v.Store.Accounts = v.Store.Accounts[:k]
 }
 
 // GetAccountInfo tries to find the given address and returns the account from the vault
 func (v *Vault) GetAccountInfo(addr address.Address) (*internal.AccountInfo, error) {
-	for i := range v.Data.Accounts {
-		if v.Data.Accounts[i].Address == addr.String() {
-			return &v.Data.Accounts[i], nil
+	for i := range v.Store.Accounts {
+		if v.Store.Accounts[i].Address == addr.String() {
+			return &v.Store.Accounts[i], nil
 		}
 	}
 
@@ -46,17 +46,17 @@ func (v *Vault) HasAccount(addr address.Address) bool {
 // the first account in the vault. Returns nil when no accounts are present in the vault.
 func (v *Vault) GetDefaultAccount() *internal.AccountInfo {
 	// No accounts, return nil
-	if len(v.Data.Accounts) == 0 {
+	if len(v.Store.Accounts) == 0 {
 		return nil
 	}
 
 	// Return account that is set default (the first one, if multiple)
-	for i := range v.Data.Accounts {
-		if v.Data.Accounts[i].Default {
-			return &v.Data.Accounts[i]
+	for i := range v.Store.Accounts {
+		if v.Store.Accounts[i].Default {
+			return &v.Store.Accounts[i]
 		}
 	}
 
 	// No default found, return the first account
-	return &v.Data.Accounts[0]
+	return &v.Store.Accounts[0]
 }

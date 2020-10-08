@@ -19,7 +19,7 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 }
 
 var (
-	orgAddr         *string
+	orgAddr        *string
 	orgFullName    *string
 	orgValidations *[]string
 )

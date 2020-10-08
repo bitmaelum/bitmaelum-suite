@@ -90,7 +90,7 @@ func TestStoreHeader(t *testing.T) {
 	_ = fs.MkdirAll("/datastore/incoming", 0755)
 
 	h := &Header{}
-	_ = bmtest.ReadHeader("../../testdata/header-001.json", h)
+	_ = bmtest.ReadJSON("../../testdata/header-001.json", h)
 	err := StoreHeader("2f9011bf-912d-4c64-91f1-bd6a99c03375", h)
 	assert.NoError(t, err)
 

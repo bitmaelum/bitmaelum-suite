@@ -2,6 +2,7 @@ package internal
 
 import "strings"
 
+// WordWrap wraps sentences to a maximum length of limit.
 func WordWrap(s string, limit int) string {
 	if strings.TrimSpace(s) == "" {
 		return s

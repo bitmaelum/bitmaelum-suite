@@ -41,6 +41,7 @@ GO_STATCHECK_BIN = $(GOPATH)/bin/staticcheck
 GO_INEFF_BIN = $(GOPATH)/bin/ineffassign
 GO_GOCYCLO_BIN = $(GOPATH)/bin/gocyclo
 GO_GOIMPORTS_BIN = $(GOPATH)/bin/goimports
+GO_LINT_BIN = $(GOPATH)/bin/golint
 
 # ---------------------------------------------------------------------------
 
@@ -50,16 +51,16 @@ $(GO_TEST_BIN):
 	go get -u github.com/gordonklaus/ineffassign
 	go get -u github.com/fzipp/gocyclo
 	go get -u golang.org/x/tools/cmd/goimports
-
+	go get -u golang.org/x/lint/golint
 
 lint:
 	$(GO_GOIMPORTS_BIN) -w  --format-only .
 
 ## Runs all tests for the whole repository
-test: $(GO_TEST_BIN) test_goimports test_vet test_staticcheck test_ineffassign test_gocyclo test_unit
+test: $(GO_TEST_BIN) test_goimports test_vet test_golint test_staticcheck test_ineffassign test_gocyclo test_unit
 
 test_goimports:
-	echo "goimports"
+	echo "Check goimports"
 	$(GO_GOIMPORTS_BIN) -l .
 
 test_vet:
@@ -69,6 +70,10 @@ test_vet:
 test_staticcheck:
 	echo "Check static"
 	$(GO_STATCHECK_BIN) ./...
+
+test_golint:
+	echo "Check lint"
+	$(GO_LINT_BIN) ./...
 
 test_ineffassign:
 	echo "Check ineffassign"

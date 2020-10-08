@@ -41,6 +41,7 @@ type RoutingInfo struct {
 	Route     string                  `json:"route"`         // Route to server
 }
 
+// InfoToOrg converts organisation info to an actual organisation structure
 func InfoToOrg(info OrganisationInfo) (*organisation.Organisation, error) {
 	return &organisation.Organisation{
 		Hash:       hash.New(info.Addr),

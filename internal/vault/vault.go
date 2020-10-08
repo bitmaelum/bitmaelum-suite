@@ -28,8 +28,8 @@ const (
 	pbkdfIterations = 100002
 )
 
+// VersionV0 is the first version that uses versioning
 const (
-	// VersionV1 is the first version that uses versioning
 	VersionV0 = iota
 	VersionV1
 )
@@ -40,15 +40,15 @@ var fs = afero.NewOsFs()
 // VaultPassword is the given password through the commandline for opening the vault
 var VaultPassword string
 
-// VaultData hold the actual data that is encrypted inside the vault
-type VaultData struct {
+// StoreType hold the actual data that is encrypted inside the vault
+type StoreType struct {
 	Accounts      []internal.AccountInfo      `json:"accounts"`
 	Organisations []internal.OrganisationInfo `json:"organisations"`
 }
 
 // Vault defines our vault with path and password. Only the accounts should be exported
 type Vault struct {
-	Data     VaultData
+	Store    StoreType
 	RawData  []byte
 	password []byte
 	path     string
@@ -68,7 +68,7 @@ func New(p string, pwd []byte) (*Vault, error) {
 	var err error
 
 	v := &Vault{
-		Data: VaultData{
+		Store: StoreType{
 			Accounts:      []internal.AccountInfo{},
 			Organisations: []internal.OrganisationInfo{},
 		},
@@ -105,11 +105,11 @@ func New(p string, pwd []byte) (*Vault, error) {
 // sanityCheck checks if the vault contains correct data. It might be the accounts are in some kind of invalid state,
 // so we should not save any data once we detected this.
 func (v *Vault) sanityCheck() bool {
-	if len(v.Data.Accounts) == 0 {
+	if len(v.Store.Accounts) == 0 {
 		return false
 	}
 
-	for _, acc := range v.Data.Accounts {
+	for _, acc := range v.Store.Accounts {
 		if acc.PrivKey.S == "" {
 			return false
 		}
@@ -118,7 +118,7 @@ func (v *Vault) sanityCheck() bool {
 		}
 	}
 
-	for _, org := range v.Data.Organisations {
+	for _, org := range v.Store.Organisations {
 		if org.PrivKey.S == "" {
 			return false
 		}
@@ -174,7 +174,7 @@ func (v *Vault) ReadFromDisk() error {
 	return v.DecryptContainer(container)
 }
 
-// DecryptContainer decrypts a container and fills the values in v.Data
+// DecryptContainer decrypts a container and fills the values in v.Store
 func (v *Vault) DecryptContainer(container *vaultContainer) error {
 
 	// Check if HMAC is correct
@@ -204,8 +204,8 @@ func (v *Vault) DecryptContainer(container *vaultContainer) error {
 		var accounts []internal.AccountInfo
 		err = json.Unmarshal(plainText, &accounts)
 		if err == nil {
-			v.Data.Accounts = accounts
-			v.Data.Organisations = []internal.OrganisationInfo{}
+			v.Store.Accounts = accounts
+			v.Store.Organisations = []internal.OrganisationInfo{}
 
 			// Write back to disk in a newer format
 			return v.WriteToDisk()
@@ -214,7 +214,7 @@ func (v *Vault) DecryptContainer(container *vaultContainer) error {
 
 	// Version 1 has organisation info
 	if container.Version == VersionV1 {
-		err = json.Unmarshal(plainText, &v.Data)
+		err = json.Unmarshal(plainText, &v.Store)
 		if err != nil {
 			return err
 		}
@@ -223,7 +223,7 @@ func (v *Vault) DecryptContainer(container *vaultContainer) error {
 	return nil
 }
 
-// EncryptContainer encrypts v.Data and returns the vault as encrypted JSON container
+// EncryptContainer encrypts v.Store and returns the vault as encrypted JSON container
 func (v *Vault) EncryptContainer() ([]byte, error) {
 	// Generate 64 byte salt
 	salt := make([]byte, 64)
@@ -247,7 +247,7 @@ func (v *Vault) EncryptContainer() ([]byte, error) {
 	}
 
 	// Marshal and encrypt the data
-	plainText, err := json.MarshalIndent(&v.Data, "", "  ")
+	plainText, err := json.MarshalIndent(&v.Store, "", "  ")
 	if err != nil {
 		return nil, err
 	}
@@ -275,12 +275,12 @@ func (v *Vault) ChangePassword(newPassword string) {
 	v.password = []byte(newPassword)
 }
 
-// FindShortRoutingId will find a short routing ID in the vault and expand it to the full routing ID. So we can use
+// FindShortRoutingID will find a short routing ID in the vault and expand it to the full routing ID. So we can use
 // "12345" instead of "1234567890123456789012345678901234567890".
 // Will not return anything when multiple candidates are found.
-func (v *Vault) FindShortRoutingId(id string) string {
+func (v *Vault) FindShortRoutingID(id string) string {
 	var found = ""
-	for _, acc := range v.Data.Accounts {
+	for _, acc := range v.Store.Accounts {
 		if strings.HasPrefix(acc.RoutingID, id) {
 			// Found something else that matches
 			if found != "" && found != acc.RoutingID {

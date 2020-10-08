@@ -12,6 +12,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
+// CreateOrganisationInvite invites a user to an organisation on the given routing-id
 func CreateOrganisationInvite(vault *vault.Vault, orgAddr, inviteAddr, shortRoutingID string) {
 	oi, err := vault.GetOrganisationInfo(hash.New(orgAddr))
 	if err != nil {
@@ -19,7 +20,7 @@ func CreateOrganisationInvite(vault *vault.Vault, orgAddr, inviteAddr, shortRout
 		os.Exit(1)
 	}
 
-	routingID := vault.FindShortRoutingId(shortRoutingID)
+	routingID := vault.FindShortRoutingID(shortRoutingID)
 	if routingID == "" {
 		routingID = shortRoutingID
 	}

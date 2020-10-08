@@ -12,15 +12,15 @@ func TestVault_Account(t *testing.T) {
 	v, err := New("", []byte{})
 	assert.NoError(t, err)
 
-	assert.Len(t, v.Data.Accounts, 0)
+	assert.Len(t, v.Store.Accounts, 0)
 
 	acc := internal.AccountInfo{
 		Address: "example!",
 		Name:    "Example Account",
 	}
 	v.AddAccount(acc)
-	assert.Len(t, v.Data.Accounts, 1)
-	assert.Equal(t, "example!", v.Data.Accounts[0].Address)
+	assert.Len(t, v.Store.Accounts, 1)
+	assert.Equal(t, "example!", v.Store.Accounts[0].Address)
 
 	a, _ := address.NewAddress("example!")
 	assert.True(t, v.HasAccount(*a))
@@ -38,21 +38,21 @@ func TestVault_Account(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, o)
 
-	assert.Len(t, v.Data.Accounts, 1)
+	assert.Len(t, v.Store.Accounts, 1)
 	a, _ = address.NewAddress("notexist!")
 	v.RemoveAccount(*a)
-	assert.Len(t, v.Data.Accounts, 1)
+	assert.Len(t, v.Store.Accounts, 1)
 
 	a, _ = address.NewAddress("example!")
 	v.RemoveAccount(*a)
-	assert.Len(t, v.Data.Accounts, 0)
+	assert.Len(t, v.Store.Accounts, 0)
 }
 
 func TestVault_GetDefaultAccount(t *testing.T) {
 	v, err := New("", []byte{})
 	assert.NoError(t, err)
 
-	assert.Len(t, v.Data.Accounts, 0)
+	assert.Len(t, v.Store.Accounts, 0)
 
 	acc := internal.AccountInfo{
 		Default: false,
@@ -71,13 +71,13 @@ func TestVault_GetDefaultAccount(t *testing.T) {
 		Address: "acc3!",
 	}
 	v.AddAccount(acc)
-	assert.Len(t, v.Data.Accounts, 3)
+	assert.Len(t, v.Store.Accounts, 3)
 
 	da := v.GetDefaultAccount()
 	assert.Equal(t, "acc2!", da.Address)
 
 	// Without default set, pick the first
-	v.Data.Accounts[1].Default = false
+	v.Store.Accounts[1].Default = false
 	da = v.GetDefaultAccount()
 	assert.Equal(t, "acc1!", da.Address)
 
