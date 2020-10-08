@@ -13,11 +13,11 @@ func (v *Vault) AddOrganisation(organisation internal.OrganisationInfo) {
 }
 
 // GetOrganisationInfo tries to find the given organisation and returns the organisation from the vault
-func (v *Vault) GetOrganisationInfo(org hash.Hash) (*internal.OrganisationInfo, error) {
+func (v *Vault) GetOrganisationInfo(orgHash hash.Hash) (*internal.OrganisationInfo, error) {
 
 	for i := range v.Store.Organisations {
 		h := hash.New(v.Store.Organisations[i].Addr)
-		if h.String() == org.String() {
+		if h.String() == orgHash.String() {
 			return &v.Store.Organisations[i], nil
 		}
 	}

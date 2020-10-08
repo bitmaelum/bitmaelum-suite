@@ -34,16 +34,16 @@ func main() {
 	}
 }
 
-func resolveAddress(a string) {
-	addr := hash.New(a)
+func resolveAddress(addr string) {
+	addrHash := hash.New(addr)
 
 	svc := container.GetResolveService()
-	info, err := svc.ResolveAddress(addr)
+	info, err := svc.ResolveAddress(addrHash)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	fmt.Printf("BitMaelum address '%s'", a)
+	fmt.Printf("BitMaelum address '%s'", addr)
 	fmt.Printf("Hash: %s\n", info.Hash)
 	fmt.Printf("RoutingID: %s\n", info.RoutingID)
 	fmt.Printf("Public key:\n%s\n", info.PublicKey.String())
@@ -62,8 +62,8 @@ func resolveRouting(routingID string) {
 	fmt.Printf("Routing:\n%s\n", info.Routing)
 }
 
-func resolveOrganisation(org string) {
-	orgHash := hash.New(org)
+func resolveOrganisation(orgAddr string) {
+	orgHash := hash.New(orgAddr)
 
 	svc := container.GetResolveService()
 	info, err := svc.ResolveOrganisation(orgHash)
@@ -71,7 +71,7 @@ func resolveOrganisation(org string) {
 		logrus.Fatal(err)
 	}
 
-	fmt.Printf("BitMaelum organisation '%s'\n", org)
+	fmt.Printf("BitMaelum organisation '%s'\n", orgAddr)
 	fmt.Printf("Hash: %s\n", info.Hash)
 	fmt.Printf("Public key:\n%s\n", info.PublicKey.String())
 }
