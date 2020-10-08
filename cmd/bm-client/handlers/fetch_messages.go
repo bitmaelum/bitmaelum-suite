@@ -75,7 +75,7 @@ func displayBox(client *api.API, addr hash.Hash, info *internal.AccountInfo, box
 	table.SetHeader(headers)
 
 	for _, msg := range mb.Messages {
-		key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.EncryptedKey)
+		key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.Crypto, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			logrus.Fatal(err)
 		}
