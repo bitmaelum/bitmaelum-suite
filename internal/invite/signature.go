@@ -82,7 +82,7 @@ func (token *Token) Verify(routingID string, pubKey bmcrypto.PubKey) bool {
 	// check signature
 	h := generateHash(token.AddrHash, token.RoutingID, token.Expiry)
 	ok, err := bmcrypto.Verify(pubKey, h, token.Signature)
-	if err != nil {
+	if err != nil || !ok {
 		return false
 	}
 
