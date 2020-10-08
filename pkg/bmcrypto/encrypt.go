@@ -9,7 +9,7 @@ import (
 )
 
 // Encrypt a message with the given key
-func Encrypt(pubKey PubKey, privKey PrivKey, message []byte) ([]byte, string, error) {
+func Encrypt(pubKey PubKey, message []byte) ([]byte, string, error) {
 	if !pubKey.CanEncrypt() && !pubKey.CanKeyExchange() {
 		return nil, "", errors.New("this key type is not usable for encryption")
 	}
@@ -20,7 +20,7 @@ func Encrypt(pubKey PubKey, privKey PrivKey, message []byte) ([]byte, string, er
 		return encryptedMessage, "rsa+aes256gcm", err
 
 	case KeyTypeED25519:
-		return encryptED25519(pubKey, privKey, message)
+		return encryptED25519(pubKey, message)
 	}
 
 	return nil, "", errors.New("encryption not implemented for" + pubKey.Type)
@@ -52,7 +52,7 @@ func decryptRsa(key *rsa.PrivateKey, message []byte) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, key, message)
 }
 
-func encryptED25519(pubKey PubKey, privKey PrivKey, message []byte) ([]byte, string, error) {
+func encryptED25519(pubKey PubKey, message []byte) ([]byte, string, error) {
 	secret, txID, err := DualKeyExchange(pubKey)
 	if err != nil {
 		return nil, "", err
