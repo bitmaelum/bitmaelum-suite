@@ -14,13 +14,13 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		vault := OpenVault()
 
-		handlers.CreateOrganisation(vault, *orgAddr, *orgFullname, *orgValidations)
+		handlers.CreateOrganisation(vault, *orgAddr, *orgFullName, *orgValidations)
 	},
 }
 
 var (
 	orgAddr         *string
-	orgFullname    *string
+	orgFullName    *string
 	orgValidations *[]string
 )
 
@@ -28,7 +28,7 @@ func init() {
 	rootCmd.AddCommand(createOrganisationCmd)
 
 	orgAddr = createOrganisationCmd.Flags().StringP("org", "o", "", "Organisation address (...@<name>! part)")
-	orgFullname = createOrganisationCmd.Flags().StringP("name", "n", "", "Actual name (Acme Inc.)")
+	orgFullName = createOrganisationCmd.Flags().StringP("name", "n", "", "Actual name (Acme Inc.)")
 	orgValidations = createOrganisationCmd.Flags().StringArray("val", nil, "validations for the organisation")
 
 	_ = createAccountCmd.MarkFlagRequired("org")

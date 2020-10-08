@@ -83,10 +83,9 @@ func TestValidationType_String(t *testing.T) {
 func TestValidate(t *testing.T) {
 	v, _ := NewValidationTypeFromString("dns bitmaelum.org")
 
-	a := hash.New("bitmaelum")
 	o := &Organisation{
-		Addr:       a,
-		Name:       "BitMaelum",
+		Hash:       hash.New("bitmaelum"),
+		FullName:   "BitMaelum",
 		PublicKey:  bmcrypto.PubKey{},
 		Validation: []ValidationType{*v},
 	}
