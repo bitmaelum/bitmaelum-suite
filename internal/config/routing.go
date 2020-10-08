@@ -19,9 +19,8 @@ type RoutingConfig struct {
 	PublicKey  bmcrypto.PubKey  `json:"public_key"`
 }
 
-// Server keeps all server configuration settings
+// Routing keeps the routing ID and keys
 var Routing RoutingConfig
-
 
 // ReadRouting will read the routing file and merge it into the server configuration
 func ReadRouting(p string) error {
