@@ -9,7 +9,7 @@ import (
 )
 
 // ListAccounts displays the current accounts available in the vault
-func ListAccounts(vault *vault.Vault, displayKeys bool) {
+func ListAccounts(v *vault.Vault, displayKeys bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 
 	headers := []string{"Address", "Name", "Routing ID", "Route Host"}
@@ -24,7 +24,7 @@ func ListAccounts(vault *vault.Vault, displayKeys bool) {
 	table.SetColumnAlignment(align)
 	table.SetHeader(headers)
 
-	for _, acc := range vault.Data.Accounts {
+	for _, acc := range v.Store.Accounts {
 		if acc.Default {
 			acc.Address += " (*)"
 		}

@@ -55,7 +55,7 @@ func SaveRouting(p string, routing *Routing) error {
 	return afero.WriteFile(fs, p, data, 0600)
 }
 
-// Generate generates a new routing structure
+// GenerateRouting generates a new routing structure
 func GenerateRouting() (string, *Routing, error) {
 	seed, privKey, pubKey, err := bmcrypto.GenerateKeypairWithSeed()
 	if err != nil {

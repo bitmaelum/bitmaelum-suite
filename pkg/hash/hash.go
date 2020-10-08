@@ -47,7 +47,7 @@ func (ha Hash) Byte() []byte {
 	return []byte(ha)
 }
 
-// VerifyHash will check if the hashes for local and org found matches the actual target hash
+// Verify will check if the hashes for local and org found matches the actual target hash
 func (ha Hash) Verify(localHash, orgHash Hash) bool {
 	target := New(localHash.String() + orgHash.String())
 

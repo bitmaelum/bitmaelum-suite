@@ -14,26 +14,29 @@ import (
 
 // The dual key exchange system is taken from https://steemit.com/monero/@luigi1111/understanding-monero-cryptography-privacy-part-2-stealth-addresses
 
-type TransactionId struct {
+// TransactionID is a structure that holds the P and R value that is needed to verify the dual key signature
+type TransactionID struct {
 	P []byte
 	R []byte
 }
 
-func (txId TransactionId) ToHex() string {
-	return hex.EncodeToString(bytes.Join([][]byte{txId.P, txId.R}, []byte{}))
+// ToHex converts a transaction ID to a hexadecimal representation
+func (txID TransactionID) ToHex() string {
+	return hex.EncodeToString(bytes.Join([][]byte{txID.P, txID.R}, []byte{}))
 }
 
-func TxIdFromString(s string) (*TransactionId, error) {
+// TxIDFromString converts a hexadecimal presentation into a TransactionID
+func TxIDFromString(s string) (*TransactionID, error) {
 	b, err := hex.DecodeString(s)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(b) != 64 {
-		return nil, errors.New("incorrect txid len (must be 64byte)")
+		return nil, errors.New("incorrect txID len (must be 64byte)")
 	}
 
-	return &TransactionId{
+	return &TransactionID{
 		P: b[:32],
 		R: b[32:],
 	}, nil
@@ -42,7 +45,7 @@ func TxIdFromString(s string) (*TransactionId, error) {
 // DualKeyExchange is a Dual DH key exchange that uses an intermediate key. This key is randomized and provide a way
 // for alice and bob to communicate through a non-deterministic DH.
 // It returns the (shared) secret, a transaction ID that needs to be send over to the other user.
-func DualKeyExchange(pub PubKey) ([]byte, *TransactionId, error) {
+func DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
 	if pub.Type != KeyTypeED25519 {
 		return nil, nil, errors.New("can only use ed25519 keys in dual key exchange")
 	}
@@ -62,15 +65,15 @@ func DualKeyExchange(pub PubKey) ([]byte, *TransactionId, error) {
 	f := hs(D)      // Step 2: f = Hs(D)
 	P := f.Public() // Step 3-5: convert F into private Key (F=fG)
 
-	return D, &TransactionId{
+	return D, &TransactionID{
 		P: P.(ed25519.PublicKey)[:32],
 		R: R.(ed25519.PublicKey)[:32],
 	}, nil
 }
 
-// DualKeyVerify verifies if the transaction ID matches our private key. If so, it will return the
+// DualKeyGetSecret verifies if the transaction ID matches our private key. If so, it will return the
 // secret that has been exchanged
-func DualKeyGetSecret(priv PrivKey, txId TransactionId) ([]byte, bool, error) {
+func DualKeyGetSecret(priv PrivKey, txID TransactionID) ([]byte, bool, error) {
 	if priv.Type != KeyTypeED25519 {
 		return nil, false, errors.New("can only use ed25519 keys in dual key exchange")
 	}
@@ -78,7 +81,7 @@ func DualKeyGetSecret(priv PrivKey, txId TransactionId) ([]byte, bool, error) {
 	// Step 1-3: D' = aR
 	Dprime, err := curve25519.X25519(
 		EdPrivToX25519(priv.K.(ed25519.PrivateKey).Seed()),
-		EdPubToX25519(txId.R),
+		EdPubToX25519(txID.R),
 	)
 	if err != nil {
 		return nil, false, err
@@ -88,7 +91,7 @@ func DualKeyGetSecret(priv PrivKey, txId TransactionId) ([]byte, bool, error) {
 	Pprime := fprime.Public() // Step 5-6: P = F' = f'G
 
 	// If Pprime = P, then we know both alice and bob uses D (and Dprime) as the secret
-	if subtle.ConstantTimeCompare(txId.P, Pprime.(ed25519.PublicKey)) == 1 {
+	if subtle.ConstantTimeCompare(txID.P, Pprime.(ed25519.PublicKey)) == 1 {
 		return Dprime, true, nil
 	}
 

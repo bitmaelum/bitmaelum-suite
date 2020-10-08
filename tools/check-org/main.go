@@ -27,17 +27,16 @@ func main() {
 	v1, _ := organisation.NewValidationTypeFromString("dns bitmaelum.org")
 	v2, _ := organisation.NewValidationTypeFromString("dns bitmaelum.com")
 	v3, _ := organisation.NewValidationTypeFromString("dns evil-domain.xyz")
-	a := hash.New("bitmaelum")
 
 	o := organisation.Organisation{
-		Addr:       a,
-		Name:       "BitMaelum Org.",
+		Hash:       hash.New("bitmaelum"),
+		FullName:   "BitMaelum Org.",
 		PublicKey:  bmcrypto.PubKey{},
 		Validation: []organisation.ValidationType{*v1, *v2, *v3},
 	}
 
-	fmt.Printf("Organisation %s\n", o.Name)
-	fmt.Printf("  Hash: %s\n", o.Addr.String())
+	fmt.Printf("Organisation\n")
+	fmt.Printf("  Hash: %s\n", o.Hash.String())
 	fmt.Printf("  Validations: \n")
 	for _, v := range o.Validation {
 		if ok, err := v.Validate(o); err == nil && ok {

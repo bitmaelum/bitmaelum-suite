@@ -16,7 +16,7 @@ func Test_signHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}
-	_ = bmtest.ReadHeader("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
 	assert.Empty(t, header.ServerSignature)
 	err := SignHeader(header)
 	assert.NoError(t, err)
@@ -24,7 +24,7 @@ func Test_signHeader(t *testing.T) {
 	assert.Equal(t, "lNSBxGYk7Gn9laP+jA1GSDd+KJxz1hx26MCJSPBkV5tMZ3QGxIKSkpAMc2fmZfnCm4dZrGOiorNuTdJAgT87FodVH0Q7OiU7lMJq8FpxgbMrQq2FIp0PKoQ3XfVvrj3S6pY23W5aMMRa8Qn2y67PSu4KZsSYJzjMU1PHEQMUCoVTsM/a/5FmCFnTy5e7FpnU5ssEn9joYQWFGvu1kYUhJwuqfmr467acJBvyN3OME0t3M5csRZucOeSZBU9TvMrt9dv85ATvUthyM/aTEnxEqemTJDfag/+5gyUmSUtDnGwWQkGBESkeUC7YaXIGpcMutzJmvSo5RhQ8KuAG8jjo9g==", header.ServerSignature)
 
 	// Already present, don't overwrite
-	_ = bmtest.ReadHeader("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
 	assert.NotEmpty(t, header.ServerSignature)
 	header.ServerSignature = "foobar"
 	err = SignHeader(header)
@@ -37,7 +37,7 @@ func Test_VerifyHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}
-	_ = bmtest.ReadHeader("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
 	assert.Empty(t, header.ServerSignature)
 	err := SignHeader(header)
 	assert.NoError(t, err)
@@ -47,7 +47,7 @@ func Test_VerifyHeader(t *testing.T) {
 	ok := VerifyHeader(*header)
 	assert.True(t, ok)
 
-	// Incorect decoding
+	// Incorrect decoding
 	header.ServerSignature = "A"
 	ok = VerifyHeader(*header)
 	assert.False(t, ok)

@@ -64,7 +64,7 @@ func Test_New(t *testing.T) {
 	// Open vault with correct password
 	v, err = New("/my/dir/vault.json", []byte("secret"))
 	assert.NoError(t, err)
-	assert.Len(t, v.Data.Accounts, 1)
+	assert.Len(t, v.Store.Accounts, 1)
 }
 
 func Test_FindShortRoutingId(t *testing.T) {
@@ -81,8 +81,8 @@ func Test_FindShortRoutingId(t *testing.T) {
 	acc = internal.AccountInfo{Address: "example!", RoutingID: "154353535335"}
 	v.AddAccount(acc)
 
-	assert.Equal(t, "154353535335", v.FindShortRoutingId("154"))
-	assert.Equal(t, "154353535335", v.FindShortRoutingId("15435"))
-	assert.Equal(t, "", v.FindShortRoutingId("12345"))
-	assert.Equal(t, "", v.FindShortRoutingId("1"))
+	assert.Equal(t, "154353535335", v.FindShortRoutingID("154"))
+	assert.Equal(t, "154353535335", v.FindShortRoutingID("15435"))
+	assert.Equal(t, "", v.FindShortRoutingID("12345"))
+	assert.Equal(t, "", v.FindShortRoutingID("1"))
 }

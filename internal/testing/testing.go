@@ -7,6 +7,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
+// ReadTestKey reads a path to a keypair and returns the keys
 func ReadTestKey(p string) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
@@ -27,12 +28,14 @@ func ReadTestKey(p string) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	return &v.PrivKey, &v.PubKey, nil
 }
 
+// ReadTestFile reads a file
 func ReadTestFile(p string) []byte {
 	data, _ := ioutil.ReadFile(p)
 	return data
 }
 
-func ReadHeader(p string, v interface{}) error {
+// ReadJSON reads a json file and returns it in the given interface
+func ReadJSON(p string, v interface{}) error {
 	data, _ := ioutil.ReadFile(p)
 
 	return json.Unmarshal(data, v)

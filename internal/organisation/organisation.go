@@ -5,10 +5,10 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// Organisation is a structure that defines an organiation
+// Organisation is a structure that defines an organisation
 type Organisation struct {
-	Addr       hash.Hash        `json:"address"`
-	Name       string           `json:"name"`
+	Hash       hash.Hash        `json:"hash"`
+	FullName   string           `json:"name"`
 	PublicKey  bmcrypto.PubKey  `json:"public_key"`
 	Validation []ValidationType `json:"validations"`
 }

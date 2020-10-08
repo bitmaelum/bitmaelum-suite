@@ -60,7 +60,7 @@ func main() {
 		panic(err)
 	}
 
-	err = json.Unmarshal(data, &v.Data)
+	err = json.Unmarshal(data, &v.Store)
 	if err != nil {
 		panic(err)
 	}

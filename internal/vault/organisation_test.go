@@ -12,15 +12,15 @@ func TestVault_AddOrganisation(t *testing.T) {
 	v, err := New("", []byte{})
 	assert.NoError(t, err)
 
-	assert.Len(t, v.Data.Organisations, 0)
+	assert.Len(t, v.Store.Organisations, 0)
 
 	org := internal.OrganisationInfo{
-		Addr: "example",
-		Name: "Example Org",
+		Addr:     "example",
+		FullName: "Example Org",
 	}
 	v.AddOrganisation(org)
-	assert.Len(t, v.Data.Organisations, 1)
-	assert.Equal(t, "example", v.Data.Organisations[0].Addr)
+	assert.Len(t, v.Store.Organisations, 1)
+	assert.Equal(t, "example", v.Store.Organisations[0].Addr)
 
 	a := hash.New("example")
 	assert.True(t, v.HasOrganisation(a))

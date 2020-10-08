@@ -9,7 +9,7 @@ import (
 )
 
 // ListOrganisations displays the current accounts available in the vault
-func ListOrganisations(vault *vault.Vault, displayKeys bool) {
+func ListOrganisations(v *vault.Vault, displayKeys bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 
 	headers := []string{"Organisation", "Name", "ID", "Validation"}
@@ -24,7 +24,7 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 	table.SetColumnAlignment(align)
 	table.SetHeader(headers)
 
-	for _, org := range vault.Data.Organisations {
+	for _, org := range v.Store.Organisations {
 		o, err := internal.InfoToOrg(org)
 		if err != nil {
 			continue
@@ -33,9 +33,9 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 		if len(org.Validations) == 0 {
 			values := []string{
 				"...@" + org.Addr + "!",
-				org.Name,
+				org.FullName,
 				"-",
-				o.Addr.String(),
+				o.Hash.String(),
 			}
 			if displayKeys {
 				values = append(values, org.PrivKey.S, org.PubKey.S)
@@ -57,9 +57,9 @@ func ListOrganisations(vault *vault.Vault, displayKeys bool) {
 				// First entry
 				values = []string{
 					"...@" + org.Addr + "!",
-					org.Name,
+					org.FullName,
 					valstr,
-					o.Addr.String(),
+					o.Hash.String(),
 				}
 			} else {
 				// Additional validation rows

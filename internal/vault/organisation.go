@@ -9,16 +9,16 @@ import (
 
 // AddOrganisation adds an organisation to the vault
 func (v *Vault) AddOrganisation(organisation internal.OrganisationInfo) {
-	v.Data.Organisations = append(v.Data.Organisations, organisation)
+	v.Store.Organisations = append(v.Store.Organisations, organisation)
 }
 
 // GetOrganisationInfo tries to find the given organisation and returns the organisation from the vault
 func (v *Vault) GetOrganisationInfo(org hash.Hash) (*internal.OrganisationInfo, error) {
 
-	for i := range v.Data.Organisations {
-		h := hash.New(v.Data.Organisations[i].Addr)
+	for i := range v.Store.Organisations {
+		h := hash.New(v.Store.Organisations[i].Addr)
 		if h.String() == org.String() {
-			return &v.Data.Organisations[i], nil
+			return &v.Store.Organisations[i], nil
 		}
 	}
 

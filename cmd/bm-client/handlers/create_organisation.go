@@ -15,9 +15,9 @@ import (
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
-func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidations []string) {
+func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidations []string) {
 	fmt.Printf("* Verifying if organisation name is valid: ")
-	orgAddr := hash.New(orgName)
+	orgHash := hash.New(orgAddr)
 
 	fmt.Printf("* Checking if your validations are correct: ")
 	val, err := organisation.NewValidationTypeFromStringArray(orgValidations)
@@ -30,7 +30,7 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 
 	fmt.Printf("* Checking if organisation is already known in the resolver service: ")
 	ks := container.GetResolveService()
-	_, err = ks.ResolveOrganisation(orgAddr)
+	_, err = ks.ResolveOrganisation(orgHash)
 	if err == nil {
 		fmt.Printf("\n  X it seems that this organisation is already in use. Please specify another organisation.")
 		fmt.Println("")
@@ -42,7 +42,7 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 
 	fmt.Printf("* Checking if the organisation is already present in the vault: ")
 	var info *internal.OrganisationInfo
-	if vault.HasOrganisation(orgAddr) {
+	if vault.HasOrganisation(orgHash) {
 		fmt.Printf("\n  X organisation already present in the vault.\n")
 		fmt.Println("")
 		os.Exit(1)
@@ -64,14 +64,14 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Doing some work to let people know this is not a fake account: ")
-		proof := pow.NewWithoutProof(config.Client.Accounts.ProofOfWork, orgAddr.String())
+		proof := pow.NewWithoutProof(config.Client.Accounts.ProofOfWork, orgHash.String())
 		proof.WorkMulticore()
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Adding your new organisation into the vault: ")
 		info = &internal.OrganisationInfo{
-			Addr:        orgName,
-			Name:        fullName,
+			Addr:        orgAddr,
+			FullName:    fullName,
 			PrivKey:     *privKey,
 			PubKey:      *pubKey,
 			Pow:         *proof,
@@ -94,7 +94,7 @@ func CreateOrganisation(vault *vault.Vault, orgName, fullName string, orgValidat
 		// We can't remove the account from the vault as we have created it on the mail-server
 
 		fmt.Printf("\n  X error while uploading organisation to the resolver: " + err.Error())
-		fmt.Printf("\n  X Please try again with:\n   bm-client push-organisation -a '%s'\n", orgAddr.String())
+		fmt.Printf("\n  X Please try again with:\n   bm-client push-organisation -a '%s'\n", orgHash.String())
 		fmt.Println("")
 		os.Exit(1)
 	}

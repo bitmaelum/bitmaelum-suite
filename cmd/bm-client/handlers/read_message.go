@@ -100,7 +100,7 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 	fmt.Printf("ThreadID   : %s\n", catalog.ThreadID)
 	fmt.Printf("Flags      : %s\n", catalog.Flags)
 	fmt.Printf("Labels     : %s\n", catalog.Labels)
-	fmt.Printf("--------------------------------------------------------\n")
+	fmt.Println("--------------------------------------------------------")
 	for idx, b := range catalog.Blocks {
 		fmt.Printf("Block %02d: %-20s %8s\n", idx, b.Type, datasize.ByteSize(b.Size))
 		fmt.Printf("\n")
@@ -123,9 +123,9 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 
 		fmt.Print(string(content))
 	}
-	fmt.Printf("--------------------------------------------------------\n")
+	fmt.Println("--------------------------------------------------------")
 	for idx, b := range catalog.Attachments {
 		fmt.Printf("Attachment %02d: %30s %8d %s\n", idx, b.FileName, datasize.ByteSize(b.Size), b.MimeType)
 	}
-	fmt.Printf("--------------------------------------------------------\n")
+	fmt.Println("--------------------------------------------------------")
 }
