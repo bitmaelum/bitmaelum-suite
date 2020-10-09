@@ -4,6 +4,11 @@ codecov:
   require_ci_to_pass: yes
 
 coverage:
+  status:
+    patch:
+     default:
+       target: 0%
+       threshold: 0%
   precision: 2
   round: down
   range: "50...75"
