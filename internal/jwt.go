@@ -37,7 +37,10 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 	case bmcrypto.KeyTypeED25519:
 		sm := &SigningMethodEdDSA{}
 		signMethod = sm
+		var edDSASigningMethod SigningMethodEdDSA
+		jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
 	}
+
 	token := jwt.NewWithClaims(signMethod, claims)
 
 	return token.SignedString(key.K)
@@ -47,12 +50,17 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (*jwt.Token, error) {
 	logrus.Tracef("validating JWT token: %s %s %s", tokenString, addr.String(), key.S)
 
+	var edDSASigningMethod SigningMethodEdDSA
+	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
+
 	kf := func(token *jwt.Token) (interface{}, error) {
-		// Make sure we signed with RS256
-		if token.Method != jwt.SigningMethodRS256 {
-			logrus.Trace("auth: jwt: incorrect signing method")
-			return nil, errors.New("incorrect signing method")
-		}
+		/*
+			// Make sure we signed with RS256
+			if token.Method != jwt.SigningMethodRS256 {
+				logrus.Trace("auth: jwt: incorrect signing method")
+				return nil, errors.New("incorrect signing method")
+			}
+		*/
 		return key.K, nil
 	}
 
