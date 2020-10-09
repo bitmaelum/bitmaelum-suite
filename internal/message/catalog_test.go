@@ -198,7 +198,7 @@ func genCatalog() *Catalog {
 		Settings:  nil,
 		PrivKey:   *privKey,
 		PubKey:    *pubKey,
-		Pow:       proofofwork.ProofOfWork{},
+		Pow:       &proofofwork.ProofOfWork{},
 		RoutingID: "",
 	}
 	return NewCatalog(&info)

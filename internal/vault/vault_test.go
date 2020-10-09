@@ -43,7 +43,7 @@ func Test_New(t *testing.T) {
 		Settings:  nil,
 		PrivKey:   *privKey,
 		PubKey:    *pubKey,
-		Pow:       proofofwork.ProofOfWork{},
+		Pow:       &proofofwork.ProofOfWork{},
 		RoutingID: "12345678",
 	}
 	v.AddAccount(*acc)
