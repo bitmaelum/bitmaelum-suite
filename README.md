@@ -27,6 +27,7 @@ To read the current status of the project, check out [our status document](docs/
 To build and test BitMaelum, check out [build document](docs/build.md).
 
 
+
 # Benefits
 We try to design a system that:
 
