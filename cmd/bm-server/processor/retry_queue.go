@@ -80,23 +80,21 @@ func getNextRetryDuration(retries int) (d time.Duration) {
 	 *
 	 * config:
 	 *   retries: [
-	 *     { count:  5, hold:  1 },
-	 *     { count: 17, hold:  5 },
-	 *     { count: 25, hold: 30 },
-	 *     { count: 30, hold: 60 }
+	 *     { min:  0, max:  5, hold:  1 },
+	 *     { min:  6, max: 17, hold:  5 },
+	 *     { min: 18, max: 25, hold: 30 },
+	 *     { min: 26, max: 0, hold: 60 }
 	 *   ]
 	 */
 
-	d = 0
-
 	switch {
-	case retries < 5:
+	case retries <= 5:
 		d = 1 * time.Minute
-	case retries < 17:
+	case retries >= 6 && retries <= 17:
 		d = 5 * time.Minute
-	case retries < 25:
+	case retries >= 18 && retries <= 25:
 		d = 30 * time.Minute
-	case retries < 30:
+	case retries >= 26:
 		d = 60 * time.Minute
 	}
 
