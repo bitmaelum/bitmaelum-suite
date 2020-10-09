@@ -71,7 +71,7 @@ func main() {
 		panic(err)
 	}
 
-	decryptedKey, err := bmcrypto.Decrypt(info.PrivKey, header.Catalog.Crypto, header.Catalog.EncryptedKey)
+	decryptedKey, err := bmcrypto.Decrypt(info.PrivKey, header.Catalog.TransactionID, header.Catalog.EncryptedKey)
 	if err != nil {
 		panic(err)
 	}
