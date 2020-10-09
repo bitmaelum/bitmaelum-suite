@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +12,7 @@ var listOrganisationsCmd = &cobra.Command{
 	Short:   "List your organisations",
 	Long:    `Displays a list of all your organisations currently available`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := OpenVault()
+		v := vault.OpenVault()
 		handlers.ListOrganisations(v, *orgDisplayKeys)
 	},
 }

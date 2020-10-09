@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -10,9 +11,9 @@ var createOrganisationInviteCmd = &cobra.Command{
 	Short: "Create a new organisation invitation for a user",
 	Long:  `Creates an invitation for a user for the organisation.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		vault := OpenVault()
+		v := vault.OpenVault()
 
-		handlers.CreateOrganisationInvite(vault, *orgInvOrg, *orgInvAddress, *orgInvRoutingID)
+		handlers.CreateOrganisationInvite(v, *orgInvOrg, *orgInvAddress, *orgInvRoutingID)
 	},
 }
 

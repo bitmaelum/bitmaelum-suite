@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -14,7 +15,7 @@ var setDefaultCmd = &cobra.Command{
 	Short:   "Set default account to send from",
 	Long:    `When you don't specify a from address, bm-client (ano other tools) will automatically use this address.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := OpenVault()
+		v := vault.OpenVault()
 
 		fromAddr, err := address.NewAddress(*sdFrom)
 		if err != nil {

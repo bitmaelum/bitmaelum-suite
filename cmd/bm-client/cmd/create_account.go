@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -12,9 +13,9 @@ var createAccountCmd = &cobra.Command{
 
 This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		vault := OpenVault()
+		v := vault.OpenVault()
 
-		handlers.CreateAccount(vault, *addr, *name, *token)
+		handlers.CreateAccount(v, *addr, *name, *token)
 	},
 }
 

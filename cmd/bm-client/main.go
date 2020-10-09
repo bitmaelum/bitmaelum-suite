@@ -9,6 +9,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/cmd"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 )
 
 type options struct {
@@ -32,6 +33,8 @@ func main() {
 	fmt.Println(internal.GetASCIILogo())
 	config.LoadClientConfig(opts.Config)
 
-	cmd.VaultPassword = opts.Password
+	// Set main password for the vault
+	vault.VaultPassword = opts.Password
+
 	cmd.Execute()
 }

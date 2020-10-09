@@ -319,6 +319,7 @@ func GetAccountOrDefault(vault *Vault, a string) *internal.AccountInfo {
 // OpenVault returns an opened vault, or opens the vault, asking a password if needed
 func OpenVault() *Vault {
 	fromVault := false
+
 	if VaultPassword == "" {
 		VaultPassword, fromVault = password.AskPassword()
 	}
