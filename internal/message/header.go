@@ -1,6 +1,7 @@
 package message
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -12,9 +13,9 @@ type ChecksumList map[string]string
 // Header represents a message header
 type Header struct {
 	From struct {
-		Addr        hash.Hash       `json:"address"`
-		PublicKey   string          `json:"public_key"`
-		ProofOfWork pow.ProofOfWork `json:"proof_of_work"`
+		Addr        hash.Hash        `json:"address"`
+		PublicKey   *bmcrypto.PubKey `json:"public_key"`
+		ProofOfWork *pow.ProofOfWork `json:"proof_of_work"`
 	} `json:"from"`
 	To struct {
 		Addr hash.Hash `json:"address"`
