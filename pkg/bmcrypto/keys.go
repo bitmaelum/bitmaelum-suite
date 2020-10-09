@@ -56,23 +56,12 @@ func (pk *PubKey) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if strings.HasPrefix(s, "-----") {
-		keydata := strings.Split(s, "\n")
-		s = "rsa " + strings.Join(keydata[1:len(keydata)-2], "")
-	}
-
 	pkCopy, err := NewPubKey(s)
 	if err != nil {
 		return err
 	}
 
-	// This seems wrong, but copy() doesn't work?
-	pk.Type = pkCopy.Type
-	pk.B = pkCopy.B
-	pk.Description = pkCopy.Description
-	pk.K = pkCopy.K
-	pk.S = pkCopy.S
-
+	*pk = *pkCopy
 	return err
 }
 
@@ -95,22 +84,12 @@ func (pk *PrivKey) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if strings.HasPrefix(s, "-----") {
-		keydata := strings.Split(s, "\n")
-		s = "rsa " + strings.Join(keydata[1:len(keydata)-2], "")
-	}
-
 	pkCopy, err := NewPrivKey(s)
 	if err != nil {
 		return err
 	}
 
-	// This seems wrong, but copy() doesn't work?
-	pk.Type = pkCopy.Type
-	pk.B = pkCopy.B
-	pk.K = pkCopy.K
-	pk.S = pkCopy.S
-
+	*pk = *pkCopy
 	return err
 }
 
@@ -126,18 +105,12 @@ func (pk *PrivKey) CanEncrypt() bool {
 
 // CanKeyExchange returns true if the key(type) is able to be used for key exchange
 func (pk *PrivKey) CanKeyExchange() bool {
-	if pk.Type == KeyTypeED25519 || pk.Type == KeyTypeECDSA {
-		return true
-	}
-	return false
+	return pk.Type == KeyTypeED25519 || pk.Type == KeyTypeECDSA
 }
 
 // CanKeyExchange returns true if the key(type) is able to be used for key exchange
 func (pk *PubKey) CanKeyExchange() bool {
-	if pk.Type == KeyTypeED25519 || pk.Type == KeyTypeECDSA {
-		return true
-	}
-	return false
+	return pk.Type == KeyTypeED25519 || pk.Type == KeyTypeECDSA
 }
 
 // NewPubKey creates a new public key based on the string data "<type> <key> <description>"

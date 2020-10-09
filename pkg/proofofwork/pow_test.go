@@ -106,6 +106,12 @@ func TestMarshalling(t *testing.T) {
 	assert.Equal(t, uint64(149), pow.Proof)
 	assert.Equal(t, 8, pow.Bits)
 	assert.Equal(t, "john@example!", pow.Data)
+
+	pow = &ProofOfWork{}
+	err = pow.UnmarshalJSON([]byte("{111111}"))
+	assert.Error(t, err)
+	err = pow.UnmarshalJSON([]byte("\"fooobar\""))
+	assert.Error(t, err)
 }
 
 func TestNewWithoutProof(t *testing.T) {

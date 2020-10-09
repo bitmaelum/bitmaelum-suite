@@ -18,7 +18,7 @@ func Encrypt(pubKey PubKey, message []byte) ([]byte, string, error) {
 	case KeyTypeRSA:
 		encryptedMessage, err := encryptRsa(pubKey.K.(*rsa.PublicKey), message)
 		return encryptedMessage, "rsa+aes256gcm", err
-
+	// TODO: Implement KeyTypeECDSA
 	case KeyTypeED25519:
 		return encryptED25519(pubKey, message)
 	}
@@ -35,7 +35,7 @@ func Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
 	switch key.Type {
 	case KeyTypeRSA:
 		return decryptRsa(key.K.(*rsa.PrivateKey), message)
-
+	// TODO: Implement KeyTypeECDSA
 	case KeyTypeED25519:
 		return decryptED25519(key, txID, message)
 
