@@ -23,11 +23,20 @@ func TestCalculateRetry(t *testing.T) {
 	assert.Equal(t, time.Duration(300000000000), d)
 
 	d = getNextRetryDuration(17)
-	assert.Equal(t, time.Duration(1800000000000), d)
+	assert.Equal(t, time.Duration(300000000000), d)
 
 	d = getNextRetryDuration(18)
 	assert.Equal(t, time.Duration(1800000000000), d)
 
+	d = getNextRetryDuration(24)
+	assert.Equal(t, time.Duration(1800000000000), d)
+
+	d = getNextRetryDuration(25)
+	assert.Equal(t, time.Duration(1800000000000), d)
+
+	d = getNextRetryDuration(26)
+	assert.Equal(t, time.Duration(3600000000000), d)
+
 	d = getNextRetryDuration(31)
-	assert.Equal(t, time.Duration(0), d)
+	assert.Equal(t, time.Duration(3600000000000), d)
 }
