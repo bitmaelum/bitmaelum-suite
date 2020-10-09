@@ -6,6 +6,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -29,8 +30,18 @@ This command creates a new routing file if one does not exist.`,
 			logrus.Fatalf("Routing file %s already exist. I will not overwrite this file.", config.Server.Server.RoutingFile)
 		}
 
-		// Generate new routing
-		seed, r, err := config.GenerateRouting()
+		var (
+			seed string
+			r    *config.RoutingConfig
+		)
+		if ok, _ := cmd.Flags().GetBool("seed"); ok {
+			// ask for seed
+			seed = console.AskSeedPhrase()
+			r, err = config.GenerateRoutingFromSeed(seed)
+		} else {
+			// Generate new routing
+			seed, r, err = config.GenerateRouting()
+		}
 		if err != nil {
 			logrus.Fatalf("Error while generating routing file: %v", err)
 		}
@@ -64,4 +75,6 @@ ONLY way to recover your private key in case you lose it.
 
 func init() {
 	rootCmd.AddCommand(initRoutingConfigCmd)
+
+	initRoutingConfigCmd.Flags().Bool("seed", false, "Ask for your mnemonic seed phrase")
 }
