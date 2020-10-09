@@ -9,21 +9,21 @@ import (
 )
 
 // Encrypt a message with the given key
-func Encrypt(pubKey PubKey, message []byte) ([]byte, string, error) {
+func Encrypt(pubKey PubKey, message []byte) ([]byte, string, string, error) {
 	if !pubKey.CanEncrypt() && !pubKey.CanKeyExchange() {
-		return nil, "", errors.New("this key type is not usable for encryption")
+		return nil, "", "", errors.New("this key type is not usable for encryption")
 	}
 
 	switch pubKey.Type {
 	case KeyTypeRSA:
 		encryptedMessage, err := encryptRsa(pubKey.K.(*rsa.PublicKey), message)
-		return encryptedMessage, "rsa+aes256gcm", err
-	// TODO: Implement KeyTypeECDSA
+		return encryptedMessage, "", "rsa+aes256gcm", err
+  	// TODO: Implement KeyTypeECDSA
 	case KeyTypeED25519:
 		return encryptED25519(pubKey, message)
 	}
 
-	return nil, "", errors.New("encryption not implemented for" + pubKey.Type)
+	return nil, "", "", errors.New("encryption not implemented for" + pubKey.Type)
 }
 
 // Decrypt a message with the given key
@@ -52,14 +52,14 @@ func decryptRsa(key *rsa.PrivateKey, message []byte) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, key, message)
 }
 
-func encryptED25519(pubKey PubKey, message []byte) ([]byte, string, error) {
+func encryptED25519(pubKey PubKey, message []byte) ([]byte, string, string, error) {
 	secret, txID, err := DualKeyExchange(pubKey)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	encryptedMessage, err := encrypt.MessageEncrypt(secret, message)
-	return encryptedMessage, txID.ToHex(), err
+	return encryptedMessage, txID.ToHex(), "ed25519+aes256gcm", err
 }
 
 func decryptED25519(privKey PrivKey, txIDString string, message []byte) ([]byte, error) {

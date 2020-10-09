@@ -15,7 +15,7 @@ func TestEncrypt(t *testing.T) {
 	data, _ = ioutil.ReadFile("../../testdata/privkey.rsa")
 	privKey, _ := NewPrivKey(string(data))
 
-	cipher, _, err := Encrypt(*pubKey, []byte("foobar"))
+	cipher, _, _, err := Encrypt(*pubKey, []byte("foobar"))
 	assert.Nil(t, err)
 	assert.NotEqual(t, []byte("foobar"), cipher)
 
@@ -26,7 +26,7 @@ func TestEncrypt(t *testing.T) {
 	//ED25519 Dual Key-Exchange + Encryption
 	priv25519Key, _ := NewPrivKey("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
 	pub25519Key, _ := NewPubKey("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
-	cipher, txID, err := Encrypt(*pub25519Key, []byte("foobar"))
+	cipher, txID, _, err := Encrypt(*pub25519Key, []byte("foobar"))
 	assert.Nil(t, err)
 	assert.NotEqual(t, []byte("foobar"), cipher)
 

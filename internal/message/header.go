@@ -21,10 +21,11 @@ type Header struct {
 		Addr hash.Hash `json:"address"`
 	} `json:"to"`
 	Catalog struct {
-		Size         uint64       `json:"size"`
-		Checksum     ChecksumList `json:"checksum"`
-		Crypto       string       `json:"crypto"`
-		EncryptedKey []byte       `json:"encrypted_key"`
+		Size          uint64       `json:"size"`
+		Checksum      ChecksumList `json:"checksum"`
+		Crypto        string       `json:"crypto"`
+		TransactionID string       `json:"txid"`
+		EncryptedKey  []byte       `json:"encrypted_key"`
 	} `json:"catalog"`
 
 	// Signature of the from, to and catalog structures, as signed by the private key of the server.
