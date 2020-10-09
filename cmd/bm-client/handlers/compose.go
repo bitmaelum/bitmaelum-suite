@@ -148,9 +148,8 @@ func generateHeader(info internal.AccountInfo, toInfo *resolver.AddressInfo, cat
 	header.To.Addr = *h
 	fromAddr, _ := address.NewAddress(info.Address)
 	header.From.Addr = fromAddr.Hash()
-	header.From.PublicKey = info.PubKey.S
-	header.From.ProofOfWork.Bits = info.Pow.Bits
-	header.From.ProofOfWork.Proof = info.Pow.Proof
+	header.From.PublicKey = &info.PubKey
+	header.From.ProofOfWork = info.Pow
 
 	return header, nil
 }
