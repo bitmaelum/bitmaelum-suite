@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -11,9 +12,9 @@ var listAccountsCmd = &cobra.Command{
 	Short:   "List your accounts",
 	Long:    `Displays a list of all your accounts currently available`,
 	Run: func(cmd *cobra.Command, args []string) {
-		vault := OpenVault()
+		v := vault.OpenVault()
 
-		handlers.ListAccounts(vault, *displayKeys)
+		handlers.ListAccounts(v, *displayKeys)
 	},
 }
 
