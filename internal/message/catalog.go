@@ -90,7 +90,7 @@ func NewCatalog(info *internal.AccountInfo) *Catalog {
 
 	c.From.Address = info.Address
 	c.From.Name = info.Name
-	c.From.ProofOfWork = &info.Pow
+	c.From.ProofOfWork = info.Pow
 	c.From.PublicKey = &info.PubKey
 
 	return c

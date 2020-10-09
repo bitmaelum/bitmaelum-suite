@@ -125,7 +125,7 @@ func (s *Service) UploadAddressInfo(info internal.AccountInfo) error {
 		PublicKey: info.PubKey,
 		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
-	}, info.PrivKey, info.Pow)
+	}, info.PrivKey, *info.Pow)
 }
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers
@@ -144,7 +144,7 @@ func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
 		PublicKey:   info.PubKey,
 		Pow:         info.Pow.String(),
 		Validations: info.Validations,
-	}, info.PrivKey, info.Pow)
+	}, info.PrivKey, *  info.Pow)
 }
 
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver

@@ -49,7 +49,7 @@ func main() {
 		pow = proofofwork.New(opts.Bits, v.Store.Accounts[i].Pow.Data, 0)
 		pow.WorkMulticore()
 
-		v.Store.Accounts[i].Pow = *pow
+		v.Store.Accounts[i].Pow = pow
 
 		err := v.WriteToDisk()
 		if err != nil {

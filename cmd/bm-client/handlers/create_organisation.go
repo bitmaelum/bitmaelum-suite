@@ -74,7 +74,7 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 			FullName:    fullName,
 			PrivKey:     *privKey,
 			PubKey:      *pubKey,
-			Pow:         *proof,
+			Pow:         proof,
 			Validations: val,
 		}
 

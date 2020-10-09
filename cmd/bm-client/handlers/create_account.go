@@ -92,7 +92,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 			Name:      name,
 			PrivKey:   *privKey,
 			PubKey:    *pubKey,
-			Pow:       *proof,
+			Pow:       proof,
 			RoutingID: it.RoutingID, // Fetch from token
 		}
 

@@ -6,7 +6,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
-	"github.com/davecgh/go-spew/spew"
 )
 
 // GetPublicKey gets public key for given address on the mail server
@@ -50,10 +49,8 @@ func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
 		OrgHash:     addr.OrgHash(),
 		Token:       token,
 		PublicKey:   info.PubKey,
-		ProofOfWork: info.Pow,
+		ProofOfWork: *info.Pow,
 	}
-
-	spew.Dump(input)
 
 	resp, statusCode, err := api.PostJSON("/account", input)
 	if err != nil {
