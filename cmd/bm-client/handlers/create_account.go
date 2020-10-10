@@ -72,7 +72,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 		fmt.Printf("not found. This is a good thing.\n")
 
 		fmt.Printf("* Generating your secret key to send and read mail: ")
-		mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairAndMnemonic()
+		mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic()
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")

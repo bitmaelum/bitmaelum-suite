@@ -87,7 +87,6 @@ func Test_FindShortRoutingId(t *testing.T) {
 	assert.Equal(t, "", v.FindShortRoutingID("1"))
 }
 
-
 func TestVault_ChangePassword(t *testing.T) {
 	v, _ := New("", []byte("foobar"))
 	assert.Equal(t, []byte("foobar"), v.password)

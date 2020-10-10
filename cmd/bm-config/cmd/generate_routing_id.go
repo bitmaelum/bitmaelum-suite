@@ -32,7 +32,7 @@ This command creates a new routing file if one does not exist.`,
 
 		var (
 			mnemonic string
-			r    *config.RoutingConfig
+			r        *config.RoutingConfig
 		)
 		if ok, _ := cmd.Flags().GetBool("mnemonic"); ok {
 			// ask for mnemonic
