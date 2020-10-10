@@ -25,6 +25,6 @@ func TestBoltStorage(t *testing.T) {
 
 	b.Remove(tckt.ID)
 
-	tckt2, err = b.Fetch(tckt.ID)
+	_, err = b.Fetch(tckt.ID)
 	assert.NotNil(t, err)
 }
