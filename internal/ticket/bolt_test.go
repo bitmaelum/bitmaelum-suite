@@ -8,7 +8,7 @@ import (
 )
 
 func TestBoltStorage(t *testing.T) {
-	path := "/tmp"
+	path := "./"
 	b := NewBoltRepository(&path)
 	assert.NotNil(t, b)
 
