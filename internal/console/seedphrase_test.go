@@ -50,6 +50,9 @@ func TestAskMnemonicPhrase(t *testing.T) {
 		Stdout: mb,
 		Stderr: mb,
 	})
+	defer func() {
+		_ = readliner.Close()
+	}()
 
 	s := AskMnemonicPhrase()
 	assert.Equal(t, "foo bar baz", s)

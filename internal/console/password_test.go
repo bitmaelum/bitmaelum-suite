@@ -42,6 +42,9 @@ func TestAskDoublePassword(t *testing.T) {
 		Stdout: mb,
 		Stderr: mb,
 	})
+	defer func() {
+		_ = readliner.Close()
+	}()
 
 	b, err := AskDoublePassword()
 	assert.NoError(t, err)
@@ -56,6 +59,9 @@ func TestAskDoublePassword(t *testing.T) {
 		Stdout: mb,
 		Stderr: mb,
 	})
+	defer func() {
+		_ = readliner.Close()
+	}()
 
 	b, err = AskDoublePassword()
 	assert.NoError(t, err)
