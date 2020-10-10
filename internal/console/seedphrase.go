@@ -25,7 +25,7 @@ func (l *acl) OnChange(line []rune, pos int, key rune) (newLine []rune, newPos i
 			break
 		}
 	}
-	
+
 	// Can't find the word, redo the word
 	if f == nil {
 		return line[:pos-1], pos - 1, true

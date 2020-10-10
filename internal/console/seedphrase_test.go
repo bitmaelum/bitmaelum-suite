@@ -22,7 +22,6 @@ func TestAcl_OnChange(t *testing.T) {
 	assert.Equal(t, 0, np)
 	assert.False(t, ok)
 
-
 	nl, np, ok = l.OnChange([]rune("s"), 1, 'a')
 	assert.Equal(t, "sad", string(nl))
 	assert.Equal(t, 1, np)
@@ -49,6 +48,7 @@ func TestAskSeedPhrase(t *testing.T) {
 	readliner, _ = readline.NewEx(&readline.Config{
 		Stdin:  mb,
 		Stdout: mb,
+		Stderr: mb,
 	})
 
 	s := AskSeedPhrase()
