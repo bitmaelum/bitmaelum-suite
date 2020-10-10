@@ -86,8 +86,8 @@ func TestLoadClientConfig(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestGenerateRoutingFromSeed(t *testing.T) {
-	r, err := GenerateRoutingFromSeed("cluster puppy wash ceiling skate search great angry drift rose undo fragile boring fence stumble shuffle cable praise")
+func TestGenerateRoutingFromMnemonic(t *testing.T) {
+	r, err := GenerateRoutingFromMnemonic("cluster puppy wash ceiling skate search great angry drift rose undo fragile boring fence stumble shuffle cable praise")
 	assert.NoError(t, err)
 
 	assert.Equal(t, "f5f1dc4eff7237ac0e061a9e8982b7b913fc479138189cc8d6ba5131dee1bde9", r.RoutingID)

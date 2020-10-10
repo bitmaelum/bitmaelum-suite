@@ -38,7 +38,7 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 	}
 	fmt.Printf("not found. This is a good thing.\n")
 
-	var seed string
+	var mnemonic string
 
 	fmt.Printf("* Checking if the organisation is already present in the vault: ")
 	var info *internal.OrganisationInfo
@@ -55,7 +55,7 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 			privKey *bmcrypto.PrivKey
 			pubKey  *bmcrypto.PubKey
 		)
-		seed, privKey, pubKey, err = bmcrypto.GenerateKeypairWithSeed()
+		mnemonic, privKey, pubKey, err = bmcrypto.GenerateKeypairWithMnemonic()
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
@@ -103,7 +103,7 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 	fmt.Printf("\n")
 	fmt.Printf("* All done")
 
-	if len(seed) > 0 {
+	if len(mnemonic) > 0 {
 		fmt.Print(`
 *****************************************************************************
 !IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
@@ -114,7 +114,7 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-		fmt.Print(internal.WordWrap(seed, 78))
+		fmt.Print(internal.WordWrap(mnemonic, 78))
 		fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 

@@ -43,7 +43,7 @@ func TestAcl_OnChange(t *testing.T) {
 	assert.True(t, ok)
 }
 
-func TestAskSeedPhrase(t *testing.T) {
+func TestAskMnemonicPhrase(t *testing.T) {
 	mb := &MockBuffer{In: []string{"foo\n", "bar\n", "baz\n", "\n"}}
 	readliner, _ = readline.NewEx(&readline.Config{
 		Stdin:  mb,
@@ -51,6 +51,6 @@ func TestAskSeedPhrase(t *testing.T) {
 		Stderr: mb,
 	})
 
-	s := AskSeedPhrase()
+	s := AskMnemonicPhrase()
 	assert.Equal(t, "foo bar baz", s)
 }

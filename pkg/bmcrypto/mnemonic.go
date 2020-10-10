@@ -9,9 +9,9 @@ import (
 	"golang.org/x/crypto/hkdf"
 )
 
-// GenerateKeypairFromSeed generates a keypair based on the given seed
-func GenerateKeypairFromSeed(seed string) (*PrivKey, *PubKey, error) {
-	e, err := bip39.MnemonicToByteArray(seed, true)
+// GenerateKeypairFromMnemonic generates a keypair based on the given mnemonic
+func GenerateKeypairFromMnemonic(mnemonic string) (*PrivKey, *PubKey, error) {
+	e, err := bip39.MnemonicToByteArray(mnemonic, true)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -19,16 +19,16 @@ func GenerateKeypairFromSeed(seed string) (*PrivKey, *PubKey, error) {
 	return genKey(e)
 }
 
-// GenerateKeypairWithSeed generates a seed, and a keypair that can be generated through the same seed again.
-func GenerateKeypairWithSeed() (string, *PrivKey, *PubKey, error) {
+// GenerateKeypairWithMnemonic generates a mnemonic, and a keypair that can be generated through the same mnemonic again.
+func GenerateKeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
 	// Generate large enough random string
 	e, err := bip39.NewEntropy(192)
 	if err != nil {
 		return "", nil, nil, err
 	}
 
-	// Generate seed words
-	seed, err := bip39.NewMnemonic(e)
+	// Generate Mnemonic words
+	mnemonic, err := bip39.NewMnemonic(e)
 	if err != nil {
 		return "", nil, nil, err
 	}
@@ -38,7 +38,7 @@ func GenerateKeypairWithSeed() (string, *PrivKey, *PubKey, error) {
 		return "", nil, nil, err
 	}
 
-	return seed, privKey, pubKey, nil
+	return mnemonic, privKey, pubKey, nil
 }
 
 func genKey(e []byte) (*PrivKey, *PubKey, error) {

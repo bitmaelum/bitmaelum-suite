@@ -58,9 +58,9 @@ func SaveRouting(p string, routing *RoutingConfig) error {
 	return afero.WriteFile(fs, p, data, 0600)
 }
 
-// GenerateRoutingFromSeed generates a new routing file from the given seed
-func GenerateRoutingFromSeed(seed string) (*RoutingConfig, error) {
-	privKey, pubKey, err := bmcrypto.GenerateKeypairFromSeed(seed)
+// GenerateRoutingFromMnemonic generates a new routing file from the given seed
+func GenerateRoutingFromMnemonic(mnemonic string) (*RoutingConfig, error) {
+	privKey, pubKey, err := bmcrypto.GenerateKeypairFromMnemonic(mnemonic)
 	if err != nil {
 		return nil, err
 	}
@@ -75,13 +75,13 @@ func GenerateRoutingFromSeed(seed string) (*RoutingConfig, error) {
 
 // GenerateRouting generates a new routing structure
 func GenerateRouting() (string, *RoutingConfig, error) {
-	seed, privKey, pubKey, err := bmcrypto.GenerateKeypairWithSeed()
+	mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic()
 	if err != nil {
 		return "", nil, err
 	}
 
 	id := hex.EncodeToString(pubKey.K.(ed25519.PublicKey))
-	return seed, &RoutingConfig{
+	return mnemonic, &RoutingConfig{
 		RoutingID:  hash.New(id).String(),
 		PrivateKey: *privKey,
 		PublicKey:  *pubKey,

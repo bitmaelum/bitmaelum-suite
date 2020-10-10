@@ -34,9 +34,9 @@ func (l *acl) OnChange(line []rune, pos int, key rune) (newLine []rune, newPos i
 	return []rune(*f), pos, true
 }
 
-// AskSeedPhrase asks for the seed phrase, which is autocompleted.
-func AskSeedPhrase() string {
-	fmt.Print("Please enter your seed words and press enter after each word. End with an empty line.")
+// AskMnemonicPhrase asks for the mnemonic phrase, which is autocompleted.
+func AskMnemonicPhrase() string {
+	fmt.Print("Please enter your mnemonic words and press enter after each word. End with an empty line.")
 
 	var s = ""
 	for {
