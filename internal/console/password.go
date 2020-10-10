@@ -2,11 +2,9 @@ package console
 
 import (
 	"bytes"
-	"fmt"
-	"os"
 
+	"github.com/chzyer/readline"
 	"github.com/zalando/go-keyring"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -14,40 +12,47 @@ const (
 	user    string = "vault"
 )
 
+var (
+	// Readline instance. Override for mocking purposes
+	readliner, _ = readline.NewEx(&readline.Config{
+		DisableAutoSaveHistory: true,
+	})
+	// Override for mocking purposes
+	kr keyring.Keyring
+)
+
 // StorePassword will store the given password into the keychain if possible
 func StorePassword(pwd string) error {
-	return keyring.Set(service, user, pwd)
+	if kr != nil {
+		return kr.Set(service, user, pwd)
+	}
+
+	return nil
 }
 
 // AskDoublePassword will ask for a password (and confirmation) on the commandline
-func AskDoublePassword() []byte {
+func AskDoublePassword() ([]byte, error) {
 	for {
-		fmt.Printf("Please enter your vault password: ")
-		p1, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
-		fmt.Printf("\n")
-
-		fmt.Printf("Please retype your vault password: ")
-		p2, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
-		fmt.Printf("\n")
+		p1, _ := readliner.ReadPassword("Please enter your vault password: ")
+		p2, _ := readliner.ReadPassword("Please retype your vault password: ")
 
 		if bytes.Equal(p1, p2) {
-			return p1
+			return p1, nil
 		}
 
-		fmt.Printf("Passwords do not match. Please type again.\n")
+		_, _ = readliner.Stdout().Write([]byte("Passwords do not match. Please type again.\n"))
 	}
 }
 
 // AskPassword will ask for a password (without confirmation) on the commandline
 func AskPassword() (string, bool) {
-	pwd, err := keyring.Get(service, user)
-	if err == nil {
-		return pwd, true
+	if kr != nil {
+		pwd, err := kr.Get(service, user)
+		if err == nil {
+			return pwd, true
+		}
 	}
 
-	fmt.Printf("Please enter your vault password: ")
-	b, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
-	fmt.Printf("\n")
-
+	b, _ := readliner.ReadPassword("Please enter your vault password: ")
 	return string(b), false
 }

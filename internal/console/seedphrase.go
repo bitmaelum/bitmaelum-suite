@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/chzyer/readline"
 	"github.com/tyler-smith/go-bip39"
 )
 
@@ -12,11 +11,13 @@ import (
 type acl struct{}
 
 func (l *acl) OnChange(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
+	// Empty string will return empty
 	s := string(line)[:pos]
 	if s == "" {
 		return
 	}
 
+	// Find word with the current prefix
 	var f *string
 	for _, w := range bip39.GetWordList() {
 		if strings.HasPrefix(w, s) {
@@ -24,7 +25,8 @@ func (l *acl) OnChange(line []rune, pos int, key rune) (newLine []rune, newPos i
 			break
 		}
 	}
-
+	
+	// Can't find the word, redo the word
 	if f == nil {
 		return line[:pos-1], pos - 1, true
 	}
@@ -34,19 +36,11 @@ func (l *acl) OnChange(line []rune, pos int, key rune) (newLine []rune, newPos i
 
 // AskSeedPhrase asks for the seed phrase, which is autocompleted.
 func AskSeedPhrase() string {
-	fmt.Print("Please enter your seed words: ")
-
-	rl, _ := readline.NewEx(&readline.Config{
-		Prompt:   ">>> ",
-		Listener: &acl{},
-	})
-	defer func() {
-		_ = rl.Close()
-	}()
+	fmt.Print("Please enter your seed words and press enter after each word. End with an empty line.")
 
 	var s = ""
 	for {
-		line, err := rl.Readline()
+		line, err := readliner.Readline()
 		if err != nil {
 			return ""
 		}
@@ -58,5 +52,5 @@ func AskSeedPhrase() string {
 		s += line + " "
 	}
 
-	return s
+	return strings.TrimSpace(s)
 }
