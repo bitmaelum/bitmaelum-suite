@@ -3,6 +3,7 @@ package ticket
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 
 	"github.com/boltdb/bolt"
@@ -22,6 +23,7 @@ const BoltDBFile = "tickets.db"
 // NewBoltRepository initializes a new repository
 func NewBoltRepository(dbpath *string) Repository {
 	dbFile := filepath.Join(*dbpath, BoltDBFile)
+	fmt.Println("opening ", dbFile)
 	db, err := bolt.Open(dbFile, 0600, nil)
 	if err != nil {
 		logrus.Error("Unable to open filepath ", dbFile, err)

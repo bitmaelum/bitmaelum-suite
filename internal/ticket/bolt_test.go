@@ -1,14 +1,15 @@
 package ticket
 
 import (
+	"os"
 	"testing"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBoltStorage(t *testing.T) {
-	path := "./"
+func Test_BoltStorage(t *testing.T) {
+	path := os.TempDir()
 	b := NewBoltRepository(&path)
 	assert.NotNil(t, b)
 
