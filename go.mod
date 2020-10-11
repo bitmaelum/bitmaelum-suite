@@ -3,7 +3,6 @@ module github.com/bitmaelum/bitmaelum-suite
 go 1.13
 
 require (
-	github.com/boltdb/bolt v1.3.1 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee
 	github.com/coreos/go-semver v0.3.0
 	github.com/davecgh/go-spew v1.1.1

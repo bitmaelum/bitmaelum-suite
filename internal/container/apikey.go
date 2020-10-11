@@ -29,7 +29,7 @@ func GetAPIKeyRepo() apikey.Repository {
 		}
 
 		//If redis is not set then it will use BoltDB as default
-		apikeyRepository = apikey.NewBoltRepository(&config.Server.Bolt.DatabasePath)
+		apikeyRepository = apikey.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
 	return apikeyRepository

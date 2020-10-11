@@ -3,7 +3,6 @@ package ticket
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"path/filepath"
 
 	bolt "go.etcd.io/bbolt"
@@ -21,9 +20,8 @@ const BucketName = "tickets"
 const BoltDBFile = "tickets.db"
 
 // NewBoltRepository initializes a new repository
-func NewBoltRepository(dbpath *string) Repository {
-	dbFile := filepath.Join(*dbpath, BoltDBFile)
-	fmt.Println("opening ", dbFile)
+func NewBoltRepository(dbpath string) Repository {
+	dbFile := filepath.Join(dbpath, BoltDBFile)
 	db, err := bolt.Open(dbFile, 0600, nil)
 	if err != nil {
 		logrus.Error("Unable to open filepath ", dbFile, err)

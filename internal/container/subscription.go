@@ -29,7 +29,7 @@ func GetSubscriptionRepo() subscription.Repository {
 		}
 
 		//If redis is not set then it will use BoltDB as default
-		subscriptionRepository = subscription.NewBoltRepository(&config.Server.Bolt.DatabasePath)
+		subscriptionRepository = subscription.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
 	return subscriptionRepository

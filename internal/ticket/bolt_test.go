@@ -10,7 +10,7 @@ import (
 
 func Test_BoltStorage(t *testing.T) {
 	path := os.TempDir()
-	b := NewBoltRepository(&path)
+	b := NewBoltRepository(path)
 	assert.NotNil(t, b)
 
 	from := hash.New("foo!")

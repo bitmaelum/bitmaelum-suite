@@ -30,7 +30,7 @@ func GetTicketRepo() ticket.Repository {
 		}
 
 		//If redis is not set then it will use BoltDB as default
-		ticketRepository = ticket.NewBoltRepository(&config.Server.Bolt.DatabasePath)
+		ticketRepository = ticket.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
 	return ticketRepository
