@@ -32,7 +32,7 @@ require (
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xhit/go-str2duration/v2 v2.0.0
 	github.com/zalando/go-keyring v0.1.0
-	go.etcd.io/bbolt v1.3.2
+	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
