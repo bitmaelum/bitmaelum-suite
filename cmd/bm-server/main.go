@@ -132,6 +132,10 @@ func setupRouter() *mux.Router {
 	apikey := &middleware.APIKey{}
 	prettyJSON := &middleware.PrettyJSON{}
 
+	multiAuth := &middleware.MultiAuth{
+		Auths: []middleware.Authenticable{jwt, apikey},
+	}
+
 	mainRouter := mux.NewRouter().StrictSlash(true)
 
 	// Public things router
@@ -158,8 +162,7 @@ func setupRouter() *mux.Router {
 	authRouter.Use(logger.Middleware)
 	authRouter.Use(prettyJSON.Middleware)
 	authRouter.Use(tracer.Middleware)
-	authRouter.Use(jwt.Middleware)
-	authRouter.Use(apikey.Middleware)
+	authRouter.Use(multiAuth.Middleware)
 	// Authorized sending
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetClientToServerTicket).Methods("POST")
 	// Message boxes
