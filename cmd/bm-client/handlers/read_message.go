@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	clientSig "github.com/bitmaelum/bitmaelum-suite/internal/client"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
@@ -41,6 +42,11 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 	key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
+	}
+
+	// Verify the clientSignature
+	if !clientSig.VerifyHeader(msg.Header) {
+		logrus.Fatalf("message %s has failed the client signature check. Seems that this message may have been spoofed.", messageID)
 	}
 
 	// Decrypt the catalog
