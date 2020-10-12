@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCatalog_NewCatalog(t *testing.T) {
+func TestCatalogNewCatalog(t *testing.T) {
 	c := genCatalog()
 
 	assert.Equal(t, "john!", c.From.Address)
@@ -25,7 +25,7 @@ func TestCatalog_NewCatalog(t *testing.T) {
 	assert.Equal(t, "", c.Subject)
 }
 
-func TestCatalog_AddFlags(t *testing.T) {
+func TestCatalogAddFlags(t *testing.T) {
 	c := genCatalog()
 
 	assert.Len(t, c.Flags, 0)
@@ -40,7 +40,7 @@ func TestCatalog_AddFlags(t *testing.T) {
 	assert.Len(t, c.Flags, 4)
 }
 
-func TestCatalog_AddLabels(t *testing.T) {
+func TestCatalogAddLabels(t *testing.T) {
 	c := genCatalog()
 
 	assert.Len(t, c.Labels, 0)
@@ -55,7 +55,7 @@ func TestCatalog_AddLabels(t *testing.T) {
 	assert.Len(t, c.Labels, 4)
 }
 
-func TestCatalog_SetToAddress(t *testing.T) {
+func TestCatalogSetToAddress(t *testing.T) {
 	c := genCatalog()
 
 	assert.Empty(t, c.To)
@@ -67,7 +67,7 @@ func TestCatalog_SetToAddress(t *testing.T) {
 	assert.Equal(t, "Jane Doe", c.To.Name)
 }
 
-func TestCatalog_AddAttachment(t *testing.T) {
+func TestCatalogAddAttachment(t *testing.T) {
 	c := genCatalog()
 
 	// Setup afero
@@ -118,7 +118,7 @@ func TestCatalog_AddAttachment(t *testing.T) {
 	assert.Equal(t, "zlib", c.Attachments[1].Compression)
 }
 
-func TestCatalog_AddBlock(t *testing.T) {
+func TestCatalogAddBlock(t *testing.T) {
 	c := genCatalog()
 
 	// // Setup afero

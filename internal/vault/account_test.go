@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVault_Account(t *testing.T) {
+func TestVaultAccount(t *testing.T) {
 	v, err := New("", []byte{})
 	assert.NoError(t, err)
 
@@ -48,7 +48,7 @@ func TestVault_Account(t *testing.T) {
 	assert.Len(t, v.Store.Accounts, 0)
 }
 
-func TestVault_GetDefaultAccount(t *testing.T) {
+func TestVaultGetDefaultAccount(t *testing.T) {
 	v, err := New("", []byte{})
 	assert.NoError(t, err)
 

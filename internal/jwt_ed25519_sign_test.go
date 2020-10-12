@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSigningMethodEdDSA_Alg(t *testing.T) {
+func TestSigningMethodEdDSAAlg(t *testing.T) {
 	m := &SigningMethodEdDSA{}
 	assert.Equal(t, "EdDSA", m.Alg())
 }
 
-func TestSigningMethodEdDSA_Sign(t *testing.T) {
+func TestSigningMethodEdDSASign(t *testing.T) {
 	m := &SigningMethodEdDSA{}
 
 	privKey, pubKey, _ := testing2.ReadTestKey("../testdata/key-ed25519-1.json")

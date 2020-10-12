@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVault_AddOrganisation(t *testing.T) {
+func TestVaultAddOrganisation(t *testing.T) {
 	v, err := New("", []byte{})
 	assert.NoError(t, err)
 

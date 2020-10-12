@@ -48,7 +48,7 @@ func TestNewValidationTypeFromString(t *testing.T) {
 	assert.Equal(t, "0xDEADBEEF", v.Value)
 }
 
-func TestValidationType_MarshalJSON(t *testing.T) {
+func TestValidationTypeMarshalJSON(t *testing.T) {
 	v, _ := NewValidationTypeFromString("dns foobar.org")
 
 	j, err := json.Marshal(v)
@@ -71,7 +71,7 @@ func TestValidationType_MarshalJSON(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestValidationType_String(t *testing.T) {
+func TestValidationTypeString(t *testing.T) {
 	v, _ := NewValidationTypeFromString("dns foobar.org")
 	assert.Equal(t, "dns foobar.org", v.String())
 
