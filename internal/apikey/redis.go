@@ -66,7 +66,7 @@ func (r redisRepo) Store(apiKey KeyType) error {
 
 	// Add to account set if an hash is given
 	if apiKey.AddrHash != nil {
-		_, err = r.client.SAdd(r.client.Context(), apiKey.AddrHash.String(), apiKey.ID, 0).Result()
+		_, _ = r.client.SAdd(r.client.Context(), apiKey.AddrHash.String(), apiKey.ID, 0).Result()
 	}
 
 	_, err = r.client.Set(r.client.Context(), createRedisKey(apiKey.ID), data, 0).Result()

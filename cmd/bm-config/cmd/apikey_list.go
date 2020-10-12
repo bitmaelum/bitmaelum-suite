@@ -8,8 +8,8 @@ import (
 
 // apiKeyListCmd represents the apiKey command
 var apiKeyListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List all current keys",
+	Use:   "list",
+	Short: "List all current keys",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("listing keys")
 	},

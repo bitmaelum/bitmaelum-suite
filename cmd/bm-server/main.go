@@ -174,6 +174,10 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}", handler.GetMessage).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/block/{block:[A-Za-z0-9-]+}", handler.GetMessageBlock).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/attachment/{attachment:[A-Za-z0-9-]+}", handler.GetMessageAttachment).Methods("GET")
+	// Api keys
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey", handler.CreateAPIKey).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey", handler.GetAPIKeys).Methods("GET")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey/{key}", handler.DeleteAPIKey).Methods("DELETE")
 
 	// Add management endpoints if enabled
 	if config.Server.Management.Enabled {

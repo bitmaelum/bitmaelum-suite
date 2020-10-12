@@ -40,7 +40,6 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-
 	// Our custom parser allows (and defaults) to using days
 	validDuration, err := parse.ValidDuration(input.Valid)
 	if err != nil {
@@ -48,13 +47,13 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = parse.Permissions(input.Permissions)
+	err = parse.MangementPermissions(input.Permissions)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return
 	}
 
-	newAPIKey := apikey.NewKey(input.Permissions, validDuration, h, input.Desc)
+	newAPIKey := apikey.NewAccountKey(h, input.Permissions, validDuration, input.Desc)
 
 	// Store API key into persistent storage
 	repo := container.GetAPIKeyRepo()

@@ -36,6 +36,7 @@ func (mw *JwtToken) Middleware(next http.Handler) http.Handler {
 	})
 }
 
+// Authenticate will check if an API key matches the request
 func (mw *JwtToken) Authenticate(req *http.Request) (context.Context, bool) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {

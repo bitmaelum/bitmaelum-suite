@@ -39,7 +39,8 @@ func (mw *APIKey) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-func (k *APIKey) Authenticate(req *http.Request) (context.Context, bool) {
+// Authenticate will check if an API key matches the request
+func (*APIKey) Authenticate(req *http.Request) (context.Context, bool) {
 	key, err := getAPIKey(req.Header.Get("Authorization"))
 	if err != nil {
 		return nil, false

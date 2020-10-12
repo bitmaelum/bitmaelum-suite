@@ -25,9 +25,10 @@ func TestGenerateKey(t *testing.T) {
 }
 
 func TestNewAdminKey(t *testing.T) {
-	key := NewAdminKey(4 * time.Hour)
+	key := NewAdminKey(4*time.Hour, "foobar")
 	assert.True(t, strings.HasPrefix(key.ID, "BMK-"))
 	assert.True(t, key.Admin)
+	assert.Equal(t, "foobar", key.Desc)
 
 	assert.True(t, key.HasPermission("anything", nil))
 	assert.True(t, key.HasPermission("doesnt-matter", nil))
@@ -38,15 +39,15 @@ func TestNewAdminKey(t *testing.T) {
 }
 
 func TestNewKey(t *testing.T) {
-	key := NewKey([]string{"foo"}, 4*time.Hour, nil)
+	key := NewKey([]string{"foo"}, 4*time.Hour, "")
 	assert.True(t, strings.HasPrefix(key.ID, "BMK-"))
 	assert.False(t, key.Admin)
+	assert.Nil(t, key.AddrHash)
 	assert.True(t, key.HasPermission("foo", nil))
 	assert.False(t, key.HasPermission("bar", nil))
 
-
 	h := hash.New("foobar")
-	key = NewKey([]string{"foo"}, 4*time.Hour, &h)
+	key = NewAccountKey(&h, []string{"foo"}, 4*time.Hour, "")
 	assert.True(t, key.HasPermission("foo", &h))
 	assert.False(t, key.HasPermission("bar", &h))
 
@@ -54,4 +55,3 @@ func TestNewKey(t *testing.T) {
 	assert.False(t, key.HasPermission("foo", &h2))
 	assert.False(t, key.HasPermission("bar", &h2))
 }
-

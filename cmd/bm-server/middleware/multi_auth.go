@@ -5,11 +5,12 @@ import (
 	"net/http"
 )
 
-// MultiAuth
-type MultiAuth struct{
+// MultiAuth holds multiple middleware/authenticators that can authenticate against the API
+type MultiAuth struct {
 	Auths []Authenticable
 }
 
+// Authenticable allows you to use the struct in the multi-auth middleware
 type Authenticable interface {
 	Authenticate(req *http.Request) (context.Context, bool)
 }

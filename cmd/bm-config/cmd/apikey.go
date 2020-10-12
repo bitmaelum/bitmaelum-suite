@@ -6,8 +6,8 @@ import (
 
 // apiKeyCmd represents the apiKey command
 var apiKeyCmd = &cobra.Command{
-	Use:     "apikey",
-	Short:   "Api key management",
+	Use:   "apikey",
+	Short: "Api key management",
 }
 
 func init() {

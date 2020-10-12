@@ -13,11 +13,15 @@ const (
 	PermGetHeaders string = "get-headers"
 )
 
-// AllPermissons is a list of all permissions available for API keys
-var AllPermissons = []string{
+// ManagementPermissons is a list of all permissions available for remote management
+var ManagementPermissons = []string{
 	PermAPIKeys,
 	PermFlush,
 	PermGenerateInvites,
-	PermMail,
+}
+
+// AccountPermissions is a set of permissions for specific accounts
+var AccountPermissions = []string{
 	PermGetHeaders,
+	PermMail,
 }

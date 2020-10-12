@@ -35,8 +35,8 @@ func NewAdminKey(valid time.Duration, desc string) KeyType {
 	}
 }
 
-// NewKey creates a new key with the given permissions and duration
-func NewKey(perms []string, valid time.Duration, AddrHash *hash.Hash, desc string) KeyType {
+// NewAccountKey creates a new key with the given permissions and duration for the given account
+func NewAccountKey(addrHash *hash.Hash, perms []string, valid time.Duration, desc string) KeyType {
 	var until = time.Time{}
 	if valid > 0 {
 		until = time.Now().Add(valid)
@@ -47,7 +47,24 @@ func NewKey(perms []string, valid time.Duration, AddrHash *hash.Hash, desc strin
 		ValidUntil:  until,
 		Permissions: perms,
 		Admin:       false,
-		AddrHash:    AddrHash,
+		AddrHash:    addrHash,
+		Desc:        desc,
+	}
+}
+
+// NewKey creates a new key with the given permissions and duration
+func NewKey(perms []string, valid time.Duration, desc string) KeyType {
+	var until = time.Time{}
+	if valid > 0 {
+		until = time.Now().Add(valid)
+	}
+
+	return KeyType{
+		ID:          GenerateKey("BMK-", 32),
+		ValidUntil:  until,
+		Permissions: perms,
+		Admin:       false,
+		AddrHash:    nil,
 		Desc:        desc,
 	}
 }
