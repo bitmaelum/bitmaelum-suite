@@ -27,7 +27,7 @@ func KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 	return nil, errors.New("unknown key type for key exchange")
 }
 
-//EdPrivToX25519 converts a ed25519 PrivateKey to a X25519 Private Key
+// EdPrivToX25519 converts a ed25519 PrivateKey to a X25519 Private Key
 func EdPrivToX25519(privateKey ed25519.PrivateKey) []byte {
 	h := sha512.New()
 	_, _ = h.Write(privateKey[:32])
@@ -43,10 +43,10 @@ func EdPrivToX25519(privateKey ed25519.PrivateKey) []byte {
 	return digest[:32]
 }
 
-//From https://github.com/FiloSottile/age/blob/bbab440e198a4d67ba78591176c7853e62d29e04/internal/age/ssh.go#L172
+// From https://github.com/FiloSottile/age/blob/bbab440e198a4d67ba78591176c7853e62d29e04/internal/age/ssh.go#L172
 var curve25519P, _ = new(big.Int).SetString("57896044618658097711785492504343953926634992332820282019728792003956564819949", 10)
 
-//EdPubToX25519 converts a ed25519 Public Key to a X25519 Public Key
+// EdPubToX25519 converts a ed25519 Public Key to a X25519 Public Key
 func EdPubToX25519(pk ed25519.PublicKey) []byte {
 	// ed25519.PublicKey is a little endian representation of the y-coordinate,
 	// with the most significant bit set based on the sign of the x-coordinate.
