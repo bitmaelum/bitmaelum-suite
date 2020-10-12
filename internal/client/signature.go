@@ -11,7 +11,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
-// SignHeader will add a server signature to a message header. This can be used to proof the origin of the message
+// SignHeader will add a client signature to a message header. This can be used to proof the origin of the message
 func SignHeader(header *message.Header, privKey bmcrypto.PrivKey) error {
 	// Already signed? Then skip
 	if len(header.ClientSignature) > 0 {
@@ -34,7 +34,7 @@ func SignHeader(header *message.Header, privKey bmcrypto.PrivKey) error {
 	return nil
 }
 
-// VerifyHeader will verify a server signature from a message header. This can be used to proof the origin of the message
+// VerifyHeader will verify a client signature from a message header. This can be used to proof the origin of the message
 func VerifyHeader(header message.Header) bool {
 	// Fetch public key from routing
 	rs := container.GetResolveService()
