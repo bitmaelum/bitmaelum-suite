@@ -70,10 +70,10 @@ func setup() *bmcrypto.PrivKey {
 	repo, _ := resolver.NewMockRepository()
 	container.SetResolveService(resolver.KeyRetrievalService(repo))
 
-	privKey, pubKey, err := bmtest.ReadTestKey("../../testdata/key-2.json")
-	if err != nil {
-		panic(err)
-	}
+	// privKey, pubKey, err := bmtest.ReadTestKey("../../testdata/key-2.json")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 	var (
@@ -81,7 +81,7 @@ func setup() *bmcrypto.PrivKey {
 		ri resolver.RoutingInfo
 	)
 
-	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, err := bmtest.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
 		panic(err)
 	}

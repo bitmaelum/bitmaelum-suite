@@ -16,13 +16,13 @@ const (
 
 var (
 	// Override for mocking purposes
-	kr keyring.Keyring
+	kr        keyring.Keyring
 	pwdReader PasswordReader
 )
 
 // PasswordReader is an interface to read a password.
 type PasswordReader interface {
-    ReadPassword() ([]byte, error)
+	ReadPassword() ([]byte, error)
 }
 
 // StdInPasswordReader Default password reader from stdin
@@ -31,10 +31,9 @@ type StdInPasswordReader struct {
 
 // ReadPassword reads password from stdin
 func (pr *StdInPasswordReader) ReadPassword() ([]byte, error) {
-    pwd, err := terminal.ReadPassword(int(os.Stdin.Fd()))
-    return pwd, err
+	pwd, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+	return pwd, err
 }
-
 
 // StorePassword will store the given password into the keychain if possible
 func StorePassword(pwd string) error {

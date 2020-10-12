@@ -38,7 +38,7 @@ type DefaultResolver struct {
 
 // SetCallbackTXT can set a callback for the LookupTXT resolver. Not used in the DefaultResolver
 func (r *DefaultResolver) SetCallbackTXT(_ callbackFunc) {
-	return
+	// Empty function
 }
 
 // LookupTXT passes through to the default net resolver

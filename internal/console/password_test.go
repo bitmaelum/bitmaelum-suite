@@ -8,21 +8,20 @@ import (
 )
 
 type stubPasswordReader struct {
-    Passwords  []string
-    ReturnError bool
+	Passwords   []string
+	ReturnError bool
 }
 
 func (pr *stubPasswordReader) ReadPassword() ([]byte, error) {
-    if pr.ReturnError {
-        return nil, errors.New("stubbed error")
-    }
+	if pr.ReturnError {
+		return nil, errors.New("stubbed error")
+	}
 
-    s := pr.Passwords[0]
+	s := pr.Passwords[0]
 	pr.Passwords = pr.Passwords[1:]
 
-    return []byte(s), nil
+	return []byte(s), nil
 }
-
 
 func TestAskDoublePassword(t *testing.T) {
 	pwdReader = &stubPasswordReader{ReturnError: true}
