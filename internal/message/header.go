@@ -30,6 +30,9 @@ type Header struct {
 
 	// Signature of the from, to and catalog structures, as signed by the private key of the server.
 	ServerSignature string `json:"sender_signature,omitempty"`
+
+	// Signature of the from, to and catalog structures, as signed by the private key of the client.
+	ClientSignature string `json:"client_signature,omitempty"`
 }
 
 // Checksum holds a checksum which consists of the checksum hash value, and the given type of the checksum
