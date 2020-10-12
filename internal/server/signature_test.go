@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_signHeader(t *testing.T) {
+func TestSignHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}
@@ -33,7 +33,7 @@ func Test_signHeader(t *testing.T) {
 	assert.Equal(t, "foobar", header.ServerSignature)
 }
 
-func Test_VerifyHeader(t *testing.T) {
+func TestVerifyHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}

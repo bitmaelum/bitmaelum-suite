@@ -11,7 +11,7 @@ type TestStruct struct {
 	Bar int    `json:"bar"`
 }
 
-func Test_EncryptDecryptJson(t *testing.T) {
+func TestEncryptDecryptJson(t *testing.T) {
 	ts := &TestStruct{
 		Foo: "foo",
 		Bar: 42,
@@ -47,7 +47,7 @@ func Test_EncryptDecryptJson(t *testing.T) {
 	assert.EqualError(t, err, "cipher: message authentication failed")
 }
 
-func Test_EncryptDecryptMessage(t *testing.T) {
+func TestEncryptDecryptMessage(t *testing.T) {
 	ts := "And now you do what they told ya"
 
 	// MOck nonce generator for encrypt
@@ -77,7 +77,7 @@ func Test_EncryptDecryptMessage(t *testing.T) {
 	assert.EqualError(t, err, "cipher: message authentication failed")
 }
 
-func Test_EncryptDecryptCatalog(t *testing.T) {
+func TestEncryptDecryptCatalog(t *testing.T) {
 	type mockCatalog struct {
 		Foo string
 		Bar string

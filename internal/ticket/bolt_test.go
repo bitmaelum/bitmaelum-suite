@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_BoltStorage(t *testing.T) {
+func TestBoltStorage(t *testing.T) {
 	path := os.TempDir()
 	b := NewBoltRepository(path)
 	assert.NotNil(t, b)

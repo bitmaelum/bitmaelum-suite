@@ -31,7 +31,7 @@ func TestHashFromString(t *testing.T) {
 	assert.Equal(t, "102d0177f8ce6b0f5ada79780043ec90440529a53c98bd6043419e64c1d4274f", h.String())
 }
 
-func Test_Verify(t *testing.T) {
+func TestVerify(t *testing.T) {
 	// joshua@bitmaelum!
 	h, _ := NewFromHash("6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840")
 	assert.True(t, h.Verify(

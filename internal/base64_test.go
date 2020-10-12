@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_EncodeDecde(t *testing.T) {
+func TestEncodeDecode(t *testing.T) {
 	b := Encode([]byte("foobar"))
 	assert.Equal(t, []byte{0x5a, 0x6d, 0x39, 0x76, 0x59, 0x6d, 0x46, 0x79}, b)
 

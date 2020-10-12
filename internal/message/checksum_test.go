@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Checksum(t *testing.T) {
+func TestChecksum(t *testing.T) {
 	r := bytes.NewBufferString("foobar")
 	c, err := CalculateChecksums(r)
 	assert.NoError(t, err)

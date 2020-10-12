@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_WordWrap(t *testing.T) {
+func TestWordWrap(t *testing.T) {
 	s := "NEWS PLAY ELSE CABLE UNLOCK SUSPECT TOAST MIXTURE SCARE POTTERY MONTH ESSAY IMMUNE BURGER STING RATE PLANET TOWN"
 
 	assert.Equal(t, "NEWS PLAY ELSE CABLE UNLOCK SUSPECT\nTOAST MIXTURE SCARE POTTERY MONTH ESSAY\nIMMUNE BURGER STING RATE PLANET TOWN", WordWrap(s, 40))

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_New(t *testing.T) {
+func TestNew(t *testing.T) {
 	// inmemory vault
 	v, err := New("", []byte{})
 	assert.NoError(t, err)
@@ -67,7 +67,7 @@ func Test_New(t *testing.T) {
 	assert.Len(t, v.Store.Accounts, 1)
 }
 
-func Test_FindShortRoutingId(t *testing.T) {
+func TestFindShortRoutingId(t *testing.T) {
 	var acc internal.AccountInfo
 
 	v, _ := New("", []byte{})
@@ -87,7 +87,7 @@ func Test_FindShortRoutingId(t *testing.T) {
 	assert.Equal(t, "", v.FindShortRoutingID("1"))
 }
 
-func TestVault_ChangePassword(t *testing.T) {
+func TestVaultChangePassword(t *testing.T) {
 	v, _ := New("", []byte("foobar"))
 	assert.Equal(t, []byte("foobar"), v.password)
 

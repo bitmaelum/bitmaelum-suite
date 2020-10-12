@@ -14,7 +14,7 @@ var dst = []byte{0x78, 0xda, 0x14, 0xc6, 0xd1, 0x89, 0x3, 0x31, 0xc, 0x4, 0xd0, 
 var src1 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 var dst1 = []byte{0x78, 0xda, 0x72, 0x1c, 0xe4, 0x0, 0x10, 0x0, 0x0, 0xff, 0xff, 0xc7, 0xa4, 0x28, 0xa1}
 
-func Test_Compress(t *testing.T) {
+func TestCompress(t *testing.T) {
 	r := bytes.NewBufferString(src)
 	compressedBytes, _ := ioutil.ReadAll(ZlibCompress(r))
 	assert.Equal(t, 0, bytes.Compare(compressedBytes, dst))

@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_ValidAddress(t *testing.T) {
+func TestValidAddress(t *testing.T) {
 	validAddresses := []string{
 		"jay!",
 		"jay@org!",
@@ -26,7 +26,7 @@ func Test_ValidAddress(t *testing.T) {
 	}
 }
 
-func Test_InvalidAddress(t *testing.T) {
+func TestInvalidAddress(t *testing.T) {
 	invalidAddresses := []string{
 		"jay",
 		"j!",
@@ -64,7 +64,7 @@ func Test_InvalidAddress(t *testing.T) {
 	}
 }
 
-func Test_Hashes(t *testing.T) {
+func TestHashes(t *testing.T) {
 	a, err := NewAddress("joshua@bitmaelum!")
 	assert.NoError(t, err)
 	assert.Equal(t, "6b024a4e51c0c4a30c3750115c66be776253880bb4af0f313e3bf2236e808840", a.Hash().String())
@@ -93,7 +93,7 @@ func Test_Hashes(t *testing.T) {
 	assert.Equal(t, "a5098c40c4b7e272403f94d752026f45faeab26b4d67804c887969461b032074", a.Hash().String())
 }
 
-func Test_Remainders(t *testing.T) {
+func TestRemainders(t *testing.T) {
 	a, err := NewAddress("john@foobar!")
 	assert.NoError(t, err)
 	assert.Equal(t, []byte{0x6a, 0x6f, 0x68, 0x6e, 0x40, 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72, 0x21}, a.Bytes())

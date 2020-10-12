@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_ProofOfWork(t *testing.T) {
+func TestProofOfWork(t *testing.T) {
 	pow := New(8, "john@example!", 0)
 	assert.Equal(t, 8, pow.Bits)
 	assert.Equal(t, uint64(0), pow.Proof)

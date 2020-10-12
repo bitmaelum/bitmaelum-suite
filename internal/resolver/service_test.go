@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_generateAddressSignature(t *testing.T) {
+func TestGenerateAddressSignature(t *testing.T) {
 	privKey1, pubKey1, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 	_, pubKey2, _ := bmtest.ReadTestKey("../../testdata/key-2.json")
 
@@ -33,7 +33,7 @@ func Test_generateAddressSignature(t *testing.T) {
 	assert.Equal(t, "SQ//6Uxbt6YOkl7povRPgQOuIoB788iMHd2SqpXxHmgBRZhxh1CYoXuAIf1ry2jdzq6lwdrydlEFYmdfKzFNOh6oy2vGOQul24QOuHL1qnYnsVPc13H2clsl/jtw3T0Is6hh+JFOmu5tDY/3xRex4AWA9KRBsl1cTlNPdHAXanV6UVk9MBZSUE4H+kJoA7BBom0rUeZ14V/SalVbGRb62qiFjW6JMYQFXZNGEqOxGCp+maZNCta5vSjK/7oEG3a8Kmns+OVwFMGdU+1fkmi6ebaYNbMh3ta9cEv87qzoodGLBCI5Q/RjTCNnZ8ERwFatnmh4sGzEMXSuUHkqc2zo/g==", s)
 }
 
-func Test_generateOrganisationSignature(t *testing.T) {
+func TestGenerateOrganisationSignature(t *testing.T) {
 	privKey1, pubKey1, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 
 	info := OrganisationInfo{
@@ -52,7 +52,7 @@ func Test_generateOrganisationSignature(t *testing.T) {
 	assert.Equal(t, "fDyQ1/pGp+CWvnzGp2XasFwK0jfUP6VbrYtYGiqVJAEjh/qWZLjfOCrXn6a/mwVmIUh6UVNz/uf7nchED8UARpdIovXFDvTvjGgwitcz5T8Bo+b0WWVymO7PGJVBTZmRk1cIjM4N9CuSH8ObUIl6McaDL7CmR6MuyYn6BYglzd5uwde8B0AfhnmgaAFu2NDSPkeRxboh6jCH60PiAV03a/TAN+t7apkEv+uQ5RXTGLYZXw0CxCmPIr8aQMyF+/d20fLirq7SDh7taHcsTZFgZ1VWEchEGpm3ZyWw3W1lCx1/tdXOgKA1/9Ott2HVzRvrrn1Uh20R7OgJxk2ou8319g==", s)
 }
 
-func Test_generateRoutingSignature(t *testing.T) {
+func TestGenerateRoutingSignature(t *testing.T) {
 	privKey1, pubKey1, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
 
 	info := RoutingInfo{
