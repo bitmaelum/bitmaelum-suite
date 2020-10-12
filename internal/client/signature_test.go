@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const expectedSignature = "gm8cy14MCib0V1vqi0YA02hyQbiEM+TYem/K1lJeu8N+A9WJIrjLtSsugpw9B5cpttc5wXCmp1Iau2JrA3SSkOo5ZKDieKEYpabGeMdnu4hfb2bvYs4T4Zm6m2/IaovWw/eF5zeeHF/0VUX5VQvQkkFUhfrse3VGdH0tRU9tpmwqfZL5MnKqMFp3a3e8ZVNLbUeB7tsopJfqiW8SdSptjgRmKUhvaya41Nn47jK6UmbVdWzTujqfsn0KxhQu6YV4qY5ItJf5WyIR+fbKqinUYCoDFinua+fL7j/nVeLcPEwLYoioXS+inTTTkrqpYLydjdS9x4lLr731suj9lAjNxQ=="
+const expectedSignature = "HrjkBJQCzb5uTsToJ2FRd4bdJJgABwYP0GZl+JDhM0vIkOvqTvzTMex91wEjYbhhVcfHTGg+6TCY28Q5NhCNxGiCIo/5G/Nck3K9WLCeaN6eQWzyJgWmfQtp3J8rgDLFTsrZckV9LVRtHzV15rT1fP+2a4Y8oSMuWgPCiaOpckeB+/BYcdQcUmrVozt6Zk0cVIbVUMePVaaAXxgQWTVdeO1iw3zKWAaV0GQBJ6Y1OTLdbVgCz9f935koBxBkz+19pJXWzFWL32ECBTummAnJt7mar+0AkFLeLcvN+YiwNBJx/m8/5nptVLoSCY/12Cddinnt3TFT+XIHp1La5WrCfw=="
 
 func Test_signHeader(t *testing.T) {
 	privKey := setup()
@@ -23,7 +23,6 @@ func Test_signHeader(t *testing.T) {
 	assert.Empty(t, header.ClientSignature)
 	err := SignHeader(header, *privKey)
 	assert.NoError(t, err)
-
 	assert.Equal(t, expectedSignature, header.ClientSignature)
 
 	// Already present, don't overwrite
@@ -79,6 +78,7 @@ func setup() *bmcrypto.PrivKey {
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 	var (
 		ai resolver.AddressInfo
+		ri resolver.RoutingInfo
 	)
 
 	ai = resolver.AddressInfo{
@@ -89,6 +89,17 @@ func setup() *bmcrypto.PrivKey {
 		RoutingInfo: resolver.RoutingInfo{},
 	}
 	_ = repo.UploadAddress(&ai, *privKey, *pow)
+
+	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-1.json")
+	if err != nil {
+		panic(err)
+	}
+	ri = resolver.RoutingInfo{
+		Hash:      "12345678",
+		PublicKey: *pubKey,
+		Routing:   "127.0.0.1",
+	}
+	_ = repo.UploadRouting(&ri, *privKey)
 
 	// Note: our sender uses key3
 	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-3.json")

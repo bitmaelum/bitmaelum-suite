@@ -6,6 +6,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/client"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
@@ -57,6 +58,16 @@ func ProcessMessage(msgID string) {
 		// Check the serverSignature
 		if !server.VerifyHeader(*header) {
 			logrus.Errorf("message %s destined for %s has failed the server signature check. Seems that this message did not originate from the original mail server. Removing the message.", msgID, header.To.Addr)
+
+			err := message.RemoveMessage(message.SectionProcessing, msgID)
+			if err != nil {
+				logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
+			}
+		}
+
+		// Check the clientSignature
+		if !client.VerifyHeader(*header) {
+			logrus.Errorf("message %s destined for %s has failed the client signature check. Seems that this message may have been spoofed. Removing the message.", msgID, header.To.Addr)
 
 			err := message.RemoveMessage(message.SectionProcessing, msgID)
 			if err != nil {

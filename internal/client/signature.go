@@ -39,16 +39,10 @@ func VerifyHeader(header message.Header) bool {
 	// Fetch public key from routing
 	rs := container.GetResolveService()
 
-	fmt.Println("header.From.Addr=%@", header.From.Addr)
-
 	addr, err := rs.ResolveAddress(header.From.Addr)
-	fmt.Println("addres resolved to %@", addr)
 	if err != nil {
-		fmt.Println("error resolving %@", err)
 		return false
 	}
-
-	fmt.Println("addr.PublicKey=%@", addr.PublicKey)
 
 	// No header at all
 	if len(header.ClientSignature) == 0 {
