@@ -1,6 +1,8 @@
 package resolver
 
 import (
+	"fmt"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -25,8 +27,11 @@ func NewMockRepository() (Repository, error) {
 
 func (r *mockRepo) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 	if ai, ok := r.address[addr.String()]; ok {
+		fmt.Println("address found ai=%@", ai)
 		return &ai, nil
 	}
+
+	fmt.Println("address NOT found")
 
 	return nil, errKeyNotFound
 }
