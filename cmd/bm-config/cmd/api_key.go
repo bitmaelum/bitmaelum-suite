@@ -9,6 +9,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +18,7 @@ var apiKeyCmd = &cobra.Command{
 	Use:     "api-key",
 	Aliases: []string{"apikey", "key"},
 	Short:   "Create an (admin) management key for remote management",
-	Example: "  apikeys --perms apikeys,invite --valid 3d",
+	Example: "  apikeys --perms apikeys,invite --valid 3d --addr <hash> --desc 'My api key'",
 	Long: `This command will generate an management key that can be used to administer commands through the HTTPS server. By default this is disabled, 
 but can be enabled with the server.management.enabled flag in the server configuration file.
 
@@ -33,6 +34,16 @@ Creating an admin key can only be done locally.
 	Run: func(cmd *cobra.Command, args []string) {
 		if !config.Server.Management.Enabled {
 			fmt.Printf("Warning: remote management is not enabled on this server. You need to enable this in your configuration first.\n\n")
+		}
+
+		var h *hash.Hash
+		if *mgAddrHash != "" {
+			var err error
+			h, err = hash.NewFromHash(*mgAddrHash)
+			if err != nil {
+				fmt.Printf("Error: incorrect hash.\n")
+				os.Exit(1)
+			}
 		}
 
 		// Our custom parser allows (and defaults) to using days
@@ -55,14 +66,14 @@ Creating an admin key can only be done locally.
 				fmt.Printf("Error: cannot specify permissions when you create an admin key (all permissions are automatically granted)\n")
 				os.Exit(1)
 			}
-			key = apikey.NewAdminKey(validDuration)
+			key = apikey.NewAdminKey(validDuration, *mgDesc)
 		} else {
 			fmt.Printf("Creating new regular key\n")
 			if len(*mgPerms) == 0 {
 				fmt.Printf("Error: need a set of permissions when generating a regular key\n")
 				os.Exit(1)
 			}
-			key = apikey.NewKey(*mgPerms, validDuration)
+			key = apikey.NewKey(*mgPerms, validDuration, h, *mgDesc)
 		}
 
 		// Store API key into persistent storage
@@ -81,9 +92,11 @@ Creating an admin key can only be done locally.
 }
 
 var (
-	mgAdmin *bool
-	mgPerms *[]string
-	mgValid *string
+	mgAdmin    *bool
+	mgPerms    *[]string
+	mgValid    *string
+	mgAddrHash *string
+	mgDesc     *string
 )
 
 func init() {
@@ -92,4 +105,6 @@ func init() {
 	mgAdmin = apiKeyCmd.Flags().Bool("admin", false, "Admin key")
 	mgPerms = apiKeyCmd.Flags().StringSlice("permissions", []string{}, "List of permissions")
 	mgValid = apiKeyCmd.Flags().String("valid", "", "Days (or duration) the key is valid. Accepts 10d, or even 1h30m50s")
+	mgAddrHash = apiKeyCmd.Flags().String("addr", "", "Account hash for this specific api key")
+	mgDesc = apiKeyCmd.Flags().String("desc", "", "Description of this key")
 }

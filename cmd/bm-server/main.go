@@ -159,6 +159,7 @@ func setupRouter() *mux.Router {
 	authRouter.Use(prettyJSON.Middleware)
 	authRouter.Use(tracer.Middleware)
 	authRouter.Use(jwt.Middleware)
+	authRouter.Use(apikey.Middleware)
 	// Authorized sending
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetClientToServerTicket).Methods("POST")
 	// Message boxes
