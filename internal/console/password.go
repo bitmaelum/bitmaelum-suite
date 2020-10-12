@@ -2,9 +2,11 @@ package console
 
 import (
 	"bytes"
+	"fmt"
+	"os"
 
-	"github.com/chzyer/readline"
 	"github.com/zalando/go-keyring"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -13,13 +15,26 @@ const (
 )
 
 var (
-	// Readline instance. Override for mocking purposes
-	readliner, _ = readline.NewEx(&readline.Config{
-		DisableAutoSaveHistory: true,
-	})
 	// Override for mocking purposes
 	kr keyring.Keyring
+	pwdReader PasswordReader
 )
+
+// PasswordReader is an interface to read a password.
+type PasswordReader interface {
+    ReadPassword() ([]byte, error)
+}
+
+// StdInPasswordReader Default password reader from stdin
+type StdInPasswordReader struct {
+}
+
+// ReadPassword reads password from stdin
+func (pr *StdInPasswordReader) ReadPassword() ([]byte, error) {
+    pwd, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+    return pwd, err
+}
+
 
 // StorePassword will store the given password into the keychain if possible
 func StorePassword(pwd string) error {
@@ -33,14 +48,23 @@ func StorePassword(pwd string) error {
 // AskDoublePassword will ask for a password (and confirmation) on the commandline
 func AskDoublePassword() ([]byte, error) {
 	for {
-		p1, _ := readliner.ReadPassword("Please enter your vault password: ")
-		p2, _ := readliner.ReadPassword("Please retype your vault password: ")
+		fmt.Print("Please enter your vault password: ")
+		p1, err := pwdReader.ReadPassword()
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Print("Please retype your vault password: ")
+		p2, err := pwdReader.ReadPassword()
+		if err != nil {
+			return nil, err
+		}
 
 		if bytes.Equal(p1, p2) {
 			return p1, nil
 		}
 
-		_, _ = readliner.Stdout().Write([]byte("Passwords do not match. Please type again.\n"))
+		fmt.Println("Passwords do not match. Please type again.")
 	}
 }
 
@@ -53,6 +77,7 @@ func AskPassword() (string, bool) {
 		}
 	}
 
-	b, _ := readliner.ReadPassword("Please enter your vault password: ")
+	fmt.Print("Please enter your vault password: ")
+	b, _ := pwdReader.ReadPassword()
 	return string(b), false
 }
