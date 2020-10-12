@@ -72,8 +72,9 @@ func (key *KeyType) HasPermission(perm string, addrHash *hash.Hash) bool {
 // Repository is a repository to fetch and store API keys
 type Repository interface {
 	Fetch(ID string) (*KeyType, error)
+	FetchByHash(h string) ([]*KeyType, error)
 	Store(key KeyType) error
-	Remove(ID string)
+	Remove(key KeyType) error
 }
 
 // GenerateKey generates a random key based on a given string length

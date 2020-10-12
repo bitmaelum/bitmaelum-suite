@@ -3,6 +3,7 @@ package apikey
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
@@ -13,10 +14,10 @@ type boltRepo struct {
 	client *bolt.DB
 }
 
-//BucketName is the bucket name to store the invitations on the bolt db
+// BucketName is the bucket name to store the invitations on the bolt db
 const BucketName = "apikeys"
 
-//BoltDBFile is the filename to store the boltdb database
+// BoltDBFile is the filename to store the boltdb database
 const BoltDBFile = "apikeys.db"
 
 // NewBoltRepository initializes a new repository
@@ -31,6 +32,43 @@ func NewBoltRepository(dbpath string) Repository {
 	return boltRepo{
 		client: db,
 	}
+}
+
+func (b boltRepo) FetchByHash(h string) ([]*KeyType, error) {
+	keys := make([]*KeyType, 0)
+
+	err := b.client.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(BucketName))
+		if bucket == nil {
+			logrus.Trace("keys for account not found in BOLT: ", h, nil)
+			return errors.New("apikey not found")
+		}
+
+		// @TODO: we iterate all keys, unmarshall them to see if we need to add on a list. Please refactor
+		//  into something better.. :(
+		c := bucket.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			fmt.Printf("key=%s, value=%s\n", k, v)
+
+			key := &KeyType{}
+			err := json.Unmarshal(v, &key)
+			if err != nil {
+				continue
+			}
+
+			if key.AddrHash.String() == h {
+				keys = append(keys, key)
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return keys, nil
 }
 
 // Fetch a key from the repository, or err
@@ -86,16 +124,14 @@ func (b boltRepo) Store(apiKey KeyType) error {
 }
 
 // Remove the given key from the repository
-func (b boltRepo) Remove(ID string) {
-
-	_ = b.client.Update(func(tx *bolt.Tx) error {
+func (b boltRepo) Remove(apiKey KeyType) error {
+	return b.client.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(BucketName))
 		if bucket == nil {
-			logrus.Trace("unable to delete apikey, apikey not found in BOLT: ", ID, nil)
+			logrus.Trace("unable to delete apikey, apikey not found in BOLT: ", apiKey.ID, nil)
 			return nil
 		}
 
-		return bucket.Delete([]byte(ID))
+		return bucket.Delete([]byte(apiKey.ID))
 	})
-
 }
