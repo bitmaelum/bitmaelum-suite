@@ -9,6 +9,8 @@ const (
 	PermAPIKeys string = "apikey"
 	// PermMail Permission to send email
 	PermMail string = "mail"
+	// PermGetHeaders allows you to fetch header and catalog from messages
+	PermGetHeaders string = "get-headers"
 )
 
 // AllPermissons is a list of all permissions available for API keys
@@ -17,4 +19,5 @@ var AllPermissons = []string{
 	PermFlush,
 	PermGenerateInvites,
 	PermMail,
+	PermGetHeaders,
 }
