@@ -29,6 +29,10 @@ Tickets works as follows:
   Note that tickets are always bound to a specific fromAddr and toAddr and only available for a specific lifetime.
 */
 
+const (
+	cantSaveTicket string = "can't save ticket on the server"
+)
+
 type requestInfoType struct {
 	From           hash.Hash
 	To             hash.Hash
@@ -66,7 +70,7 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	err = ticketRepo.Store(t)
 	if err != nil {
 		logrus.Trace("cannot save ticket: ", err)
-		ErrorOut(w, http.StatusInternalServerError, "can't save ticket on the server")
+		ErrorOut(w, http.StatusInternalServerError, cantSaveTicket)
 		return
 	}
 
@@ -123,7 +127,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 		ticketRepo := container.GetTicketRepo()
 		err = ticketRepo.Store(tckt)
 		if err != nil {
-			ErrorOut(w, http.StatusInternalServerError, "can't save ticket on the server")
+			ErrorOut(w, http.StatusInternalServerError, cantSaveTicket)
 			return
 		}
 		logrus.Tracef("Generated invalidated ticket: %s", tckt.ID)
@@ -150,7 +154,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 			ticketRepo := container.GetTicketRepo()
 			err = ticketRepo.Store(tckt)
 			if err != nil {
-				ErrorOut(w, http.StatusInternalServerError, "can't save ticket on the server")
+				ErrorOut(w, http.StatusInternalServerError, cantSaveTicket)
 				return
 			}
 			logrus.Tracef("Ticket proof-of-work validated: %s", tckt.ID)
@@ -191,7 +195,7 @@ func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
 	err := ticketRepo.Store(tckt)
 	if err != nil {
 		return nil, &httpError{
-			err:        "can't save ticket on the server",
+			err:        cantSaveTicket,
 			StatusCode: http.StatusInternalServerError,
 		}
 	}

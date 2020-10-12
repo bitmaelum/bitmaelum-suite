@@ -13,6 +13,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	invalidTicketId string = "invalid ticket id or ticket not valid"
+)
+
 /*
  * Incoming will accept incoming messages from both clients and servers. It is based on (valid) tickets.
  */
@@ -22,7 +26,7 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, "invalid ticket id or ticket not valid")
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
 		return
 	}
 
@@ -63,7 +67,7 @@ func IncomingMessageCatalog(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, "invalid ticket id or ticket not valid")
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
 		return
 	}
 
@@ -83,7 +87,7 @@ func IncomingMessageBlock(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, "invalid ticket id or ticket not valid")
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
 		return
 	}
 
@@ -106,7 +110,7 @@ func IncomingMessageAttachment(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, "invalid ticket id or ticket not valid")
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
 		return
 	}
 
@@ -129,7 +133,7 @@ func CompleteIncoming(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, "invalid ticket id or ticket not valid")
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
 		return
 	}
 
@@ -150,7 +154,7 @@ func DeleteIncoming(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, "invalid ticket id or ticket not valid")
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
 		return
 	}
 

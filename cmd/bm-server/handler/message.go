@@ -12,17 +12,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	incorrectBox string = "incorrect box"
+)
+
 // GetMessage will return a message header and catalog
 func GetMessage(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect box")
+		ErrorOut(w, http.StatusBadRequest, incorrectBox)
 		return
 	}
 
@@ -45,13 +49,13 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect box")
+		ErrorOut(w, http.StatusBadRequest, incorrectBox)
 		return
 	}
 
@@ -61,7 +65,7 @@ func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 	ar := container.GetAccountRepo()
 	block, err := ar.FetchMessageBlock(*haddr, box, messageID, blockID)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect block")
+		ErrorOut(w, http.StatusBadRequest, incorrectBox)
 		return
 	}
 
@@ -74,13 +78,13 @@ func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 func GetMessageAttachment(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect box")
+		ErrorOut(w, http.StatusBadRequest, incorrectBox)
 		return
 	}
 

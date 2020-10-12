@@ -16,11 +16,15 @@ type boxIn struct {
 	ParentBoxID int `json:"parent_box_id"`
 }
 
+const (
+	accountNotFound string = "account not found"
+)
+
 // CreateBox creates a new box under a specific parent box or 0 for a root box
 func CreateBox(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -46,7 +50,7 @@ func CreateBox(w http.ResponseWriter, req *http.Request) {
 func DeleteBox(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -71,7 +75,7 @@ func DeleteBox(w http.ResponseWriter, req *http.Request) {
 func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -98,7 +102,7 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -110,7 +114,7 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 
 	ar := container.GetAccountRepo()
 	if !ar.ExistsBox(*haddr, box) {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 

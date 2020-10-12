@@ -19,6 +19,10 @@ import (
  * request info?)
  */
 
+const (
+	invalidSigningMethod string = "invalid signing method"
+)
+
 // GenerateJWTToken generates a JWT token with the address and singed by the given private key
 func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 	claims := &jwt.StandardClaims{
@@ -57,8 +61,8 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 		/*
 			// Make sure we signed with RS256
 			if token.Method != jwt.SigningMethodRS256 {
-				logrus.Trace("auth: jwt: incorrect signing method")
-				return nil, errors.New("incorrect signing method")
+				logrus.Trace("auth: jwt: " + invalidSigningMethod)
+				return nil, errors.New(invalidSigningMethod)
 			}
 		*/
 		return key.K, nil
@@ -76,24 +80,24 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	case bmcrypto.KeyTypeRSA:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
-			logrus.Tracef("auth: jwt: incorrect signing method")
-			return nil, errors.New("incorrect signing method")
+			logrus.Tracef("auth: jwt: "+invalidSigningMethod)
+			return nil, errors.New(invalidSigningMethod)
 		}
 	case bmcrypto.KeyTypeECDSA:
 		_, ok := token.Method.(*jwt.SigningMethodECDSA)
 		if !ok {
-			logrus.Tracef("auth: jwt: incorrect signing method")
-			return nil, errors.New("incorrect signing method")
+			logrus.Tracef("auth: jwt: "+invalidSigningMethod)
+			return nil, errors.New(invalidSigningMethod)
 		}
 	case bmcrypto.KeyTypeED25519:
 		_, ok := token.Method.(*SigningMethodEdDSA)
 		if !ok {
-			logrus.Tracef("auth: jwt: incorrect signing method")
-			return nil, errors.New("incorrect signing method")
+			logrus.Tracef("auth: jwt: "+invalidSigningMethod)
+			return nil, errors.New(invalidSigningMethod)
 		}
 	default:
-		logrus.Tracef("auth: jwt: incorrect signing method")
-		return nil, errors.New("incorrect signing method")
+		logrus.Tracef("auth: jwt: "+invalidSigningMethod)
+		return nil, errors.New(invalidSigningMethod)
 	}
 
 	// It should be a valid token
