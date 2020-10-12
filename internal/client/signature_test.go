@@ -15,7 +15,7 @@ import (
 
 const expectedSignature = "HrjkBJQCzb5uTsToJ2FRd4bdJJgABwYP0GZl+JDhM0vIkOvqTvzTMex91wEjYbhhVcfHTGg+6TCY28Q5NhCNxGiCIo/5G/Nck3K9WLCeaN6eQWzyJgWmfQtp3J8rgDLFTsrZckV9LVRtHzV15rT1fP+2a4Y8oSMuWgPCiaOpckeB+/BYcdQcUmrVozt6Zk0cVIbVUMePVaaAXxgQWTVdeO1iw3zKWAaV0GQBJ6Y1OTLdbVgCz9f935koBxBkz+19pJXWzFWL32ECBTummAnJt7mar+0AkFLeLcvN+YiwNBJx/m8/5nptVLoSCY/12Cddinnt3TFT+XIHp1La5WrCfw=="
 
-func Test_signHeader(t *testing.T) {
+func TestSignHeader(t *testing.T) {
 	privKey := setup()
 
 	header := &message.Header{}
@@ -35,7 +35,7 @@ func Test_signHeader(t *testing.T) {
 	assert.Equal(t, "foobar", header.ClientSignature)
 }
 
-func Test_VerifyHeader(t *testing.T) {
+func TestVerifyHeader(t *testing.T) {
 	privKey := setup()
 
 	header := &message.Header{}
@@ -81,24 +81,25 @@ func setup() *bmcrypto.PrivKey {
 		ri resolver.RoutingInfo
 	)
 
-	ai = resolver.AddressInfo{
-		Hash:        "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
-		PublicKey:   *pubKey,
-		RoutingID:   "87654321",
-		Pow:         pow.String(),
-		RoutingInfo: resolver.RoutingInfo{},
-	}
-	_ = repo.UploadAddress(&ai, *privKey, *pow)
-
 	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
 		panic(err)
 	}
+	ai = resolver.AddressInfo{
+		RoutingID:   "87654321",
+		PublicKey:   *pubKey,
+		RoutingInfo: resolver.RoutingInfo{},
+		Pow:         pow.String(),
+		Hash:        "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
+	}
+	_ = repo.UploadAddress(&ai, *privKey, *pow)
+
 	ri = resolver.RoutingInfo{
-		Hash:      "12345678",
 		PublicKey: *pubKey,
 		Routing:   "127.0.0.1",
+		Hash:      "12345678",
 	}
+
 	_ = repo.UploadRouting(&ri, *privKey)
 
 	// Note: our sender uses key3
@@ -106,12 +107,13 @@ func setup() *bmcrypto.PrivKey {
 	if err != nil {
 		panic(err)
 	}
+
 	ai = resolver.AddressInfo{
-		Hash:        "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
-		PublicKey:   *pubKey,
 		RoutingID:   "12345678",
-		Pow:         pow.String(),
 		RoutingInfo: resolver.RoutingInfo{},
+		PublicKey:   *pubKey,
+		Hash:        "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
+		Pow:         pow.String(),
 	}
 	_ = repo.UploadAddress(&ai, *privKey, *pow)
 
