@@ -1,75 +1,43 @@
 package console
 
 import (
-	"bytes"
 	"errors"
 	"testing"
 
-	"github.com/chzyer/readline"
 	"github.com/stretchr/testify/assert"
 )
 
-type MockBuffer struct {
-	Out string
-	In  []string
+type stubPasswordReader struct {
+    Passwords  []string
+    ReturnError bool
 }
 
-func (cb *MockBuffer) Read(p []byte) (n int, err error) {
-	buf := bytes.NewBufferString(cb.In[0])
-	n, err = buf.Read(p)
+func (pr *stubPasswordReader) ReadPassword() ([]byte, error) {
+    if pr.ReturnError {
+        return nil, errors.New("stubbed error")
+    }
 
-	if len(cb.In) > 1 {
-		cb.In = cb.In[1:]
-	}
+    s := pr.Passwords[0]
+	pr.Passwords = pr.Passwords[1:]
 
-	return
+    return []byte(s), nil
 }
 
-func (cb *MockBuffer) Write(p []byte) (n int, err error) {
-	cb.Out += string(p)
-
-	return len(p), nil
-}
-
-func (cb *MockBuffer) Close() error {
-	return nil
-}
 
 func TestAskDoublePassword(t *testing.T) {
-	mb := &MockBuffer{In: []string{"secret\n", "secret\n"}}
-	readliner, _ = readline.NewEx(&readline.Config{
-		Stdin:  mb,
-		Stdout: mb,
-		Stderr: mb,
-	})
-	defer func() {
-		_ = readliner.Close()
-	}()
+	pwdReader = &stubPasswordReader{ReturnError: true}
+	_, err := AskDoublePassword()
+	assert.Error(t, err)
 
+	pwdReader = &stubPasswordReader{Passwords: []string{"secret", "secret"}}
 	b, err := AskDoublePassword()
 	assert.NoError(t, err)
 	assert.Equal(t, "secret", string(b))
-	// @TODO: Somehow on linux, the prompts are send to mb.Out. It works on windows though
-	// assert.Contains(t, mb.Out, "Please enter your vault password")
-	// assert.Contains(t, mb.Out, "Please retype your vault password")
 
-	mb = &MockBuffer{In: []string{"secret\n", "false\n", "secret\n", "secret\n"}}
-	readliner, _ = readline.NewEx(&readline.Config{
-		Stdin:  mb,
-		Stdout: mb,
-		Stderr: mb,
-	})
-	defer func() {
-		_ = readliner.Close()
-	}()
-
+	pwdReader = &stubPasswordReader{Passwords: []string{"secret", "foo", "bar", "bar"}}
 	b, err = AskDoublePassword()
 	assert.NoError(t, err)
-	assert.Equal(t, "secret", string(b))
-	// @TODO: Somehow on linux, the prompts are send to mb.Out. It works on windows though
-	// assert.Contains(t, mb.Out, "Please enter your vault password")
-	// assert.Contains(t, mb.Out, "Please retype your vault password")
-	assert.Contains(t, mb.Out, "Passwords do not match. Please type again.")
+	assert.Equal(t, "bar", string(b))
 }
 
 type mockKeyring struct {
@@ -96,13 +64,6 @@ func (m *mockKeyring) Delete(service, user string) error {
 }
 
 func TestAskPassword(t *testing.T) {
-	mb := &MockBuffer{In: []string{"secret\n"}}
-	readliner, _ = readline.NewEx(&readline.Config{
-		Stdin:  mb,
-		Stdout: mb,
-		Stderr: mb,
-	})
-
 	kr = nil
 	s, ok := AskPassword()
 	assert.Equal(t, "secret", s)
@@ -112,13 +73,6 @@ func TestAskPassword(t *testing.T) {
 		p: make(map[string]string),
 	}
 	_ = kr.Set(service, user, "stored-in-keyring")
-
-	mb = &MockBuffer{In: []string{"not-stored\n"}}
-	readliner, _ = readline.NewEx(&readline.Config{
-		Stdin:  mb,
-		Stdout: mb,
-		Stderr: mb,
-	})
 
 	s, ok = AskPassword()
 	assert.Equal(t, "stored-in-keyring", s)
