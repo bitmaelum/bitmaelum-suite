@@ -64,6 +64,7 @@ func (m *mockKeyring) Delete(service, user string) error {
 }
 
 func TestAskPassword(t *testing.T) {
+	pwdReader = &stubPasswordReader{Passwords: []string{"secret"}}
 	kr = nil
 	s, ok := AskPassword()
 	assert.Equal(t, "secret", s)
@@ -74,15 +75,18 @@ func TestAskPassword(t *testing.T) {
 	}
 	_ = kr.Set(service, user, "stored-in-keyring")
 
+	pwdReader = &stubPasswordReader{Passwords: []string{"foobar"}}
 	s, ok = AskPassword()
 	assert.Equal(t, "stored-in-keyring", s)
 	assert.True(t, ok)
 
+	pwdReader = &stubPasswordReader{Passwords: []string{"not-stored"}}
 	_ = kr.Delete(service, user)
 	s, ok = AskPassword()
 	assert.Equal(t, "not-stored", s)
 	assert.False(t, ok)
 
+	pwdReader = &stubPasswordReader{Passwords: []string{"not-stored"}}
 	_ = StorePassword("foobar")
 	s, ok = AskPassword()
 	assert.Equal(t, "foobar", s)
