@@ -6,6 +6,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -29,8 +30,18 @@ This command creates a new routing file if one does not exist.`,
 			logrus.Fatalf("Routing file %s already exist. I will not overwrite this file.", config.Server.Server.RoutingFile)
 		}
 
-		// Generate new routing
-		seed, r, err := config.GenerateRouting()
+		var (
+			mnemonic string
+			r        *config.RoutingConfig
+		)
+		if ok, _ := cmd.Flags().GetBool("mnemonic"); ok {
+			// ask for mnemonic
+			mnemonic = console.AskMnemonicPhrase()
+			r, err = config.GenerateRoutingFromMnemonic(mnemonic)
+		} else {
+			// Generate new routing
+			mnemonic, r, err = config.GenerateRouting()
+		}
 		if err != nil {
 			logrus.Fatalf("Error while generating routing file: %v", err)
 		}
@@ -53,7 +64,7 @@ for any reason, you lose this key, you will need to use the following words
 in order to recreate the key:
 
 `)
-		fmt.Print(internal.WordWrap(seed, 78))
+		fmt.Print(internal.WordWrap(mnemonic, 78))
 		fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 
@@ -64,4 +75,6 @@ ONLY way to recover your private key in case you lose it.
 
 func init() {
 	rootCmd.AddCommand(initRoutingConfigCmd)
+
+	initRoutingConfigCmd.Flags().Bool("mnemonic", false, "Ask for your mnemonic phrase")
 }

@@ -17,7 +17,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/password"
+	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -321,7 +321,7 @@ func OpenVault() *Vault {
 	fromVault := false
 
 	if VaultPassword == "" {
-		VaultPassword, fromVault = password.AskPassword()
+		VaultPassword, fromVault = console.AskPassword()
 	}
 
 	// Unlock vault
@@ -334,7 +334,7 @@ func OpenVault() *Vault {
 
 	// If the password was correct and not already read from the vault, store it in the vault
 	if !fromVault {
-		_ = password.StorePassword(VaultPassword)
+		_ = console.StorePassword(VaultPassword)
 	}
 
 	return v

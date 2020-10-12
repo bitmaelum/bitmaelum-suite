@@ -86,6 +86,15 @@ func TestLoadClientConfig(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestGenerateRoutingFromMnemonic(t *testing.T) {
+	r, err := GenerateRoutingFromMnemonic("cluster puppy wash ceiling skate search great angry drift rose undo fragile boring fence stumble shuffle cable praise")
+	assert.NoError(t, err)
+
+	assert.Equal(t, "f5f1dc4eff7237ac0e061a9e8982b7b913fc479138189cc8d6ba5131dee1bde9", r.RoutingID)
+	assert.Equal(t, "ed25519 MC4CAQAwBQYDK2VwBCIEIDLOvf5iUAPWeNIYlbyDffgv+VA2xnS1s1mUYIOmW8XK", r.PrivateKey.String())
+	assert.Equal(t, "ed25519 MCowBQYDK2VwAyEAndS2/G3uasbaYO0+89rNzvNJ3gfOi/An1t5xvETeNoc=", r.PublicKey.String())
+}
+
 func init() {
 	// Setup mock
 	_, hook = test.NewNullLogger()

@@ -86,3 +86,31 @@ func Test_FindShortRoutingId(t *testing.T) {
 	assert.Equal(t, "", v.FindShortRoutingID("12345"))
 	assert.Equal(t, "", v.FindShortRoutingID("1"))
 }
+
+func TestVault_ChangePassword(t *testing.T) {
+	v, _ := New("", []byte("foobar"))
+	assert.Equal(t, []byte("foobar"), v.password)
+
+	v.ChangePassword("secret")
+	assert.Equal(t, []byte("secret"), v.password)
+}
+
+func TestGetAccountOrDefault(t *testing.T) {
+	var acc *internal.AccountInfo
+
+	v, _ := New("", []byte{})
+	acc = &internal.AccountInfo{Address: "example1!", RoutingID: "123456780000"}
+	v.AddAccount(*acc)
+	acc = &internal.AccountInfo{Address: "example2!", RoutingID: "123456780001"}
+	v.AddAccount(*acc)
+	acc = &internal.AccountInfo{Address: "example3!", RoutingID: "123456780002", Default: true}
+	v.AddAccount(*acc)
+	acc = &internal.AccountInfo{Address: "example4!", RoutingID: "154353535335"}
+	v.AddAccount(*acc)
+
+	acc = GetAccountOrDefault(v, "")
+	assert.Equal(t, "example3!", acc.Address)
+
+	acc = GetAccountOrDefault(v, "example2!")
+	assert.Equal(t, "example2!", acc.Address)
+}

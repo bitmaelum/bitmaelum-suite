@@ -6,6 +6,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 )
@@ -35,7 +36,11 @@ func main() {
 }
 
 func resolveAddress(addr string) {
-	addrHash := hash.New(addr)
+	a, err := address.NewAddress(addr)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	addrHash := a.Hash()
 
 	svc := container.GetResolveService()
 	info, err := svc.ResolveAddress(addrHash)
@@ -43,10 +48,10 @@ func resolveAddress(addr string) {
 		logrus.Fatal(err)
 	}
 
-	fmt.Printf("BitMaelum address '%s'", addr)
-	fmt.Printf("Hash: %s\n", info.Hash)
-	fmt.Printf("RoutingID: %s\n", info.RoutingID)
-	fmt.Printf("Public key:\n%s\n", info.PublicKey.String())
+	fmt.Printf("Address   : %s\n", addr)
+	fmt.Printf("Hash      : %s\n", info.Hash)
+	fmt.Printf("RoutingID : %s\n", info.RoutingID)
+	fmt.Printf("Pub key   : %s\n", info.PublicKey.String())
 }
 
 func resolveRouting(routingID string) {
@@ -56,10 +61,9 @@ func resolveRouting(routingID string) {
 		logrus.Fatal(err)
 	}
 
-	fmt.Printf("BitMaelum routing '%s'\n", routingID)
-	fmt.Printf("Hash: %s\n", info.Hash)
-	fmt.Printf("Public key:\n%s\n", info.PublicKey.String())
-	fmt.Printf("Routing:\n%s\n", info.Routing)
+	fmt.Printf("Routing ID : %s\n", routingID)
+	fmt.Printf("Pub key    : %s\n", info.PublicKey.String())
+	fmt.Printf("Routing    : %s\n", info.Routing)
 }
 
 func resolveOrganisation(orgAddr string) {
@@ -71,7 +75,7 @@ func resolveOrganisation(orgAddr string) {
 		logrus.Fatal(err)
 	}
 
-	fmt.Printf("BitMaelum organisation '%s'\n", orgAddr)
-	fmt.Printf("Hash: %s\n", info.Hash)
-	fmt.Printf("Public key:\n%s\n", info.PublicKey.String())
+	fmt.Printf("Org Name : %s\n", orgAddr)
+	fmt.Printf("Hash     : %s\n", info.Hash)
+	fmt.Printf("Pub key  : %s\n", info.PublicKey.String())
 }

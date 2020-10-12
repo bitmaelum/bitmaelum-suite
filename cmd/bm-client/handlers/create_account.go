@@ -59,7 +59,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 
 	fmt.Printf("* Checking if the account is already present in the vault: ")
 	var info *internal.AccountInfo
-	var seedToShow string
+	var mnemonicToShow string
 	if vault.HasAccount(*addr) {
 		fmt.Printf("\n  X account already present in the vault. Strange, but let's continue...\n")
 		info, err = vault.GetAccountInfo(*addr)
@@ -72,13 +72,13 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 		fmt.Printf("not found. This is a good thing.\n")
 
 		fmt.Printf("* Generating your secret key to send and read mail: ")
-		seed, privKey, pubKey, err := bmcrypto.GenerateKeypairWithSeed()
+		mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic()
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
 			os.Exit(1)
 		}
-		seedToShow = seed
+		mnemonicToShow = mnemonic
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Doing some work to let people know this is not a fake account: ")
@@ -157,7 +157,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 	fmt.Printf("\n")
 	fmt.Printf("* All done")
 
-	if len(seedToShow) > 0 {
+	if len(mnemonicToShow) > 0 {
 		fmt.Print(`
 *****************************************************************************
 !IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
@@ -168,7 +168,7 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-		fmt.Print(internal.WordWrap(seedToShow, 78))
+		fmt.Print(internal.WordWrap(mnemonicToShow, 78))
 		fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 
