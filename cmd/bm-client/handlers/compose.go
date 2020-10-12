@@ -10,6 +10,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/client"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
@@ -54,6 +55,12 @@ func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject s
 
 	// Generate header based on our encrypted catalog
 	header, err := generateHeader(info, toInfo, encryptedCatalog, catalogKey)
+	if err != nil {
+		return err
+	}
+
+	//Sign the header
+	err = client.SignHeader(header, info.PrivKey)
 	if err != nil {
 		return err
 	}
