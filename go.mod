@@ -3,7 +3,6 @@ module github.com/bitmaelum/bitmaelum-suite
 go 1.13
 
 require (
-	github.com/boltdb/bolt v1.3.1
 	github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee
 	github.com/chzyer/logex v1.1.10 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
@@ -35,6 +34,7 @@ require (
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xhit/go-str2duration/v2 v2.0.0
 	github.com/zalando/go-keyring v0.1.0
+	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208

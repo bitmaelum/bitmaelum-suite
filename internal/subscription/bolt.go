@@ -5,7 +5,7 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,8 +20,8 @@ const BucketName = "subscriptions"
 const BoltDBFile = "subscriptions.db"
 
 // NewBoltRepository initializes a new repository
-func NewBoltRepository(dbpath *string) Repository {
-	dbFile := filepath.Join(*dbpath, BoltDBFile)
+func NewBoltRepository(dbpath string) Repository {
+	dbFile := filepath.Join(dbpath, BoltDBFile)
 	db, err := bolt.Open(dbFile, 0600, nil)
 	if err != nil {
 		logrus.Error("Unable to open filepath ", dbFile, err)
