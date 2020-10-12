@@ -16,15 +16,15 @@ func TestSignHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}
-	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadJSON("../../testdata/header-002.json", &header)
 	assert.Empty(t, header.ServerSignature)
 	err := SignHeader(header)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "N49jiSHkjT6BnHJWNAFpljNNNONPJwH/3A6yNWMrO/Q0CoYr/+yAOotaXxpBSxnoDs+BTfJ44uq7nWEMCQFnBDfPOrKTzd9Avxy3JKq9VFCGveKDtn+BAeo0EPO5VZJ6sV5H5KMMlOhZvVabNAAwCki0l6IUiW0UHfls8Qn02jPo6upCMouyKsGaMG4HjwYrhhlschE8AGOsye5eaDpXz5A7Nit0PiOdmIhmOGCfmCg+GywMyRB8IfwPgC/QslUTEyABrAaDRqUzjGoM6N8q7nZsbqm5qzg/yqAhJkhgigQH3QnHJB3hJkYGXEwEBhbLsV2YQRWLA4836osRgiFhbA==", header.ServerSignature)
+	assert.Equal(t, "r4u8tkGcb9Wq2k3BSZQ5P2cipKBKH4VB524EEG/3Ijul6I1EuyR5RkgJoJKPjkSlN4XhLecnG/M0DBTcTA3H5JAitprZUTA0Va1rYktFBP/hzMKR/WehkaAshGm4+L5bf7JIpo8EzGU7CbWkyhwSn5GhlGN6deWRvpdy0fWXPRZqbdzAoEtVqdJKOAF1JkMMsXQfWeFzY1pcIYDqVSPOM0JFYRmcAyLaismgy42UV9QEy7Teyvy38aBraMylwFYJwwMKwoZjc9fDwcmMptWWKeLorksn3Jj86WXi6WCsOq5/BK3comjInfO8BKJ3pDDy8YUwOaUZuSTrlIfxXJvxxA==", header.ServerSignature)
 
 	// Already present, don't overwrite
-	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadJSON("../../testdata/header-002.json", &header)
 	assert.NotEmpty(t, header.ServerSignature)
 	header.ServerSignature = "foobar"
 	err = SignHeader(header)
@@ -37,11 +37,11 @@ func TestVerifyHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}
-	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
+	_ = bmtest.ReadJSON("../../testdata/header-002.json", &header)
 	assert.Empty(t, header.ServerSignature)
 	err := SignHeader(header)
 	assert.NoError(t, err)
-	assert.Equal(t, "N49jiSHkjT6BnHJWNAFpljNNNONPJwH/3A6yNWMrO/Q0CoYr/+yAOotaXxpBSxnoDs+BTfJ44uq7nWEMCQFnBDfPOrKTzd9Avxy3JKq9VFCGveKDtn+BAeo0EPO5VZJ6sV5H5KMMlOhZvVabNAAwCki0l6IUiW0UHfls8Qn02jPo6upCMouyKsGaMG4HjwYrhhlschE8AGOsye5eaDpXz5A7Nit0PiOdmIhmOGCfmCg+GywMyRB8IfwPgC/QslUTEyABrAaDRqUzjGoM6N8q7nZsbqm5qzg/yqAhJkhgigQH3QnHJB3hJkYGXEwEBhbLsV2YQRWLA4836osRgiFhbA==", header.ServerSignature)
+	assert.Equal(t, "r4u8tkGcb9Wq2k3BSZQ5P2cipKBKH4VB524EEG/3Ijul6I1EuyR5RkgJoJKPjkSlN4XhLecnG/M0DBTcTA3H5JAitprZUTA0Va1rYktFBP/hzMKR/WehkaAshGm4+L5bf7JIpo8EzGU7CbWkyhwSn5GhlGN6deWRvpdy0fWXPRZqbdzAoEtVqdJKOAF1JkMMsXQfWeFzY1pcIYDqVSPOM0JFYRmcAyLaismgy42UV9QEy7Teyvy38aBraMylwFYJwwMKwoZjc9fDwcmMptWWKeLorksn3Jj86WXi6WCsOq5/BK3comjInfO8BKJ3pDDy8YUwOaUZuSTrlIfxXJvxxA==", header.ServerSignature)
 
 	// All is ok
 	ok := VerifyHeader(*header)
@@ -90,7 +90,7 @@ func setup() {
 		panic(err)
 	}
 	ai = resolver.AddressInfo{
-		Hash:        "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
+		Hash:        "111100000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
 		PublicKey:   *pubKey,
 		RoutingID:   "87654321",
 		Pow:         pow.String(),
@@ -103,7 +103,7 @@ func setup() {
 		panic(err)
 	}
 	ai = resolver.AddressInfo{
-		Hash:        "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
+		Hash:        "111100000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
 		PublicKey:   *pubKey,
 		RoutingID:   "12345678",
 		Pow:         pow.String(),

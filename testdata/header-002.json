@@ -1,0 +1,20 @@
+{
+    "from": {
+        "address": "111100000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
+        "public_key": "rsa MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB",
+        "proof_of_work": "27$NjNhYzAwMTVhYTQyYmMyZjM2Y2QwMGU5NWIwMWMzMDBhZDAxN2U3MTUwMDllNDVkMGQ2MDhmZjBiY2E5MTRjMA==$60076773"
+    },
+    "to": {
+        "address": "111100000000000000000000000097026f0daeaec1aeb8351b096637679cf350"
+    },
+    "catalog": {
+        "size": 983,
+        "checksum": {
+            "ripemd160": "cc83e77af0fae70c3b655f36f110ec4d2eebaf1c",
+            "sha256": "79213f8941437dc22a315636a50d6920507a58fcf97b9ff32b4c15cd26a8209a"
+        },
+        "crypto": "rsa+aes256gcm",
+        "txid": "",
+        "encrypted_key": "Zm9vYmFy"
+    }
+}
