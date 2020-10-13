@@ -27,7 +27,7 @@ func (ma *MultiAuth) Middleware(next http.Handler) http.Handler {
 			logrus.Tracef("multiauth. Trying %T", auth)
 			ctx, ok := auth.Authenticate(req)
 			if ok {
-				ctx = context.WithValue(ctx, "auth_method", fmt.Sprintf("%T", auth))
+				ctx = context.WithValue(ctx, authContext("auth_method"), fmt.Sprintf("%T", auth))
 				logrus.Tracef("multiauth found ok %T", auth)
 				next.ServeHTTP(w, req.WithContext(ctx))
 				return

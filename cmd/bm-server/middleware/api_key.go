@@ -49,7 +49,7 @@ func (*APIKey) Authenticate(req *http.Request) (context.Context, bool) {
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, "api-key", key)
+	ctx = context.WithValue(ctx, APIKeyContext("api-key"), key)
 
 	return ctx, true
 }

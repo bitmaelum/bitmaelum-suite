@@ -42,7 +42,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -69,7 +69,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -92,7 +92,7 @@ func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -114,11 +114,11 @@ func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// GetAPIKey will get a key
+// GetAPIKeyDetails will get a key
 func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "account not found")
+		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 

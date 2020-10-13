@@ -85,6 +85,17 @@ func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, of
 			continue
 		}
 
+		// Skip files if we have an offset
+		if offset > 0 {
+			offset--
+			continue
+		}
+
+		if f.ModTime().Before(since) {
+			// Skip, because it's before our "since" query
+			continue
+		}
+
 		list.Meta.Returned++
 		list.Messages = append(list.Messages, MessageType{
 			ID:      f.Name(),

@@ -101,8 +101,6 @@ func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error)
 	return api, nil
 }
 
-
-
 // Get gets raw bytes from API
 func (api *API) Get(path string) (body []byte, statusCode int, err error) {
 	req, err := http.NewRequest("GET", api.host+path, nil)

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
@@ -112,7 +113,7 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 	if req.Context().Value("auth_method") == "*middleware.APIKey" {
 
 		// Make sure we have a get-headers permission
-		key := req.Context().Value("api-key").(*apikey.KeyType)
+		key := req.Context().Value(middleware.APIKeyContext("api-key")).(*apikey.KeyType)
 		if !key.HasPermission(apikey.PermGetHeaders, nil) {
 			ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 			return
@@ -138,7 +139,7 @@ func getMessageList(req *http.Request) (*account.MessageList, *httpError) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		return nil, &httpError{
-			err:        "account not found",
+			err:        accountNotFound,
 			StatusCode: http.StatusNotFound,
 		}
 	}
@@ -154,7 +155,7 @@ func getMessageList(req *http.Request) (*account.MessageList, *httpError) {
 	ar := container.GetAccountRepo()
 	if !ar.ExistsBox(*haddr, box) {
 		return nil, &httpError{
-			err:        "account not found",
+			err:        accountNotFound,
 			StatusCode: http.StatusNotFound,
 		}
 	}

@@ -16,7 +16,7 @@ type MessageType struct {
 	Catalog []byte         `json:"catalog"`
 }
 
-// Metatype is a structure that holds meta information about a list
+// MetaType is a structure that holds meta information about a list
 type MetaType struct {
 	Total    int `json:"total"`
 	Returned int `json:"returned"`

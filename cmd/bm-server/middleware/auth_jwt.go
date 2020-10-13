@@ -26,7 +26,6 @@ var ErrTokenNotValidated = errors.New("token could not be validated")
 
 // @TODO make sure we can't use a key to fetch other people's info
 
-
 // Middleware JWT token authentication
 func (mw *JwtToken) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

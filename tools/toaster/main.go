@@ -46,35 +46,32 @@ func main() {
 
 	msgTicker := time.NewTicker(opts.Interval)
 	for {
-		select {
-		case <-msgTicker.C:
-			n := poll(url, opts.Key, lastChecked)
-			lastChecked = time.Now()
-			if n == 0 {
-				continue
-			}
+		// Wait for ticker
+		<-msgTicker.C
 
+		// Poll messages
+		n := poll(url, opts.Key, lastChecked)
+		lastChecked = time.Now()
+		if n > 0 {
+			// send notification if new messages found
 			msg := fmt.Sprintf("%d new message(s) received for '%s'", n, addr.String())
 			_ = beeep.Notify("New message(s) received", msg, "logo.png")
-
-
 		}
 	}
 }
 
 func poll(url string, key string, since time.Time) int {
 	client := &http.Client{
-		Timeout:       30 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 
 	url = fmt.Sprintf("%s?since=%d", url, since.Unix())
-	log.Print("Polling ", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Print("Cannot create request: ", err)
 		return 0
 	}
-	req.Header.Set("Authorization", "Bearer " + key)
+	req.Header.Set("Authorization", "Bearer "+key)
 	res, err := client.Do(req)
 	if err != nil {
 		log.Print("Cannot fetch from client: ", err)
@@ -109,6 +106,6 @@ func poll(url string, key string, since time.Time) int {
 		return 0
 	}
 
-	log.Printf("Returning %s items", l.Meta.Returned)
+	log.Printf("Returning %d items", l.Meta.Returned)
 	return l.Meta.Returned
 }

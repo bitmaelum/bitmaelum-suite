@@ -24,6 +24,12 @@ func TestPermissions(t *testing.T) {
 
 	err = MangementPermissions([]string{"flush", "foo"})
 	assert.Error(t, err)
+
+	err = AccountPermissions([]string{"get-headers"})
+	assert.NoError(t, err)
+
+	err = AccountPermissions([]string{"flush"})
+	assert.Error(t, err)
 }
 
 func TestValidDuration(t *testing.T) {
