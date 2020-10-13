@@ -20,8 +20,8 @@ func NewRedisRepository(opts *redis.Options) Repository {
 }
 
 // FetchByHash will retrieve all keys for the given account
-func (r redisRepo) FetchByHash(h string) ([]*KeyType, error) {
-	keys := make([]*KeyType, 0)
+func (r redisRepo) FetchByHash(h string) ([]KeyType, error) {
+	keys := []KeyType{}
 
 	items, err := r.client.SMembers(r.client.Context(), h).Result()
 	if err != nil {
@@ -29,13 +29,12 @@ func (r redisRepo) FetchByHash(h string) ([]*KeyType, error) {
 	}
 
 	for _, item := range items {
-		key := &KeyType{}
-		err := json.Unmarshal([]byte(item), &key)
+		key, err := r.Fetch(item)
 		if err != nil {
 			continue
 		}
 
-		keys = append(keys, key)
+		keys = append(keys, *key)
 	}
 
 	return keys, nil
@@ -66,7 +65,7 @@ func (r redisRepo) Store(apiKey KeyType) error {
 
 	// Add to account set if an hash is given
 	if apiKey.AddrHash != nil {
-		_, _ = r.client.SAdd(r.client.Context(), apiKey.AddrHash.String(), apiKey.ID, 0).Result()
+		_, _ = r.client.SAdd(r.client.Context(), apiKey.AddrHash.String(), apiKey.ID).Result()
 	}
 
 	_, err = r.client.Set(r.client.Context(), createRedisKey(apiKey.ID), data, 0).Result()

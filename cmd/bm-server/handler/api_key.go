@@ -14,7 +14,7 @@ import (
 
 type inputAPIKeyType struct {
 	Permissions []string `json:"permissions"`
-	Valid       string   `json:"valid"`
+	Valid       string   `json:"valid,omitempty"`
 	Desc        string   `json:"description,omitempty"`
 }
 
@@ -65,8 +65,8 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 	})
 }
 
-// GetAPIKeys returns a list of all keys for the given account
-func GetAPIKeys(w http.ResponseWriter, req *http.Request) {
+// ListAPIKeys returns a list of all keys for the given account
+func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, "account not found")
@@ -101,7 +101,7 @@ func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 	// Fetch key
 	repo := container.GetAPIKeyRepo()
 	key, err := repo.Fetch(keyID)
-	if err != nil || key.AddrHash != h {
+	if err != nil || key.AddrHash.String() != h.String() {
 		// Only allow deleting of keys that we own as account
 		ErrorOut(w, http.StatusNotFound, "key not found")
 		return
@@ -112,4 +112,28 @@ func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 	// All is well
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+}
+
+// GetAPIKey will get a key
+func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
+	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		ErrorOut(w, http.StatusNotFound, "account not found")
+		return
+	}
+
+	keyID := mux.Vars(req)["key"]
+
+	// Fetch key
+	repo := container.GetAPIKeyRepo()
+	key, err := repo.Fetch(keyID)
+	if err != nil || key.AddrHash.String() != h.String() {
+		ErrorOut(w, http.StatusNotFound, "key not found")
+		return
+	}
+
+	// Output key
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(key)
 }

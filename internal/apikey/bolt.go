@@ -34,8 +34,8 @@ func NewBoltRepository(dbpath string) Repository {
 	}
 }
 
-func (b boltRepo) FetchByHash(h string) ([]*KeyType, error) {
-	keys := make([]*KeyType, 0)
+func (b boltRepo) FetchByHash(h string) ([]KeyType, error) {
+	keys := []KeyType{}
 
 	err := b.client.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(BucketName))
@@ -57,7 +57,7 @@ func (b boltRepo) FetchByHash(h string) ([]*KeyType, error) {
 			}
 
 			if key.AddrHash.String() == h {
-				keys = append(keys, key)
+				keys = append(keys, *key)
 			}
 		}
 

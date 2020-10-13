@@ -39,6 +39,8 @@ func (mw *APIKey) Middleware(next http.Handler) http.Handler {
 	})
 }
 
+// @TODO make sure we can't use a key to fetch other people's info
+
 // Authenticate will check if an API key matches the request
 func (*APIKey) Authenticate(req *http.Request) (context.Context, bool) {
 	key, err := getAPIKey(req.Header.Get("Authorization"))
@@ -47,7 +49,7 @@ func (*APIKey) Authenticate(req *http.Request) (context.Context, bool) {
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, APIKeyContext("apikey"), key)
+	ctx = context.WithValue(ctx, "api-key", key)
 
 	return ctx, true
 }

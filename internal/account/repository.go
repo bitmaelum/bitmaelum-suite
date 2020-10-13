@@ -9,20 +9,25 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// Message is a simple message structure that we return as a list
-type Message struct {
+// MessageType is a simple message structure that we return as a list
+type MessageType struct {
 	ID      string         `json:"id"`
-	Header  message.Header `json:"h"`
-	Catalog []byte         `json:"c"`
+	Header  message.Header `json:"header"`
+	Catalog []byte         `json:"catalog"`
+}
+
+// Metatype is a structure that holds meta information about a list
+type MetaType struct {
+	Total    int `json:"total"`
+	Returned int `json:"returned"`
+	Limit    int `json:"limit"`
+	Offset   int `json:"offset"`
 }
 
 // MessageList is a list of messages we return
 type MessageList struct {
-	Total    int       `json:"total"`
-	Returned int       `json:"returned"`
-	Limit    int       `json:"limit"`
-	Offset   int       `json:"offset"`
-	Messages []Message `json:"messages"`
+	Meta     MetaType
+	Messages []MessageType `json:"messages"`
 }
 
 // OrganisationSettings defines settings for organisations

@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
 )
@@ -15,7 +15,7 @@ import (
 func main() {
 	logrus.SetLevel(logrus.TraceLevel)
 
-	addr, err := hash.NewFromHash(os.Args[1])
+	addr, err := address.NewAddress(os.Args[1])
 	if err != nil {
 		panic(err)
 	}
@@ -38,7 +38,7 @@ func main() {
 	}
 	tokenString := auth[7:]
 
-	token, err := internal.ValidateJWTToken(tokenString, *addr, *key)
+	token, err := internal.ValidateJWTToken(tokenString, addr.Hash(), *key)
 	if err == nil {
 		fmt.Printf("Token validated correctly")
 		spew.Dump(token)

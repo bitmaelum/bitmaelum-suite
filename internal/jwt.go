@@ -57,14 +57,8 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	var edDSASigningMethod SigningMethodEdDSA
 	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
 
+	// Just return the key from the token
 	kf := func(token *jwt.Token) (interface{}, error) {
-		/*
-			// Make sure we signed with RS256
-			if token.Method != jwt.SigningMethodRS256 {
-				logrus.Trace("auth: jwt: " + invalidSigningMethod)
-				return nil, errors.New(invalidSigningMethod)
-			}
-		*/
 		return key.K, nil
 	}
 
@@ -121,5 +115,6 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 		return nil, errors.New("subject not valid")
 	}
 
+	logrus.Trace("auth: jwt: token is valid")
 	return token, nil
 }

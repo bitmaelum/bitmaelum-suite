@@ -52,7 +52,7 @@ func NewAnonymous(opts ClientOpts) (*API, error) {
 	}
 
 	api := &API{
-		host: canonicalHost(opts.Host),
+		host: CanonicalHost(opts.Host),
 		client: &http.Client{
 			Transport: transport,
 			Timeout:   15 * time.Second,
@@ -90,7 +90,7 @@ func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error)
 	}
 
 	api := &API{
-		host: canonicalHost(opts.Host),
+		host: CanonicalHost(opts.Host),
 		client: &http.Client{
 			Transport: transport,
 			Timeout:   30 * time.Second,
@@ -100,6 +100,8 @@ func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error)
 
 	return api, nil
 }
+
+
 
 // Get gets raw bytes from API
 func (api *API) Get(path string) (body []byte, statusCode int, err error) {
@@ -211,8 +213,8 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 	return resp.Body, resp.StatusCode, nil
 }
 
-// canonicalHost returns a given host in the form of http(s)://<host>:<port>
-func canonicalHost(host string) string {
+// CanonicalHost returns a given host in the form of http(s)://<host>:<port>
+func CanonicalHost(host string) string {
 	// If no port is present in the server, we assume port 2424
 	_, _, err := net.SplitHostPort(host)
 	if err != nil {
