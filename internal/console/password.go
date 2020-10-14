@@ -17,7 +17,7 @@ const (
 var (
 	// Override for mocking purposes
 	kr        keyring.Keyring
-	pwdReader PasswordReader
+	pwdReader PasswordReader = &StdInPasswordReader{}
 )
 
 // PasswordReader is an interface to read a password.
