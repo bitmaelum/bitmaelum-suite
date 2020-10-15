@@ -9,17 +9,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// type Redisable interface {
-// 	Del(ctx context.Context, keys ...string) *redis.IntCmd
-// 	Get(ctx context.Context, key string) *redis.StringCmd
-// 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
-// 	SMembers(ctx context.Context, key string) *redis.StringSliceCmd
-// 	SAdd(ctx context.Context, key string, members ...interface{}) *redis.IntCmd
-// 	SRem(ctx context.Context, key string, members ...interface{}) *redis.IntCmd
-// }
-
 type redisRepo struct {
-	client redis.Cmdable
+	client  Redisable
 	context context.Context
 }
 
@@ -28,7 +19,7 @@ func NewRedisRepository(opts *redis.Options) Repository {
 	c := redis.NewClient(opts)
 
 	return &redisRepo{
-		client: c,
+		client: &redisBridge{client: *c},
 		context: c.Context(),
 	}
 }
@@ -37,7 +28,7 @@ func NewRedisRepository(opts *redis.Options) Repository {
 func (r redisRepo) FetchByHash(h string) ([]KeyType, error) {
 	keys := []KeyType{}
 
-	items, err := r.client.SMembers(r.context, h).Result()
+	items, err := r.client.SMembers(r.context, h)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +47,7 @@ func (r redisRepo) FetchByHash(h string) ([]KeyType, error) {
 
 // Fetch a key from the repository, or err
 func (r redisRepo) Fetch(ID string) (*KeyType, error) {
-	data, err := r.client.Get(r.context, createRedisKey(ID)).Result()
+	data, err := r.client.Get(r.context, createRedisKey(ID))
 	if data == "" || err != nil {
 		return nil, errors.New("key not found")
 	}
@@ -79,20 +70,20 @@ func (r redisRepo) Store(apiKey KeyType) error {
 
 	// Add to account set if an hash is given
 	if apiKey.AddrHash != nil {
-		_, _ = r.client.SAdd(r.context, apiKey.AddrHash.String(), apiKey.ID).Result()
+		_, _ = r.client.SAdd(r.context, apiKey.AddrHash.String(), apiKey.ID)
 	}
 
-	_, err = r.client.Set(r.context, createRedisKey(apiKey.ID), data, 0).Result()
+	_, err = r.client.Set(r.context, createRedisKey(apiKey.ID), data, 0)
 	return err
 }
 
 // Remove the given key from the repository
 func (r redisRepo) Remove(apiKey KeyType) error {
 	if apiKey.AddrHash != nil {
-		_ = r.client.SRem(r.context, apiKey.AddrHash.String(), apiKey.ID)
+		_, _ = r.client.SRem(r.context, apiKey.AddrHash.String(), apiKey.ID)
 	}
 
-	_, err := r.client.Del(r.context, createRedisKey(apiKey.ID)).Result()
+	_, err := r.client.Del(r.context, createRedisKey(apiKey.ID))
 	return err
 }
 
