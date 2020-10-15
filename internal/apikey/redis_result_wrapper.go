@@ -8,16 +8,16 @@ import (
 )
 
 
-/* Defines a bridge between the repo and redis. Redis-go uses a system where you generate redis-commands which you need
- * to resolve manually. Since we cannot (easily) mock these result calls, we create a bridge that does the actual
- * resolving for us. This means that now we can mock the bridge instead of mocking redis itself.
+/* Defines a wrapper for redis results. Redis-go uses a system where you generate redis-commands which you need
+ * to resolve manually. Since we cannot (easily) mock these result calls, we create a wrapper struct that does the
+ * actual resolving for us. This means that now we can mock the wrapper now instead of mocking redis itself.
  *
  * Also, since we don't use all the redis methods, we only need to add the ones we are using by adding them to the
- * Redisable interface.
+ * RedisResultWrapper interface.
  */
 
-// Redisable This is the our redis repository. It only contains the methods we really need. THis
-type Redisable interface {
+// RedisResultWrapper This is the our redis repository. It only contains the methods we really need. THis
+type RedisResultWrapper interface {
 	Del(ctx context.Context, keys ...string) (int64, error)
 	Get(ctx context.Context, key string) (string, error)
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) (string, error)

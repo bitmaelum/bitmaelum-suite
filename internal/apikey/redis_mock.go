@@ -66,6 +66,7 @@ func (r *RedisClientMock) SRem(ctx context.Context, key string, members ...inter
 	return val[0].(int64), getError(val[1])
 }
 
+// getError will return the value cast as error, or explicitly nil, because we can't cast nil to an error
 func getError(v interface{}) error {
 	if v == nil {
 		return nil

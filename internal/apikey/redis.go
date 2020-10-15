@@ -9,8 +9,11 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+// We don't use redis clients directly, but a redis result wrapper which does the calling of .Result() for us. This
+// makes testing and mocking redis clients possible. It serves no other purpose.
+
 type redisRepo struct {
-	client  Redisable
+	client  RedisResultWrapper
 	context context.Context
 }
 
