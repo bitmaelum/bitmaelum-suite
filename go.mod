@@ -3,15 +3,15 @@ module github.com/bitmaelum/bitmaelum-suite
 go 1.13
 
 require (
+	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee
-	github.com/chzyer/logex v1.1.10 // indirect
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
-	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1 // indirect
 	github.com/coreos/go-semver v0.3.0
 	github.com/davecgh/go-spew v1.1.1
+	github.com/elliotchance/redismock/v8 v8.1.0
 	github.com/ernesto-jimenez/httplogger v0.0.0-20150224132909-86cc44f6150a
 	github.com/gabriel-vasile/mimetype v1.1.1
-	github.com/go-redis/redis/v8 v8.0.0-beta.7
+	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
+	github.com/go-redis/redis/v8 v8.2.2
 	github.com/google/uuid v1.1.1
 	github.com/gookit/color v1.2.7
 	github.com/gorilla/handlers v1.4.2
@@ -33,6 +33,7 @@ require (
 	github.com/vtolstov/jwt-go v3.2.0+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xhit/go-str2duration/v2 v2.0.0
+	github.com/yuin/gopher-lua v0.0.0-20200816102855-ee81675732da // indirect
 	github.com/zalando/go-keyring v0.1.0
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de

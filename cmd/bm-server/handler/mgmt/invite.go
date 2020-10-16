@@ -22,7 +22,7 @@ type jsonOut map[string]interface{}
 // NewInvite handler will generate a new invite token for a given address
 func NewInvite(w http.ResponseWriter, req *http.Request) {
 	key := handler.GetAPIKey(req)
-	if !key.HasPermission(apikey.PermGenerateInvites) {
+	if !key.HasPermission(apikey.PermGenerateInvites, nil) {
 		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}

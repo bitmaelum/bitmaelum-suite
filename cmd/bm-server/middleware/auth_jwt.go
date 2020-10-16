@@ -24,36 +24,44 @@ type addressContext string
 // ErrTokenNotValidated is returned when the token could not be validated (for any reason)
 var ErrTokenNotValidated = errors.New("token could not be validated")
 
+// @TODO make sure we can't use a key to fetch other people's info
+
 // Middleware JWT token authentication
-func (*JwtToken) Middleware(next http.Handler) http.Handler {
+func (mw *JwtToken) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
-		if err != nil {
-			logrus.Trace("auth: no address specified")
-			ErrorOut(w, http.StatusUnauthorized, "Cannot authorize without address")
+		ctx, ok := mw.Authenticate(req)
+		if !ok {
+			ErrorOut(w, http.StatusUnauthorized, "Unauthorized")
 			return
 		}
-
-		ar := container.GetAccountRepo()
-		if !ar.Exists(*haddr) {
-			logrus.Trace("auth: address not found")
-			ErrorOut(w, http.StatusUnauthorized, "Address not found")
-			return
-		}
-
-		token, err := checkToken(req.Header.Get("Authorization"), *haddr)
-		if err != nil {
-			logrus.Trace("auth: incorrect token: ", err)
-			ErrorOut(w, http.StatusUnauthorized, "Unauthorized: "+err.Error())
-			return
-		}
-
-		ctx := req.Context()
-		ctx = context.WithValue(ctx, claimsContext("claims"), token.Claims)
-		ctx = context.WithValue(ctx, addressContext("address"), token.Claims.(*jwt.StandardClaims).Subject)
-
 		next.ServeHTTP(w, req.WithContext(ctx))
 	})
+}
+
+// Authenticate will check if an API key matches the request
+func (mw *JwtToken) Authenticate(req *http.Request) (context.Context, bool) {
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		return nil, false
+	}
+
+	ar := container.GetAccountRepo()
+	if !ar.Exists(*haddr) {
+		logrus.Trace("auth: address not found")
+		return nil, false
+	}
+
+	token, err := checkToken(req.Header.Get("Authorization"), *haddr)
+	if err != nil {
+		logrus.Trace("auth: incorrect token: ", err)
+		return nil, false
+	}
+
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, claimsContext("claims"), token.Claims)
+	ctx = context.WithValue(ctx, addressContext("address"), token.Claims.(*jwt.StandardClaims).Subject)
+
+	return ctx, true
 }
 
 // Check if the authorization contains a valid JWT token for the given address

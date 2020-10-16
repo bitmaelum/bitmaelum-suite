@@ -57,14 +57,8 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	var edDSASigningMethod SigningMethodEdDSA
 	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
 
+	// Just return the key from the token
 	kf := func(token *jwt.Token) (interface{}, error) {
-		/*
-			// Make sure we signed with RS256
-			if token.Method != jwt.SigningMethodRS256 {
-				logrus.Trace("auth: jwt: " + invalidSigningMethod)
-				return nil, errors.New(invalidSigningMethod)
-			}
-		*/
 		return key.K, nil
 	}
 
@@ -80,23 +74,23 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	case bmcrypto.KeyTypeRSA:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
-			logrus.Tracef("auth: jwt: "+invalidSigningMethod)
+			logrus.Tracef("auth: jwt: " + invalidSigningMethod)
 			return nil, errors.New(invalidSigningMethod)
 		}
 	case bmcrypto.KeyTypeECDSA:
 		_, ok := token.Method.(*jwt.SigningMethodECDSA)
 		if !ok {
-			logrus.Tracef("auth: jwt: "+invalidSigningMethod)
+			logrus.Tracef("auth: jwt: " + invalidSigningMethod)
 			return nil, errors.New(invalidSigningMethod)
 		}
 	case bmcrypto.KeyTypeED25519:
 		_, ok := token.Method.(*SigningMethodEdDSA)
 		if !ok {
-			logrus.Tracef("auth: jwt: "+invalidSigningMethod)
+			logrus.Tracef("auth: jwt: " + invalidSigningMethod)
 			return nil, errors.New(invalidSigningMethod)
 		}
 	default:
-		logrus.Tracef("auth: jwt: "+invalidSigningMethod)
+		logrus.Tracef("auth: jwt: " + invalidSigningMethod)
 		return nil, errors.New(invalidSigningMethod)
 	}
 
@@ -121,5 +115,6 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 		return nil, errors.New("subject not valid")
 	}
 
+	logrus.Trace("auth: jwt: token is valid")
 	return token, nil
 }

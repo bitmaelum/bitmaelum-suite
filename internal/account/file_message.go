@@ -47,12 +47,16 @@ func (r *fileRepo) FetchMessageAttachment(addr hash.Hash, box int, messageID, at
 // Query messages inside mailbox
 func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, offset, limit int) (*MessageList, error) {
 	var list = &MessageList{
-		Offset:   offset,
-		Limit:    limit,
-		Total:    0,
-		Returned: 0,
-		Messages: []Message{},
+		Meta: MetaType{
+			Total:    0,
+			Returned: 0,
+			Limit:    limit,
+			Offset:   offset,
+		},
+		Messages: []MessageType{},
 	}
+
+	// @TODO: We don't do anything with offset yet.
 
 	files, err := ioutil.ReadDir(r.getPath(addr, getBoxAsString(box)))
 	if err != nil {
@@ -64,8 +68,8 @@ func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, of
 			continue
 		}
 
-		list.Total++
-		if list.Returned >= list.Limit {
+		list.Meta.Total++
+		if list.Meta.Returned >= limit {
 			continue
 		}
 
@@ -81,8 +85,19 @@ func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, of
 			continue
 		}
 
-		list.Returned++
-		list.Messages = append(list.Messages, Message{
+		// Skip files if we have an offset
+		if offset > 0 {
+			offset--
+			continue
+		}
+
+		if f.ModTime().Before(since) {
+			// Skip, because it's before our "since" query
+			continue
+		}
+
+		list.Meta.Returned++
+		list.Messages = append(list.Messages, MessageType{
 			ID:      f.Name(),
 			Header:  *header,
 			Catalog: catalog,

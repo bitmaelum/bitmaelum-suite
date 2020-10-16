@@ -8,7 +8,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
-var errKeyNotFound = errors.New("hash not found")
+var ErrKeyNotFound = errors.New("hash not found")
 
 // Repository is a complete key resolver repository with the different parts
 type Repository interface {

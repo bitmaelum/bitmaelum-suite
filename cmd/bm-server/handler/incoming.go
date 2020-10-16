@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	invalidTicketId string = "invalid ticket id or ticket not valid"
+	invalidTicketID string = "invalid ticket id or ticket not valid"
 )
 
 /*
@@ -26,7 +26,7 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketID)
 		return
 	}
 
@@ -67,7 +67,7 @@ func IncomingMessageCatalog(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketID)
 		return
 	}
 
@@ -87,7 +87,7 @@ func IncomingMessageBlock(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketID)
 		return
 	}
 
@@ -110,7 +110,7 @@ func IncomingMessageAttachment(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketID)
 		return
 	}
 
@@ -133,7 +133,7 @@ func CompleteIncoming(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketID)
 		return
 	}
 
@@ -154,7 +154,7 @@ func DeleteIncoming(w http.ResponseWriter, req *http.Request) {
 	// Check ticket
 	t, err := fetchTicketHeader(req)
 	if err != nil {
-		ErrorOut(w, http.StatusUnauthorized, invalidTicketId)
+		ErrorOut(w, http.StatusUnauthorized, invalidTicketID)
 		return
 	}
 
