@@ -133,8 +133,8 @@ info:
 cross-info:
 	$(info Cross building BitMaelum apps and tools)
 
-fix_licenses:
-	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2020 $(LICENSE_CHECK_DIRS)
+fix-licenses: ## Adds / updates license information in source files
+	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2020 -v $(LICENSE_CHECK_DIRS)
 
 build-all: cross-info $(PLATFORMS) ## Build all cross-platform binaries
 
