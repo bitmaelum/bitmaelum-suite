@@ -1,6 +1,8 @@
 # @echo off
 .SILENT:
 
+SHELL=/bin/bash -O globstar -c
+
 # Default repository
 REPO="github.com/bitmaelum/bitmaelum-suite"
 
@@ -66,6 +68,7 @@ test: $(GO_TEST_BIN) test_goimports test_license test_vet test_golint test_stati
 
 test_license:
 	echo "Check licenses"
+	shopt -s globstar
 	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2020 -check $(LICENSE_CHECK_DIRS)
 
 test_goimports:
