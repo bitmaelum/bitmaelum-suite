@@ -28,7 +28,7 @@ func (r *mockRepo) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 		return &ai, nil
 	}
 
-	return nil, errKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 func (r *mockRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
@@ -36,7 +36,7 @@ func (r *mockRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 		return &ri, nil
 	}
 
-	return nil, errKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 func (r *mockRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
@@ -44,7 +44,7 @@ func (r *mockRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, er
 		return &oi, nil
 	}
 
-	return nil, errKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 func (r *mockRepo) UploadAddress(info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork) error {

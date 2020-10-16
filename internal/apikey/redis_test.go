@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
+	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestRedis(t *testing.T) {
-	m := &RedisClientMock{}
+	m := &testing2.RedisClientMock{}
 
 	repo := redisRepo{
 		client:  m,
@@ -49,10 +49,12 @@ func TestRedis(t *testing.T) {
 	m.Queue("get", "", errors.New("not found"))
 	kt2, err = repo.Fetch("efg")
 	assert.Error(t, err)
+	assert.Nil(t, kt2)
 
 	m.Queue("get", "notjson", nil)
 	kt2, err = repo.Fetch("efg")
 	assert.Error(t, err)
+	assert.Nil(t, kt2)
 
 	m.Queue("smembers", []string{"foo", "bar"}, nil)
 	m.Queue("get", "{\"key\":\"abc\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"addr_hash\":\"set 1\",\"description\":\"test key\"}", nil)
@@ -62,7 +64,6 @@ func TestRedis(t *testing.T) {
 	assert.Len(t, kts, 2)
 	assert.Equal(t, "abc", kts[0].ID)
 	assert.Equal(t, "def", kts[1].ID)
-
 
 	m.Queue("srem", int64(1), nil)
 	m.Queue("del", int64(1), nil)

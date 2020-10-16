@@ -11,6 +11,6 @@ func TestQueueIncomingMessage(t *testing.T) {
 
 	QueueIncomingMessage("12345")
 
-	id := <- IncomingChannel
+	id := <-IncomingChannel
 	assert.Equal(t, "12345", id)
 }

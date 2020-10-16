@@ -1,0 +1,68 @@
+package internal
+
+import (
+	"context"
+	"time"
+
+	"github.com/go-redis/redis/v8"
+)
+
+/* Defines a wrapper for redis results. Redis-go uses a system where you generate redis-commands which you need
+ * to resolve manually. Since we cannot (easily) mock these result calls, we create a wrapper struct that does the
+ * actual resolving for us. This means that now we can mock the wrapper now instead of mocking redis itself.
+ *
+ * Also, since we don't use all the redis methods, we only need to add the ones we are using by adding them to the
+ * RedisResultWrapper interface.
+ */
+
+// RedisResultWrapper This is the our redis repository. It only contains the methods we really need. THis
+type RedisResultWrapper interface {
+	Del(ctx context.Context, keys ...string) (int64, error)
+	Get(ctx context.Context, key string) (string, error)
+	Exists(ctx context.Context, key string) (int64, error)
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) (string, error)
+	SMembers(ctx context.Context, key string) ([]string, error)
+	SAdd(ctx context.Context, key string, members ...interface{}) (int64, error)
+	SRem(ctx context.Context, key string, members ...interface{}) (int64, error)
+}
+
+// RedisBridge forms a bridge between a redis-client and redis implementors. This is needed to get rid of
+// the ".Result()" calls, which makes mocking and testing difficult.
+type RedisBridge struct {
+	Client redis.Client
+}
+
+// Del removes a key
+func (r RedisBridge) Del(ctx context.Context, keys ...string) (int64, error) {
+	return r.Client.Del(ctx, keys...).Result()
+}
+
+// Get fetches a key
+func (r RedisBridge) Get(ctx context.Context, key string) (string, error) {
+	return r.Client.Get(ctx, key).Result()
+}
+
+// Exists checks if a key exists
+func (r RedisBridge) Exists(ctx context.Context, key string) (int64, error) {
+	return r.Client.Exists(ctx, key).Result()
+}
+
+// Set stores a key
+func (r RedisBridge) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) (string, error) {
+	return r.Client.Set(ctx, key, value, expiration).Result()
+}
+
+// SMembers returns a set
+func (r RedisBridge) SMembers(ctx context.Context, key string) ([]string, error) {
+	return r.Client.SMembers(ctx, key).Result()
+}
+
+// SAdd adds a key to a set
+func (r RedisBridge) SAdd(ctx context.Context, key string, members ...interface{}) (int64, error) {
+	return r.Client.SAdd(ctx, key, members...).Result()
+}
+
+// SRem removes a key from a set
+func (r RedisBridge) SRem(ctx context.Context, key string, members ...interface{}) (int64, error) {
+	return r.Client.SRem(ctx, key, members...).Result()
+}

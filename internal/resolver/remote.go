@@ -107,30 +107,30 @@ func (r *remoteRepo) resolve(url string, v interface{}) error {
 	response, err := r.client.Get(url)
 	if err != nil {
 		logrus.Debugf("cannot get response from remote resolver: %s", err)
-		return errKeyNotFound
+		return ErrKeyNotFound
 	}
 
 	if response.StatusCode == 404 {
-		return errKeyNotFound
+		return ErrKeyNotFound
 	}
 
 	if response.StatusCode == 200 {
 		res, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			logrus.Debugf("cannot get body response from remote resolver: %s", err)
-			return errKeyNotFound
+			return ErrKeyNotFound
 		}
 
 		err = json.Unmarshal(res, v)
 		if err != nil {
 			logrus.Debugf("cannot unmarshal resolve body: %s", err)
-			return errKeyNotFound
+			return ErrKeyNotFound
 		}
 
 		return nil
 	}
 
-	return errKeyNotFound
+	return ErrKeyNotFound
 }
 
 func (r *remoteRepo) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -13,7 +14,7 @@ import (
 // makes testing and mocking redis clients possible. It serves no other purpose.
 
 type redisRepo struct {
-	client  RedisResultWrapper
+	client  internal.RedisResultWrapper
 	context context.Context
 }
 
@@ -22,7 +23,7 @@ func NewRedisRepository(opts *redis.Options) Repository {
 	c := redis.NewClient(opts)
 
 	return &redisRepo{
-		client: &redisBridge{client: *c},
+		client:  &internal.RedisBridge{Client: *c},
 		context: c.Context(),
 	}
 }

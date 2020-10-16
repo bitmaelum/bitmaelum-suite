@@ -1,4 +1,4 @@
-package apikey
+package testing
 
 import (
 	"context"
@@ -35,32 +35,43 @@ func (r *RedisClientMock) fetchFromQueue(f string) []interface{} {
 	return ret[0]
 }
 
-
+// Del deletes a key
 func (r *RedisClientMock) Del(ctx context.Context, keys ...string) (int64, error) {
 	val := r.fetchFromQueue("del")
 	return val[0].(int64), getError(val[1])
 }
 
+// Get retrieves a key
 func (r *RedisClientMock) Get(ctx context.Context, key string) (string, error) {
 	val := r.fetchFromQueue("get")
 	return val[0].(string), getError(val[1])
 }
 
+// Exists checks if a key exists
+func (r *RedisClientMock) Exists(ctx context.Context, key string) (int64, error) {
+	val := r.fetchFromQueue("exists")
+	return val[0].(int64), getError(val[1])
+}
+
+// Set stores a key
 func (r *RedisClientMock) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) (string, error) {
 	val := r.fetchFromQueue("set")
 	return val[0].(string), getError(val[1])
 }
 
+// SMembers returns a set
 func (r *RedisClientMock) SMembers(ctx context.Context, key string) ([]string, error) {
 	val := r.fetchFromQueue("smembers")
 	return val[0].([]string), getError(val[1])
 }
 
+// SAdd adds to a set
 func (r *RedisClientMock) SAdd(ctx context.Context, key string, members ...interface{}) (int64, error) {
 	val := r.fetchFromQueue("sadd")
 	return val[0].(int64), getError(val[1])
 }
 
+// SRem removes from a set
 func (r *RedisClientMock) SRem(ctx context.Context, key string, members ...interface{}) (int64, error) {
 	val := r.fetchFromQueue("srem")
 	return val[0].(int64), getError(val[1])
