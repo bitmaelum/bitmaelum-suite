@@ -39,5 +39,5 @@ func TestInfoToOrg(t *testing.T) {
 
 	org, err := InfoToOrg(*info)
 	assert.NoError(t, err)
-	assert.Equal(t, "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae", org.Hash)
+	assert.Equal(t, "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae", org.Hash.String())
 }
