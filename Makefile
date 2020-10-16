@@ -1,6 +1,7 @@
 # @echo off
 .SILENT:
 
+# Make sure that globstar is active, this allows bash to use ./**/*.go
 SHELL=/bin/bash -O globstar -c
 
 # Default repository
