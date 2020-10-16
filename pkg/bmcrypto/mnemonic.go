@@ -128,6 +128,9 @@ func genRSAKey(e []byte) (*PrivKey, *PubKey, error) {
 
 	randReader := cipher.StreamReader{S: stream, R: devZero{}}
 	privRSAKey, err := deterministicRsaKeygen.GenerateKey(randReader, rsaBits)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	privKey, err := NewPrivKeyFromInterface(privRSAKey)
 	if err != nil {
