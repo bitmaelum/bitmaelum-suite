@@ -15,7 +15,12 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Goimports
+    - name: Go license
+      run: |
+        go get -u github.com/google/addlicense
+        GOPATH=`go env GOPATH`
+        $GOPATH/bin/addlicense -c "BitMaelum Authors" -l mit -y 2020 -check internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go
+    - name: Go imports
       run: |
         test -z "$(goimports -l .)"
     - name: Go vet
