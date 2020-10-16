@@ -53,7 +53,7 @@ func (r *ChainRepository) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 		}
 	}
 
-	return nil, errKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 // ResolveRouting resolves routing
@@ -65,7 +65,7 @@ func (r *ChainRepository) ResolveRouting(routingID string) (*RoutingInfo, error)
 		}
 	}
 
-	return nil, errKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 // ResolveOrganisation resolves organisation
@@ -77,7 +77,7 @@ func (r *ChainRepository) ResolveOrganisation(orgHash hash.Hash) (*OrganisationI
 		}
 	}
 
-	return nil, errKeyNotFound
+	return nil, ErrKeyNotFound
 }
 
 // UploadAddress public key through the chained repos

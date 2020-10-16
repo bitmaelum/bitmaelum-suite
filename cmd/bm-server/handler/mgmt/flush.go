@@ -32,7 +32,7 @@ import (
 // FlushQueues handler will flush all the queues normally on tickers
 func FlushQueues(w http.ResponseWriter, req *http.Request) {
 	key := handler.GetAPIKey(req)
-	if !key.HasPermission(apikey.PermFlush) {
+	if !key.HasPermission(apikey.PermFlush, nil) {
 		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}

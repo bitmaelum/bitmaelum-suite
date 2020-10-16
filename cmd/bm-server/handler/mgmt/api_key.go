@@ -28,25 +28,34 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 type inputAPIKeyType struct {
 	Permissions []string `json:"permissions"`
 	Valid       string   `json:"valid"`
+	AddrHash    string   `json:"hash,omitempty"`
+	Desc        string   `json:"description,omitempty"`
 }
 
 // NewAPIKey is a handler that will create a new API key (non-admin keys only)
 func NewAPIKey(w http.ResponseWriter, req *http.Request) {
-	key := handler.GetAPIKey(req)
-	if !key.HasPermission(apikey.PermAPIKeys) {
-		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
-		return
-	}
-
 	var input inputAPIKeyType
 	err := handler.DecodeBody(w, req.Body, &input)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect body")
+		return
+	}
+
+	// Make sure we can only set api permissions for the account we have permission for.
+	var h *hash.Hash
+	if input.AddrHash != "" {
+		tmp := hash.New(input.AddrHash)
+		h = &tmp
+	}
+	key := handler.GetAPIKey(req)
+	if !key.HasPermission(apikey.PermAPIKeys, h) {
+		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
@@ -57,13 +66,13 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = parse.Permissions(input.Permissions)
+	err = parse.MangementPermissions(input.Permissions)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return
 	}
 
-	newAPIKey := apikey.NewKey(input.Permissions, validDuration)
+	newAPIKey := apikey.NewAccountKey(h, input.Permissions, validDuration, input.Desc)
 
 	// Store API key into persistent storage
 	repo := container.GetAPIKeyRepo()

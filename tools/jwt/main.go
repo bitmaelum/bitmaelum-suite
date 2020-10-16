@@ -30,7 +30,7 @@ import (
 )
 
 type options struct {
-	Config   string `short:"c" long:"config" description:"Configuration file" default:"./client-config.yml"`
+	Config   string `short:"c" long:"config" description:"Configuration file"`
 	Addr     string `short:"a" long:"address" description:"account"`
 	Password string `short:"p" long:"password" description:"Password to decrypt your account"`
 }

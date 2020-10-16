@@ -46,19 +46,31 @@ var ErrInvalidAuthentication = errors.New("invalid authentication")
 type APIKeyContext string
 
 // Middleware API token authentication
-func (*APIKey) Middleware(next http.Handler) http.Handler {
+func (mw *APIKey) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		key, err := getAPIKey(req.Header.Get("Authorization"))
-		if err != nil {
-			ErrorOut(w, http.StatusUnauthorized, "Unauthorized: "+err.Error())
+		ctx, ok := mw.Authenticate(req)
+		if !ok {
+			ErrorOut(w, http.StatusUnauthorized, "Unauthorized")
 			return
 		}
 
-		ctx := req.Context()
-		ctx = context.WithValue(ctx, APIKeyContext("apikey"), key)
-
 		next.ServeHTTP(w, req.WithContext(ctx))
 	})
+}
+
+// @TODO make sure we can't use a key to fetch other people's info
+
+// Authenticate will check if an API key matches the request
+func (*APIKey) Authenticate(req *http.Request) (context.Context, bool) {
+	key, err := getAPIKey(req.Header.Get("Authorization"))
+	if err != nil {
+		return nil, false
+	}
+
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, APIKeyContext("api-key"), key)
+
+	return ctx, true
 }
 
 // check authorization API key

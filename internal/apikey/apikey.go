@@ -23,18 +23,22 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // KeyType represents a key with a validity and permissions. When admin is true, permission checks are always true
 type KeyType struct {
-	ID          string    `json:"key"`
-	ValidUntil  time.Time `json:"valid_until"`
-	Permissions []string  `json:"permissions"`
-	Admin       bool      `json:"admin"`
+	ID          string     `json:"key"`
+	ValidUntil  time.Time  `json:"valid_until"`
+	Permissions []string   `json:"permissions"`
+	Admin       bool       `json:"admin"`
+	AddrHash    *hash.Hash `json:"addr_hash"`
+	Desc        string     `json:"description"`
 }
 
 // NewAdminKey creates a new admin key
-func NewAdminKey(valid time.Duration) KeyType {
+func NewAdminKey(valid time.Duration, desc string) KeyType {
 	var until = time.Time{}
 	if valid > 0 {
 		until = time.Now().Add(valid)
@@ -45,11 +49,13 @@ func NewAdminKey(valid time.Duration) KeyType {
 		ValidUntil:  until,
 		Permissions: nil,
 		Admin:       true,
+		AddrHash:    nil,
+		Desc:        desc,
 	}
 }
 
-// NewKey creates a new key with the given permissions and duration
-func NewKey(perms []string, valid time.Duration) KeyType {
+// NewAccountKey creates a new key with the given permissions and duration for the given account
+func NewAccountKey(addrHash *hash.Hash, perms []string, valid time.Duration, desc string) KeyType {
 	var until = time.Time{}
 	if valid > 0 {
 		until = time.Now().Add(valid)
@@ -60,11 +66,30 @@ func NewKey(perms []string, valid time.Duration) KeyType {
 		ValidUntil:  until,
 		Permissions: perms,
 		Admin:       false,
+		AddrHash:    addrHash,
+		Desc:        desc,
+	}
+}
+
+// NewKey creates a new key with the given permissions and duration
+func NewKey(perms []string, valid time.Duration, desc string) KeyType {
+	var until = time.Time{}
+	if valid > 0 {
+		until = time.Now().Add(valid)
+	}
+
+	return KeyType{
+		ID:          GenerateKey("BMK-", 32),
+		ValidUntil:  until,
+		Permissions: perms,
+		Admin:       false,
+		AddrHash:    nil,
+		Desc:        desc,
 	}
 }
 
 // HasPermission returns true when this key contains the given permission, or when the key is an admin key (granted all permissions)
-func (key *KeyType) HasPermission(perm string) bool {
+func (key *KeyType) HasPermission(perm string, addrHash *hash.Hash) bool {
 	if key.Admin {
 		return true
 	}
@@ -72,7 +97,7 @@ func (key *KeyType) HasPermission(perm string) bool {
 	perm = strings.ToLower(perm)
 
 	for _, p := range key.Permissions {
-		if strings.ToLower(p) == perm {
+		if strings.ToLower(p) == perm && (addrHash == nil || addrHash == key.AddrHash) {
 			return true
 		}
 	}
@@ -83,8 +108,9 @@ func (key *KeyType) HasPermission(perm string) bool {
 // Repository is a repository to fetch and store API keys
 type Repository interface {
 	Fetch(ID string) (*KeyType, error)
+	FetchByHash(h string) ([]KeyType, error)
 	Store(key KeyType) error
-	Remove(ID string)
+	Remove(key KeyType) error
 }
 
 // GenerateKey generates a random key based on a given string length

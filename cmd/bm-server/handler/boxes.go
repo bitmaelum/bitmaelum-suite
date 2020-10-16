@@ -24,6 +24,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
+	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -119,22 +122,61 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 
 // RetrieveMessagesFromBox retrieves info about the given mailbox
 func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
-	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	list, err := getMessageList(req)
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
+	}
+
+	// if we authenticated by API-key, we only return the message IDs
+	if req.Context().Value("auth_method") == "*middleware.APIKey" {
+
+		// Make sure we have a get-headers permission
+		key := req.Context().Value(middleware.APIKeyContext("api-key")).(*apikey.KeyType)
+		if !key.HasPermission(apikey.PermGetHeaders, nil) {
+			ErrorOut(w, http.StatusUnauthorized, "unauthorized")
+			return
+		}
+
+		var ids []string
+		for _, msg := range list.Messages {
+			ids = append(ids, msg.ID)
+		}
+
+		_ = JSONOut(w, jsonOut{
+			"meta":        list.Meta,
+			"message_ids": ids,
+		})
+		return
+	}
+
+	// Otherwise, return the whole list
+	_ = JSONOut(w, list)
+}
+
+func getMessageList(req *http.Request) (*account.MessageList, *httpError) {
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		return nil, &httpError{
+			err:        accountNotFound,
+			StatusCode: http.StatusNotFound,
+		}
 	}
 
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "box not found")
-		return
+		return nil, &httpError{
+			err:        "box not found",
+			StatusCode: http.StatusNotFound,
+		}
 	}
 
 	ar := container.GetAccountRepo()
 	if !ar.ExistsBox(*haddr, box) {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
-		return
+		return nil, &httpError{
+			err:        accountNotFound,
+			StatusCode: http.StatusNotFound,
+		}
 	}
 
 	since := getQueryInt(req, "since", 0)
@@ -144,19 +186,13 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 
 	list, err := ar.FetchListFromBox(*haddr, box, sinceTs, offset, limit)
 	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, err.Error())
-		return
+		return nil, &httpError{
+			err:        err.Error(),
+			StatusCode: http.StatusInternalServerError,
+		}
 	}
 
-	_ = JSONOut(w, jsonOut{
-		"meta": jsonOut{
-			"total":    list.Total,
-			"returned": list.Returned,
-			"offset":   list.Offset,
-			"limit":    list.Limit,
-		},
-		"messages": list.Messages,
-	})
+	return list, nil
 }
 
 // Returns the given query key as integer, or returns the default value
