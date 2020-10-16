@@ -35,7 +35,7 @@ import (
 )
 
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
-func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
+func CreateAccount(vault *vault.Vault, bmAddr, name, token string, useRSAKey bool) {
 	fmt.Printf("* Verifying if address is correct: ")
 	addr, err := address.NewAddress(bmAddr)
 	if err != nil {
@@ -91,7 +91,18 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
 		fmt.Printf("not found. This is a good thing.\n")
 
 		fmt.Printf("* Generating your secret key to send and read mail: ")
-		mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic()
+		var (
+			mnemonic string
+			privKey  *bmcrypto.PrivKey
+			pubKey   *bmcrypto.PubKey
+			err      error
+		)
+
+		if useRSAKey {
+			mnemonic, privKey, pubKey, err = bmcrypto.GenerateRSAKeypairWithMnemonic()
+		} else {
+			mnemonic, privKey, pubKey, err = bmcrypto.GenerateKeypairWithMnemonic()
+		}
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")

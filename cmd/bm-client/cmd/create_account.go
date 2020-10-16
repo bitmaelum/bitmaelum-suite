@@ -34,7 +34,9 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
 
-		handlers.CreateAccount(v, *addr, *name, *token)
+		useRSAKey, _ := cmd.Flags().GetBool("rsa")
+
+		handlers.CreateAccount(v, *addr, *name, *token, useRSAKey)
 	},
 }
 
