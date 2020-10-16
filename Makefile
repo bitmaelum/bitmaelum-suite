@@ -8,6 +8,9 @@ REPO="github.com/bitmaelum/bitmaelum-suite"
 APPS := bm-server bm-client bm-config
 TOOLS := hash-address jwt proof-of-work readmail update-resolver resolve vault-edit resolve-auth update-pow jwt-validate migrate-hash check-org
 
+# These files are checked for license headers
+LICENSE_CHECK_DIRS=internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go
+
 CROSS_APPS := $(foreach app,$(APPS),cross-$(app))
 CROSS_TOOLS := $(foreach tool,$(TOOLS),cross-$(tool))
 
@@ -42,12 +45,14 @@ GO_INEFF_BIN = $(GOPATH)/bin/ineffassign
 GO_GOCYCLO_BIN = $(GOPATH)/bin/gocyclo
 GO_GOIMPORTS_BIN = $(GOPATH)/bin/goimports
 GO_LINT_BIN = $(GOPATH)/bin/golint
+GO_LICENSE_BIN = $(GOPATH)/bin/addlicense
 
 # ---------------------------------------------------------------------------
 
 # Downloads external tools as it's not available by default
 $(GO_TEST_BIN):
 	go get -u honnef.co/go/tools/cmd/staticcheck
+	go get -u github.com/google/addlicense
 	go get -u github.com/gordonklaus/ineffassign
 	go get -u github.com/fzipp/gocyclo
 	go get -u golang.org/x/tools/cmd/goimports
@@ -57,7 +62,11 @@ lint:
 	$(GO_GOIMPORTS_BIN) -w  --format-only .
 
 ## Runs all tests for the whole repository
-test: $(GO_TEST_BIN) test_goimports test_vet test_golint test_staticcheck test_ineffassign test_gocyclo test_unit
+test: $(GO_TEST_BIN) test_goimports test_license test_vet test_golint test_staticcheck test_ineffassign test_gocyclo test_unit
+
+test_license:
+	echo "Check licenses"
+	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2020 -check $(LICENSE_CHECK_DIRS)
 
 test_goimports:
 	echo "Check goimports"
@@ -123,6 +132,9 @@ info:
 
 cross-info:
 	$(info Cross building BitMaelum apps and tools)
+
+fix_licenses:
+	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2020 $(LICENSE_CHECK_DIRS)
 
 build-all: cross-info $(PLATFORMS) ## Build all cross-platform binaries
 
