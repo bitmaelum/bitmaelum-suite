@@ -57,7 +57,7 @@ $(GO_TEST_BIN):
 	go get -u honnef.co/go/tools/cmd/staticcheck
 	go get -u github.com/google/addlicense
 	go get -u github.com/gordonklaus/ineffassign
-	go get -u github.com/fzipp/gocyclo
+	go get -u github.com/fzipp/cmd/gocyclo
 	go get -u golang.org/x/tools/cmd/goimports
 	go get -u golang.org/x/lint/golint
 
