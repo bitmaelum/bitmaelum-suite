@@ -50,6 +50,7 @@ func init() {
 	orgAddr = createOrganisationCmd.Flags().StringP("org", "o", "", "Organisation address (...@<name>! part)")
 	orgFullName = createOrganisationCmd.Flags().StringP("name", "n", "", "Actual name (Acme Inc.)")
 	orgValidations = createOrganisationCmd.Flags().StringArray("val", nil, "validations for the organisation")
+	rsa = createOrganisationCmd.Flags().Bool("rsa", false, "Generate RSA keypair instead of ED25519")
 
 	_ = createAccountCmd.MarkFlagRequired("org")
 }
