@@ -99,7 +99,7 @@ func GenerateKeypairWithMnemonic(kt string) (string, *PrivKey, *PubKey, error) {
 	case KeyTypeED25519:
 		return GenerateED25519KeypairWithMnemonic()
 	default:
-		return "", nil, nil, errors.New("Key Type not supported")
+		return "", nil, nil, errors.New("key type not supported")
 	}
 }
 
