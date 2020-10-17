@@ -10,23 +10,22 @@ require (
 	github.com/ernesto-jimenez/httplogger v0.0.0-20150224132909-86cc44f6150a
 	github.com/fzipp/gocyclo v0.3.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.1.1
+	github.com/gdamore/tcell v1.4.0
 	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
 	github.com/go-redis/redis/v8 v8.2.2
-	github.com/google/addlicense v0.0.0-20200906110928-a0294312aa76 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gookit/color v1.2.7
-	github.com/gordonklaus/ineffassign v0.0.0-20200809085317-e36bfde3bb78 // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/mattn/go-colorable v0.1.7 // indirect
-	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/mattn/go-sqlite3 v1.14.1
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nightlyone/lockfile v1.0.0
 	github.com/olekukonko/tablewriter v0.0.4
+	github.com/rivo/tview v0.0.0-20200915114512-42866ecf6ca6
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/afero v1.1.2
 	github.com/spf13/cobra v1.0.0
@@ -39,9 +38,10 @@ require (
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
-	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
 	golang.org/x/tools v0.0.0-20201021000207-d49c4edd7d96 // indirect
+	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
+	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 )
