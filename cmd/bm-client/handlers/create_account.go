@@ -91,18 +91,15 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string, useRSAKey boo
 		fmt.Printf("not found. This is a good thing.\n")
 
 		fmt.Printf("* Generating your secret key to send and read mail: ")
-		var (
-			mnemonic string
-			privKey  *bmcrypto.PrivKey
-			pubKey   *bmcrypto.PubKey
-			err      error
-		)
 
+		var kt string
 		if useRSAKey {
-			mnemonic, privKey, pubKey, err = bmcrypto.GenerateRSAKeypairWithMnemonic()
+			kt = bmcrypto.KeyTypeRSA
 		} else {
-			mnemonic, privKey, pubKey, err = bmcrypto.GenerateKeypairWithMnemonic()
+			kt = bmcrypto.KeyTypeED25519
 		}
+		mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic(kt)
+
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")

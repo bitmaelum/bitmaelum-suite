@@ -71,16 +71,19 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 		fmt.Printf("* Generating organisation public/private key pair: ")
 
 		var (
+			kt      string
 			privKey *bmcrypto.PrivKey
 			pubKey  *bmcrypto.PubKey
 			err     error
 		)
 
 		if useRSAKey {
-			mnemonic, privKey, pubKey, err = bmcrypto.GenerateRSAKeypairWithMnemonic()
+			kt = bmcrypto.KeyTypeRSA
 		} else {
-			mnemonic, privKey, pubKey, err = bmcrypto.GenerateKeypairWithMnemonic()
+			kt = bmcrypto.KeyTypeED25519
 		}
+		mnemonic, privKey, pubKey, err = bmcrypto.GenerateKeypairWithMnemonic(kt)
+
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")

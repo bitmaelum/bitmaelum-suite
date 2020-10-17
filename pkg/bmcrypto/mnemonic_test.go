@@ -25,8 +25,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateKeypairFromMnemonic(t *testing.T) {
-	s, priv1, pub1, err := GenerateKeypairWithMnemonic()
+func TestGenerateED25519KeypairFromMnemonic(t *testing.T) {
+	s, priv1, pub1, err := GenerateKeypairWithMnemonic(KeyTypeED25519)
 	assert.NoError(t, err)
 
 	priv2, pub2, err := GenerateKeypairFromMnemonic(s)
@@ -37,7 +37,7 @@ func TestGenerateKeypairFromMnemonic(t *testing.T) {
 }
 
 func TestGenerateRSAKeypairFromMnemonic(t *testing.T) {
-	s, priv1, pub1, err := GenerateRSAKeypairWithMnemonic()
+	s, priv1, pub1, err := GenerateKeypairWithMnemonic(KeyTypeRSA)
 	assert.NoError(t, err)
 
 	priv2, pub2, err := GenerateKeypairFromMnemonic(s)

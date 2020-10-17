@@ -24,6 +24,7 @@ import (
 	"crypto/cipher"
 	"crypto/ed25519"
 	"crypto/sha256"
+	"errors"
 	"io"
 	"strings"
 
@@ -52,7 +53,7 @@ func GenerateRSAKeypairFromMnemonic(mnemonic string) (*PrivKey, *PubKey, error) 
 	return genRSAKey(e)
 }
 
-// GenerateRSAKeypairWithMnemonic generates a mnemonic, and a keypair that can be generated through the same mnemonic again.
+// GenerateRSAKeypairWithMnemonic generates a mnemonic, and a RSA keypair that can be generated through the same mnemonic again.
 func GenerateRSAKeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
 	// Generate large enough random string
 	e, err := bip39.NewEntropy(192)
@@ -91,7 +92,19 @@ func GenerateKeypairFromMnemonic(mnemonic string) (*PrivKey, *PubKey, error) {
 }
 
 // GenerateKeypairWithMnemonic generates a mnemonic, and a keypair that can be generated through the same mnemonic again.
-func GenerateKeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
+func GenerateKeypairWithMnemonic(kt string) (string, *PrivKey, *PubKey, error) {
+	switch kt {
+	case KeyTypeRSA:
+		return GenerateRSAKeypairWithMnemonic()
+	case KeyTypeED25519:
+		return GenerateED25519KeypairWithMnemonic()
+	default:
+		return "", nil, nil, errors.New("Key Type not supported")
+	}
+}
+
+// GenerateED25519KeypairWithMnemonic generates a mnemonic, and a ED25519 keypair that can be generated through the same mnemonic again.
+func GenerateED25519KeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
 	// Generate large enough random string
 	e, err := bip39.NewEntropy(192)
 	if err != nil {
