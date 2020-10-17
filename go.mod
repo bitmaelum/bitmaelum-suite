@@ -7,11 +7,14 @@ require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ernesto-jimenez/httplogger v0.0.0-20150224132909-86cc44f6150a
+	github.com/fzipp/gocyclo v0.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.1.1
 	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
 	github.com/go-redis/redis/v8 v8.2.2
+	github.com/google/addlicense v0.0.0-20200906110928-a0294312aa76 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gookit/color v1.2.7
+	github.com/gordonklaus/ineffassign v0.0.0-20200809085317-e36bfde3bb78 // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/golang-lru v0.5.4
@@ -34,9 +37,10 @@ require (
 	github.com/zalando/go-keyring v0.1.0
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
-	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
+	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520
+	golang.org/x/tools v0.0.0-20201017001424-6003fad69a88 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.3.0
+	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 )
