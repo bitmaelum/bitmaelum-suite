@@ -39,7 +39,7 @@ jobs:
         $GOPATH/bin/ineffassign ./*
     - name: Go cyclo
       run: |
-        go get -u github.com/fzipp/cmd/gocyclo
+        go get -u github.com/fzipp/gocyclo/cmd/gocyclo
         GOPATH=`go env GOPATH`
         $GOPATH/bin/gocyclo -over 15 .
     - name: Go test
