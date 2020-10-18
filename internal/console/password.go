@@ -71,12 +71,14 @@ func AskDoublePassword() ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("")
 
 		fmt.Print("Please retype your vault password: ")
 		p2, err := pwdReader.ReadPassword()
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("")
 
 		if bytes.Equal(p1, p2) {
 			return p1, nil
@@ -97,5 +99,7 @@ func AskPassword() (string, bool) {
 
 	fmt.Print("Please enter your vault password: ")
 	b, _ := pwdReader.ReadPassword()
+	fmt.Println("")
+
 	return string(b), false
 }

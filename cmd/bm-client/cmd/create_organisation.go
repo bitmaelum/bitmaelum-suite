@@ -52,5 +52,5 @@ func init() {
 	orgValidations = createOrganisationCmd.Flags().StringArray("val", nil, "validations for the organisation")
 	rsa = createOrganisationCmd.Flags().Bool("rsa", false, "Generate RSA keypair instead of ED25519")
 
-	_ = createAccountCmd.MarkFlagRequired("org")
+	_ = createOrganisationCmd.MarkFlagRequired("org")
 }
