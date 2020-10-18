@@ -8,7 +8,7 @@ require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ernesto-jimenez/httplogger v0.0.0-20150224132909-86cc44f6150a
-	github.com/fzipp/gocyclo v0.2.0 // indirect
+	github.com/fzipp/gocyclo v0.3.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.1.1
 	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
 	github.com/go-redis/redis/v8 v8.2.2
