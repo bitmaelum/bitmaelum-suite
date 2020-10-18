@@ -110,6 +110,8 @@ func checkAccountInVault(vault *vault.Vault, addr address.Address) *internal.Acc
 func CreateAccount(vault *vault.Vault, bmAddr, name, token string, useRSAKey bool) {
 	var mnemonicToShow string
 
+	fmt.Println("")
+
 	addr := verifyAddress(bmAddr)
 	ks := checkAddressInResolver(*addr)
 	it := checkToken(token, *addr)
