@@ -49,7 +49,7 @@ func init() {
 	orgInvAddress = createOrganisationInviteCmd.Flags().StringP("addr", "a", "", "address")
 	orgInvRoutingID = createOrganisationInviteCmd.Flags().StringP("routing-id", "r", "", "routing ID where this user will be invited to")
 
-	_ = createAccountCmd.MarkFlagRequired("org")
-	_ = createAccountCmd.MarkFlagRequired("org")
-	_ = createAccountCmd.MarkFlagRequired("org")
+	_ = createOrganisationInviteCmd.MarkFlagRequired("org")
+	_ = createOrganisationInviteCmd.MarkFlagRequired("addr")
+	_ = createOrganisationInviteCmd.MarkFlagRequired("routing-id")
 }

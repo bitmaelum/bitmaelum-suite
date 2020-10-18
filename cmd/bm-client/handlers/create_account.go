@@ -57,7 +57,7 @@ func checkAddressInResolver(addr address.Address) *resolver.Service {
 	ks := container.GetResolveService()
 	_, err := ks.ResolveAddress(addr.Hash())
 
-	if err != nil {
+	if err == nil {
 		fmt.Println("")
 		fmt.Println("  X it seems that this address is already in use. Please specify another address.")
 		os.Exit(1)
