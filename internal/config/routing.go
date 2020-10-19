@@ -94,7 +94,7 @@ func GenerateRoutingFromMnemonic(mnemonic string) (*RoutingConfig, error) {
 
 // GenerateRouting generates a new routing structure
 func GenerateRouting() (string, *RoutingConfig, error) {
-	mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic()
+	mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic(bmcrypto.KeyTypeED25519)
 	if err != nil {
 		return "", nil, err
 	}

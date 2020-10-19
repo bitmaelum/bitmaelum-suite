@@ -34,7 +34,7 @@ import (
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
-func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidations []string) {
+func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidations []string, useRSAKey bool) {
 	fmt.Printf("* Verifying if organisation name is valid: ")
 	orgHash := hash.New(orgAddr)
 
@@ -71,10 +71,19 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 		fmt.Printf("* Generating organisation public/private key pair: ")
 
 		var (
+			kt      string
 			privKey *bmcrypto.PrivKey
 			pubKey  *bmcrypto.PubKey
+			err     error
 		)
-		mnemonic, privKey, pubKey, err = bmcrypto.GenerateKeypairWithMnemonic()
+
+		if useRSAKey {
+			kt = bmcrypto.KeyTypeRSA
+		} else {
+			kt = bmcrypto.KeyTypeED25519
+		}
+		mnemonic, privKey, pubKey, err = bmcrypto.GenerateKeypairWithMnemonic(kt)
+
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")

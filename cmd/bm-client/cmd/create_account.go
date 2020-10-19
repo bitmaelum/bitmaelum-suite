@@ -34,11 +34,12 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
 
-		handlers.CreateAccount(v, *addr, *name, *token)
+		handlers.CreateAccount(v, *addr, *name, *token, *rsa)
 	},
 }
 
 var addr, name, token *string
+var rsa *bool
 
 func init() {
 	rootCmd.AddCommand(createAccountCmd)
@@ -46,6 +47,7 @@ func init() {
 	addr = createAccountCmd.Flags().String("address", "", "Address to create")
 	name = createAccountCmd.Flags().String("name", "", "Your full name")
 	token = createAccountCmd.Flags().String("token", "", "Invitation token from server")
+	rsa = createAccountCmd.Flags().Bool("rsa", false, "Generate RSA keypair instead of ED25519")
 
 	_ = createAccountCmd.MarkFlagRequired("address")
 	_ = createAccountCmd.MarkFlagRequired("name")

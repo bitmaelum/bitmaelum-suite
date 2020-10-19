@@ -28,70 +28,106 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
-// CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
-func CreateAccount(vault *vault.Vault, bmAddr, name, token string) {
+func verifyAddress(bmAddr string) *address.Address {
 	fmt.Printf("* Verifying if address is correct: ")
 	addr, err := address.NewAddress(bmAddr)
 	if err != nil {
-		fmt.Printf("not a valid address")
-		fmt.Println("")
+		fmt.Println("not a valid address")
 		os.Exit(1)
 	}
-	fmt.Printf("ok\n")
+	fmt.Println("ok")
 
 	if addr.HasOrganisationPart() {
-		fmt.Printf("* You are creating an organisation address.")
+		fmt.Println("* You are creating an organisation address.")
 	}
 
+	return addr
+}
+
+func checkAddressInResolver(addr address.Address) *resolver.Service {
 	fmt.Printf("* Checking if address is already known in the resolver service: ")
+
 	ks := container.GetResolveService()
-	_, err = ks.ResolveAddress(addr.Hash())
+	_, err := ks.ResolveAddress(addr.Hash())
+
 	if err == nil {
-		fmt.Printf("\n  X it seems that this address is already in use. Please specify another address.")
 		fmt.Println("")
+		fmt.Println("  X it seems that this address is already in use. Please specify another address.")
 		os.Exit(1)
 	}
-	fmt.Printf("not found. This is a good thing.\n")
 
-	// Check token
+	fmt.Println("not found. This is a good thing.")
+
+	return ks
+}
+
+func checkToken(token string, addr address.Address) *invite.Token {
 	fmt.Printf("* Checking token format and extracting data: ")
+
 	it, err := invite.ParseInviteToken(token)
 	if err != nil {
-		fmt.Printf("\n  X it seems that this token is invalid")
-		fmt.Println("")
+		fmt.Println("\n  X it seems that this token is invalid")
 		os.Exit(1)
 	}
+
 	// Check address matches the one in the token
 	if it.AddrHash.String() != addr.Hash().String() {
-		fmt.Printf("\n  X this token is not for %s", addr.String())
-		fmt.Println("")
+		fmt.Println("\n  X this token is not for", addr.String())
 		os.Exit(1)
 	}
 
 	fmt.Printf("token is valid.\n")
 
+	return it
+}
+
+func checkAccountInVault(vault *vault.Vault, addr address.Address) *internal.AccountInfo {
 	fmt.Printf("* Checking if the account is already present in the vault: ")
-	var info *internal.AccountInfo
-	var mnemonicToShow string
-	if vault.HasAccount(*addr) {
+
+	if vault.HasAccount(addr) {
 		fmt.Printf("\n  X account already present in the vault. Strange, but let's continue...\n")
-		info, err = vault.GetAccountInfo(*addr)
+		info, err := vault.GetAccountInfo(addr)
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
 			os.Exit(1)
 		}
-	} else {
-		fmt.Printf("not found. This is a good thing.\n")
+		return info
+	}
+	fmt.Printf("not found. This is a good thing.\n")
 
+	return nil
+}
+
+// CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
+func CreateAccount(vault *vault.Vault, bmAddr, name, token string, useRSAKey bool) {
+	var mnemonicToShow string
+
+	fmt.Println("")
+
+	addr := verifyAddress(bmAddr)
+	ks := checkAddressInResolver(*addr)
+	it := checkToken(token, *addr)
+	info := checkAccountInVault(vault, *addr)
+
+	if info == nil {
 		fmt.Printf("* Generating your secret key to send and read mail: ")
-		mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic()
+
+		var kt string
+		if useRSAKey {
+			kt = bmcrypto.KeyTypeRSA
+		} else {
+			kt = bmcrypto.KeyTypeED25519
+		}
+		mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic(kt)
+
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
