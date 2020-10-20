@@ -63,7 +63,6 @@ func EdPrivToX25519(privateKey ed25519.PrivateKey) []byte {
 	return digest[:32]
 }
 
-// curve25519P from https://github.com/FiloSottile/age/blob/bbab440e198a4d67ba78591176c7853e62d29e04/internal/age/ssh.go#L172
 var curve25519P, _ = new(big.Int).SetString("57896044618658097711785492504343953926634992332820282019728792003956564819949", 10)
 
 // EdPubToX25519 converts a ed25519 Public Key to a X25519 Public Key
@@ -84,10 +83,7 @@ func EdPubToX25519(pk ed25519.PublicKey) []byte {
 	 */
 	y := new(big.Int).SetBytes(bigEndianY)
 	denom := big.NewInt(1)
-
-	sub := denom.Sub(denom, y)
-	denom.ModInverse(sub, curve25519P)
-
+	denom.ModInverse(denom.Sub(denom, y), curve25519P) // 1 / (1 - y)
 	u := y.Mul(y.Add(y, big.NewInt(1)), denom)
 	u.Mod(u, curve25519P)
 
