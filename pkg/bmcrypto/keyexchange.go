@@ -73,7 +73,7 @@ func EdPubToX25519(pk ed25519.PublicKey) []byte {
 	for i, b := range pk {
 		bigEndianY[ed25519.PublicKeySize-i-1] = b
 	}
-	// bigEndianY[0] &= 0b0111_1111
+	bigEndianY[0] &= 127
 
 	/* The Montgomery u-coordinate is derived through the bilinear map
 	 *
