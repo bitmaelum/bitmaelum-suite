@@ -59,7 +59,7 @@ func ProcessMessage(msgID string) {
 	}
 
 	rs := container.GetResolveService()
-	res, err := rs.ResolveAddress(header.To.Addr)
+	addrInfo, err := rs.ResolveAddress(header.To.Addr)
 	if err != nil {
 		logrus.Trace(err)
 		logrus.Warnf("cannot resolve address %s for message %s. Retrying.", header.To.Addr, msgID)
@@ -70,65 +70,56 @@ func ProcessMessage(msgID string) {
 	// Local addresses don't need to be send. They are treated locally
 	ar := container.GetAccountRepo()
 	if ar.Exists(header.To.Addr) {
-		// probably move the message to the incoming queue
 		// Do stuff locally
 		logrus.Debugf("Message %s can be transferred locally to %s", msgID, res.Hash)
 
-		// Check the serverSignature
-		if !server.VerifyHeader(*header) {
-			logrus.Errorf("message %s destined for %s has failed the server signature check. Seems that this message did not originate from the original mail server. Removing the message.", msgID, header.To.Addr)
-
-			err := message.RemoveMessage(message.SectionProcessing, msgID)
-			if err != nil {
-				logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
-			}
-		}
-
-		// Check the clientSignature
-		if !client.VerifyHeader(*header) {
-			logrus.Errorf("message %s destined for %s has failed the client signature check. Seems that this message may have been spoofed. Removing the message.", msgID, header.To.Addr)
-
-			err := message.RemoveMessage(message.SectionProcessing, msgID)
-			if err != nil {
-				logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
-			}
-		}
-
-		err := deliverLocal(res, msgID)
+		err := deliverLocal(addrInfo, msgID, header)
 		if err != nil {
 			logrus.Warnf("cannot deliver message %s locally to %s. Retrying.", msgID, header.To.Addr)
 			MoveToRetryQueue(msgID)
 		}
+
 		return
 	}
 
-	routingRes, err := rs.ResolveRouting(res.RoutingID)
-	if err != nil {
-		logrus.Warnf("cannot find routing ID %s for %s. Retrying.", res.RoutingID, header.To.Addr)
-		MoveToRetryQueue(msgID)
-		return
-	}
-
-	// Otherwise, send to outgoing server
-	logrus.Debugf("Message %s is remote, transferring to %s", msgID, routingRes.Routing)
-	err = deliverRemote(header, res, routingRes, msgID)
+	// Deliver remote
+	err = deliverRemote(addrInfo, msgID, header)
 	if err != nil {
 		logrus.Warnf("cannot deliver message %s remotely to %s. Retrying.", msgID, header.To.Addr)
 		MoveToRetryQueue(msgID)
 	}
 }
 
-// deliverLocal moves a message to a local mailbox. This is an easy process as it only needs to move
-// the message to another directory.
-func deliverLocal(info *resolver.AddressInfo, msgID string) error {
-	// Deliver mail to local user's inbox
-	ar := container.GetAccountRepo()
+// deliverLocal moves a message to a local mailbox.
+func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.Header) error {
+	// Check the serverSignature
+	if !server.VerifyHeader(*header) {
+		logrus.Errorf("message %s destined for %s has failed the server signature check. Seems that this message did not originate from the original mail server. Removing the message.", msgID, header.To.Addr)
 
-	h, err := hash.NewFromHash(info.Hash)
+		err := message.RemoveMessage(message.SectionProcessing, msgID)
+		if err != nil {
+			logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
+		}
+	}
+
+	// Check the clientSignature
+	if !client.VerifyHeader(*header) {
+		logrus.Errorf("message %s destined for %s has failed the client signature check. Seems that this message may have been spoofed. Removing the message.", msgID, header.To.Addr)
+
+		err := message.RemoveMessage(message.SectionProcessing, msgID)
+		if err != nil {
+			logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
+		}
+	}
+
+
+	// Deliver mail to local user's inbox
+	h, err := hash.NewFromHash(addrInfo.Hash)
 	if err != nil {
 		return err
 	}
 
+	ar := container.GetAccountRepo()
 	err = ar.SendToBox(*h, account.BoxInbox, msgID)
 	if err != nil {
 		// Something went wrong.. let's try and move the message back to the retry queue
@@ -143,7 +134,17 @@ func deliverLocal(info *resolver.AddressInfo, msgID string) error {
 // ticket from that server. Either that ticket is supplied, or we need to do proof-of-work first before
 // we get the ticket. Once we have the ticket, we can upload the message to the server in the same way
 // we upload a message from a client to a server.
-func deliverRemote(header *message.Header, info *resolver.AddressInfo, routingInfo *resolver.RoutingInfo, msgID string) error {
+func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message.Header) error {
+	rs := container.GetResolveService()
+	routingInfo, err := rs.ResolveRouting(addrInfo.RoutingID)
+	if err != nil {
+		logrus.Warnf("cannot find routing ID %s for %s. Retrying.", addrInfo.RoutingID, header.To.Addr)
+		MoveToRetryQueue(msgID)
+		return err
+	}
+
+	logrus.Debugf("Message %s is remote, transferring to %s", msgID, routingInfo.Routing)
+
 	client, err := api.NewAnonymous(api.ClientOpts{
 		Host:          routingInfo.Routing,
 		AllowInsecure: config.Server.Server.AllowInsecure,
@@ -154,15 +155,17 @@ func deliverRemote(header *message.Header, info *resolver.AddressInfo, routingIn
 	}
 
 	// Get upload ticket
-	h, err := hash.NewFromHash(info.Hash)
+	h, err := hash.NewFromHash(addrInfo.Hash)
 	if err != nil {
 		return err
 	}
+
 	logrus.Tracef("getting ticket for %s:%s:%s", header.From.Addr, *h, "")
 	t, err := client.GetAnonymousTicket(header.From.Addr, *h, "")
 	if err != nil {
 		return err
 	}
+
 	if !t.Valid {
 		logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
 		// Do proof of work. We have to wait for it. This is ok as this is just a separate thread.
