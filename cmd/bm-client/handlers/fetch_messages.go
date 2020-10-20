@@ -40,7 +40,7 @@ import (
 // FetchMessages will display message information from accounts and boxes
 func FetchMessages(accounts []internal.AccountInfo) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAutoMergeCells(true)
+	//table.SetAutoMergeCells(true)
 
 	headers := []string{"Account", "Box", "ID", "Subject", "From", "Date", "# Blocks", "# Attachments"}
 	table.SetHeader(headers)
@@ -91,13 +91,23 @@ func displayBox(client *api.API, account *internal.AccountInfo, box string, tabl
 		return
 	}
 
-	values := []string{
-		account.Address,
-		box,
-		"", "", "", "", "", "",
+	if box == "1" {
+		values := []string{
+			account.Address,
+			box,
+			"", "", "", "", "", "",
+		}
+		table.Append(values)
+	} else {
+		values := []string{
+			"",
+			box,
+			"", "", "", "", "", "",
+		}
+		table.Append(values)
 	}
 
-	table.Append(values)
+
 
 	for _, msg := range mb.Messages {
 		key, err := bmcrypto.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
@@ -122,8 +132,8 @@ func displayBox(client *api.API, account *internal.AccountInfo, box string, tabl
 		}
 
 		values := []string{
-			account.Address,
-			box,
+			"",
+			"",
 			msg.ID,
 			catalog.Subject,
 			fmt.Sprintf("%s <%s>", catalog.From.Name, catalog.From.Address),
