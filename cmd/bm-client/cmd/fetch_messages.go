@@ -20,12 +20,8 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -37,34 +33,10 @@ var fetchMessagesCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
 
-		info := vault.GetAccountOrDefault(v, *fmAccount)
-		if info == nil {
-			logrus.Fatal("No account found in vault")
-			os.Exit(1)
-		}
-
-		// Fetch routing info
-		resolver := container.GetResolveService()
-		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
-		if err != nil {
-			logrus.Fatal("Cannot find routing ID for this account")
-			os.Exit(1)
-		}
-
-		handlers.FetchMessages(info, routingInfo, *fmBox)
+		handlers.FetchMessages(v.Store.Accounts)
 	},
 }
 
-var (
-	// fmCheckOnly *bool
-	fmAccount *string
-	fmBox     *string
-)
-
 func init() {
 	rootCmd.AddCommand(fetchMessagesCmd)
-
-	fmAccount = fetchMessagesCmd.PersistentFlags().StringP("account", "a", "", "Account")
-	fmBox = fetchMessagesCmd.PersistentFlags().StringP("box", "b", "", "Box to fetch")
-	// fmCheckOnly = fetchMessagesCmd.Flags().Bool("check-only", false, "Check only, don't download")
 }

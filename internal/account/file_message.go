@@ -82,14 +82,17 @@ func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, of
 		return nil, err
 	}
 
+	logrus.Trace("Fethcing dir: ")
 	for _, f := range files {
 		if !f.IsDir() {
+			logrus.Trace("not a dir: ", f.Name())
 			continue
 		}
 
 		list.Meta.Total++
 		if list.Meta.Returned >= limit {
-			continue
+			logrus.Trace("limit reached")
+			break
 		}
 
 		header := &message.Header{}
@@ -106,15 +109,18 @@ func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, of
 
 		// Skip files if we have an offset
 		if offset > 0 {
+			logrus.Trace("offset not yet reached")
 			offset--
 			continue
 		}
 
-		if f.ModTime().Before(since) {
+		if !since.IsZero() && f.ModTime().Before(since) {
+			logrus.Trace("before since")
 			// Skip, because it's before our "since" query
 			continue
 		}
 
+		logrus.Trace("adding to list: ", f.Name())
 		list.Meta.Returned++
 		list.Messages = append(list.Messages, MessageType{
 			ID:      f.Name(),

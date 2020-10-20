@@ -44,8 +44,8 @@ type MailboxList struct {
 // MailboxMessagesMessage is a message (header + catalog) within a mailbox
 type MailboxMessagesMessage struct {
 	ID      string         `json:"id"`
-	Header  message.Header `json:"h"`
-	Catalog []byte         `json:"c"`
+	Header  message.Header `json:"header"`
+	Catalog []byte         `json:"catalog"`
 }
 
 // MailboxMessages returns a list of mailbox messages

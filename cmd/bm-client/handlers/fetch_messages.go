@@ -22,81 +22,87 @@ package handlers
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
-	"github.com/sirupsen/logrus"
 )
 
-// FetchMessages will display message information from a box or display all boxes
-func FetchMessages(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, box string) {
-	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          routingInfo.Routing,
-		AllowInsecure: config.Client.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHTTP,
-	})
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	addr, _ := address.NewAddress(info.Address)
-	addrHash := addr.Hash()
-	if box == "" || box == "0" {
-		displayBoxList(client, addrHash)
-	} else {
-		displayBox(client, addrHash, info, box)
-	}
-}
-
-func displayBoxList(client *api.API, addr hash.Hash) {
-	mbl, err := client.GetMailboxList(addr)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
+// FetchMessages will display message information from accounts and boxes
+func FetchMessages(accounts []internal.AccountInfo) {
 	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoMergeCells(true)
 
-	headers := []string{"Mailbox ID", "Total Messages"}
+	headers := []string{"Account", "Box", "ID", "Subject", "From", "Date", "# Blocks", "# Attachments"}
 	table.SetHeader(headers)
 
-	for _, mb := range mbl.Boxes {
-		values := []string{
-			strconv.Itoa(mb.ID),
-			strconv.Itoa(mb.Total),
+	for _, account := range accounts {
+		// Fetch routing info
+		resolver := container.GetResolveService()
+		routingInfo, err := resolver.ResolveRouting(account.RoutingID)
+		if err != nil {
+			continue
 		}
 
-		table.Append(values)
+		client, err := api.NewAuthenticated(&account, api.ClientOpts{
+			Host:          routingInfo.Routing,
+			AllowInsecure: config.Client.Server.AllowInsecure,
+			Debug:         config.Client.Server.DebugHTTP,
+		})
+		if err != nil {
+			continue
+		}
+
+		displayBoxList(client, &account, table)
 	}
+
 	table.Render()
 }
 
-func displayBox(client *api.API, addr hash.Hash, info *internal.AccountInfo, box string) {
-	mb, err := client.GetMailboxMessages(addr, box)
+func displayBoxList(client *api.API, account *internal.AccountInfo, table *tablewriter.Table) {
+	addr, _ := address.NewAddress(account.Address)
+	addrHash := addr.Hash()
+
+	mbl, err := client.GetMailboxList(addrHash)
 	if err != nil {
-		logrus.Fatal(err)
+		return
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
+	for _, mb := range mbl.Boxes {
+		displayBox(client, account, fmt.Sprintf("%d", mb.ID), table)
+	}
+}
 
-	headers := []string{"ID", "Subject", "From", "Date", "# Blocks", "# Attachments"}
-	table.SetHeader(headers)
+func displayBox(client *api.API, account *internal.AccountInfo, box string, table *tablewriter.Table) {
+	addr, _ := address.NewAddress(account.Address)
+	addrHash := addr.Hash()
+
+	mb, err := client.GetMailboxMessages(addrHash, box)
+	if err != nil {
+		return
+	}
+
+	values := []string{
+		account.Address,
+		box,
+		"", "", "", "", "", "",
+	}
+
+	table.Append(values)
 
 	for _, msg := range mb.Messages {
-		key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+		key, err := bmcrypto.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
-			logrus.Fatal(err)
+			continue
 		}
 		catalog := &message.Catalog{}
 		err = encrypt.CatalogDecrypt(key, msg.Catalog, catalog)
@@ -116,6 +122,8 @@ func displayBox(client *api.API, addr hash.Hash, info *internal.AccountInfo, box
 		}
 
 		values := []string{
+			account.Address,
+			box,
 			msg.ID,
 			catalog.Subject,
 			fmt.Sprintf("%s <%s>", catalog.From.Name, catalog.From.Address),
@@ -126,5 +134,4 @@ func displayBox(client *api.API, addr hash.Hash, info *internal.AccountInfo, box
 
 		table.Append(values)
 	}
-	table.Render()
 }
