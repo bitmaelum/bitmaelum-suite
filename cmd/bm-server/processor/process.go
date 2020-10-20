@@ -20,6 +20,7 @@
 package processor
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 
@@ -71,7 +72,7 @@ func ProcessMessage(msgID string) {
 	ar := container.GetAccountRepo()
 	if ar.Exists(header.To.Addr) {
 		// Do stuff locally
-		logrus.Debugf("Message %s can be transferred locally to %s", msgID, res.Hash)
+		logrus.Debugf("Message %s can be transferred locally to %s", msgID, addrInfo.Hash)
 
 		err := deliverLocal(addrInfo, msgID, header)
 		if err != nil {
@@ -98,7 +99,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
 		if err != nil {
-			logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
+			logrus.Warnf("cannot remove message %s from the process queue.", msgID)
 		}
 	}
 
@@ -108,7 +109,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
 		if err != nil {
-			logrus.Warnf("Cannot remove message %s from the process queue.", msgID)
+			logrus.Warnf("cannot remove message %s from the process queue.", msgID)
 		}
 	}
 
@@ -145,46 +146,25 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 
 	logrus.Debugf("Message %s is remote, transferring to %s", msgID, routingInfo.Routing)
 
-	client, err := api.NewAnonymous(api.ClientOpts{
-		Host:          routingInfo.Routing,
-		AllowInsecure: config.Server.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHTTP,
-	})
+	ok, err := processTicket(*routingInfo, *addrInfo, header, msgID)
 	if err != nil {
 		return err
 	}
-
-	// Get upload ticket
-	h, err := hash.NewFromHash(addrInfo.Hash)
-	if err != nil {
-		return err
+	if !ok {
+		return errors.New("cannot validate ticket")
 	}
 
-	logrus.Tracef("getting ticket for %s:%s:%s", header.From.Addr, *h, "")
-	t, err := client.GetAnonymousTicket(header.From.Addr, *h, "")
+	c, err := getClient(*routingInfo)
 	if err != nil {
+		logrus.Warning("cannot create API: ", err)
 		return err
-	}
-
-	if !t.Valid {
-		logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
-		// Do proof of work. We have to wait for it. This is ok as this is just a separate thread.
-		t.Proof.WorkMulticore()
-
-		logrus.Debugf("work for %s is completed", t.ID)
-		t, err = client.GetAnonymousTicketByProof(header.From.Addr, header.To.Addr, t.SubscriptionID, t.ID, t.Proof.Proof)
-		if err != nil || !t.Valid {
-			logrus.Warnf("Ticket for message %s not valid after proof of work, moving to retry queue", msgID)
-			MoveToRetryQueue(msgID)
-			return err
-		}
 	}
 
 	// parallelize uploads
 	g := new(errgroup.Group)
 	g.Go(func() error {
 		logrus.Tracef("uploading header for ticket %s", t.ID)
-		return client.UploadHeader(*t, header)
+		return c.UploadHeader(*t, header)
 	})
 	g.Go(func() error {
 		catalogPath, err := message.GetPath(message.SectionProcessing, msgID, "catalog")
@@ -198,12 +178,12 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 		}
 
 		logrus.Tracef("uploading catalog for ticket %s", t.ID)
-		return client.UploadCatalog(*t, catalogData)
+		return c.UploadCatalog(*t, catalogData)
 	})
 
 	messageFiles, err := message.GetFiles(message.SectionProcessing, msgID)
 	if err != nil {
-		_ = client.DeleteMessage(*t)
+		_ = c.DeleteMessage(*t)
 		return err
 	}
 
@@ -222,24 +202,75 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 			}()
 
 			logrus.Tracef("uploading block %s for ticket %s", mf.ID, t.ID)
-			return client.UploadBlock(*t, mf.ID, f)
+			return c.UploadBlock(*t, mf.ID, f)
 		})
 	}
 
 	// Wait until all are completed
 	if err := g.Wait(); err != nil {
 		logrus.Debugf("Error while uploading message %s: %s", msgID, err)
-		_ = client.DeleteMessage(*t)
+		_ = c.DeleteMessage(*t)
 		return err
 	}
 
 	// All done, mark upload as completed
 	logrus.Tracef("message completed for ticket %s", t.ID)
-	err = client.CompleteUpload(*t)
+	err = c.CompleteUpload(*t)
 	if err != nil {
 		return err
 	}
 
 	// Remove local message from processing queue
 	return message.RemoveMessage(message.SectionProcessing, msgID)
+}
+
+// processTicket will fetch a ticker from the mail server and validate it through proof-of-work
+func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressInfo, header *message.Header, msgID string) (bool, error) {
+	// Get upload ticket
+	h, err := hash.NewFromHash(addrInfo.Hash)
+	if err != nil {
+		return false, err
+	}
+
+	logrus.Tracef("getting ticket for %s:%s:%s", header.From.Addr, *h, "")
+
+	c, err := getClient(routingInfo)
+	if err != nil {
+		return false, err
+	}
+
+	t, err := c.GetAnonymousTicket(header.From.Addr, *h, "")
+	if err != nil {
+		return false, err
+	}
+
+	// If the ticket is valid, then we are done
+	if t.Valid {
+		return true, nil
+	}
+
+	logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
+
+	// Do proof of work. We have to wait for it. This is ok as this is just a separate thread.
+	t.Proof.WorkMulticore()
+
+	logrus.Debugf("work for %s is completed", t.ID)
+	t, err = c.GetAnonymousTicketByProof(header.From.Addr, header.To.Addr, t.SubscriptionID, t.ID, t.Proof.Proof)
+	if err != nil || !t.Valid {
+		logrus.Warnf("Ticket for message %s not valid after proof of work, moving to retry queue", msgID)
+		MoveToRetryQueue(msgID)
+		return false, nil
+	}
+
+	// TIcket is ok after we done our proof-of-work
+	return true, nil
+}
+
+// getClient will return an API client pointing to the actual mail server found in the routing info
+func getClient(routingInfo resolver.RoutingInfo) (*api.API, error) {
+	return api.NewAnonymous(api.ClientOpts{
+		Host:          routingInfo.Routing,
+		AllowInsecure: config.Server.Server.AllowInsecure,
+		Debug:         config.Client.Server.DebugHTTP,
+	})
 }
