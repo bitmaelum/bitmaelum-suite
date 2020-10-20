@@ -81,11 +81,11 @@ func EdPubToX25519(pk ed25519.PublicKey) []byte {
 	 *
 	 * See https://blog.filippo.io/using-ed25519-keys-for-encryption.
 	 */
-	// y := new(big.Int).SetBytes(bigEndianY)
+	y := new(big.Int).SetBytes(bigEndianY)
 	denom := big.NewInt(1)
-	// denom.ModInverse(denom.Sub(denom, y), curve25519P) // 1 / (1 - y)
-	// u := y.Mul(y.Add(y, big.NewInt(1)), denom)
-	u := denom
+	denom.ModInverse(denom.Sub(denom, y), curve25519P)
+	u := y.Mul(y.Add(y, big.NewInt(1)), denom)
+	// u := denom
 	u.Mod(u, curve25519P)
 
 
