@@ -73,7 +73,7 @@ func EdPubToX25519(pk ed25519.PublicKey) []byte {
 	for i, b := range pk {
 		bigEndianY[ed25519.PublicKeySize-i-1] = b
 	}
-	bigEndianY[0] &= 0b0111_1111
+	// bigEndianY[0] &= 0b0111_1111
 
 	/* The Montgomery u-coordinate is derived through the bilinear map
 	 *
@@ -81,13 +81,17 @@ func EdPubToX25519(pk ed25519.PublicKey) []byte {
 	 *
 	 * See https://blog.filippo.io/using-ed25519-keys-for-encryption.
 	 */
-
+	y := new(big.Int).SetBytes(bigEndianY)
+	denom := big.NewInt(1)
+	denom.ModInverse(denom.Sub(denom, y), curve25519P)
+	u := y.Mul(y.Add(y, big.NewInt(1)), denom)
+	u.Mod(u, curve25519P)
 
 	out := make([]byte, curve25519.PointSize)
-	//uBytes := u.Bytes()
-	//for i, b := range uBytes {
-	//	out[len(uBytes)-i-1] = b
-	//}
+	uBytes := u.Bytes()
+	for i, b := range uBytes {
+		out[len(uBytes)-i-1] = b
+	}
 
 	return out
 }
