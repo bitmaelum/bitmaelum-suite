@@ -32,6 +32,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/server"
+	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -146,12 +147,9 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 
 	logrus.Debugf("Message %s is remote, transferring to %s", msgID, routingInfo.Routing)
 
-	ok, err := processTicket(*routingInfo, *addrInfo, header, msgID)
+	tckt, err := processTicket(*routingInfo, *addrInfo, header, msgID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return errors.New("cannot validate ticket")
 	}
 
 	c, err := getClient(*routingInfo)
@@ -163,8 +161,8 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 	// parallelize uploads
 	g := new(errgroup.Group)
 	g.Go(func() error {
-		logrus.Tracef("uploading header for ticket %s", t.ID)
-		return c.UploadHeader(*t, header)
+		logrus.Tracef("uploading header for ticket %s", tckt.ID)
+		return c.UploadHeader(*tckt, header)
 	})
 	g.Go(func() error {
 		catalogPath, err := message.GetPath(message.SectionProcessing, msgID, "catalog")
@@ -177,13 +175,13 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 			return err
 		}
 
-		logrus.Tracef("uploading catalog for ticket %s", t.ID)
-		return c.UploadCatalog(*t, catalogData)
+		logrus.Tracef("uploading catalog for ticket %s", tckt.ID)
+		return c.UploadCatalog(*tckt, catalogData)
 	})
 
 	messageFiles, err := message.GetFiles(message.SectionProcessing, msgID)
 	if err != nil {
-		_ = c.DeleteMessage(*t)
+		_ = c.DeleteMessage(*tckt)
 		return err
 	}
 
@@ -201,21 +199,21 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 				_ = f.Close()
 			}()
 
-			logrus.Tracef("uploading block %s for ticket %s", mf.ID, t.ID)
-			return c.UploadBlock(*t, mf.ID, f)
+			logrus.Tracef("uploading block %s for ticket %s", mf.ID, tckt.ID)
+			return c.UploadBlock(*tckt, mf.ID, f)
 		})
 	}
 
 	// Wait until all are completed
 	if err := g.Wait(); err != nil {
 		logrus.Debugf("Error while uploading message %s: %s", msgID, err)
-		_ = c.DeleteMessage(*t)
+		_ = c.DeleteMessage(*tckt)
 		return err
 	}
 
 	// All done, mark upload as completed
-	logrus.Tracef("message completed for ticket %s", t.ID)
-	err = c.CompleteUpload(*t)
+	logrus.Tracef("message completed for ticket %s", tckt.ID)
+	err = c.CompleteUpload(*tckt)
 	if err != nil {
 		return err
 	}
@@ -225,28 +223,28 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 }
 
 // processTicket will fetch a ticker from the mail server and validate it through proof-of-work
-func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressInfo, header *message.Header, msgID string) (bool, error) {
+func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressInfo, header *message.Header, msgID string) (*ticket.Ticket, error) {
 	// Get upload ticket
 	h, err := hash.NewFromHash(addrInfo.Hash)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	logrus.Tracef("getting ticket for %s:%s:%s", header.From.Addr, *h, "")
 
 	c, err := getClient(routingInfo)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	t, err := c.GetAnonymousTicket(header.From.Addr, *h, "")
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	// If the ticket is valid, then we are done
 	if t.Valid {
-		return true, nil
+		return t, nil
 	}
 
 	logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
@@ -259,11 +257,11 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 	if err != nil || !t.Valid {
 		logrus.Warnf("Ticket for message %s not valid after proof of work, moving to retry queue", msgID)
 		MoveToRetryQueue(msgID)
-		return false, nil
+		return nil, errors.New("error while validating")
 	}
 
 	// TIcket is ok after we done our proof-of-work
-	return true, nil
+	return t, nil
 }
 
 // getClient will return an API client pointing to the actual mail server found in the routing info
