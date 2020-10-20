@@ -84,9 +84,10 @@ func EdPubToX25519(pk ed25519.PublicKey) []byte {
 	 */
 	y := new(big.Int).SetBytes(bigEndianY)
 	denom := big.NewInt(1)
-	// 1 / (1 - y)
+
 	sub := denom.Sub(denom, y)
 	denom.ModInverse(sub, curve25519P)
+
 	u := y.Mul(y.Add(y, big.NewInt(1)), denom)
 	u.Mod(u, curve25519P)
 
