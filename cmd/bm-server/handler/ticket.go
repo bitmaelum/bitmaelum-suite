@@ -164,20 +164,24 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	}
 	logrus.Tracef("Found ticket in repository: %s", tckt.ID)
 
-	// Validate ticket if not done already
-	if !tckt.Valid {
-		// Set proof and check if it's valid
-		tckt.Proof.Proof = requestInfo.Proof
-		tckt.Valid = tckt.Proof.HasDoneWork() && tckt.Proof.IsValid()
-		if tckt.Valid {
-			ticketRepo := container.GetTicketRepo()
-			err = ticketRepo.Store(tckt)
-			if err != nil {
-				ErrorOut(w, http.StatusInternalServerError, cantSaveTicket)
-				return
-			}
-			logrus.Tracef("Ticket proof-of-work validated: %s", tckt.ID)
+	if tckt.Valid {
+		outputTicket(tckt, w)
+		return
+	}
+
+	// Try and validate ticket
+
+	// Set proof and check if it's valid
+	tckt.Proof.Proof = requestInfo.Proof
+	tckt.Valid = tckt.Proof.HasDoneWork() && tckt.Proof.IsValid()
+	if tckt.Valid {
+		ticketRepo := container.GetTicketRepo()
+		err = ticketRepo.Store(tckt)
+		if err != nil {
+			ErrorOut(w, http.StatusInternalServerError, cantSaveTicket)
+			return
 		}
+		logrus.Tracef("Ticket proof-of-work validated: %s", tckt.ID)
 	}
 
 	outputTicket(tckt, w)
