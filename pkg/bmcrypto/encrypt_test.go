@@ -27,7 +27,7 @@ import (
 )
 
 func TestEncrypt(t *testing.T) {
-	//RSA Encryption
+	// RSA Encryption
 	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
 	pubKey, _ := NewPubKey(string(data))
 
@@ -42,7 +42,7 @@ func TestEncrypt(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, []byte("foobar"), plaintext)
 
-	//ED25519 Dual Key-Exchange + Encryption
+	// ED25519 Dual Key-Exchange + Encryption
 	priv25519Key, _ := NewPrivKey("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
 	pub25519Key, _ := NewPubKey("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
 	cipher, txID, _, err := Encrypt(*pub25519Key, []byte("foobar"))
@@ -52,4 +52,17 @@ func TestEncrypt(t *testing.T) {
 	plaintext, err = Decrypt(*priv25519Key, txID, cipher)
 	assert.Nil(t, err)
 	assert.Equal(t, []byte("foobar"), plaintext)
+}
+
+func TestErrors(t *testing.T) {
+	priv, pub, err := generateKeyPairECDSA()
+
+	cipher, txID, _, err := Encrypt(*pub, []byte("foobar"))
+	assert.Error(t, err)
+	assert.Nil(t, cipher)
+	assert.Equal(t, "", txID)
+
+	_, err = Decrypt(*priv, "", []byte("foobar"))
+	assert.Error(t, err)
+
 }

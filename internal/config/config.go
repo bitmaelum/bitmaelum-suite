@@ -81,7 +81,7 @@ func LoadClientConfigOrPass(configPath string) error {
 	configPath = os.Getenv("BITMAELUM_CLIENT_CONFIG")
 	if configPath != "" {
 		err = readConfigPath(configPath, Client.LoadConfig)
-		if err == nil || err != errNotFound {
+		if err != nil {
 			return err
 		}
 	}
@@ -113,7 +113,7 @@ func LoadServerConfigOrPass(configPath string) error {
 	configPath = os.Getenv("BITMAELUM_SERVER_CONFIG")
 	if configPath != "" {
 		err = readConfigPath(configPath, Server.LoadConfig)
-		if err == nil || err != errNotFound {
+		if err != nil {
 			return err
 		}
 	}

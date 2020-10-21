@@ -22,12 +22,13 @@ package fileio
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/spf13/afero"
 )
+
+var fs = afero.NewOsFs()
 
 // SaveCertFiles saves the given cert and key PEM strings into the configured cert and key file. Old files are backed
 // as .001 (or .002 etc) if the files already exists.
@@ -42,10 +43,10 @@ func SaveCertFiles(certPem string, keyPem string) error {
 
 	newPath = fmt.Sprintf("%s.%03d", config.Server.Server.CertFile, suffix)
 	oldPath = config.Server.Server.CertFile
-	_, err = os.Stat(oldPath)
+	_, err = fs.Stat(oldPath)
 	if err == nil {
 		fmt.Printf("   - moving old cert file to %s: ", newPath)
-		err := os.Rename(oldPath, newPath)
+		err := fs.Rename(oldPath, newPath)
 		if err != nil {
 			return err
 		}
@@ -54,10 +55,10 @@ func SaveCertFiles(certPem string, keyPem string) error {
 
 	newPath = fmt.Sprintf("%s.%03d", config.Server.Server.KeyFile, suffix)
 	oldPath = config.Server.Server.KeyFile
-	_, err = os.Stat(oldPath)
+	_, err = fs.Stat(oldPath)
 	if err == nil {
 		fmt.Printf("   - moving old key file to %s: ", newPath)
-		err = os.Rename(oldPath, newPath)
+		err = fs.Rename(oldPath, newPath)
 		if err != nil {
 			return err
 		}
@@ -66,7 +67,7 @@ func SaveCertFiles(certPem string, keyPem string) error {
 
 	fmt.Printf("   - Writing new cert file %s: ", config.Server.Server.CertFile)
 	newPath = config.Server.Server.CertFile
-	err = ioutil.WriteFile(newPath, []byte(certPem), 0600)
+	err = afero.WriteFile(fs, newPath, []byte(certPem), 0600)
 	if err != nil {
 		return err
 	}
@@ -74,7 +75,7 @@ func SaveCertFiles(certPem string, keyPem string) error {
 
 	fmt.Printf("   - Writing new key file %s: ", config.Server.Server.CertFile)
 	newPath = config.Server.Server.KeyFile
-	err = ioutil.WriteFile(newPath, []byte(keyPem), 0600)
+	err = afero.WriteFile(fs, newPath, []byte(keyPem), 0600)
 	if err != nil {
 		return err
 	}
@@ -92,7 +93,7 @@ func findHighestSuffix(files ...string) int {
 		var found = false
 		for _, file := range files {
 			p := fmt.Sprintf("%s.%03d", file, suffix)
-			_, err1 := os.Stat(p)
+			_, err1 := fs.Stat(p)
 			if err1 == nil {
 				found = true
 				break
@@ -109,7 +110,7 @@ func findHighestSuffix(files ...string) int {
 
 // LoadFile loads and unmarshals a given file
 func LoadFile(p string, v interface{}) error {
-	data, err := ioutil.ReadFile(p)
+	data, err := afero.ReadFile(fs, p)
 	if err != nil {
 		return err
 	}
@@ -124,10 +125,10 @@ func SaveFile(p string, v interface{}) error {
 		return err
 	}
 
-	err = os.MkdirAll(filepath.Dir(p), 0755)
+	err = fs.MkdirAll(filepath.Dir(p), 0755)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(p, data, 0600)
+	return afero.WriteFile(fs, p, data, 0600)
 }

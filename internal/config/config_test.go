@@ -21,6 +21,7 @@ package config
 
 import (
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -65,6 +66,20 @@ func TestClientConfig(t *testing.T) {
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
+
+
+	// Read from non-existing env
+	Client.Accounts.ProofOfWork = 0
+	os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
+	err = LoadClientConfigOrPass("")
+	assert.Error(t, err)
+
+	// Read from existing env
+	Client.Accounts.ProofOfWork = 0
+	os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/client-config.yml")
+	err = LoadClientConfigOrPass("")
+	assert.NoError(t, err)
+	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
 }
 
 func TestServerConfig(t *testing.T) {
@@ -78,22 +93,40 @@ func TestServerConfig(t *testing.T) {
 	assert.NoError(t, err)
 	_ = f.Close()
 
+	// Load direct
 	Server.Accounts.ProofOfWork = 0
 	err = LoadServerConfigOrPass("/etc/bitmaelum/server-config.yml")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
 
+	// Unknown file
 	Server.Accounts.ProofOfWork = 0
 	err = LoadServerConfigOrPass("/etc/bitmaelum/not-exist.yml")
 	assert.Error(t, err)
 	assert.Equal(t, 0, Server.Accounts.ProofOfWork)
 
+	// Load direct
 	Server.Accounts.ProofOfWork = 0
 	err = LoadServerConfigOrPass("/etc/bitmaelum/server-config.yml")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
 
+	// Read from predetermined paths
 	Server.Accounts.ProofOfWork = 0
+	err = LoadServerConfigOrPass("")
+	assert.NoError(t, err)
+	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
+
+
+	// Read from non-existing env
+	Server.Accounts.ProofOfWork = 0
+	os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/does/not/exist.yml")
+	err = LoadServerConfigOrPass("")
+	assert.Error(t, err)
+
+	// Read from existing env
+	Server.Accounts.ProofOfWork = 0
+	os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/server-config.yml")
 	err = LoadServerConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
