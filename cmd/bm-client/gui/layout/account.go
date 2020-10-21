@@ -49,15 +49,28 @@ func NewAccountScreen(app app.AppType) tview.Primitive {
 	})
 
 
-	flex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexColumn).
-			AddItem(list, 0, 1, false).
-			AddItem(list2, 0, 1, false),
-			0, 1, false,
-		).
-		AddItem(menuPages, 3, 1, false)
+	grid := tview.NewGrid().SetColumns(0, 0).SetRows(0, 1)
+	grid.AddItem(list, 0, 0, 1, 1, 0, 0, true)
+	grid.AddItem(list2, 0, 1, 1, 1, 0, 0, false)
+	grid.AddItem(menuPages, 1, 0, 1, 2, 0, 0, true)
 
-	return flex
+	curActiveElement := 0
+	elements := []tview.Primitive{list, list2}
+
+	grid.SetInputCapture(func (event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTab {
+			curActiveElement++
+			if curActiveElement >= len(elements) {
+				curActiveElement = 0
+			}
+			p := elements[curActiveElement]
+
+			app.App.SetFocus(p)
+			return nil
+		}
+
+		return event
+	})
+
+	return grid
 }

@@ -36,7 +36,7 @@ func NewHelpScreen(app app.AppType) tview.Primitive {
 
 
 	// Create a Flex layout that centers the logo and subtitle.
-	grid := tview.NewGrid().SetColumns(0, 70, 0).SetRows(1, 0, 2, 1)
+	grid := tview.NewGrid().SetColumns(10, 0, 10).SetRows(1, 0, 2, 1)
 	grid.AddItem(help, 1, 1,  1, 1, 10, 70, true)
 	grid.AddItem(mb,   3, 0,  1, 3,  0,  0, false)
 
