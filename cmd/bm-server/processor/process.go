@@ -114,7 +114,6 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 		}
 	}
 
-
 	// Deliver mail to local user's inbox
 	h, err := hash.NewFromHash(addrInfo.Hash)
 	if err != nil {

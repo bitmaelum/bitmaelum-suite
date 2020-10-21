@@ -32,12 +32,11 @@ func TestSaveCertFiles(t *testing.T) {
 
 	var (
 		err error
-		ok bool
+		ok  bool
 	)
 
 	config.Server.Server.CertFile = "/cert/cert.pem"
 	config.Server.Server.KeyFile = "/cert/key.pem"
-
 
 	err = SaveCertFiles("foo1", "bar1")
 	assert.NoError(t, err)

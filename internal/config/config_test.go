@@ -67,7 +67,6 @@ func TestClientConfig(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
 
-
 	// Read from non-existing env
 	Client.Accounts.ProofOfWork = 0
 	os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
@@ -116,7 +115,6 @@ func TestServerConfig(t *testing.T) {
 	err = LoadServerConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
-
 
 	// Read from non-existing env
 	Server.Accounts.ProofOfWork = 0

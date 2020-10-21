@@ -107,8 +107,6 @@ func displayBox(client *api.API, account *internal.AccountInfo, box string, tabl
 		table.Append(values)
 	}
 
-
-
 	for _, msg := range mb.Messages {
 		key, err := bmcrypto.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 		if err != nil {

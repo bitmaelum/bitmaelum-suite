@@ -56,6 +56,7 @@ func TestEncrypt(t *testing.T) {
 
 func TestErrors(t *testing.T) {
 	priv, pub, err := generateKeyPairECDSA()
+	assert.NoError(t, err)
 
 	cipher, txID, _, err := Encrypt(*pub, []byte("foobar"))
 	assert.Error(t, err)
