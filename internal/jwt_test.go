@@ -36,6 +36,11 @@ const (
 )
 
 func TestGenerateJWTToken(t *testing.T) {
+	// Mock JWT time
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)
+	}
+
 	data, _ := ioutil.ReadFile("../testdata/privkey.rsa")
 	privKey, err := bmcrypto.NewPrivKey(string(data))
 	assert.Nil(t, err)
@@ -48,6 +53,12 @@ func TestGenerateJWTToken(t *testing.T) {
 }
 
 func TestValidateJWTToken(t *testing.T) {
+	// Mock JWT time
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)
+	}
+
+
 	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
 	pubKey, _ := bmcrypto.NewPubKey(string(data))
 
@@ -64,9 +75,29 @@ func TestValidateJWTToken(t *testing.T) {
 	assert.Equal(t, haddr.String(), token.Claims.(*jwt.StandardClaims).Subject)
 }
 
-func init() {
-	// Mock JWT time
-	jwt.TimeFunc = func() time.Time {
-		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)
-	}
+func TestED25519(t *testing.T) {
+	priv, pub, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeED25519)
+	assert.NoError(t, err)
+
+	tokenStr, err := GenerateJWTToken(hash.New("test!"), *priv)
+	assert.NoError(t, err)
+
+	token, err := ValidateJWTToken(tokenStr, hash.New("test!"), *pub)
+	assert.NoError(t, err)
+	assert.Equal(t, "EdDSA", token.Method.Alg())
+	assert.Equal(t, "1882b91b7f49d479cf1ec2f1ecee30d0e5392e963a2109015b7149bf712ad1b6", token.Claims.(*jwt.StandardClaims).Subject)
+}
+
+func TestECDSA(t *testing.T) {
+	priv, pub, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeECDSA)
+	assert.NoError(t, err)
+
+	tokenStr, err := GenerateJWTToken(hash.New("test!"), *priv)
+	assert.NoError(t, err)
+
+	token, err := ValidateJWTToken(tokenStr, hash.New("test!"), *pub)
+	assert.NoError(t, err)
+	assert.Equal(t, "ES384", token.Method.Alg())
+	assert.Equal(t, "1882b91b7f49d479cf1ec2f1ecee30d0e5392e963a2109015b7149bf712ad1b6", token.Claims.(*jwt.StandardClaims).Subject)
+
 }

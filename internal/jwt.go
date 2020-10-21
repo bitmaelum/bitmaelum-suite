@@ -56,7 +56,7 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 	case bmcrypto.KeyTypeRSA:
 		signMethod = jwt.SigningMethodRS256
 	case bmcrypto.KeyTypeECDSA:
-		signMethod = jwt.SigningMethodES256
+		signMethod = jwt.SigningMethodES384
 	case bmcrypto.KeyTypeED25519:
 		sm := &SigningMethodEdDSA{}
 		signMethod = sm
