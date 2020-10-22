@@ -42,24 +42,10 @@ func NewMessageOverviewScreen(app app.AppType) tview.Primitive {
 	messages := tview.NewTextView()
 	messages.SetBorder(true)
 
-
-	menuPages := tview.NewPages()
-	searchInput := tview.NewInputField()
-	searchInput.
-		SetLabel("Search for: ").
-		SetFieldWidth(40).
-		SetAcceptanceFunc(nil).
-		SetDoneFunc(func(key tcell.Key) {
-			// search = searchInput.GetText()
-			// menuPages.HidePage("search")
-			// pipe = selectService(pipe, list.Model[list.GetCurrentItem()], filter, logView, serviceView, infoTable, confirmDialog)
-			// app.SetFocus(list)
-		})
-
 	menuBar := components.NewMenubar(app.App)
-	menuPages.AddPage("menu", menuBar, true, false)
-	menuPages.AddPage("search", searchInput, true, false)
-	menuBar.SetSlot(9, "Back", func() {})
+	menuBar.SetSlot(9, "Back", func() {
+		app.Pages.SwitchToPage("main_menu")
+	})
 
 	messages.SetDoneFunc(func(key tcell.Key) {
 		app.Pages.SwitchToPage("main_menu")

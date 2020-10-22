@@ -16,13 +16,11 @@ const (
 
 type menubarSlot struct {
 	Text     string
-	Shortcut tcell.Key
 	Selected func()
 }
 
 type Menubar struct {
 	*tview.Box
-	Title       string
 	DisplayTime bool
 	Slots       [10]*menubarSlot
 }
@@ -33,29 +31,27 @@ func NewMenubar(app *tview.Application) *Menubar {
 	}
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		for _, i := range m.Slots {
-			if i == nil {
-				continue
+		if event.Key() >= tcell.KeyF1 && event.Key() <= tcell.KeyF10 {
+			idx := event.Key() - tcell.KeyF1
+
+			if m.Slots[idx] != nil && m.Slots[idx].Selected != nil {
+				m.Slots[idx].Selected()
 			}
-			if event.Key() == i.Shortcut {
-				if i.Selected != nil {
-					i.Selected()
-				}
-				break
-			}
+
+			return nil
 		}
 
 		return event
 	})
 
 	// @TODO: We should not always display timer, only when we set displayTimer to true
-	go refreshTimer(m)
+	go refreshTimer()
 
 	return m
 }
 
-func refreshTimer(m *Menubar) {
-	t := time.NewTicker(500 * time.Millisecond)
+func refreshTimer() {
+	t := time.NewTicker(1000 * time.Millisecond)
 
 	for {
 		select {
@@ -65,10 +61,6 @@ func refreshTimer(m *Menubar) {
 	}
 }
 
-func (m *Menubar) SetTitle(title string) *Menubar {
-	m.Title = title
-	return m
-}
 
 func (m *Menubar) SetDisplayTime(b bool) *Menubar {
 	m.DisplayTime = b
@@ -80,9 +72,9 @@ func (m *Menubar) Draw(screen tcell.Screen) {
 	x, y, width, _ := m.GetInnerRect()
 	x++
 
-	if m.Title != "" {
-		tview.Print(screen, m.Title+" |", x, y, width-2, tview.AlignLeft, tcell.ColorYellow)
-		x += len(m.Title) + 3
+	if m.GetTitle() != "" {
+		tview.Print(screen, m.GetTitle()+" |", x, y, width-2, tview.AlignLeft, tcell.ColorYellow)
+		x += len(m.GetTitle()) + 3
 	}
 
 	for i, slot := range m.Slots {
@@ -108,7 +100,6 @@ func (m *Menubar) Draw(screen tcell.Screen) {
 func (m *Menubar) SetSlot(idx int, text string, selected func()) *Menubar {
 	m.Slots[idx] = &menubarSlot{
 		Text:     text,
-		Shortcut: tcell.Key(int(tcell.KeyF1) + idx),
 		Selected: selected,
 	}
 

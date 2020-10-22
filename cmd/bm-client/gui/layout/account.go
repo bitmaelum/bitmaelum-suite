@@ -21,30 +21,11 @@ func NewAccountScreen(app app.AppType) tview.Primitive {
 		list2.AddItem(org.FullName+" <...@"+org.Addr+">", "", rune(0), nil)
 	}
 
-	menuPages := tview.NewPages()
-	searchInput := tview.NewInputField()
-	searchInput.
-		SetLabel("Search for: ").
-		SetFieldWidth(40).
-		SetAcceptanceFunc(nil).
-		SetDoneFunc(func(key tcell.Key) {
-			// search = searchInput.GetText()
-			// menuPages.HidePage("search")
-			// pipe = selectService(pipe, list.Model[list.GetCurrentItem()], filter, logView, serviceView, infoTable, confirmDialog)
-			// app.SetFocus(list)
-		})
-
 	menuBar := components.NewMenubar(app.App)
-	menuPages.AddPage("menu", menuBar, true, true)
-	menuPages.AddPage("search", searchInput, true, false)
-	//menuPages.SwitchToPage("search")
-
 	menuBar.SetSlot(0, "New Acc", func() {})
 	menuBar.SetSlot(1, "New Org", func() {})
 	menuBar.SetSlot(2, "Bar", func() {})
-	menuBar.SetSlot(9, "Quit", func() {})
-
-	list.SetDoneFunc(func() {
+	menuBar.SetSlot(9, "Back", func() {
 		app.Pages.SwitchToPage("main_menu")
 	})
 
@@ -52,7 +33,7 @@ func NewAccountScreen(app app.AppType) tview.Primitive {
 	grid := tview.NewGrid().SetColumns(0, 0).SetRows(0, 1)
 	grid.AddItem(list, 0, 0, 1, 1, 0, 0, true)
 	grid.AddItem(list2, 0, 1, 1, 1, 0, 0, false)
-	grid.AddItem(menuPages, 1, 0, 1, 2, 0, 0, true)
+	grid.AddItem(menuBar, 1, 0, 1, 2, 0, 0, true)
 
 	curActiveElement := 0
 	elements := []tview.Primitive{list, list2}

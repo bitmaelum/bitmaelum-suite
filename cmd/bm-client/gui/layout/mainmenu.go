@@ -23,11 +23,6 @@ var shortcuts = []string{
 	"Exit BitMaelum client",
 }
 
-// func center(s string, w int) string {
-// 	p := (w / 2) - (len(s) / 2)
-//
-// 	return strings.Repeat(" ", p) + s
-// }
 
 func NewMainMenuScreen(app app.AppType) tview.Primitive {
 
@@ -65,7 +60,7 @@ func NewMainMenuScreen(app app.AppType) tview.Primitive {
 			app.Pages.SwitchToPage("message-overview")
 
 		case 1:
-			// Display account configuration
+			// Display account conssfiguration
 			app.Pages.SwitchToPage("message-overview")
 
 		case 2:
