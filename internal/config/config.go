@@ -104,18 +104,12 @@ func LoadServerConfigOrPass(configPath string) error {
 
 	// Try custom path first
 	if configPath != "" {
-		err = readConfigPath(configPath, Server.LoadConfig)
-		if err != nil {
-			return err
-		}
+		return readConfigPath(configPath, Server.LoadConfig)
 	}
 
 	configPath = os.Getenv("BITMAELUM_SERVER_CONFIG")
 	if configPath != "" {
-		err = readConfigPath(configPath, Server.LoadConfig)
-		if err != nil {
-			return err
-		}
+		return readConfigPath(configPath, Server.LoadConfig)
 	}
 
 	// try on our search paths
