@@ -86,7 +86,6 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
-
 	ctx, ok = a.Authenticate(apiKeyReq, "")
 	assert.False(t, ok)
 	assert.Nil(t, ctx)
@@ -107,18 +106,6 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
-
-	ctx, ok = a.Authenticate(apiKeyReq, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
-
-	// Not a named route
-	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
-	apiKeyReq.Header.Set("authorization", "foobar")
-	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
-		"addr": hash.New("example!").String(),
-	})
-
 	ctx, ok = a.Authenticate(apiKeyReq, "")
 	assert.False(t, ok)
 	assert.Nil(t, ctx)

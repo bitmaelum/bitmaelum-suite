@@ -79,6 +79,7 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	assert.Nil(t, ctx)
 
 	// No bearer key
+	req, _ = http.NewRequest("GET", "/foo", nil)
 	req.Header.Set("authorization", "foobar")
 	mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("example!").String(),
