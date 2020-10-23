@@ -69,57 +69,57 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	}
 
 	var (
-		req *http.Request
-		ctx context.Context
-		ok  bool
+		apiKeyReq *http.Request
+		ctx       context.Context
+		ok        bool
 	)
 
 	// No address
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	ctx, ok = a.Authenticate(req, "")
+	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
+	ctx, ok = a.Authenticate(apiKeyReq, "")
 	assert.False(t, ok)
 	assert.Nil(t, ctx)
 
 	// No auth
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "")
-	req = mux.SetURLVars(req, map[string]string{
+	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
+	apiKeyReq.Header.Set("authorization", "")
+	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
 
-	ctx, ok = a.Authenticate(req, "")
+	ctx, ok = a.Authenticate(apiKeyReq, "")
 	assert.False(t, ok)
 	assert.Nil(t, ctx)
-	
+
 	// Address does not exist
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
+	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
+	apiKeyReq.Header.Set("authorization", "foobar")
+	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
 		"addr": hash.New("doesnotexist!").String(),
 	})
-	ctx, ok = a.Authenticate(req, "")
+	ctx, ok = a.Authenticate(apiKeyReq, "")
 	assert.False(t, ok)
 	assert.Nil(t, ctx)
 
 	// Not a named route
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
+	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
+	apiKeyReq.Header.Set("authorization", "foobar")
+	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
 
-	ctx, ok = a.Authenticate(req, "")
+	ctx, ok = a.Authenticate(apiKeyReq, "")
 	assert.False(t, ok)
 	assert.Nil(t, ctx)
 
 	// Not a named route
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
+	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
+	apiKeyReq.Header.Set("authorization", "foobar")
+	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
 
-	ctx, ok = a.Authenticate(req, "")
+	ctx, ok = a.Authenticate(apiKeyReq, "")
 	assert.False(t, ok)
 	assert.Nil(t, ctx)
 
