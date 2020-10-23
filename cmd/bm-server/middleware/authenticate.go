@@ -21,39 +21,61 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
 )
 
-// MultiAuth holds multiple middleware/authenticators that can authenticate against the API
-type MultiAuth struct {
-	Auths []Authenticable
+// Authenticate holds multiple middleware/authenticators that can authenticate against the API
+type Authenticate struct {
+	Chain []Authenticator
 }
 
 type authContext string
 
-// Authenticable allows you to use the struct in the multi-auth middleware
-type Authenticable interface {
+// Authenticator allows you to use the struct in the multi-auth middleware
+type Authenticator interface {
 	Authenticate(req *http.Request) (context.Context, bool)
 }
 
 // Middleware JWT token authentication
-func (ma *MultiAuth) Middleware(next http.Handler) http.Handler {
+func (ma *Authenticate) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		for _, auth := range ma.Auths {
-			logrus.Tracef("multiauth. Trying %T", auth)
+		for _, auth := range ma.Chain {
+			logrus.Tracef("authenticate: trying %T", auth)
 			ctx, ok := auth.Authenticate(req)
 			if ok {
 				ctx = context.WithValue(ctx, authContext("auth_method"), fmt.Sprintf("%T", auth))
-				logrus.Tracef("multiauth found ok %T", auth)
+				logrus.Tracef("authenticate: found ok %T", auth)
 				next.ServeHTTP(w, req.WithContext(ctx))
 				return
 			}
 		}
 
-		logrus.Tracef("multiauth unauthorized")
+		logrus.Tracef("authenticate: unauthorized")
 		ErrorOut(w, http.StatusUnauthorized, "Unauthorized")
+	})
+}
+
+// Add a new authenticator to the list
+func (ma *Authenticate) Add(auth Authenticator) {
+	ma.Chain = append(ma.Chain, auth)
+}
+
+// ErrorOut outputs an error
+func ErrorOut(w http.ResponseWriter, code int, msg string) {
+	type OutputResponse struct {
+		Error  bool   `json:"error,omitempty"`
+		Status string `json:"status"`
+	}
+
+	logrus.Debugf("Returning error (%d): %s", code, msg)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(&OutputResponse{
+		Error:  true,
+		Status: msg,
 	})
 }
