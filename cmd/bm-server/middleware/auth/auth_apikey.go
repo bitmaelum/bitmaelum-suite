@@ -57,22 +57,23 @@ type APIKeyContext string
 
 // @TODO make sure we can't use a key to fetch other people's info
 
+var apiKeyRepo = container.GetAPIKeyRepo()
+
 // Authenticate will check if an API key matches the request
-func (a *AuthAPIKey) Authenticate(req *http.Request) (context.Context, bool) {
+func (a *AuthAPIKey) Authenticate(req *http.Request, route string) (context.Context, bool) {
 	// Check if the address actually exists
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		return nil, false
 	}
 
-	ar := container.GetAccountRepo()
-	if !ar.Exists(*haddr) {
+	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
 	}
 
 	// Check api key.
-	key, err := a.checkAPIKey(req.Header.Get("Authorization"), *haddr, mux.CurrentRoute(req).GetName())
+	key, err := a.checkAPIKey(req.Header.Get("Authorization"), *haddr, route)
 	if err != nil {
 		return nil, false
 	}
@@ -129,8 +130,7 @@ func (*AuthAPIKey) getAPIKey(bearerToken string) (*apikey.KeyType, error) {
 	}
 	apiKeyID := bearerToken[7:]
 
-	ar := container.GetAPIKeyRepo()
-	key, err := ar.Fetch(apiKeyID)
+	key, err := apiKeyRepo.Fetch(apiKeyID)
 	if err != nil {
 		return nil, ErrInvalidAPIKey
 	}

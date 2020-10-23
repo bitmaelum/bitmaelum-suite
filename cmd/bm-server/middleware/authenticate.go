@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,15 +38,19 @@ type authContext string
 
 // Authenticator allows you to use the struct in the multi-auth middleware
 type Authenticator interface {
-	Authenticate(req *http.Request) (context.Context, bool)
+	Authenticate(req *http.Request, route string) (context.Context, bool)
 }
 
 // Middleware JWT token authentication
 func (ma *Authenticate) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		// We need to fetch the current route here, because if we fetch it from too deep, we get into trouble with
+		// testing the given components.
+		currentRouteName := mux.CurrentRoute(req).GetName()
+
 		for _, auth := range ma.Chain {
 			logrus.Tracef("authenticate: trying %T", auth)
-			ctx, ok := auth.Authenticate(req)
+			ctx, ok := auth.Authenticate(req, currentRouteName)
 			if ok {
 				ctx = context.WithValue(ctx, authContext("auth_method"), fmt.Sprintf("%T", auth))
 				logrus.Tracef("authenticate: found ok %T", auth)

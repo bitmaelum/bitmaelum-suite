@@ -50,13 +50,13 @@ func NewAdminKey(expiry time.Time, desc string) KeyType {
 }
 
 // NewAccountKey creates a new key with the given permissions and duration for the given account
-func NewAccountKey(addrHash *hash.Hash, perms []string, expiry time.Time, desc string) KeyType {
+func NewAccountKey(addrHash hash.Hash, perms []string, expiry time.Time, desc string) KeyType {
 	return KeyType{
 		ID:          GenerateKey("BMK-", 32),
 		Expires:     expiry,
 		Permissions: perms,
 		Admin:       false,
-		AddrHash:    addrHash,
+		AddrHash:    &addrHash,
 		Desc:        desc,
 	}
 }
@@ -82,7 +82,7 @@ func (key *KeyType) HasPermission(perm string, addrHash *hash.Hash) bool {
 	perm = strings.ToLower(perm)
 
 	for _, p := range key.Permissions {
-		if strings.ToLower(p) == perm && (addrHash == nil || addrHash == key.AddrHash) {
+		if strings.ToLower(p) == perm && (addrHash == nil || addrHash.String() == key.AddrHash.String()) {
 			return true
 		}
 	}

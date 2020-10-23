@@ -17,56 +17,42 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package account
+package apikey
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"testing"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
+	"github.com/stretchr/testify/assert"
 )
 
-// Create a new account for this address
-func (r *fileRepo) Create(addr hash.Hash, pubKey bmcrypto.PubKey) error {
-	fullPath := r.getPath(addr, "")
-	logrus.Debugf("creating hash directory %s", fullPath)
+func TestMockRepo(t *testing.T) {
+	repo := NewMockRepository()
 
-	err := r.fs.MkdirAll(fullPath, 0700)
-	if err != nil {
-		return err
-	}
+	h := hash.New("example!")
+	k := NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc")
+	err := repo.Store(k)
+	assert.NoError(t, err)
 
-	// parallelize actions
-	g := new(errgroup.Group)
-	g.Go(func() error {
-		return r.StoreKey(addr, pubKey)
-	})
-	for _, box := range MandatoryBoxes {
-		boxCopy := box
-		g.Go(func() error {
-			logrus.Trace("Creating box: ", boxCopy)
-			return r.CreateBox(addr, boxCopy)
-		})
-	}
+	k2, err := repo.Fetch(k.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"foo", "bar"}, k2.Permissions)
+	assert.Equal(t, "my desc", k2.Desc)
 
-	// Wait until all are completed
-	if err := g.Wait(); err != nil {
-		_ = r.Delete(addr)
-		return err
-	}
+	h = hash.New("example!")
+	k = NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc 2")
+	err = repo.Store(k)
+	assert.NoError(t, err)
 
-	return nil
-}
+	keys, err := repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 2)
 
-// Returns true when the given account for this address exists
-func (r *fileRepo) Exists(addr hash.Hash) bool {
-	return r.pathExists(addr, "")
-}
+	err = repo.Remove(k)
+	assert.NoError(t, err)
 
-// Delete an account
-func (r *fileRepo) Delete(addr hash.Hash) error {
-	fullPath := r.getPath(addr, "")
-	logrus.Debugf("creating hash directory %s", fullPath)
-
-	return r.fs.RemoveAll(fullPath)
+	keys, err = repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 1)
 }

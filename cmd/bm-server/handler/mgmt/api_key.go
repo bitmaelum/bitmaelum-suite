@@ -54,6 +54,11 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		tmp := hash.New(input.AddrHash)
 		h = &tmp
 	}
+	if h == nil {
+		handler.ErrorOut(w, http.StatusBadRequest, "incorrect hash")
+		return
+	}
+
 	key := handler.GetAPIKey(req)
 	if !key.HasPermission(apikey.PermAPIKeys, h) {
 		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
@@ -66,7 +71,7 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newAPIKey := apikey.NewAccountKey(h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
+	newAPIKey := apikey.NewAccountKey(*h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store API key into persistent storage
 	repo := container.GetAPIKeyRepo()

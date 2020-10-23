@@ -36,22 +36,24 @@ import (
 // AuthJwt is a middleware that automatically verifies given JWT token
 type AuthJwt struct{}
 
-type claimsContext string
-type addressContext string
+type ClaimsContext string
+type AddressContext string
 
 // ErrTokenNotValidated is returned when the token could not be validated (for any reason)
 var ErrTokenNotValidated = errors.New("token could not be validated")
 
+
+var accountRepo = container.GetAccountRepo()
+
 // Authenticate will check if an API key matches the request
-func (mw *AuthJwt) Authenticate(req *http.Request) (context.Context, bool) {
+func (mw *AuthJwt) Authenticate(req *http.Request, _ string) (context.Context, bool) {
 	// Check if the address actually exists
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		return nil, false
 	}
 
-	ar := container.GetAccountRepo()
-	if !ar.Exists(*haddr) {
+	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
 	}
@@ -64,8 +66,8 @@ func (mw *AuthJwt) Authenticate(req *http.Request) (context.Context, bool) {
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, claimsContext("claims"), token.Claims)
-	ctx = context.WithValue(ctx, addressContext("address"), token.Claims.(*jwt.StandardClaims).Subject)
+	ctx = context.WithValue(ctx, ClaimsContext("claims"), token.Claims)
+	ctx = context.WithValue(ctx, AddressContext("address"), token.Claims.(*jwt.StandardClaims).Subject)
 
 	return ctx, true
 }
@@ -83,8 +85,7 @@ func checkToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
 	}
 	tokenString := bearerToken[7:]
 
-	ar := container.GetAccountRepo()
-	keys, err := ar.FetchKeys(addr)
+	keys, err := accountRepo.FetchKeys(addr)
 	if err != nil {
 		logrus.Trace("auth: cannot fetch keys: ", err)
 		return nil, ErrTokenNotValidated

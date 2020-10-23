@@ -25,7 +25,6 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/nightlyone/lockfile"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,18 +32,15 @@ import (
 func (r *fileRepo) StoreKey(addr hash.Hash, key bmcrypto.PubKey) error {
 	// Lock our key file for writing
 	lockfilePath := r.getPath(addr, keysFile+".lock")
-	lock, err := lockfile.New(lockfilePath)
-	if err != nil {
-		return err
-	}
+	lock, err := r.lockFile(lockfilePath)
 
-	err = lock.TryLock()
+	err = r.tryLockFile(lock)
 	if err != nil {
 		return err
 	}
 
 	defer func() {
-		_ = lock.Unlock()
+		_ = r.unLockFile(lock)
 	}()
 
 	// Read keys
@@ -87,7 +83,7 @@ func (r *fileRepo) FetchKeys(addr hash.Hash) ([]bmcrypto.PubKey, error) {
 // Create file because it doesn't exist yet
 func (r *fileRepo) createPubKeyFile(addr hash.Hash) error {
 	p := r.getPath(addr, keysFile)
-	f, err := os.Create(p)
+	f, err := r.fs.Create(p)
 	if err != nil {
 		logrus.Errorf("Error while creating file %s: %s", p, err)
 		return err

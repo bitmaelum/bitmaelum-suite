@@ -60,7 +60,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newAPIKey := apikey.NewAccountKey(h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
+	newAPIKey := apikey.NewAccountKey(*h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store API key into persistent storage
 	repo := container.GetAPIKeyRepo()

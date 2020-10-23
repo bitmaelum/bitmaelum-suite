@@ -145,21 +145,9 @@ func setupSignals(cancel context.CancelFunc) {
 	}()
 }
 
-// func ApiKeyMatch(permissions ...string) mux.MatcherFunc {
-// 	return func(req *http.Request, match *mux.RouteMatch) bool {
-// 		fmt.Println("context: ", req.Context())
-// 		for _, perm := range permissions {
-// 			if req.Header.Get("Authorization") == perm {
-// 				return true
-// 			}
-// 		}
-// 		return false
-// 	}
-// }
-
 var apikeyPermissionList = map[string][]string {
-	"ticket": []string{"send-mail"},
-	"boxes": []string{"get-header"},
+	"ticket": {"send-mail"},
+	"boxes": {"get-header"},
 }
 
 func setupRouter() *mux.Router {
