@@ -19,28 +19,40 @@
 
 package apikey
 
-const (
-	// PermFlush Permission to restart/reload the system including flushing/forcing the queues
-	PermFlush string = "flush"
-	// PermGenerateInvites Permission to generate invites remotely
-	PermGenerateInvites string = "invite"
-	// PermAPIKeys Permission to create api keys
-	PermAPIKeys string = "apikey"
-	// PermSendMail Permission to send email
-	PermSendMail string = "send-mail"
-	// PermGetHeaders allows you to fetch header and catalog from messages
-	PermGetHeaders string = "get-headers"
+import (
+	"testing"
+	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/stretchr/testify/assert"
 )
 
-// ManagementPermissons is a list of all permissions available for remote management
-var ManagementPermissons = []string{
-	PermAPIKeys,
-	PermFlush,
-	PermGenerateInvites,
-}
+func TestMockRepo(t *testing.T) {
+	repo := NewMockRepository()
 
-// AccountPermissions is a set of permissions for specific accounts
-var AccountPermissions = []string{
-	PermGetHeaders,
-	PermSendMail,
+	h := hash.New("example!")
+	k := NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc")
+	err := repo.Store(k)
+	assert.NoError(t, err)
+
+	k2, err := repo.Fetch(k.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"foo", "bar"}, k2.Permissions)
+	assert.Equal(t, "my desc", k2.Desc)
+
+	h = hash.New("example!")
+	k = NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc 2")
+	err = repo.Store(k)
+	assert.NoError(t, err)
+
+	keys, err := repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 2)
+
+	err = repo.Remove(k)
+	assert.NoError(t, err)
+
+	keys, err = repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 1)
 }

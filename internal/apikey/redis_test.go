@@ -47,7 +47,7 @@ func TestRedis(t *testing.T) {
 	h1 := hash.Hash("set 1")
 	kt = &KeyType{
 		ID:          "abc",
-		ValidUntil:  time.Time{},
+		Expires:     time.Time{},
 		Permissions: []string{"foobar"},
 		Admin:       true,
 		AddrHash:    &h1,

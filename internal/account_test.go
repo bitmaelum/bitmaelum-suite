@@ -41,3 +41,13 @@ func TestInfoToOrg(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae", org.Hash.String())
 }
+
+func TestAccountInfoAddressHash(t *testing.T) {
+	info := &AccountInfo{
+		Default:   false,
+		Address:   "example!",
+		Name:      "John DOe",
+	}
+
+	assert.Equal(t, "2244643da7475120bf84d744435d15ea297c36ca165ea0baaa69ec818d0e952f", info.AddressHash().String())
+}

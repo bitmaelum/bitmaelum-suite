@@ -22,19 +22,18 @@ package account
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strconv"
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/spf13/afero"
 )
 
 // Create a new mailbox in this account
 func (r *fileRepo) CreateBox(addr hash.Hash, box int) error {
 	fullPath := r.getPath(addr, getBoxAsString(box))
 
-	return os.MkdirAll(fullPath, 0700)
+	return r.fs.MkdirAll(fullPath, 0700)
 }
 
 // Returns true when the given mailbox exists in this account
@@ -50,7 +49,7 @@ func (r *fileRepo) DeleteBox(addr hash.Hash, box int) error {
 
 	fullPath := r.getPath(addr, getBoxAsString(box))
 
-	err := os.RemoveAll(fullPath)
+	err := r.fs.RemoveAll(fullPath)
 	if err != nil {
 		return errors.New("cannot remove box: " + err.Error())
 	}
@@ -65,7 +64,7 @@ func (r *fileRepo) GetBoxInfo(addr hash.Hash, box int) (*BoxInfo, error) {
 	}
 
 	// Check number of messages in directory
-	files, err := ioutil.ReadDir(r.getPath(addr, getBoxAsString(box)))
+	files, err := afero.ReadDir(r.fs, r.getPath(addr, getBoxAsString(box)))
 	if err != nil {
 		mbi.Total = 0
 	} else {
@@ -82,7 +81,7 @@ func (r *fileRepo) GetBoxInfo(addr hash.Hash, box int) (*BoxInfo, error) {
 func (r *fileRepo) GetAllBoxes(addr hash.Hash) ([]BoxInfo, error) {
 	var list []BoxInfo
 
-	files, err := ioutil.ReadDir(r.getPath(addr, ""))
+	files, err := afero.ReadDir(r.fs, r.getPath(addr, ""))
 	if err != nil {
 		return nil, err
 	}

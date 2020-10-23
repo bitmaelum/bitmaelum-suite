@@ -17,11 +17,10 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package middleware
+package auth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -34,42 +33,35 @@ import (
 	"github.com/vtolstov/jwt-go"
 )
 
-// JwtToken is a middleware that automatically verifies given JWT token
-type JwtToken struct{}
+// JwtAuth is a middleware that automatically verifies given JWT token
+type JwtAuth struct{}
 
-type claimsContext string
-type addressContext string
+const (
+	// ClaimsContext Context key for fetching JWT claims
+	ClaimsContext contextKey = iota
+	// AddressContext Context key for fetching the address
+	AddressContext
+)
 
 // ErrTokenNotValidated is returned when the token could not be validated (for any reason)
 var ErrTokenNotValidated = errors.New("token could not be validated")
 
-// @TODO make sure we can't use a key to fetch other people's info
-
-// Middleware JWT token authentication
-func (mw *JwtToken) Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		ctx, ok := mw.Authenticate(req)
-		if !ok {
-			ErrorOut(w, http.StatusUnauthorized, "Unauthorized")
-			return
-		}
-		next.ServeHTTP(w, req.WithContext(ctx))
-	})
-}
+var accountRepo = container.GetAccountRepo()
 
 // Authenticate will check if an API key matches the request
-func (mw *JwtToken) Authenticate(req *http.Request) (context.Context, bool) {
+func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (context.Context, bool) {
+	// Check if the address actually exists
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		return nil, false
 	}
 
-	ar := container.GetAccountRepo()
-	if !ar.Exists(*haddr) {
+	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
 	}
 
+	// Check token
 	token, err := checkToken(req.Header.Get("Authorization"), *haddr)
 	if err != nil {
 		logrus.Trace("auth: incorrect token: ", err)
@@ -77,27 +69,26 @@ func (mw *JwtToken) Authenticate(req *http.Request) (context.Context, bool) {
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, claimsContext("claims"), token.Claims)
-	ctx = context.WithValue(ctx, addressContext("address"), token.Claims.(*jwt.StandardClaims).Subject)
+	ctx = context.WithValue(ctx, ClaimsContext, token.Claims)
+	ctx = context.WithValue(ctx, AddressContext, token.Claims.(*jwt.StandardClaims).Subject)
 
 	return ctx, true
 }
 
 // Check if the authorization contains a valid JWT token for the given address
-func checkToken(auth string, addr hash.Hash) (*jwt.Token, error) {
-	if auth == "" {
+func checkToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
+	if bearerToken == "" {
 		logrus.Trace("auth: empty auth string")
 		return nil, ErrTokenNotValidated
 	}
 
-	if len(auth) <= 6 || strings.ToUpper(auth[0:7]) != "BEARER " {
+	if len(bearerToken) <= 6 || strings.ToUpper(bearerToken[0:7]) != "BEARER " {
 		logrus.Trace("auth: bearer not found")
 		return nil, ErrTokenNotValidated
 	}
-	tokenString := auth[7:]
+	tokenString := bearerToken[7:]
 
-	ar := container.GetAccountRepo()
-	keys, err := ar.FetchKeys(addr)
+	keys, err := accountRepo.FetchKeys(addr)
 	if err != nil {
 		logrus.Trace("auth: cannot fetch keys: ", err)
 		return nil, ErrTokenNotValidated
@@ -112,20 +103,4 @@ func checkToken(auth string, addr hash.Hash) (*jwt.Token, error) {
 
 	logrus.Trace("auth: no key found that validates the token")
 	return nil, ErrTokenNotValidated
-}
-
-// ErrorOut outputs an error
-func ErrorOut(w http.ResponseWriter, code int, msg string) {
-	type OutputResponse struct {
-		Error  bool   `json:"error,omitempty"`
-		Status string `json:"status"`
-	}
-
-	logrus.Debugf("Returning error (%d): %s", code, msg)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(&OutputResponse{
-		Error:  true,
-		Status: msg,
-	})
 }

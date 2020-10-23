@@ -17,43 +17,15 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package middleware
+package account
 
 import (
-	"context"
-	"fmt"
-	"net/http"
-
-	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 )
 
-// MultiAuth holds multiple middleware/authenticators that can authenticate against the API
-type MultiAuth struct {
-	Auths []Authenticable
-}
-
-type authContext string
-
-// Authenticable allows you to use the struct in the multi-auth middleware
-type Authenticable interface {
-	Authenticate(req *http.Request) (context.Context, bool)
-}
-
-// Middleware JWT token authentication
-func (ma *MultiAuth) Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		for _, auth := range ma.Auths {
-			logrus.Tracef("multiauth. Trying %T", auth)
-			ctx, ok := auth.Authenticate(req)
-			if ok {
-				ctx = context.WithValue(ctx, authContext("auth_method"), fmt.Sprintf("%T", auth))
-				logrus.Tracef("multiauth found ok %T", auth)
-				next.ServeHTTP(w, req.WithContext(ctx))
-				return
-			}
-		}
-
-		logrus.Tracef("multiauth unauthorized")
-		ErrorOut(w, http.StatusUnauthorized, "Unauthorized")
-	})
+// NewMockRepository returns a new mock repository by creating a file system with the afero memory mapped fs
+func NewMockRepository() Repository {
+	repo := NewFileRepository("/mockstorage")
+	repo.(*fileRepo).SetFileSystem(afero.NewMemMapFs(), false)
+	return repo
 }

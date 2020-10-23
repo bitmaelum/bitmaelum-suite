@@ -53,7 +53,7 @@ GO_LICENSE_BIN = $(GOPATH)/bin/addlicense
 # ---------------------------------------------------------------------------
 
 # Downloads external tools as they are not available by default
-go_get_test_bins:
+get_test_tools: ## go get all build tools needed to testing
 	go get -u honnef.co/go/tools/cmd/staticcheck
 	go get -u github.com/google/addlicense
 	go get -u github.com/gordonklaus/ineffassign
@@ -65,7 +65,7 @@ lint: ## Formats your go code to specified standards
 	$(GO_GOIMPORTS_BIN) -w  --format-only .
 
 ## Runs all tests for the whole repository
-test: go_get_test_bins test_goimports test_license test_vet test_golint test_staticcheck test_ineffassign test_gocyclo test_unit
+test: test_goimports test_license test_vet test_golint test_staticcheck test_ineffassign test_gocyclo test_unit
 
 test_license:
 	echo "Check licenses"

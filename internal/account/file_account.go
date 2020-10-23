@@ -20,8 +20,6 @@
 package account
 
 import (
-	"os"
-
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
@@ -33,7 +31,7 @@ func (r *fileRepo) Create(addr hash.Hash, pubKey bmcrypto.PubKey) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 
-	err := os.MkdirAll(fullPath, 0700)
+	err := r.fs.MkdirAll(fullPath, 0700)
 	if err != nil {
 		return err
 	}
@@ -70,5 +68,5 @@ func (r *fileRepo) Delete(addr hash.Hash) error {
 	fullPath := r.getPath(addr, "")
 	logrus.Debugf("creating hash directory %s", fullPath)
 
-	return os.RemoveAll(fullPath)
+	return r.fs.RemoveAll(fullPath)
 }

@@ -58,7 +58,6 @@ func TestValidateJWTToken(t *testing.T) {
 		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)
 	}
 
-
 	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
 	pubKey, _ := bmcrypto.NewPubKey(string(data))
 

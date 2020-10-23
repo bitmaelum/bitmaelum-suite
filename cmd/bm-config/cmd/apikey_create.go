@@ -62,6 +62,11 @@ Note: Creating an admin key can only be done locally on the mail-server.
 			os.Exit(1)
 		}
 
+		var expires = time.Time{}
+		if validDuration > 0 {
+			expires = time.Now().Add(validDuration)
+		}
+
 		err = parse.MangementPermissions(*mgPerms)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
@@ -75,14 +80,14 @@ Note: Creating an admin key can only be done locally on the mail-server.
 				fmt.Printf("Error: cannot specify permissions when you create an admin key (all permissions are automatically granted)\n")
 				os.Exit(1)
 			}
-			key = apikey.NewAdminKey(validDuration, *mgDesc)
+			key = apikey.NewAdminKey(expires, *mgDesc)
 		} else {
 			fmt.Printf("Creating new regular key\n")
 			if len(*mgPerms) == 0 {
 				fmt.Printf("Error: need a set of permissions when generating a regular key\n")
 				os.Exit(1)
 			}
-			key = apikey.NewKey(*mgPerms, validDuration, *mgDesc)
+			key = apikey.NewKey(*mgPerms, expires, *mgDesc)
 		}
 
 		// Store API key into persistent storage
@@ -94,8 +99,8 @@ Note: Creating an admin key can only be done locally on the mail-server.
 		}
 
 		fmt.Printf("Your API key: %s\n", key.ID)
-		if !key.ValidUntil.IsZero() {
-			fmt.Printf("Key is valid until %s\n", key.ValidUntil.Format(time.RFC822))
+		if !key.Expires.IsZero() {
+			fmt.Printf("Key is valid until %s\n", key.Expires.Format(time.RFC822))
 		}
 	},
 }
