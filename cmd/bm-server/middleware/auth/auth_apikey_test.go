@@ -20,12 +20,12 @@
 package auth
 
 import (
-	"context"
 	"math/rand"
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
@@ -68,47 +68,35 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 		},
 	}
 
-	var (
-		apiKeyReq *http.Request
-		ctx       context.Context
-		ok        bool
-	)
+	var req *http.Request
 
 	// No address
-	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
-	ctx, ok = a.Authenticate(apiKeyReq, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	req, _ = http.NewRequest("GET", "/foo", nil)
+	checkFalse(t, &a, req)
 
 	// No auth
-	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
-	apiKeyReq.Header.Set("authorization", "")
-	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
+	req, _ = http.NewRequest("GET", "/foo", nil)
+	req.Header.Set("authorization", "")
+	req = mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
-	ctx, ok = a.Authenticate(apiKeyReq, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	checkFalse(t, &a, req)
 
 	// Address does not exist
-	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
-	apiKeyReq.Header.Set("authorization", "foobar")
-	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
+	req, _ = http.NewRequest("GET", "/foo", nil)
+	req.Header.Set("authorization", "foobar")
+	req = mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("doesnotexist!").String(),
 	})
-	ctx, ok = a.Authenticate(apiKeyReq, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	checkFalse(t, &a, req)
 
 	// Not a named route
-	apiKeyReq, _ = http.NewRequest("GET", "/foo", nil)
-	apiKeyReq.Header.Set("authorization", "foobar")
-	apiKeyReq = mux.SetURLVars(apiKeyReq, map[string]string{
+	req, _ = http.NewRequest("GET", "/foo", nil)
+	req.Header.Set("authorization", "foobar")
+	req = mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
-	ctx, ok = a.Authenticate(apiKeyReq, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	checkFalse(t, &a, req)
 
 	// no key after bearer
 	checkKey(t, a, false, "", "example!", "foo")
@@ -143,6 +131,12 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "foo") // Matches b and c
 	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "bar") // Matches b
 	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "baz") // Matches c
+}
+
+func checkFalse(t *testing.T, a middleware.Authenticator, req *http.Request) {
+	ctx, ok := a.Authenticate(req, "")
+	assert.False(t, ok)
+	assert.Nil(t, ctx)
 }
 
 func checkKey(t *testing.T, a APIKeyAuth, pass bool, token, addr, routeName string) {
