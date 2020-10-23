@@ -80,6 +80,17 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	assert.False(t, ok)
 	assert.Nil(t, ctx)
 
+	// No auth
+	req, _ = http.NewRequest("GET", "/foo", nil)
+	req.Header.Set("authorization", "")
+	req = mux.SetURLVars(req, map[string]string{
+		"addr": hash.New("example!").String(),
+	})
+
+	ctx, ok = a.Authenticate(req, "")
+	assert.False(t, ok)
+	assert.Nil(t, ctx)
+	
 	// Address does not exist
 	req, _ = http.NewRequest("GET", "/foo", nil)
 	req.Header.Set("authorization", "foobar")
@@ -104,17 +115,6 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	// Not a named route
 	req, _ = http.NewRequest("GET", "/foo", nil)
 	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("example!").String(),
-	})
-
-	ctx, ok = a.Authenticate(req, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
-
-	// No auth
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "")
 	req = mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
