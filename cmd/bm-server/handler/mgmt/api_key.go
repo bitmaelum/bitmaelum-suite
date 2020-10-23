@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
@@ -33,7 +34,7 @@ import (
 
 type inputAPIKeyType struct {
 	Permissions []string `json:"permissions"`
-	Valid       string   `json:"valid"`
+	Expires     int64    `json:"expires"`
 	AddrHash    string   `json:"hash,omitempty"`
 	Desc        string   `json:"description,omitempty"`
 }
@@ -59,20 +60,13 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Our custom parser allows (and defaults) to using days
-	validDuration, err := parse.ValidDuration(input.Valid)
-	if err != nil {
-		handler.ErrorOut(w, http.StatusBadRequest, "incorrect valid duration")
-		return
-	}
-
 	err = parse.MangementPermissions(input.Permissions)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return
 	}
 
-	newAPIKey := apikey.NewAccountKey(h, input.Permissions, validDuration, input.Desc)
+	newAPIKey := apikey.NewAccountKey(h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store API key into persistent storage
 	repo := container.GetAPIKeyRepo()

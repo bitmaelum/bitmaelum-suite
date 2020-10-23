@@ -30,7 +30,7 @@ import (
 // KeyType represents a key with a validity and permissions. When admin is true, permission checks are always true
 type KeyType struct {
 	ID          string     `json:"key"`
-	ValidUntil  time.Time  `json:"valid_until"`
+	Expires     time.Time  `json:"expires"`
 	Permissions []string   `json:"permissions"`
 	Admin       bool       `json:"admin"`
 	AddrHash    *hash.Hash `json:"addr_hash"`
@@ -38,15 +38,10 @@ type KeyType struct {
 }
 
 // NewAdminKey creates a new admin key
-func NewAdminKey(valid time.Duration, desc string) KeyType {
-	var until = time.Time{}
-	if valid > 0 {
-		until = time.Now().Add(valid)
-	}
-
+func NewAdminKey(expiry time.Time, desc string) KeyType {
 	return KeyType{
 		ID:          GenerateKey("BMK-", 32),
-		ValidUntil:  until,
+		Expires:     expiry,
 		Permissions: nil,
 		Admin:       true,
 		AddrHash:    nil,
@@ -55,15 +50,10 @@ func NewAdminKey(valid time.Duration, desc string) KeyType {
 }
 
 // NewAccountKey creates a new key with the given permissions and duration for the given account
-func NewAccountKey(addrHash *hash.Hash, perms []string, valid time.Duration, desc string) KeyType {
-	var until = time.Time{}
-	if valid > 0 {
-		until = time.Now().Add(valid)
-	}
-
+func NewAccountKey(addrHash *hash.Hash, perms []string, expiry time.Time, desc string) KeyType {
 	return KeyType{
 		ID:          GenerateKey("BMK-", 32),
-		ValidUntil:  until,
+		Expires:     expiry,
 		Permissions: perms,
 		Admin:       false,
 		AddrHash:    addrHash,
@@ -72,15 +62,10 @@ func NewAccountKey(addrHash *hash.Hash, perms []string, valid time.Duration, des
 }
 
 // NewKey creates a new key with the given permissions and duration
-func NewKey(perms []string, valid time.Duration, desc string) KeyType {
-	var until = time.Time{}
-	if valid > 0 {
-		until = time.Now().Add(valid)
-	}
-
+func NewKey(perms []string, expiry time.Time, desc string) KeyType {
 	return KeyType{
 		ID:          GenerateKey("BMK-", 32),
-		ValidUntil:  until,
+		Expires:     expiry,
 		Permissions: perms,
 		Admin:       false,
 		AddrHash:    nil,
