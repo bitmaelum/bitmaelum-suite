@@ -46,7 +46,7 @@ type PubKeys struct {
 type fileRepo struct {
 	basePath string
 	fs       afero.Fs
-	canLock  bool           // Can the filesystem do file locking?
+	canLock  bool // Can the filesystem do file locking?
 }
 
 // NewFileRepository returns a new file repository
@@ -68,7 +68,7 @@ func (r *fileRepo) SetFileSystem(fs afero.Fs, canLock bool) {
 // lockFile will lock the given file and returns it IF the filesystem currently initialized allows locking. It will return
 // a nil lockfile (which is valid) if no locking is possible.
 func (r *fileRepo) lockFile(p string) (*lockfile.Lockfile, error) {
-	if r.canLock == false {
+	if !r.canLock {
 		return nil, nil
 	}
 

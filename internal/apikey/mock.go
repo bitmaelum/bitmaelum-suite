@@ -46,7 +46,7 @@ func (r mockRepo) FetchByHash(h string) ([]KeyType, error) {
 		return nil, errors.New("not found")
 	}
 
-	for item, _ := range items {
+	for item := range items {
 		key, err := r.Fetch(item)
 		if err != nil {
 			continue
@@ -97,7 +97,7 @@ func (r mockRepo) Store(apiKey KeyType) error {
 // Remove the given key from the repository
 func (r mockRepo) Remove(apiKey KeyType) error {
 	if apiKey.AddrHash != nil {
-		delete( r.addr[apiKey.ID], apiKey.AddrHash.String())
+		delete(r.addr[apiKey.ID], apiKey.AddrHash.String())
 	}
 
 	delete(r.keys, apiKey.ID)

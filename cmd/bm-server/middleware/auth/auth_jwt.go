@@ -33,20 +33,23 @@ import (
 	"github.com/vtolstov/jwt-go"
 )
 
-// AuthJwt is a middleware that automatically verifies given JWT token
-type AuthJwt struct{}
+// JwtAuth is a middleware that automatically verifies given JWT token
+type JwtAuth struct{}
 
-type ClaimsContext string
-type AddressContext string
+const (
+	// ClaimsContext Context key for fetching JWT claims
+	ClaimsContext contextKey = iota
+	// AddressContext Context key for fetching the address
+	AddressContext
+)
 
 // ErrTokenNotValidated is returned when the token could not be validated (for any reason)
 var ErrTokenNotValidated = errors.New("token could not be validated")
 
-
 var accountRepo = container.GetAccountRepo()
 
 // Authenticate will check if an API key matches the request
-func (mw *AuthJwt) Authenticate(req *http.Request, _ string) (context.Context, bool) {
+func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (context.Context, bool) {
 	// Check if the address actually exists
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
@@ -66,8 +69,8 @@ func (mw *AuthJwt) Authenticate(req *http.Request, _ string) (context.Context, b
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, ClaimsContext("claims"), token.Claims)
-	ctx = context.WithValue(ctx, AddressContext("address"), token.Claims.(*jwt.StandardClaims).Subject)
+	ctx = context.WithValue(ctx, ClaimsContext, token.Claims)
+	ctx = context.WithValue(ctx, AddressContext, token.Claims.(*jwt.StandardClaims).Subject)
 
 	return ctx, true
 }

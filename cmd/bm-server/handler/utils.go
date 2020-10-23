@@ -100,7 +100,7 @@ func DecodeBody(w http.ResponseWriter, body io.ReadCloser, v interface{}) error 
 
 // GetAPIKey returns the api key stored in the request context. If not found, it will return a dummy key with no permissions
 func GetAPIKey(req *http.Request) *apikey.KeyType {
-	val := req.Context().Value(auth.APIKeyContext("apikey"))
+	val := req.Context().Value(auth.APIKeyContext)
 	if val == nil {
 		return &apikey.KeyType{}
 	}
@@ -108,7 +108,7 @@ func GetAPIKey(req *http.Request) *apikey.KeyType {
 	return val.(*apikey.KeyType)
 }
 
-// IsApiKeyAuthenticated returns true when the given request is authenticated by a api key
-func IsApiKeyAuthenticated(req *http.Request) bool {
+// IsAPIKeyAuthenticated returns true when the given request is authenticated by a api key
+func IsAPIKeyAuthenticated(req *http.Request) bool {
 	return req.Context().Value("auth_method") == "*middleware.APIKey"
 }

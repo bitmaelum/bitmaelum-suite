@@ -58,7 +58,7 @@ var apiListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		keys, err := client.ListApiKeys(info.AddressHash())
+		keys, err := client.ListAPIKeys(info.AddressHash())
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)
@@ -81,7 +81,7 @@ var apiListCmd = &cobra.Command{
 }
 
 var (
-	alAddress    *string
+	alAddress *string
 )
 
 func init() {

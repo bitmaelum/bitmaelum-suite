@@ -145,9 +145,9 @@ func setupSignals(cancel context.CancelFunc) {
 	}()
 }
 
-var apikeyPermissionList = map[string][]string {
+var apikeyPermissionList = map[string][]string{
 	"ticket": {"send-mail"},
-	"boxes": {"get-header"},
+	"boxes":  {"get-header"},
 }
 
 func setupRouter() *mux.Router {
@@ -178,7 +178,7 @@ func setupRouter() *mux.Router {
 
 	// Routes that need to be authenticated through JWT alone
 	authorizer := &middleware.Authenticate{}
-	authorizer.Add(&auth.AuthJwt{})
+	authorizer.Add(&auth.JwtAuth{})
 
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
 	authRouter.Use(logger.Middleware)
@@ -202,8 +202,8 @@ func setupRouter() *mux.Router {
 
 	// Routes that need to be authenticated through JWT alone
 	authorizer = &middleware.Authenticate{}
-	authorizer.Add(&auth.AuthJwt{})
-	authorizer.Add(&auth.AuthAPIKey{
+	authorizer.Add(&auth.JwtAuth{})
+	authorizer.Add(&auth.APIKeyAuth{
 		PermissionList: apikeyPermissionList,
 	})
 
@@ -217,11 +217,10 @@ func setupRouter() *mux.Router {
 	auth2Router.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetClientToServerTicket).Methods("POST").Name("ticket")
 	auth2Router.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.RetrieveBoxes).Methods("GET").Name("boxes")
 
-
 	// Add management endpoints if enabled
 	if config.Server.Management.Enabled {
 		authorizer = &middleware.Authenticate{}
-		authorizer.Add(&auth.AuthAPIKey{
+		authorizer.Add(&auth.APIKeyAuth{
 			PermissionList: apikeyPermissionList,
 		})
 

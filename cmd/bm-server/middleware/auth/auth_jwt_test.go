@@ -45,8 +45,7 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	// ts, _ := internal.GenerateJWTToken(hash.New("example!"), *privkey)
 	// fmt.Println(ts)
 
-
-	a := AuthJwt{}
+	a := JwtAuth{}
 
 	var (
 		req *http.Request
@@ -104,5 +103,5 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	})
 	ctx, ok = a.Authenticate(req, "")
 	assert.True(t, ok)
-	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", ctx.Value(AddressContext("address")))
+	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", ctx.Value(AddressContext))
 }

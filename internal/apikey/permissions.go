@@ -26,7 +26,7 @@ const (
 	PermGenerateInvites string = "invite"
 	// PermAPIKeys Permission to create api keys
 	PermAPIKeys string = "apikey"
-	// PermMail Permission to send email
+	// PermSendMail Permission to send email
 	PermSendMail string = "send-mail"
 	// PermGetHeaders allows you to fetch header and catalog from messages
 	PermGetHeaders string = "get-headers"
