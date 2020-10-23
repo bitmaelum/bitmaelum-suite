@@ -33,6 +33,8 @@ import (
 	"github.com/vtolstov/jwt-go"
 )
 
+// Lots of code is abstracted into functions. THis is to please sonarcloud duplication system
+
 func TestAuthJwtAuthenticate(t *testing.T) {
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
@@ -56,11 +58,7 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	checkFalse(t, &a, req)
 
 	// Address does not exist
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("doesnotexist!").String(),
-	})
+	req = createReq("foobar", "doesnotexist!")
 	checkFalse(t, &a, req)
 
 	// No authorization
@@ -71,11 +69,7 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	checkFalse(t, &a, req)
 
 	// No bearer key
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("example!").String(),
-	})
+	req = createReq("foobar", "example!")
 	checkFalse(t, &a, req)
 
 	// Incorrect jwt token: not a token with the correct private key

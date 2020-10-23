@@ -34,6 +34,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Lots of code is abstracted into functions. THis is to please sonarcloud duplication system
+
 var apiKeyFixtures = []apikey.KeyType{
 	apikey.NewAccountKey(hash.New("user-1!"), []string{"a"}, time.Time{}, "my desc 1"),
 	apikey.NewAccountKey(hash.New("user-2!"), []string{"b"}, time.Time{}, "my desc 2"),
@@ -75,30 +77,18 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	checkFalse(t, &a, req)
 
 	// No auth
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "")
-	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("example!").String(),
-	})
+	req = createReq("", "example!")
 	checkFalse(t, &a, req)
 
 	// Address does not exist
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("doesnotexist!").String(),
-	})
+	req = createReq("foobar", "doesnotexist!")
 	checkFalse(t, &a, req)
 
-	// Not a named route
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("example!").String(),
-	})
+	// ?
+	req = createReq("foobar", "example!")
 	checkFalse(t, &a, req)
 
-	// no key after bearer
+	// No key after bearer
 	checkKey(t, a, false, "", "example!", "foo")
 
 	// Expired key
@@ -131,6 +121,19 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "foo") // Matches b and c
 	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "bar") // Matches b
 	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "baz") // Matches c
+}
+
+func createReq(auth string, addr string) *http.Request {
+	req, _ := http.NewRequest("GET", "/foo", nil)
+	req.Header.Set("authorization", auth)
+
+	if addr != "" {
+		req = mux.SetURLVars(req, map[string]string{
+			"addr": hash.New("example!").String(),
+		})
+	}
+
+	return req
 }
 
 func checkFalse(t *testing.T, a middleware.Authenticator, req *http.Request) {
