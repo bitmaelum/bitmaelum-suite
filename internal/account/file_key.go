@@ -33,6 +33,9 @@ func (r *fileRepo) StoreKey(addr hash.Hash, key bmcrypto.PubKey) error {
 	// Lock our key file for writing
 	lockfilePath := r.getPath(addr, keysFile+".lock")
 	lock, err := r.lockFile(lockfilePath)
+	if err != nil {
+		return err
+	}
 
 	err = r.tryLockFile(lock)
 	if err != nil {

@@ -17,30 +17,23 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package handlers
 
-const (
-	// PermFlush Permission to restart/reload the system including flushing/forcing the queues
-	PermFlush string = "flush"
-	// PermGenerateInvites Permission to generate invites remotely
-	PermGenerateInvites string = "invite"
-	// PermAPIKeys Permission to create api keys
-	PermAPIKeys string = "apikey"
-	// PermSendMail Permission to send email
-	PermSendMail string = "send-mail"
-	// PermGetHeaders allows you to fetch header and catalog from messages
-	PermGetHeaders string = "get-headers"
+import (
+	"encoding/base64"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// ManagementPermissons is a list of all permissions available for remote management
-var ManagementPermissons = []string{
-	PermAPIKeys,
-	PermFlush,
-	PermGenerateInvites,
-}
+// SignOnbehalf
+func SignOnbehalf(info *internal.AccountInfo, targetKey string) (string, error) {
+	h := hash.New(targetKey)
+	signedKey, err := bmcrypto.Sign(info.PrivKey, h.Byte())
+	if err != nil {
+		return "", err
+	}
 
-// AccountPermissions is a set of permissions for specific accounts
-var AccountPermissions = []string{
-	PermGetHeaders,
-	PermSendMail,
+	return base64.StdEncoding.EncodeToString(signedKey), nil
 }

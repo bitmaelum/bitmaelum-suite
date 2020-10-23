@@ -69,7 +69,7 @@ var apiCreateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = client.CreateApiKey(info.AddressHash(), key)
+		err = client.CreateAPIKey(info.AddressHash(), key)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

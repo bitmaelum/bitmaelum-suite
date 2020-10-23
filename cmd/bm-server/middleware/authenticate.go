@@ -34,7 +34,12 @@ type Authenticate struct {
 	Chain []Authenticator
 }
 
-type authContext string
+type contextKey int
+
+const (
+	// AuthorizationContext is a context key that defines the authorization method
+	AuthorizationContext contextKey = iota
+)
 
 // Authenticator allows you to use the struct in the multi-auth middleware
 type Authenticator interface {
@@ -52,7 +57,7 @@ func (ma *Authenticate) Middleware(next http.Handler) http.Handler {
 			logrus.Tracef("authenticate: trying %T", auth)
 			ctx, ok := auth.Authenticate(req, currentRouteName)
 			if ok {
-				ctx = context.WithValue(ctx, authContext("auth_method"), fmt.Sprintf("%T", auth))
+				ctx = context.WithValue(ctx, AuthorizationContext, fmt.Sprintf("%T", auth))
 				logrus.Tracef("authenticate: found ok %T", auth)
 				next.ServeHTTP(w, req.WithContext(ctx))
 				return

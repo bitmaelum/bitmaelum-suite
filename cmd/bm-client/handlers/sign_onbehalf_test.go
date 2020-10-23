@@ -17,30 +17,27 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package handlers
 
-const (
-	// PermFlush Permission to restart/reload the system including flushing/forcing the queues
-	PermFlush string = "flush"
-	// PermGenerateInvites Permission to generate invites remotely
-	PermGenerateInvites string = "invite"
-	// PermAPIKeys Permission to create api keys
-	PermAPIKeys string = "apikey"
-	// PermSendMail Permission to send email
-	PermSendMail string = "send-mail"
-	// PermGetHeaders allows you to fetch header and catalog from messages
-	PermGetHeaders string = "get-headers"
+import (
+	"testing"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
+	"github.com/stretchr/testify/assert"
 )
 
-// ManagementPermissons is a list of all permissions available for remote management
-var ManagementPermissons = []string{
-	PermAPIKeys,
-	PermFlush,
-	PermGenerateInvites,
-}
+func TestSignOnbehalf(t *testing.T) {
+	privkey, pubkey, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-1.json")
+	info := &internal.AccountInfo{
+		Address:   "example!",
+		PrivKey:   *privkey,
+		PubKey:    *pubkey,
+	}
 
-// AccountPermissions is a set of permissions for specific accounts
-var AccountPermissions = []string{
-	PermGetHeaders,
-	PermSendMail,
+	_, pubkey2, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-2.json")
+
+	res, err := SignOnbehalf(info, pubkey2.String())
+	assert.NoError(t, err)
+	assert.Equal(t, "GRlSsdrkcciQSOiZNPHO0e0emRAv9x0rhB+eARdarkHeCJL9YOIHghen5C8+8IAaNGe0qHVPal+EcdXCKjQVBg==", res)
 }

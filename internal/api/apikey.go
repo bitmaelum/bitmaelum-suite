@@ -27,11 +27,11 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// CreateApiKey Create a new API key
-func (api *API) CreateApiKey(addrHash hash.Hash, key apikey.KeyType) error {
+// CreateAPIKey Create a new API key
+func (api *API) CreateAPIKey(addrHash hash.Hash, key apikey.KeyType) error {
 	// Zero is not 1970, but year 1
 	var expires int64
-	if ! key.Expires.IsZero() {
+	if !key.Expires.IsZero() {
 		expires = key.Expires.Unix()
 	}
 
@@ -61,8 +61,8 @@ func (api *API) CreateApiKey(addrHash hash.Hash, key apikey.KeyType) error {
 	return nil
 }
 
-// DeleteApiKey deletes a new API key
-func (api *API) DeleteApiKey(addrHash hash.Hash, ID string) error {
+// DeleteAPIKey deletes a new API key
+func (api *API) DeleteAPIKey(addrHash hash.Hash, ID string) error {
 	url := fmt.Sprintf("/account/%s/apikey/%s", addrHash.String(), ID)
 	body, statusCode, err := api.Delete(url)
 	if err != nil {
@@ -80,8 +80,8 @@ func (api *API) DeleteApiKey(addrHash hash.Hash, ID string) error {
 	return nil
 }
 
-// ListApiKeys lists alll API keys
-func (api *API) ListApiKeys(addrHash hash.Hash) ([]apikey.KeyType, error) {
+// ListAPIKeys lists alll API keys
+func (api *API) ListAPIKeys(addrHash hash.Hash) ([]apikey.KeyType, error) {
 	url := fmt.Sprintf("/account/%s/apikey", addrHash.String())
 	body, statusCode, err := api.Get(url)
 	if err != nil {
@@ -106,8 +106,8 @@ func (api *API) ListApiKeys(addrHash hash.Hash) ([]apikey.KeyType, error) {
 	return *keys, nil
 }
 
-// GetApiKey gets a single key
-func (api *API) GetApiKey(addrHash hash.Hash, ID string) (*apikey.KeyType, error) {
+// GetAPIKey gets a single key
+func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*apikey.KeyType, error) {
 	url := fmt.Sprintf("/account/%s/apikey/%s", addrHash.String(), ID)
 	body, statusCode, err := api.Get(url)
 	if err != nil {

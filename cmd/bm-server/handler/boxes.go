@@ -127,7 +127,7 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// if we authenticated by API-key, we only return the message IDs
-	if IsApiKeyAuthenticated(req) {
+	if IsAPIKeyAuthenticated(req) {
 		var ids []string
 		for _, msg := range list.Messages {
 			ids = append(ids, msg.ID)

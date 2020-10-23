@@ -33,11 +33,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// AuthAPIKey is a middleware that automatically verifies given API key
-type AuthAPIKey struct{
+// APIKeyAuth is a middleware that automatically verifies given API key
+type APIKeyAuth struct {
 	PermissionList map[string][]string
 }
-
 
 var (
 	// ErrInvalidAPIKey is returned when the API key is not valid
@@ -48,19 +47,23 @@ var (
 	ErrInvalidAuthentication = errors.New("invalid authentication")
 	// ErrIncorrectRoute is returned when a route without a name is used (permissions are checked against named routes only)
 	ErrIncorrectRoute = errors.New("api keys need named routes")
-	// When a user does not have the correct permission
+	// ErrInvalidPermission When a user does not have the correct permission
 	ErrInvalidPermission = errors.New("api keys need named routes")
 )
 
-// APIKeyContext is a context key with the value the API key
-type APIKeyContext string
+type contextKey int
+
+const (
+	// APIKeyContext is a context key with the value the API key
+	APIKeyContext contextKey = iota
+)
 
 // @TODO make sure we can't use a key to fetch other people's info
 
 var apiKeyRepo = container.GetAPIKeyRepo()
 
 // Authenticate will check if an API key matches the request
-func (a *AuthAPIKey) Authenticate(req *http.Request, route string) (context.Context, bool) {
+func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (context.Context, bool) {
 	// Check if the address actually exists
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
@@ -79,12 +82,12 @@ func (a *AuthAPIKey) Authenticate(req *http.Request, route string) (context.Cont
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, APIKeyContext("api-key"), key)
+	ctx = context.WithValue(ctx, APIKeyContext, key)
 
 	return ctx, true
 }
 
-func (a *AuthAPIKey) checkAPIKey(bearerToken string, addrHash hash.Hash, routeName string) (*apikey.KeyType, error) {
+func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeName string) (*apikey.KeyType, error) {
 	key, err := a.getAPIKey(bearerToken)
 	if err != nil {
 		return nil, err
@@ -120,7 +123,7 @@ func (a *AuthAPIKey) checkAPIKey(bearerToken string, addrHash hash.Hash, routeNa
 }
 
 // check authorization API key
-func (*AuthAPIKey) getAPIKey(bearerToken string) (*apikey.KeyType, error) {
+func (*APIKeyAuth) getAPIKey(bearerToken string) (*apikey.KeyType, error) {
 	if bearerToken == "" {
 		return nil, ErrInvalidAuthentication
 	}

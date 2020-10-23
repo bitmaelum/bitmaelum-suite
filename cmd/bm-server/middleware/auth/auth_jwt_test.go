@@ -33,6 +33,8 @@ import (
 	"github.com/vtolstov/jwt-go"
 )
 
+// Lots of code is abstracted into functions. THis is to please sonarcloud duplication system
+
 func TestAuthJwtAuthenticate(t *testing.T) {
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
@@ -42,11 +44,8 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	jwt.TimeFunc = func() time.Time {
 		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)
 	}
-	// ts, _ := internal.GenerateJWTToken(hash.New("example!"), *privkey)
-	// fmt.Println(ts)
 
-
-	a := AuthJwt{}
+	a := JwtAuth{}
 
 	var (
 		req *http.Request
@@ -56,53 +55,38 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 
 	// No address
 	req, _ = http.NewRequest("GET", "/foo", nil)
-	ctx, ok = a.Authenticate(req, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	checkFalse(t, &a, req)
 
 	// Address does not exist
-	req, _ = http.NewRequest("GET", "/foo", nil)
-	req.Header.Set("authorization", "foobar")
-	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("doesnotexist!").String(),
-	})
-	ctx, ok = a.Authenticate(req, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	req = createReq("foobar", "doesnotexist!")
+	checkFalse(t, &a, req)
 
 	// No authorization
 	req, _ = http.NewRequest("GET", "/foo", nil)
 	req = mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
-	ctx, ok = a.Authenticate(req, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	checkFalse(t, &a, req)
 
 	// No bearer key
-	req.Header.Set("authorization", "foobar")
-	mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("example!").String(),
-	})
-	ctx, ok = a.Authenticate(req, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	req = createReq("foobar", "example!")
+	checkFalse(t, &a, req)
 
 	// Incorrect jwt token: not a token with the correct private key
+	req, _ = http.NewRequest("GET", "/foo", nil)
 	req.Header.Set("authorization", "bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODU2OTYsImlhdCI6MTU3Nzg4MjA5NiwibmJmIjoxNTc3ODgyMDk2LCJzdWIiOiIyZTQ1NTFkZTgwNGUyN2FhY2YyMGY5ZGY1YmUzZThjZDM4NGVkNjQ0ODhiMjFhYjA3OWZiNThlOGM5MDA2OGFiIn0.Bdm5brolKzTB4S-NQPTa93ubzPjejJb5hT8tpuRJG2Qpx3D0XrkAUAJNRyrQ2-aH188mfKmPcYeTXwd4qF3IAg")
-	mux.SetURLVars(req, map[string]string{
+	req = mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
-	ctx, ok = a.Authenticate(req, "")
-	assert.False(t, ok)
-	assert.Nil(t, ctx)
+	checkFalse(t, &a, req)
 
 	// Correct JWT token
+	req, _ = http.NewRequest("GET", "/foo", nil)
 	req.Header.Set("authorization", "bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODU2OTYsImlhdCI6MTU3Nzg4MjA5NiwibmJmIjoxNTc3ODgyMDk2LCJzdWIiOiIyZTQ1NTFkZTgwNGUyN2FhY2YyMGY5ZGY1YmUzZThjZDM4NGVkNjQ0ODhiMjFhYjA3OWZiNThlOGM5MDA2OGFiIn0.EJmNoi18A0F_XGuel547ugFRcsIy3ZQj-NNp1JQB49zTdXHQ2Ob587CnYhUoREuHS-AJJAEHwuuAbsZIYkJoBw")
-	mux.SetURLVars(req, map[string]string{
+	req = mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
 	ctx, ok = a.Authenticate(req, "")
 	assert.True(t, ok)
-	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", ctx.Value(AddressContext("address")))
+	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", ctx.Value(AddressContext))
 }
