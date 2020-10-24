@@ -40,28 +40,28 @@ var fs = afero.NewOsFs()
 
 // BlockType represents a message block as used inside a catalog
 type BlockType struct {
-	ID          string     `json:"id"`          // BLock identifier UUID
-	Type        string     `json:"type"`        // Type of the block. Can be anything message readers can parse.
-	Size        uint64     `json:"size"`        // Size of the block in bytes
-	Encoding    string     `json:"encoding"`    // Encoding of the block in case it's encoded
-	Compression string     `json:"compression"` // Compression used
-	Checksum    []Checksum `json:"checksum"`    // Checksums of the block
-	Reader      io.Reader  `json:"-"`           // Reader of the block data
-	Key         []byte     `json:"key"`         // Key for decryption
-	IV          []byte     `json:"iv"`          // IV for decryption
+	ID          string       `json:"id"`          // BLock identifier UUID
+	Type        string       `json:"type"`        // Type of the block. Can be anything message readers can parse.
+	Size        uint64       `json:"size"`        // Size of the block in bytes
+	Encoding    string       `json:"encoding"`    // Encoding of the block in case it's encoded
+	Compression string       `json:"compression"` // Compression used
+	Checksum    ChecksumList `json:"checksum"`    // Checksums of the block
+	Reader      io.Reader    `json:"-"`           // Reader of the block data
+	Key         []byte       `json:"key"`         // Key for decryption
+	IV          []byte       `json:"iv"`          // IV for decryption
 }
 
 // AttachmentType represents a message attachment as used inside a catalog
 type AttachmentType struct {
-	ID          string     `json:"id"`          // Attachment identifier UUID
-	MimeType    string     `json:"mimetype"`    // Mimetype
-	FileName    string     `json:"filename"`    // Filename
-	Size        uint64     `json:"size"`        // Size of the attachment in bytes
-	Compression string     `json:"compression"` // Compression used
-	Checksum    []Checksum `json:"checksum"`    // Checksums of the data
-	Reader      io.Reader  `json:"-"`           // Reader to the attachment data
-	Key         []byte     `json:"key"`         // Key for decryption
-	IV          []byte     `json:"iv"`          // IV for decryption
+	ID          string       `json:"id"`          // Attachment identifier UUID
+	MimeType    string       `json:"mimetype"`    // Mimetype
+	FileName    string       `json:"filename"`    // Filename
+	Size        uint64       `json:"size"`        // Size of the attachment in bytes
+	Compression string       `json:"compression"` // Compression used
+	Checksum    ChecksumList `json:"checksum"`    // Checksums of the data
+	Reader      io.Reader    `json:"-"`           // Reader to the attachment data
+	Key         []byte       `json:"key"`         // Key for decryption
+	IV          []byte       `json:"iv"`          // IV for decryption
 }
 
 // Catalog is the structure that represents a message catalog. This will hold all information about the
