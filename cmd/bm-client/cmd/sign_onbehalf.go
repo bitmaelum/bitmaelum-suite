@@ -25,27 +25,34 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
 
 var onbehalfCmd = &cobra.Command{
-	Use:     "sign-onbehalf",
-	Short:   "Sign a key that allows mail on behalf of you",
+	Use:   "sign-onbehalf",
+	Short: "Sign a key that allows mail on behalf of you",
 	Long: `By signing anohter users key, you can allow it to send messages for you. This way, you can let other people 
 or tools send messages without exposing your own private key.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
 
-		info := vault.GetAccountOrDefault(v, *rAccount)
+		info := vault.GetAccountOrDefault(v, *oAccount)
 		if info == nil {
 			logrus.Fatal("No account found in vault")
 			os.Exit(1)
 		}
 
-		signedTargetKey, err := handlers.SignOnbehalf(info, *oTargetKey)
+		targetKey, err := bmcrypto.NewPubKey(*oTargetKey)
+		if err != nil {
+			logrus.Fatal("Not a valid key")
+			os.Exit(1)
+		}
+
+		signedTargetKey, err := handlers.SignOnbehalf(info.PrivKey, *targetKey)
 		if err != nil {
 			logrus.Fatal("Error while signing key: ", err)
 			os.Exit(1)

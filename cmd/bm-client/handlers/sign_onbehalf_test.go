@@ -22,22 +22,15 @@ package handlers
 import (
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSignOnbehalf(t *testing.T) {
-	privkey, pubkey, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-1.json")
-	info := &internal.AccountInfo{
-		Address:   "example!",
-		PrivKey:   *privkey,
-		PubKey:    *pubkey,
-	}
+	sourcePrivkey, _, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-1.json")
+	_, targetPubkey, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-2.json")
 
-	_, pubkey2, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-2.json")
-
-	res, err := SignOnbehalf(info, pubkey2.String())
+	res, err := SignOnbehalf(*sourcePrivkey, *targetPubkey)
 	assert.NoError(t, err)
 	assert.Equal(t, "GRlSsdrkcciQSOiZNPHO0e0emRAv9x0rhB+eARdarkHeCJL9YOIHghen5C8+8IAaNGe0qHVPal+EcdXCKjQVBg==", res)
 }

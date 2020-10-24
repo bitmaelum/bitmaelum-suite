@@ -22,15 +22,14 @@ package handlers
 import (
 	"encoding/base64"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// SignOnbehalf
-func SignOnbehalf(info *internal.AccountInfo, targetKey string) (string, error) {
-	h := hash.New(targetKey)
-	signedKey, err := bmcrypto.Sign(info.PrivKey, h.Byte())
+// SignOnbehalf will sign a target key by the private key of info
+func SignOnbehalf(sourceKey bmcrypto.PrivKey, targetKey bmcrypto.PubKey) (string, error) {
+	h := hash.New(targetKey.String())
+	signedKey, err := bmcrypto.Sign(sourceKey, h.Byte())
 	if err != nil {
 		return "", err
 	}

@@ -44,9 +44,9 @@ func TestInfoToOrg(t *testing.T) {
 
 func TestAccountInfoAddressHash(t *testing.T) {
 	info := &AccountInfo{
-		Default:   false,
-		Address:   "example!",
-		Name:      "John DOe",
+		Default: false,
+		Address: "example!",
+		Name:    "John DOe",
 	}
 
 	assert.Equal(t, "2244643da7475120bf84d744435d15ea297c36ca165ea0baaa69ec818d0e952f", info.AddressHash().String())
