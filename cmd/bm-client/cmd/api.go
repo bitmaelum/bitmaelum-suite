@@ -29,6 +29,10 @@ var apiCmd = &cobra.Command{
 	Long:  `Manage your API keys`,
 }
 
+var apiAddress *string
+
 func init() {
 	rootCmd.AddCommand(apiCmd)
+
+	apiAddress = apiCreateCmd.Flags().StringP("address", "a", "", "Address")
 }
