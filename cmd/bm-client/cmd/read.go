@@ -67,8 +67,8 @@ var (
 func init() {
 	rootCmd.AddCommand(readCmd)
 
-	rAccount = readCmd.PersistentFlags().StringP("account", "a", "", "Account")
-	rBox = readCmd.PersistentFlags().StringP("box", "b", "", "Box to fetch")
-	rMessageID = readCmd.PersistentFlags().StringP("message", "m", "", "Message ID")
-	rBlock = readCmd.PersistentFlags().StringP("block", "", "default", "block")
+	rAccount = readCmd.Flags().StringP("account", "a", "", "Account")
+	rBox = readCmd.Flags().StringP("box", "b", "", "Box to fetch")
+	rMessageID = readCmd.Flags().StringP("message", "m", "", "Message ID")
+	rBlock = readCmd.Flags().StringP("block", "", "default", "block")
 }

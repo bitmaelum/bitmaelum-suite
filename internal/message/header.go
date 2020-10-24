@@ -22,8 +22,6 @@ package message
 import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-
-	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
 // ChecksumList is a list of key/value pairs of checksums. ie: ["sha1"] = "123456abcde"
@@ -32,9 +30,10 @@ type ChecksumList map[string]string
 // Header represents a message header
 type Header struct {
 	From struct {
-		Addr        hash.Hash        `json:"address"`
-		PublicKey   *bmcrypto.PubKey `json:"public_key"`
-		ProofOfWork *pow.ProofOfWork `json:"proof_of_work"`
+		Addr hash.Hash `json:"address"`
+		// Optional signature when the message is not signed with the private key, but with the onbehalf key
+		OnBehalfSignature string           `json:"onbehalf_signature,omitempty"`
+		OnBehalfPublicKey *bmcrypto.PubKey `json:"onbehalf_public_key,omitempty"`
 	} `json:"from"`
 	To struct {
 		Addr hash.Hash `json:"address"`
@@ -52,10 +51,4 @@ type Header struct {
 
 	// Signature of the from, to and catalog structures, as signed by the private key of the client.
 	ClientSignature string `json:"client_signature,omitempty"`
-}
-
-// Checksum holds a checksum which consists of the checksum hash value, and the given type of the checksum
-type Checksum struct {
-	Hash  string `json:"hash"`
-	Value string `json:"value"`
 }

@@ -27,6 +27,13 @@ import (
 	"io"
 )
 
+// keyGenerator can be used for mocking purposes
+var keyGenerator = randomKeyGenerator
+
+const (
+	keySize = 32
+)
+
 // JSONEncrypt encrypts a structure that is marshalled to JSON
 func JSONEncrypt(key []byte, data interface{}) ([]byte, error) {
 	plaintext, err := json.Marshal(data)
@@ -59,7 +66,7 @@ func MessageEncrypt(key []byte, plaintext []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	nonce, err := nonceGenerator(aead.NonceSize())
+	nonce, err := keyGenerator(aead.NonceSize())
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +98,7 @@ func MessageDecrypt(key []byte, message []byte) ([]byte, error) {
 
 // CatalogEncrypt encrypts a catalog with a random key.
 func CatalogEncrypt(catalog interface{}) ([]byte, []byte, error) {
-	catalogKey, err := keyGenerator()
+	catalogKey, err := keyGenerator(keySize)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -114,17 +121,9 @@ func CatalogDecrypt(key, data []byte, catalog interface{}) error {
 	return nil
 }
 
-// Generator to generate nonces for AEAD. Used so we can easily mock it in tests
-var nonceGenerator = func(size int) ([]byte, error) {
-	nonce := make([]byte, size)
-	_, err := io.ReadFull(rand.Reader, nonce)
-
-	return nonce, err
-}
-
-// Generator to generate keys for catalog encryption. Used so we can easily mock it in tests
-var keyGenerator = func() ([]byte, error) {
-	key := make([]byte, 32)
+// randomKeyGenrator generates keys for catalog encryption.
+func randomKeyGenerator(size int) ([]byte, error) {
+	key := make([]byte, size)
 	_, err := io.ReadFull(rand.Reader, key)
 
 	return key, err

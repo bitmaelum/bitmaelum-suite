@@ -84,7 +84,7 @@ func ComposeMessage(info internal.AccountInfo, toAddr address.Address, subject s
 		return err
 	}
 
-	// Fetch routing info for the SENDER, as we send to the sender's mailserver (not the recipient)
+	// Fetch routing info for the SENDER, as we send to the sender's mail server (not the recipient)
 	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 	if err != nil {
 		return err
@@ -173,8 +173,6 @@ func generateHeader(info internal.AccountInfo, toInfo *resolver.AddressInfo, cat
 	}
 	header.To.Addr = *h
 	header.From.Addr = info.AddressHash()
-	header.From.PublicKey = &info.PubKey
-	header.From.ProofOfWork = info.Pow
 
 	return header, nil
 }

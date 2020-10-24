@@ -39,7 +39,7 @@ var apiCreateCmd = &cobra.Command{
 	Long:  `Your vault accounts can have additional settings. With this command you can easily manage these.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *acAddress)
+		info := vault.GetAccountOrDefault(v, *apiAddress)
 
 		resolver := container.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
@@ -78,7 +78,6 @@ var apiCreateCmd = &cobra.Command{
 }
 
 var (
-	acAddress    *string
 	acPerms      *[]string
 	acValidUntil *time.Duration
 	acDesc       *string
@@ -87,8 +86,10 @@ var (
 func init() {
 	apiCmd.AddCommand(apiCreateCmd)
 
-	acAddress = apiCreateCmd.Flags().StringP("address", "a", "", "Address to set API key on")
 	acPerms = apiCreateCmd.Flags().StringArray("perm", []string{}, "Permissions to set")
 	acValidUntil = apiCreateCmd.Flags().Duration("duration", time.Duration(0), "Time valid")
 	acDesc = apiCreateCmd.Flags().StringP("desc", "d", "", "Value to set")
+
+	_ = apiCreateCmd.MarkFlagRequired("perm")
+	_ = apiCreateCmd.MarkFlagRequired("desc")
 }

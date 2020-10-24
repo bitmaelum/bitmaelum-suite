@@ -22,30 +22,32 @@ package client
 import (
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
-	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
+	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
 )
 
-const expectedSignature = "HrjkBJQCzb5uTsToJ2FRd4bdJJgABwYP0GZl+JDhM0vIkOvqTvzTMex91wEjYbhhVcfHTGg+6TCY28Q5NhCNxGiCIo/5G/Nck3K9WLCeaN6eQWzyJgWmfQtp3J8rgDLFTsrZckV9LVRtHzV15rT1fP+2a4Y8oSMuWgPCiaOpckeB+/BYcdQcUmrVozt6Zk0cVIbVUMePVaaAXxgQWTVdeO1iw3zKWAaV0GQBJ6Y1OTLdbVgCz9f935koBxBkz+19pJXWzFWL32ECBTummAnJt7mar+0AkFLeLcvN+YiwNBJx/m8/5nptVLoSCY/12Cddinnt3TFT+XIHp1La5WrCfw=="
+const (
+	expectedSignature  = "MsvxtxsxihfHRNDG20hmydSg7xjSIdaFmiz7iZVT+KLpvzP4isVimqzblN9bfxj+kLKuxKpXvSR6gS4Mi5yMwh1Xfsk0QJaVNJYNwB12i+kB5of2pm1vTipU4Y4I9E2Kj2TUfGuJZ51XeELPgr/d85ttrAk3DUKPXG5DcpEKqzJeocxryYq9968WB0Yal1SnxFc93HK1Lx5GWXGvXbVXnencCfZ+OYAVjuYOxtyAXQBEG2OjQUTfnmH+h8dyP0zIMl2xpku32uynp9Qy7gKyytACSFSSDTlHAAvZA8ARj7vrCGQWsUW0popMvx9N+z2KY1sL4q8/B/jg/uIpKa2AIQ=="
+	expectedSignature2 = "Gy7Wz2Qj/kWBgO8r0ltYEbaS01EpNh0o2kyzmGsr7KPyH6X8Dl/uipYotEovbPEP5rhbip3Lwl6k1hO6FqqZE4v/2zyTdT+UN2o4Sm/BcsA00Cd7kttxyOdeqOpG+nJTLTi1nG/zbqSFli7qEAVtdUwMgs+w6/Vd0uv0SK4FnrcHqWIIRWBB0AbkMoVtR69J/zsPhvI6lA741cLM/P1K+CnrnK4OkoJ1nvXw9NX7AxBGh9yDyVMdAjLKjniLViXp+ZQwh9o/mIzus5mP8BS5q3tga9nhhg8k+IdXvs6kc0yURYhMESsbKroL+lLn1qvc0SdJkthjWhwa/e5MotXUCg=="
+)
 
 func TestSignHeader(t *testing.T) {
 	privKey := setup()
 
 	header := &message.Header{}
-	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
+	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
 	assert.Empty(t, header.ClientSignature)
 	err := SignHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedSignature, header.ClientSignature)
+	assert.Equal(t, expectedSignature2, header.ClientSignature)
 
 	// Already present, don't overwrite
-	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
+	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
 	assert.NotEmpty(t, header.ClientSignature)
 	header.ClientSignature = "foobar"
 	err = SignHeader(header, *privKey)
@@ -58,11 +60,11 @@ func TestVerifyHeader(t *testing.T) {
 	privKey := setup()
 
 	header := &message.Header{}
-	_ = bmtest.ReadJSON("../../testdata/header-001.json", &header)
+	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
 	assert.Empty(t, header.ClientSignature)
 	err := SignHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedSignature, header.ClientSignature)
+	assert.Equal(t, expectedSignature2, header.ClientSignature)
 
 	// All is ok
 	ok := VerifyHeader(*header)
@@ -84,15 +86,26 @@ func TestVerifyHeader(t *testing.T) {
 	assert.False(t, ok)
 }
 
+func TestSignHeaderWithOnbehalfKey(t *testing.T) {
+	_ = setup()
+	// This is our onbehalf key
+	privKey, _, _ := testing2.ReadTestKey("../../testdata/key-ed25519-2.json")
+
+	header := &message.Header{}
+	_ = testing2.ReadJSON("../../testdata/header-003.json", &header)
+	assert.Empty(t, header.ClientSignature)
+	err := SignHeader(header, *privKey)
+	assert.NoError(t, err)
+	assert.Equal(t, "ynMf3K4f0kZLIgcvw7I3cu9p9aBO8BlpAC8hswBQ3oUFtmpn+s6ND2iciDga7zEhP/hbWbGYFo8ITySpH3PIDA==", header.ClientSignature)
+
+	ok := VerifyHeader(*header)
+	assert.True(t, ok)
+}
+
 func setup() *bmcrypto.PrivKey {
 	// Setup container with mock repository for routing
 	repo, _ := resolver.NewMockRepository()
 	container.SetResolveService(resolver.KeyRetrievalService(repo))
-
-	// privKey, pubKey, err := bmtest.ReadTestKey("../../testdata/key-2.json")
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 	var (
@@ -100,7 +113,7 @@ func setup() *bmcrypto.PrivKey {
 		ri resolver.RoutingInfo
 	)
 
-	privKey, pubKey, err := bmtest.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, err := testing2.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
 		panic(err)
 	}
@@ -122,7 +135,7 @@ func setup() *bmcrypto.PrivKey {
 	_ = repo.UploadRouting(&ri, *privKey)
 
 	// Note: our sender uses key3
-	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-3.json")
+	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-3.json")
 	if err != nil {
 		panic(err)
 	}
