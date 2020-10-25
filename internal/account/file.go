@@ -104,8 +104,6 @@ func (r *fileRepo) store(addr hash.Hash, path string, data []byte) error {
 
 // Check if path in account exists
 func (r *fileRepo) pathExists(addr hash.Hash, path string) bool {
-	logrus.Trace("ADDR: ", addr)
-	logrus.Trace("PATH: ", path)
 	fullPath := r.getPath(addr, path)
 	_, err := r.fs.Stat(fullPath)
 
