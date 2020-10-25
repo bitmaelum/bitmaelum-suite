@@ -32,9 +32,6 @@ var rootCmd = &cobra.Command{
 	Long:  `This client allows you to manage accounts, read and compose mail.`,
 }
 
-// VaultPassword is the given password through the commandline for opening the vault
-var VaultPassword string
-
 // Execute runs the given command
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {

@@ -70,9 +70,9 @@ var (
 func init() {
 	rootCmd.AddCommand(onbehalfCmd)
 
-	oAccount = onbehalfCmd.PersistentFlags().StringP("account", "a", "", "Account")
-	oTargetKey = onbehalfCmd.PersistentFlags().StringP("key", "k", "", "Key to sign")
+	oAccount = onbehalfCmd.Flags().StringP("account", "a", "", "Account")
+	oTargetKey = onbehalfCmd.Flags().StringP("key", "k", "", "Key to sign")
 
-	_ = onbehalfCmd.MarkPersistentFlagRequired("account")
-	_ = onbehalfCmd.MarkPersistentFlagRequired("key")
+	_ = onbehalfCmd.MarkFlagRequired("account")
+	_ = onbehalfCmd.MarkFlagRequired("key")
 }

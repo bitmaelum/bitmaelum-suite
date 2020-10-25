@@ -39,7 +39,7 @@ var apiListCmd = &cobra.Command{
 	Long:  `Your vault accounts can have additional settings. With this command you can easily manage these.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *alAddress)
+		info := vault.GetAccountOrDefault(v, *apiAddress)
 
 		resolver := container.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
@@ -80,12 +80,6 @@ var apiListCmd = &cobra.Command{
 	},
 }
 
-var (
-	alAddress *string
-)
-
 func init() {
 	apiCmd.AddCommand(apiListCmd)
-
-	alAddress = apiListCmd.Flags().StringP("address", "a", "", "Address to fetch API keys from")
 }
