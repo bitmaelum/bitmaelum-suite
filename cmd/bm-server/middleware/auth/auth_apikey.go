@@ -60,7 +60,7 @@ const (
 
 // @TODO make sure we can't use a key to fetch other people's info
 
-var apiKeyRepo = container.GetAPIKeyRepo()
+var apiKeyRepo = container.GetAPIKeyRepo
 
 // Authenticate will check if an API key matches the request
 func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (context.Context, bool) {
@@ -70,7 +70,7 @@ func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (context.Cont
 		return nil, false
 	}
 
-	if !accountRepo.Exists(*haddr) {
+	if !accountRepo().Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
 	}
@@ -133,7 +133,7 @@ func (*APIKeyAuth) getAPIKey(bearerToken string) (*apikey.KeyType, error) {
 	}
 	apiKeyID := bearerToken[7:]
 
-	key, err := apiKeyRepo.Fetch(apiKeyID)
+	key, err := apiKeyRepo().Fetch(apiKeyID)
 	if err != nil {
 		return nil, ErrInvalidAPIKey
 	}

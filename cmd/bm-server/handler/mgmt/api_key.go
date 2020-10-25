@@ -65,7 +65,7 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = parse.MangementPermissions(input.Permissions)
+	err = parse.ManagementPermissions(input.Permissions)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return

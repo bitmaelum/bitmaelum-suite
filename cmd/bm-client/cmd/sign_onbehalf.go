@@ -34,7 +34,7 @@ import (
 var onbehalfCmd = &cobra.Command{
 	Use:   "sign-onbehalf",
 	Short: "Sign a key that allows mail on behalf of you",
-	Long: `By signing anohter users key, you can allow it to send messages for you. This way, you can let other people 
+	Long: `By signing another users key, you can allow it to send messages for you. This way, you can let other people 
 or tools send messages without exposing your own private key.
 `,
 	Run: func(cmd *cobra.Command, args []string) {

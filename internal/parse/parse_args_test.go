@@ -29,19 +29,19 @@ import (
 func TestPermissions(t *testing.T) {
 	var err error
 
-	err = MangementPermissions([]string{})
+	err = ManagementPermissions([]string{})
 	assert.NoError(t, err)
 
-	err = MangementPermissions([]string{"flush"})
+	err = ManagementPermissions([]string{"flush"})
 	assert.NoError(t, err)
 
-	err = MangementPermissions([]string{"flush", "invite"})
+	err = ManagementPermissions([]string{"flush", "invite"})
 	assert.NoError(t, err)
 
-	err = MangementPermissions([]string{"foo"})
+	err = ManagementPermissions([]string{"foo"})
 	assert.Error(t, err)
 
-	err = MangementPermissions([]string{"flush", "foo"})
+	err = ManagementPermissions([]string{"flush", "foo"})
 	assert.Error(t, err)
 
 	err = AccountPermissions([]string{"get-headers"})
