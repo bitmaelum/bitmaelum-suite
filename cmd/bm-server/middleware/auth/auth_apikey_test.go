@@ -28,6 +28,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -44,24 +45,35 @@ var apiKeyFixtures = []apikey.KeyType{
 }
 
 func TestAuthAPIKeyAuthenticate(t *testing.T) {
-	t.SkipNow()
-
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
-	accountRepo = account.NewMockRepository
-	_ = accountRepo().Create(hash.New("example!"), *pubkey)
-	_ = accountRepo().Create(hash.New("user-1!"), *pubkey)
-	_ = accountRepo().Create(hash.New("user-2!"), *pubkey)
-	_ = accountRepo().Create(hash.New("user-3!"), *pubkey)
-	_ = accountRepo().Create(hash.New("expired!"), *pubkey)
+
+	accountRepo := container.GetAccountRepo()
+	accountRepo.Exists(hash.New("foobar!"))
+
+	accountRepo = container.GetAccountRepo()
+	accountRepo.Exists(hash.New("foobar!"))
+
+	container.Set("account", func() (interface{}, error) {
+		return account.NewMockRepository(), nil
+	})
+
+	accountRepo = container.GetAccountRepo()
+	// container.Set("account", func() interface{} { return accountRepo })
+	_ = accountRepo.Create(hash.New("example!"), *pubkey)
+	_ = accountRepo.Create(hash.New("user-1!"), *pubkey)
+	_ = accountRepo.Create(hash.New("user-2!"), *pubkey)
+	_ = accountRepo.Create(hash.New("user-3!"), *pubkey)
+	_ = accountRepo.Create(hash.New("expired!"), *pubkey)
 
 	// 42 creates BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io
 	rand.Seed(42)
-	apiKeyRepo = apikey.NewMockRepository
+	apiKeyRepo := apikey.NewMockRepository()
+	container.Set("api-key", func() (interface{}, error) { return apiKeyRepo, nil })
 	for _, k := range apiKeyFixtures {
 		// Create a new key, so it will randomize through our seed
 		nk := apikey.NewAccountKey(*k.AddrHash, k.Permissions, k.Expires, k.Desc)
-		_ = apiKeyRepo().Store(nk)
+		_ = apiKeyRepo.Store(nk)
 	}
 
 	a := APIKeyAuth{

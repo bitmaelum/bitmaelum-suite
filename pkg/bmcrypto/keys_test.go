@@ -198,3 +198,11 @@ func TestPubKeyJSON(t *testing.T) {
 	assert.Equal(t, "rsa", foo.Type)
 	assert.Equal(t, "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB", foo.S)
 }
+
+func TestFingerprint(t *testing.T) {
+	pk, _ := NewPubKey(TestKeySet1[0])
+	assert.Equal(t, "54fe2065620a04c17b022aa0f07461a862919e7c832d79aa211e6cebd784620b", pk.Fingerprint())
+
+	pk, _ = NewPubKey(TestKeySet2[0])
+	assert.Equal(t, "3bde10ad2dc6508163a8a4944c46684102ed777e57f73514c75e6e62448a3d85", pk.Fingerprint())
+}

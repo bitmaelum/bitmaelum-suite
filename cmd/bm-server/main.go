@@ -157,11 +157,14 @@ func setupRouter() *mux.Router {
 
 	mainRouter := mux.NewRouter().StrictSlash(true)
 
-	// Public things router
+	//
+	// Router with public endpoints. These can be called without any form of authentication
+	//
 	publicRouter := mainRouter.PathPrefix("/").Subrouter()
 	publicRouter.Use(logger.Middleware)
 	publicRouter.Use(prettyJSON.Middleware)
 	publicRouter.Use(tracer.Middleware)
+
 	publicRouter.HandleFunc("/", handler.HomePage).Methods("GET")
 	publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
 	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
@@ -176,7 +179,9 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/incoming", handler.CompleteIncoming).Methods("POST")
 	publicRouter.HandleFunc("/incoming", handler.DeleteIncoming).Methods("DELETE")
 
+	//
 	// Routes that need to be authenticated through JWT alone
+	//
 	authorizer := &middleware.Authenticate{}
 	authorizer.Add(&auth.JwtAuth{})
 
@@ -190,6 +195,7 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.CreateBox).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9+}", handler.DeleteBox).Methods("DELETE")
 	// Message fetching
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetClientToServerTicket).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}", handler.RetrieveMessagesFromBox).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}", handler.GetMessage).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}/message/{message:[A-Za-z0-9-]+}/block/{block:[A-Za-z0-9-]+}", handler.GetMessageBlock).Methods("GET")
@@ -199,8 +205,15 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey", handler.ListAPIKeys).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey/{key}", handler.GetAPIKeyDetails).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey/{key}", handler.DeleteAPIKey).Methods("DELETE")
+	// Auth keys
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/authkey", handler.CreateAuthKey).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/authkey", handler.ListAuthKeys).Methods("GET")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/authkey/{key}", handler.GetAuthKeyDetails).Methods("GET")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/authkey/{key}", handler.DeleteAuthKey).Methods("DELETE")
 
-	// Routes that need to be authenticated through JWT alone
+	//
+	// Routes that need to be authenticated through JWT or API keys
+	//
 	authorizer = &middleware.Authenticate{}
 	authorizer.Add(&auth.JwtAuth{})
 	authorizer.Add(&auth.APIKeyAuth{
@@ -214,7 +227,6 @@ func setupRouter() *mux.Router {
 	auth2Router.Use(authorizer.Middleware)
 
 	// Authorized sending
-	auth2Router.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetClientToServerTicket).Methods("POST").Name("ticket")
 	auth2Router.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/boxes", handler.RetrieveBoxes).Methods("GET").Name("boxes")
 
 	// Add management endpoints if enabled

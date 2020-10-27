@@ -22,35 +22,48 @@ package container
 import (
 	"sync"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/storage"
+	"github.com/bitmaelum/bitmaelum-suite/internal/authkey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	proofOnce    sync.Once
-	proofService storage.Storable
+	authKeyOnce       sync.Once
+	authKeyRepository authkey.Repository
 )
 
-func setupProofService() (interface{}, error) {
-	proofOnce.Do(func() {
-		//If redis.host is set on the config file it will use redis instead of bolt
+func setupAuthKeyRepo() (interface{}, error) {
+	authKeyOnce.Do(func() {
+		logrus.Trace("Setting up authKeyOnce")
+
+		// If redis.host is set on the config file it will use redis instead of bolt
+		logrus.Trace("config.Server.Redis.Host:", config.Server)
 		if config.Server.Redis.Host != "" {
 			opts := redis.Options{
 				Addr: config.Server.Redis.Host,
 				DB:   config.Server.Redis.Db,
 			}
 
-			proofService = storage.NewRedis(&opts)
-		} else {
-			proofService = storage.NewBolt(&config.Server.Bolt.DatabasePath)
+			authKeyRepository = authkey.NewRedisRepository(&opts)
+			return
 		}
 
+		// If redis is not set then it will use BoltDB as default
+
+		// @TODO: add bolt
+
+		// // Use temp dir if no dir is given
+		// if config.Server.Bolt.DatabasePath == "" {
+		// 	config.Server.Bolt.DatabasePath = os.TempDir()
+		// }
+		// authKeyRepository = authkey.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	return proofService, nil
+	logrus.Trace("returning: ", authKeyRepository)
+	return authKeyRepository, nil
 }
 
 func init() {
-	Set("proof-of-work", setupProofService)
+	Set("auth-key", setupAuthKeyRepo)
 }

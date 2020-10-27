@@ -33,9 +33,7 @@ var (
 	apikeyRepository apikey.Repository
 )
 
-// GetAPIKeyRepo returns the repository for storing and fetching api keys
-func GetAPIKeyRepo() apikey.Repository {
-
+func setupAPIKeyRepo() (interface{}, error) {
 	apikeyOnce.Do(func() {
 		// If redis.host is set on the config file it will use redis instead of bolt
 		if config.Server.Redis.Host != "" {
@@ -57,5 +55,9 @@ func GetAPIKeyRepo() apikey.Repository {
 		apikeyRepository = apikey.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	return apikeyRepository
+	return apikeyRepository, nil
+}
+
+func init() {
+	Set("api-key", setupAPIKeyRepo)
 }

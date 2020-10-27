@@ -34,7 +34,7 @@ import (
 // SignHeader will add a client signature to a message header. This can be used to proof the origin of the message
 func SignHeader(header *message.Header, privKey bmcrypto.PrivKey) error {
 	// Already signed? Then skip
-	if len(header.ClientSignature) > 0 {
+	if len(header.Signatures.Client) > 0 {
 		fmt.Println("already signed")
 		return nil
 	}
@@ -50,7 +50,7 @@ func SignHeader(header *message.Header, privKey bmcrypto.PrivKey) error {
 		return err
 	}
 
-	header.ClientSignature = base64.StdEncoding.EncodeToString(sig)
+	header.Signatures.Client = base64.StdEncoding.EncodeToString(sig)
 	return nil
 }
 
@@ -65,17 +65,17 @@ func VerifyHeader(header message.Header) bool {
 	}
 
 	// No header at all
-	if len(header.ClientSignature) == 0 {
+	if len(header.Signatures.Client) == 0 {
 		return false
 	}
 
 	// Store signature
-	targetSignature, err := base64.StdEncoding.DecodeString(header.ClientSignature)
+	targetSignature, err := base64.StdEncoding.DecodeString(header.Signatures.Client)
 	if err != nil {
 		return false
 	}
-	header.ServerSignature = ""
-	header.ClientSignature = ""
+	header.Signatures.Server = ""
+	header.Signatures.Client = ""
 
 	// Generate hash
 	data, err := json.Marshal(&header)
@@ -84,20 +84,20 @@ func VerifyHeader(header message.Header) bool {
 	}
 	h := sha256.Sum256(data)
 
-	// If we have sent an onbehalf key, we need to validate this first
+	// If we have sent an authorized key key, we need to validate this first
 	pubKey := addr.PublicKey
-	if header.From.OnBehalfSignature != "" && header.From.OnBehalfPublicKey != nil {
-		pubKey = *header.From.OnBehalfPublicKey
+	if header.From.SignedBy == message.SignedByTypeAuthorized {
+		pubKey = *header.AuthorizedBy.PublicKey
 
-		// Verify our onbehalf key
-		msg := hash.New(header.From.OnBehalfPublicKey.String())
-		sig, err := base64.StdEncoding.DecodeString(header.From.OnBehalfSignature)
+		// Verify our authorized key
+		msg := hash.New(header.AuthorizedBy.PublicKey.String())
+		sig, err := base64.StdEncoding.DecodeString(header.AuthorizedBy.Signature)
 		if err != nil {
 			return false
 		}
 		ok, err := bmcrypto.Verify(addr.PublicKey, msg.Byte(), sig)
 		if err != nil || !ok {
-			// Cannot validate the onbehalf key
+			// Cannot validate the authorized key
 			return false
 		}
 	}

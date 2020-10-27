@@ -29,12 +29,20 @@ type mockRepo struct {
 	addr map[string]map[string]int
 }
 
-// NewMockRepository initializes a new repository
+var mockRepoInstance *mockRepo = nil
+
+// NewMockRepository initializes a new repository instance, or returns the current initialized instance
 func NewMockRepository() Repository {
-	return &mockRepo{
+	if mockRepoInstance != nil {
+		return mockRepoInstance
+	}
+
+	mockRepoInstance = &mockRepo{
 		keys: map[string][]byte{},
 		addr: map[string]map[string]int{},
 	}
+
+	return mockRepoInstance
 }
 
 // FetchByHash will retrieve all keys for the given account

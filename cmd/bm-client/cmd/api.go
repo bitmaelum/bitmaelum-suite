@@ -34,5 +34,6 @@ var apiAddress *string
 func init() {
 	rootCmd.AddCommand(apiCmd)
 
-	apiAddress = apiCreateCmd.Flags().StringP("address", "a", "", "Address")
+	apiAddress = apiCmd.PersistentFlags().StringP("address", "a", "", "Address")
+	_ = apiCmd.MarkPersistentFlagRequired("address")
 }

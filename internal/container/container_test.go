@@ -20,37 +20,48 @@
 package container
 
 import (
-	"sync"
+	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/storage"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/go-redis/redis/v8"
+	"github.com/stretchr/testify/assert"
 )
 
-var (
-	proofOnce    sync.Once
-	proofService storage.Storable
-)
+var called = 0
 
-func setupProofService() (interface{}, error) {
-	proofOnce.Do(func() {
-		//If redis.host is set on the config file it will use redis instead of bolt
-		if config.Server.Redis.Host != "" {
-			opts := redis.Options{
-				Addr: config.Server.Redis.Host,
-				DB:   config.Server.Redis.Db,
-			}
-
-			proofService = storage.NewRedis(&opts)
-		} else {
-			proofService = storage.NewBolt(&config.Server.Bolt.DatabasePath)
-		}
-
-	})
-
-	return proofService, nil
+func barFunc() string {
+	return "this is bar"
 }
 
-func init() {
-	Set("proof-of-work", setupProofService)
+func TestContainer(t *testing.T) {
+	c := NewContainer()
+
+	// We set a function that we can call here
+	c.Set("foo", ServiceTypeSingle, func() (interface{}, error) {
+		return func() string {
+			return "this is foo"
+		}, nil
+	})
+
+	svc, ok := c.Get("foo").(func() string)
+	assert.True(t, ok)
+	assert.Equal(t, "this is foo", svc())
+
+	c.Set("foo", ServiceTypeSingle, func() (interface{}, error) { called++; return barFunc, nil })
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+
+	c.Set("foo", ServiceTypeMulti, func() (interface{}, error) { called++; return barFunc, nil })
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 2, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 3, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 4, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 5, called)
 }
