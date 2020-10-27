@@ -22,6 +22,7 @@ package container
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/authkey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
@@ -40,6 +41,11 @@ func GetAccountRepo() account.Repository {
 // GetAPIKeyRepo will return the current api key repository
 func GetAPIKeyRepo() apikey.Repository {
 	return GetContainer().Get("api-key").(func() apikey.Repository)()
+}
+
+// GetAuthKeyRepo will return the current auth key repository
+func GetAuthKeyRepo() authkey.Repository {
+	return GetContainer().Get("auth-key").(func() authkey.Repository)()
 }
 
 // GetResolveService will return the current resolver service

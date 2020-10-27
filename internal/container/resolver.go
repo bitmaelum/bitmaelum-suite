@@ -20,6 +20,7 @@
 package container
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -67,5 +68,6 @@ func getSQLiteRepository(dsn string) (resolver.Repository, error) {
 }
 
 func init() {
+	fmt.Println("Setting the resolver in the container")
 	GetContainer().Set("resolver", setupResolverService)
 }

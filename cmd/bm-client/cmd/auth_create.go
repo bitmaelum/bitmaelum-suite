@@ -67,7 +67,7 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(authCreateCmd)
+	authCmd.AddCommand(authCreateCmd)
 
 	authPublicKey = authCreateCmd.Flags().StringP("key", "k", "", "Key to sign")
 	authValidUntil = authCreateCmd.Flags().Duration("duration", time.Duration(0), "Time valid")

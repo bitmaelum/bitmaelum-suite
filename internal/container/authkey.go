@@ -20,44 +20,50 @@
 package container
 
 import (
-	"os"
 	"sync"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/authkey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	apikeyOnce       sync.Once
-	apikeyRepository apikey.Repository
+	authKeyOnce       sync.Once
+	authKeyRepository authkey.Repository
 )
 
-func setupAPIKeyRepo() apikey.Repository {
-	apikeyOnce.Do(func() {
+func setupAuthKeyRepo() authkey.Repository {
+	authKeyOnce.Do(func() {
+		logrus.Trace("Setting up authKeyOnce")
+
 		// If redis.host is set on the config file it will use redis instead of bolt
+		logrus.Trace("config.Server.Redis.Host:", config.Server)
 		if config.Server.Redis.Host != "" {
 			opts := redis.Options{
 				Addr: config.Server.Redis.Host,
 				DB:   config.Server.Redis.Db,
 			}
 
-			apikeyRepository = apikey.NewRedisRepository(&opts)
+			authKeyRepository = authkey.NewRedisRepository(&opts)
 			return
 		}
 
 		// If redis is not set then it will use BoltDB as default
 
-		// Use temp dir if no dir is given
-		if config.Server.Bolt.DatabasePath == "" {
-			config.Server.Bolt.DatabasePath = os.TempDir()
-		}
-		apikeyRepository = apikey.NewBoltRepository(config.Server.Bolt.DatabasePath)
+		// @TODO: add bolt
+
+		// // Use temp dir if no dir is given
+		// if config.Server.Bolt.DatabasePath == "" {
+		// 	config.Server.Bolt.DatabasePath = os.TempDir()
+		// }
+		// authKeyRepository = authkey.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	return apikeyRepository
+	logrus.Trace("returning: ", authKeyRepository)
+	return authKeyRepository
 }
 
 func init() {
-	GetContainer().Set("api-key", setupAPIKeyRepo)
+	GetContainer().Set("auth-key", setupAuthKeyRepo)
 }

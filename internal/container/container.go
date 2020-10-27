@@ -19,6 +19,8 @@
 
 package container
 
+import "fmt"
+
 /*
  * This is a very basic container system. It is NOT directly an dependecy container, as it does not do any resolving
  * and dependencies. But it's here to easily change the functionality. This is needed when we want for instance to
@@ -30,23 +32,23 @@ package container
 
 // Container is the main container structure holding all service
 type Container struct {
-	services map[string]Service
+	services map[string]*Service
 }
 
 // The main container instance
 var container = Container{
-	services: make(map[string]Service),
+	services: make(map[string]*Service),
 }
 
 // Service is a single service
 type Service struct {
-	Func interface{} // Function that resolves for this service
+	Func     func () interface{}        // Function for this service
 }
 
 // NewContainer will create a new container
 func NewContainer() Container {
 	c := Container{
-		services: make(map[string]Service),
+		services: make(map[string]*Service),
 	}
 
 	return c
@@ -59,8 +61,12 @@ func GetContainer() Container {
 
 // Set will set the function for the given service
 func (c Container) Set(key string, f interface{}) {
-	s := Service{
-		Func: f,
+	fmt.Println("Setting key ", key)
+	s := &Service{
+		Func: func () interface{} {
+			fmt.Println("Resolving f")
+			return f.(func() interface{})()
+		},
 	}
 	c.services[key] = s
 }
@@ -72,5 +78,6 @@ func (c Container) Get(key string) interface{} {
 		return nil
 	}
 
-	return s.Func
+	fmt.Println("Get key", key)
+	return s.Func()
 }

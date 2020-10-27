@@ -25,14 +25,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func barFunc() string {
+var called = 0
+
+func barFunc() interface{} {
+	called++
 	return "this is bar"
 }
+
+func singletonFunc() interface{} {
+	called++
+	return "this is a singleton"
+}
+
 
 func TestContainer(t *testing.T) {
 	c := NewContainer()
 
-	c.Set("foo", func() string {
+	// We set a function that we can call here
+	c.Set("foo", func() interface{} {
 		return "this is foo"
 	})
 

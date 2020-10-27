@@ -39,7 +39,7 @@ var authListCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *apiAddress)
+		info := vault.GetAccountOrDefault(v, *authAccount)
 
 		resolver := container.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
@@ -80,5 +80,5 @@ var authListCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(authListCmd)
+	authCmd.AddCommand(authListCmd)
 }
