@@ -88,7 +88,9 @@ func TestVerifyHeader(t *testing.T) {
 func setup() *bmcrypto.PrivKey {
 	// Setup container with mock repository for routing
 	repo, _ := resolver.NewMockRepository()
-	container.Set("resolver", resolver.KeyRetrievalService(repo))
+	container.Set("resolver", func() (interface{}, error) {
+		return resolver.KeyRetrievalService(repo), nil
+	})
 
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 	var (

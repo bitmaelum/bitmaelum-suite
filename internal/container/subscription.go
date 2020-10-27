@@ -33,7 +33,7 @@ var (
 	subscriptionRepository subscription.Repository
 )
 
-func setupSubscriptionRepo() subscription.Repository {
+func setupSubscriptionRepo() (interface{}, error) {
 	subscriptionOnce.Do(func() {
 		// If redis.host is set on the config file it will use redis instead of bolt
 		if config.Server.Redis.Host != "" {
@@ -50,7 +50,7 @@ func setupSubscriptionRepo() subscription.Repository {
 		subscriptionRepository = subscription.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	return subscriptionRepository
+	return subscriptionRepository, nil
 }
 
 func init() {

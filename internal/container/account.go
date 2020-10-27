@@ -31,14 +31,14 @@ var (
 	accountRepository account.Repository
 )
 
-func setupAccountRepo() account.Repository {
+func setupAccountRepo() (interface{}, error) {
 	accountOnce.Do(func() {
 		accountRepository = account.NewFileRepository(config.Server.Paths.Accounts)
 	})
 
-	return accountRepository
+	return accountRepository, nil
 }
 
 func init() {
-	Set("account", func() interface{} { return setupAccountRepo })
+	Set("account", setupAccountRepo)
 }

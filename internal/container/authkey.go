@@ -33,7 +33,7 @@ var (
 	authKeyRepository authkey.Repository
 )
 
-func setupAuthKeyRepo() authkey.Repository {
+func setupAuthKeyRepo() (interface{}, error) {
 	authKeyOnce.Do(func() {
 		logrus.Trace("Setting up authKeyOnce")
 
@@ -61,7 +61,7 @@ func setupAuthKeyRepo() authkey.Repository {
 	})
 
 	logrus.Trace("returning: ", authKeyRepository)
-	return authKeyRepository
+	return authKeyRepository, nil
 }
 
 func init() {

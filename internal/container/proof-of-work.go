@@ -32,7 +32,7 @@ var (
 	proofService storage.Storable
 )
 
-func setupProofService() storage.Storable {
+func setupProofService() (interface{}, error) {
 	proofOnce.Do(func() {
 		//If redis.host is set on the config file it will use redis instead of bolt
 		if config.Server.Redis.Host != "" {
@@ -48,7 +48,7 @@ func setupProofService() storage.Storable {
 
 	})
 
-	return proofService
+	return proofService, nil
 }
 
 func init() {

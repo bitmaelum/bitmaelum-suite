@@ -33,7 +33,7 @@ var (
 	apikeyRepository apikey.Repository
 )
 
-func setupAPIKeyRepo() apikey.Repository {
+func setupAPIKeyRepo() (interface{}, error) {
 	apikeyOnce.Do(func() {
 		// If redis.host is set on the config file it will use redis instead of bolt
 		if config.Server.Redis.Host != "" {
@@ -55,7 +55,7 @@ func setupAPIKeyRepo() apikey.Repository {
 		apikeyRepository = apikey.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	return apikeyRepository
+	return apikeyRepository, nil
 }
 
 func init() {

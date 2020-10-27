@@ -35,7 +35,7 @@ var (
 	resolveService *resolver.Service
 )
 
-func setupResolverService() *resolver.Service {
+func setupResolverService() (interface{}, error) {
 	resolveOnce.Do(func() {
 		repo := resolver.NewChainRepository()
 		if config.Server.Resolver.Sqlite.Enabled {
@@ -54,7 +54,7 @@ func setupResolverService() *resolver.Service {
 		resolveService = resolver.KeyRetrievalService(repo)
 	})
 
-	return resolveService
+	return resolveService, nil
 }
 
 func getRemoteRepository(url string, debug bool) *resolver.Repository {

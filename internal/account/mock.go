@@ -23,15 +23,9 @@ import (
 	"github.com/spf13/afero"
 )
 
-var mockRepoInstance Repository = nil
-
 // NewMockRepository returns a new mock repository by creating a file system with the afero memory mapped fs
 func NewMockRepository() Repository {
-	if mockRepoInstance != nil {
-		return mockRepoInstance
-	}
-
-	mockRepoInstance = NewFileRepository("/mockstorage")
-	mockRepoInstance.(*fileRepo).SetFileSystem(afero.NewMemMapFs(), false)
-	return mockRepoInstance
+	repo := NewFileRepository("/mockstorage")
+	repo.(*fileRepo).SetFileSystem(afero.NewMemMapFs(), false)
+	return repo
 }

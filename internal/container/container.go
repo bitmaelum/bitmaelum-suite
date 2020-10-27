@@ -19,25 +19,25 @@
 
 package container
 
-import "fmt"
-
 /*
  * This is a very basic container system. It is NOT directly an dependecy container, as it does not do any resolving
  * and dependencies. But it's here to easily change the functionality. This is needed when we want for instance to
  * mock a service. From the code point of view, we still can use container.Get("service"), while we have set this
  * to a mocked service.
  *
- * There is no functionality for dependencies, singletons etc
+ * There is no functionality for dependencies etc
  */
 
 // Container is the main container structure holding all service
 type Container struct {
-	services map[string]*Service
+	definitions map[string]*ServiceDefinition
+	resolved    map[string]interface{}
 }
 
 // The main container instance
 var container = Container{
-	services: make(map[string]*Service),
+	definitions: make(map[string]*ServiceDefinition),
+	resolved:    make(map[string]interface{}),
 }
 
 // Get returns a service from the container
@@ -45,13 +45,15 @@ func Get(key string) interface{} {
 	return container.Get(key)
 }
 
+type ServiceFunc func() (interface{}, error)
+
 // Set sets a service from the container as a singleton
-func Set(key string, build interface{}) {
+func Set(key string, build ServiceFunc) {
 	container.Set(key, ServiceTypeSingle, build)
 }
 
 // Set sets a service from the container. It will return a new instance on each call
-func SetMulti(key string, build interface{}) {
+func SetMulti(key string, build ServiceFunc) {
 	container.Set(key, ServiceTypeMulti, build)
 }
 
@@ -64,49 +66,59 @@ const (
 )
 
 // Service is a single service
-type Service struct {
-	Func     func () interface{}        // Function for this service
-	Type     ServiceType
-	Resolved interface{}
+type ServiceDefinition struct {
+	Func ServiceFunc
+	Type ServiceType
 }
 
 // NewContainer will create a new container
 func NewContainer() Container {
 	c := Container{
-		services: make(map[string]*Service),
+		definitions: make(map[string]*ServiceDefinition),
+		resolved:    make(map[string]interface{}),
 	}
 
 	return c
 }
 
 // Set will set the function for the given service
-func (c Container) Set(key string, t ServiceType, f interface{}) {
-	fmt.Println("Setting key ", key)
-	s := &Service{
-		Func: func () interface{} {
-			fmt.Println("Resolving f")
-			return f.(func() interface{})()
-		},
+func (c Container) Set(key string, t ServiceType, f ServiceFunc) {
+	c.definitions[key] = &ServiceDefinition{
+		Func: f,
 		Type: t,
 	}
-	c.services[key] = s
+
+	// Delete existing resolved object if any
+	delete(c.resolved, key)
 }
 
 // Get will retrieve the function for the given service, or nil when not found
 func (c Container) Get(key string) interface{} {
-	s, ok := c.services[key]
+	s, ok := c.definitions[key]
 	if !ok {
 		return nil
 	}
 
+	// Multi means we don't use a shared instance but instead instantiate a new object each time called
 	if s.Type == ServiceTypeMulti {
-		fmt.Println("Get key multi", key)
-		return s.Func()
+		obj, err := s.Func()
+		if err != nil {
+			return nil
+		}
+		return obj
 	}
 
-	fmt.Println("Get key singleton", key)
-	if s.Resolved == nil {
-		s.Resolved = s.Func()
+	// Already resolved, return
+	if c.resolved[key] != nil {
+		return c.resolved[key]
 	}
-	return s.Resolved
+
+	// Create instance, save it and return
+	obj, err := s.Func()
+	if err != nil {
+		return nil
+	}
+	c.resolved[key] = obj
+
+	return obj
 }

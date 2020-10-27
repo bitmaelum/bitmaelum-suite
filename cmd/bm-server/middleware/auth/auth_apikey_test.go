@@ -48,9 +48,18 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
 
-	accountRepo := account.NewMockRepository()
-	//container.Set("account", func() interface{} { return accountRepo })
-	container.Set("account", func() interface{} { return accountRepo })
+	accountRepo := container.GetAccountRepo()
+	accountRepo.Exists(hash.New("foobar!"))
+
+	accountRepo = container.GetAccountRepo()
+	accountRepo.Exists(hash.New("foobar!"))
+
+	container.Set("account", func() (interface{}, error) {
+		return account.NewMockRepository(), nil
+	})
+
+	accountRepo = container.GetAccountRepo()
+	// container.Set("account", func() interface{} { return accountRepo })
 	_ = accountRepo.Create(hash.New("example!"), *pubkey)
 	_ = accountRepo.Create(hash.New("user-1!"), *pubkey)
 	_ = accountRepo.Create(hash.New("user-2!"), *pubkey)
@@ -60,7 +69,7 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	// 42 creates BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io
 	rand.Seed(42)
 	apiKeyRepo := apikey.NewMockRepository()
-	container.Set("api-key", func() interface{} { return apiKeyRepo })
+	container.Set("api-key", func() (interface{}, error) { return apiKeyRepo, nil })
 	for _, k := range apiKeyFixtures {
 		// Create a new key, so it will randomize through our seed
 		nk := apikey.NewAccountKey(*k.AddrHash, k.Permissions, k.Expires, k.Desc)
