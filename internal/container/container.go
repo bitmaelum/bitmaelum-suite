@@ -36,8 +36,8 @@ type Container struct {
 
 // The main container instance
 var container = Container{
-	definitions: make(map[string]*ServiceDefinition),
-	resolved:    make(map[string]interface{}),
+	definitions: make(map[string]*ServiceDefinition), // List of definitions
+	resolved:    make(map[string]interface{}),        // Resolved definition functions
 }
 
 // Get returns a service from the container
@@ -45,6 +45,7 @@ func Get(key string) interface{} {
 	return container.Get(key)
 }
 
+// ServiceFunc is the function that needs to be resolved in the definition
 type ServiceFunc func() (interface{}, error)
 
 // Set sets a service from the container as a singleton
@@ -52,7 +53,7 @@ func Set(key string, build ServiceFunc) {
 	container.Set(key, ServiceTypeSingle, build)
 }
 
-// Set sets a service from the container. It will return a new instance on each call
+// SetMulti sets a service from the container. It will return a new instance on each call
 func SetMulti(key string, build ServiceFunc) {
 	container.Set(key, ServiceTypeMulti, build)
 }
@@ -61,11 +62,12 @@ func SetMulti(key string, build ServiceFunc) {
 type ServiceType int
 
 const (
+	// Service types
 	ServiceTypeSingle ServiceType = iota
 	ServiceTypeMulti
 )
 
-// Service is a single service
+// ServiceDefinition is a single service definition
 type ServiceDefinition struct {
 	Func ServiceFunc
 	Type ServiceType
