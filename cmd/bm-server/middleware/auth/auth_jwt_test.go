@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -38,8 +38,8 @@ import (
 func TestAuthJwtAuthenticate(t *testing.T) {
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
-	accountRepo = account.NewMockRepository
-	_ = accountRepo().Create(hash.New("example!"), *pubkey)
+	accountRepo := container.GetAccountRepo()
+	_ = accountRepo.Create(hash.New("example!"), *pubkey)
 
 	jwt.TimeFunc = func() time.Time {
 		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)

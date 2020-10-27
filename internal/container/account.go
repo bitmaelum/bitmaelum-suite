@@ -20,11 +20,25 @@
 package container
 
 import (
+	"sync"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 )
 
-// GetAccountRepo retrieves an account repository
-func GetAccountRepo() account.Repository {
-	return account.NewFileRepository(config.Server.Paths.Accounts)
+var (
+	accountOnce       sync.Once
+	accountRepository account.Repository
+)
+
+func setupAccountRepo() account.Repository {
+	accountOnce.Do(func() {
+		accountRepository = account.NewFileRepository(config.Server.Paths.Accounts)
+	})
+
+	return accountRepository
+}
+
+func init() {
+	GetContainer().Set("account", setupAccountRepo)
 }

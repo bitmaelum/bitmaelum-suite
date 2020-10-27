@@ -20,37 +20,28 @@
 package container
 
 import (
-	"sync"
+	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/storage"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/go-redis/redis/v8"
+	"github.com/stretchr/testify/assert"
 )
 
-var (
-	proofOnce    sync.Once
-	proofService storage.Storable
-)
-
-func setupProofService() storage.Storable {
-	proofOnce.Do(func() {
-		//If redis.host is set on the config file it will use redis instead of bolt
-		if config.Server.Redis.Host != "" {
-			opts := redis.Options{
-				Addr: config.Server.Redis.Host,
-				DB:   config.Server.Redis.Db,
-			}
-
-			proofService = storage.NewRedis(&opts)
-		} else {
-			proofService = storage.NewBolt(&config.Server.Bolt.DatabasePath)
-		}
-
-	})
-
-	return proofService
+func barFunc() string {
+	return "this is bar"
 }
 
-func init() {
-	GetContainer().Set("proof-of-work", setupProofService)
+func TestContainer(t *testing.T) {
+	c := NewContainer()
+
+	c.Set("foo", func() string {
+		return "this is foo"
+	})
+
+	svc, ok := c.Get("foo").(func() string)
+	assert.True(t, ok)
+	assert.Equal(t, "this is foo", svc())
+
+	c.Set("foo", barFunc)
+	svc, ok = c.Get("foo").(func() string)
+	assert.True(t, ok)
+	assert.Equal(t, "this is bar", svc())
 }

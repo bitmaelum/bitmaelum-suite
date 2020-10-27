@@ -85,26 +85,10 @@ func TestVerifyHeader(t *testing.T) {
 	assert.False(t, ok)
 }
 
-func TestSignHeaderWithOnbehalfKey(t *testing.T) {
-	_ = setup()
-	// This is our onbehalf key
-	privKey, _, _ := testing2.ReadTestKey("../../testdata/key-ed25519-2.json")
-
-	header := &message.Header{}
-	_ = testing2.ReadJSON("../../testdata/header-003.json", &header)
-	assert.Empty(t, header.Signatures.Client)
-	err := SignHeader(header, *privKey)
-	assert.NoError(t, err)
-	assert.Equal(t, "p3jWrttGl8AriTjR95nXnm2TnoTkb8Ahw69iDqsezm1mhvu1JGDqhBk7qUCO0bBnye62C3fWDOTc07y5kfUJBg==", header.Signatures.Client)
-
-	ok := VerifyHeader(*header)
-	assert.True(t, ok)
-}
-
 func setup() *bmcrypto.PrivKey {
 	// Setup container with mock repository for routing
 	repo, _ := resolver.NewMockRepository()
-	container.SetResolveService(resolver.KeyRetrievalService(repo))
+	container.GetContainer().Set("resolver", func() *resolver.Service { return resolver.KeyRetrievalService(repo) })
 
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 	var (

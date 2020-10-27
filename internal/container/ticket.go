@@ -33,9 +33,7 @@ var (
 	ticketRepository ticket.Repository
 )
 
-// GetTicketRepo returns the repository for storing and fetching tickets
-func GetTicketRepo() ticket.Repository {
-
+func setupTicketRepo() ticket.Repository {
 	ticketOnce.Do(func() {
 		//If redis.host is set on the config file it will use redis instead of bolt
 		if config.Server.Redis.Host != "" {
@@ -53,4 +51,8 @@ func GetTicketRepo() ticket.Repository {
 	})
 
 	return ticketRepository
+}
+
+func init() {
+	GetContainer().Set("ticket", setupTicketRepo)
 }

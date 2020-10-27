@@ -33,9 +33,7 @@ var (
 	apikeyRepository apikey.Repository
 )
 
-// GetAPIKeyRepo returns the repository for storing and fetching api keys
-func GetAPIKeyRepo() apikey.Repository {
-
+func setupAPIKeyRepo() apikey.Repository {
 	apikeyOnce.Do(func() {
 		// If redis.host is set on the config file it will use redis instead of bolt
 		if config.Server.Redis.Host != "" {
@@ -58,4 +56,8 @@ func GetAPIKeyRepo() apikey.Repository {
 	})
 
 	return apikeyRepository
+}
+
+func init() {
+	GetContainer().Set("api-key", setupAPIKeyRepo())
 }

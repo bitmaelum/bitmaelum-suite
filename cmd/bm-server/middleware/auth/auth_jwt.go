@@ -46,8 +46,6 @@ const (
 // ErrTokenNotValidated is returned when the token could not be validated (for any reason)
 var ErrTokenNotValidated = errors.New("token could not be validated")
 
-var accountRepo = container.GetAccountRepo
-
 // Authenticate will check if an API key matches the request
 func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (context.Context, bool) {
 	// Check if the address actually exists
@@ -56,7 +54,8 @@ func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (context.Context, b
 		return nil, false
 	}
 
-	if !accountRepo().Exists(*haddr) {
+	accountRepo := container.GetAccountRepo()
+	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
 	}
@@ -88,7 +87,8 @@ func checkToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
 	}
 	tokenString := bearerToken[7:]
 
-	keys, err := accountRepo().FetchKeys(addr)
+	accountRepo := container.GetAccountRepo()
+	keys, err := accountRepo.FetchKeys(addr)
 	if err != nil {
 		logrus.Trace("auth: cannot fetch keys: ", err)
 		return nil, ErrTokenNotValidated
