@@ -17,20 +17,25 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package handlers
+package cmd
 
 import (
-	"testing"
-
-	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
-	"github.com/stretchr/testify/assert"
+	"github.com/spf13/cobra"
 )
 
-func TestSignOnbehalf(t *testing.T) {
-	sourcePrivkey, _, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-1.json")
-	_, targetPubkey, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-2.json")
+var authCmd = &cobra.Command{
+	Use:   "auth",
+	Short: "Authorization management",
+}
 
-	res, err := SignOnbehalf(*sourcePrivkey, *targetPubkey)
-	assert.NoError(t, err)
-	assert.Equal(t, "GRlSsdrkcciQSOiZNPHO0e0emRAv9x0rhB+eARdarkHeCJL9YOIHghen5C8+8IAaNGe0qHVPal+EcdXCKjQVBg==", res)
+var (
+	authAccount *string
+)
+
+func init() {
+	rootCmd.AddCommand(authCmd)
+
+	authAccount = authCmd.PersistentFlags().StringP("account", "a", "", "Account")
+
+	_ = authCmd.MarkPersistentFlagRequired("account")
 }

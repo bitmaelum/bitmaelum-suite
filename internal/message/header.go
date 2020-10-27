@@ -27,28 +27,47 @@ import (
 // ChecksumList is a list of key/value pairs of checksums. ie: ["sha1"] = "123456abcde"
 type ChecksumList map[string]string
 
+// SignedByType is a type that tells us how a message is signed
+type SignedByType string
+
+const (
+	// SignedByTypeOrigin signed by origin address / private key
+	SignedByTypeOrigin SignedByType = "origin"
+	// SignedByTypeAuthorized signed by an authorized private key (info stored in authorizedPublicKey)
+	SignedByTypeAuthorized SignedByType = "authorized"
+)
+
 // Header represents a message header
 type Header struct {
+	// Information on the sender of the message
 	From struct {
-		Addr hash.Hash `json:"address"`
-		// Optional signature when the message is not signed with the private key, but with the onbehalf key
-		OnBehalfSignature string           `json:"onbehalf_signature,omitempty"`
-		OnBehalfPublicKey *bmcrypto.PubKey `json:"onbehalf_public_key,omitempty"`
+		Addr     hash.Hash    `json:"address"`   // Address hash of the sender
+		SignedBy SignedByType `json:"signed_by"` // Who has signed this message (the originator, or an authorized sender?)
 	} `json:"from"`
+
+	// Information on the recipient of the message
 	To struct {
-		Addr hash.Hash `json:"address"`
+		Addr hash.Hash `json:"address"` // Address hash of the recipient
 	} `json:"to"`
+
+	// Information about the catalog of this message
 	Catalog struct {
-		Size          uint64       `json:"size"`
-		Checksum      ChecksumList `json:"checksum"`
-		Crypto        string       `json:"crypto"`
-		TransactionID string       `json:"txid"`
-		EncryptedKey  []byte       `json:"encrypted_key"`
+		Size          uint64       `json:"size"`           // Size of the catalog file
+		Checksum      ChecksumList `json:"checksum"`       // Checksum of the catalog file
+		Crypto        string       `json:"crypto"`         // Crypto used for encrypting the catalog file
+		TransactionID string       `json:"txid,omitempty"` // Transaction ID (if used) for encryption
+		EncryptedKey  []byte       `json:"encrypted_key"`  // The actual encrypted key, only to be decrypted by the private key of the recipient
 	} `json:"catalog"`
 
-	// Signature of the from, to and catalog structures, as signed by the private key of the server.
-	ServerSignature string `json:"sender_signature,omitempty"`
+	// Information about the authorized sender in case the message is send and signed by an authorized sender instead of the origin sender
+	AuthorizedBy struct {
+		PublicKey *bmcrypto.PubKey `json:"public_key"` // Public key of the authorized sender
+		Signature string           `json:"signature"`  // Signature signed by the origin address
+	} `json:"authorized_by,omitempty"`
 
-	// Signature of the from, to and catalog structures, as signed by the private key of the client.
-	ClientSignature string `json:"client_signature,omitempty"`
+	// Signatures on the message header (except signatures and authorizedBy sections)
+	Signatures struct {
+		Server string `json:"server"` // Signature of the from, to and catalog structures, as signed by the private key of the server. Filled in when sending the message
+		Client string `json:"client"` // Signature of the from, to and catalog structures, as signed by the private key of the client. Filled in by the client sending the message
+	} `json:"signatures"`
 }

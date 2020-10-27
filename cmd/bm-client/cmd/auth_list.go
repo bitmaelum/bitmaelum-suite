@@ -20,59 +20,65 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
 
-var onbehalfCmd = &cobra.Command{
-	Use:   "sign-onbehalf",
-	Short: "Sign a key that allows mail on behalf of you",
-	Long: `By signing another users key, you can allow it to send messages for you. This way, you can let other people
-or tools send messages without exposing your own private key.
-`,
+var authListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "Display all authorized keys",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
+		info := vault.GetAccountOrDefault(v, *apiAddress)
 
-		info := vault.GetAccountOrDefault(v, *oAccount)
-		if info == nil {
-			logrus.Fatal("No account found in vault")
-			os.Exit(1)
-		}
-
-		targetKey, err := bmcrypto.NewPubKey(*oTargetKey)
+		resolver := container.GetResolveService()
+		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
-			logrus.Fatal("Not a valid key")
+			logrus.Fatal("Cannot find routing ID for this account")
 			os.Exit(1)
 		}
 
-		signedTargetKey, err := handlers.SignOnbehalf(info.PrivKey, *targetKey)
+		client, err := api.NewAuthenticated(info, api.ClientOpts{
+			Host:          routingInfo.Routing,
+			AllowInsecure: config.Client.Server.AllowInsecure,
+			Debug:         config.Client.Server.DebugHTTP,
+		})
 		if err != nil {
-			logrus.Fatal("Error while signing key: ", err)
+			logrus.Fatal(err)
 			os.Exit(1)
 		}
 
-		fmt.Printf("Signed key: %s\n", signedTargetKey)
+		keys, err := client.ListAuthKeys(info.AddressHash())
+		if err != nil {
+			logrus.Fatal(err)
+			os.Exit(1)
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Fingerprint", "Valid until", "Description"})
+
+		for _, key := range keys {
+			table.Append([]string{
+				key.Fingerprint,
+				key.Expires.Format(time.ANSIC),
+				key.Description,
+			})
+		}
+
+		table.Render()
 	},
 }
 
-var (
-	oAccount   *string
-	oTargetKey *string
-)
-
 func init() {
-	rootCmd.AddCommand(onbehalfCmd)
-
-	oAccount = onbehalfCmd.Flags().StringP("account", "a", "", "Account")
-	oTargetKey = onbehalfCmd.Flags().StringP("key", "k", "", "Key to sign")
-
-	_ = onbehalfCmd.MarkFlagRequired("account")
-	_ = onbehalfCmd.MarkFlagRequired("key")
+	rootCmd.AddCommand(authListCmd)
 }

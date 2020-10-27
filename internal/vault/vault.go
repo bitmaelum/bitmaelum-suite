@@ -38,7 +38,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -320,19 +319,18 @@ func GetAccountOrDefault(vault *Vault, a string) *internal.AccountInfo {
 		return vault.GetDefaultAccount()
 	}
 
+	acc, _ := GetAccount(vault, a)
+	return acc
+}
+
+// GetAccount returns the given account, or nil when not found
+func GetAccount(vault *Vault, a string) (*internal.AccountInfo, error) {
 	addr, err := address.NewAddress(a)
 	if err != nil {
-		logrus.Fatal(err)
-		os.Exit(1)
+		return nil, err
 	}
 
-	info, err := vault.GetAccountInfo(*addr)
-	if err != nil {
-		logrus.Fatal("Address not found in vault")
-		os.Exit(1)
-	}
-
-	return info
+	return vault.GetAccountInfo(*addr)
 }
 
 // OpenVault returns an opened vault, or opens the vault, asking a password if needed

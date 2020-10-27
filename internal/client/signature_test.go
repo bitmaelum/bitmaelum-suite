@@ -32,8 +32,7 @@ import (
 )
 
 const (
-	expectedSignature  = "MsvxtxsxihfHRNDG20hmydSg7xjSIdaFmiz7iZVT+KLpvzP4isVimqzblN9bfxj+kLKuxKpXvSR6gS4Mi5yMwh1Xfsk0QJaVNJYNwB12i+kB5of2pm1vTipU4Y4I9E2Kj2TUfGuJZ51XeELPgr/d85ttrAk3DUKPXG5DcpEKqzJeocxryYq9968WB0Yal1SnxFc93HK1Lx5GWXGvXbVXnencCfZ+OYAVjuYOxtyAXQBEG2OjQUTfnmH+h8dyP0zIMl2xpku32uynp9Qy7gKyytACSFSSDTlHAAvZA8ARj7vrCGQWsUW0popMvx9N+z2KY1sL4q8/B/jg/uIpKa2AIQ=="
-	expectedSignature2 = "Gy7Wz2Qj/kWBgO8r0ltYEbaS01EpNh0o2kyzmGsr7KPyH6X8Dl/uipYotEovbPEP5rhbip3Lwl6k1hO6FqqZE4v/2zyTdT+UN2o4Sm/BcsA00Cd7kttxyOdeqOpG+nJTLTi1nG/zbqSFli7qEAVtdUwMgs+w6/Vd0uv0SK4FnrcHqWIIRWBB0AbkMoVtR69J/zsPhvI6lA741cLM/P1K+CnrnK4OkoJ1nvXw9NX7AxBGh9yDyVMdAjLKjniLViXp+ZQwh9o/mIzus5mP8BS5q3tga9nhhg8k+IdXvs6kc0yURYhMESsbKroL+lLn1qvc0SdJkthjWhwa/e5MotXUCg=="
+	expectedSignature = "lIqI1QYBRHl7yRW367Lx2n/PFadrYDZ2a2NGSaL40EKum0ncOIXs8CIqKZ+LCUgmK2a9iH2d3mbXVPwZ3PBGsVgReaomyG6NrDbZ0PCbgnjmrmkVAFV0bDHlOxUl/BzyV+seIL7FL0lu+cODaHkmzH16FsZ5Vqcf1/Qe2GR/0Ka6xbWcIcajGsKtTx+WtGeZGZ5oLbAFatEjiv5gMAn2umKpP+w7uKhPa6CsYkv2YMVw+z/1NU2CO0jE6/2muihF9x4nPw6yiy+sXP86B26FQXLBcMgTZ4TAtzr/b2KvcEDj8y8HISs/YHJvTdqAXzYTPnha37ZIIZ7ce27Z41GAUQ=="
 )
 
 func TestSignHeader(t *testing.T) {
@@ -41,19 +40,19 @@ func TestSignHeader(t *testing.T) {
 
 	header := &message.Header{}
 	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
-	assert.Empty(t, header.ClientSignature)
+	assert.Empty(t, header.Signatures.Client)
 	err := SignHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedSignature2, header.ClientSignature)
+	assert.Equal(t, expectedSignature, header.Signatures.Client)
 
 	// Already present, don't overwrite
 	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
-	assert.NotEmpty(t, header.ClientSignature)
-	header.ClientSignature = "foobar"
+	assert.NotEmpty(t, header.Signatures.Client)
+	header.Signatures.Client = "foobar"
 	err = SignHeader(header, *privKey)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "foobar", header.ClientSignature)
+	assert.Equal(t, "foobar", header.Signatures.Client)
 }
 
 func TestVerifyHeader(t *testing.T) {
@@ -61,27 +60,27 @@ func TestVerifyHeader(t *testing.T) {
 
 	header := &message.Header{}
 	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
-	assert.Empty(t, header.ClientSignature)
+	assert.Empty(t, header.Signatures.Client)
 	err := SignHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedSignature2, header.ClientSignature)
+	assert.Equal(t, expectedSignature, header.Signatures.Client)
 
 	// All is ok
 	ok := VerifyHeader(*header)
 	assert.True(t, ok)
 
 	// Incorrect decoding
-	header.ClientSignature = "A"
+	header.Signatures.Client = "A"
 	ok = VerifyHeader(*header)
 	assert.False(t, ok)
 
 	// Empty sig is not ok
-	header.ClientSignature = ""
+	header.Signatures.Client = ""
 	ok = VerifyHeader(*header)
 	assert.False(t, ok)
 
 	// incorrect key
-	header.ClientSignature = "Zm9vYmFy"
+	header.Signatures.Client = "Zm9vYmFy"
 	ok = VerifyHeader(*header)
 	assert.False(t, ok)
 }
@@ -93,10 +92,10 @@ func TestSignHeaderWithOnbehalfKey(t *testing.T) {
 
 	header := &message.Header{}
 	_ = testing2.ReadJSON("../../testdata/header-003.json", &header)
-	assert.Empty(t, header.ClientSignature)
+	assert.Empty(t, header.Signatures.Client)
 	err := SignHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, "ynMf3K4f0kZLIgcvw7I3cu9p9aBO8BlpAC8hswBQ3oUFtmpn+s6ND2iciDga7zEhP/hbWbGYFo8ITySpH3PIDA==", header.ClientSignature)
+	assert.Equal(t, "p3jWrttGl8AriTjR95nXnm2TnoTkb8Ahw69iDqsezm1mhvu1JGDqhBk7qUCO0bBnye62C3fWDOTc07y5kfUJBg==", header.Signatures.Client)
 
 	ok := VerifyHeader(*header)
 	assert.True(t, ok)

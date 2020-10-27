@@ -29,12 +29,12 @@ import (
 
 // KeyType represents a key with a validity and permissions. When admin is true, permission checks are always true
 type KeyType struct {
-	ID          string     `json:"key"`
-	Expires     time.Time  `json:"expires"`
-	Permissions []string   `json:"permissions"`
-	Admin       bool       `json:"admin"`
-	AddrHash    *hash.Hash `json:"addr_hash"`
-	Desc        string     `json:"description"`
+	ID          string     `json:"key"`         // Key ID
+	Expires     time.Time  `json:"expires"`     // Time the key expires
+	Permissions []string   `json:"permissions"` // List of permissions for this key
+	Admin       bool       `json:"admin"`       // Admin key or not?
+	AddrHash    *hash.Hash `json:"addr_hash"`   // Address hash of this key (not used when admin key)
+	Desc        string     `json:"description"` // Description of the key
 }
 
 // NewAdminKey creates a new admin key
