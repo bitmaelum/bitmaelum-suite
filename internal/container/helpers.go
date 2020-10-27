@@ -35,30 +35,30 @@ import (
 
 // GetAccountRepo will return the current account repository
 func GetAccountRepo() account.Repository {
-	return GetContainer().Get("account").(func() account.Repository)()
+	return Get("account").(func() account.Repository)()
 }
 
 // GetAPIKeyRepo will return the current api key repository
 func GetAPIKeyRepo() apikey.Repository {
-	return GetContainer().Get("api-key").(func() apikey.Repository)()
+	return Get("api-key").(func() apikey.Repository)()
 }
 
 // GetAuthKeyRepo will return the current auth key repository
 func GetAuthKeyRepo() authkey.Repository {
-	return GetContainer().Get("auth-key").(func() authkey.Repository)()
+	return Get("auth-key").(func() authkey.Repository)()
 }
 
 // GetResolveService will return the current resolver service
 func GetResolveService() *resolver.Service {
-	return GetContainer().Get("resolver").(func() *resolver.Service)()
+	return Get("resolver").(func() *resolver.Service)()
 }
 
 // GetSubscriptionRepo will return the current subscription repository
 func GetSubscriptionRepo() subscription.Repository {
-	return GetContainer().Get("subscription").(func() subscription.Repository)()
+	return Get("subscription").(func() subscription.Repository)()
 }
 
 // GetTicketRepo will return the current ticket repository
 func GetTicketRepo() ticket.Repository {
-	return GetContainer().Get("ticket").(func() ticket.Repository)()
+	return Get("ticket").(func() ticket.Repository)()
 }

@@ -54,5 +54,5 @@ func setupSubscriptionRepo() subscription.Repository {
 }
 
 func init() {
-	GetContainer().Set("subscription", setupSubscriptionRepo)
+	Set("subscription", setupSubscriptionRepo)
 }

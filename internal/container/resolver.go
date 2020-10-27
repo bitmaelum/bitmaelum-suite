@@ -69,5 +69,5 @@ func getSQLiteRepository(dsn string) (resolver.Repository, error) {
 
 func init() {
 	fmt.Println("Setting the resolver in the container")
-	GetContainer().Set("resolver", setupResolverService)
+	Set("resolver", setupResolverService)
 }

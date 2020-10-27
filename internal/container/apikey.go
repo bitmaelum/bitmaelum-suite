@@ -59,5 +59,5 @@ func setupAPIKeyRepo() apikey.Repository {
 }
 
 func init() {
-	GetContainer().Set("api-key", setupAPIKeyRepo)
+	Set("api-key", setupAPIKeyRepo)
 }

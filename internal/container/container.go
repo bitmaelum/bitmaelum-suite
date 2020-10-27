@@ -24,7 +24,7 @@ import "fmt"
 /*
  * This is a very basic container system. It is NOT directly an dependecy container, as it does not do any resolving
  * and dependencies. But it's here to easily change the functionality. This is needed when we want for instance to
- * mock a service. From the code point of view, we still can use  GetContainer().Get("service"), while we have set this
+ * mock a service. From the code point of view, we still can use container.Get("service"), while we have set this
  * to a mocked service.
  *
  * There is no functionality for dependencies, singletons etc
@@ -40,9 +40,34 @@ var container = Container{
 	services: make(map[string]*Service),
 }
 
+// Get returns a service from the container
+func Get(key string) interface{} {
+	return container.Get(key)
+}
+
+// Set sets a service from the container as a singleton
+func Set(key string, build interface{}) {
+	container.Set(key, ServiceTypeSingle, build)
+}
+
+// Set sets a service from the container. It will return a new instance on each call
+func SetMulti(key string, build interface{}) {
+	container.Set(key, ServiceTypeMulti, build)
+}
+
+// ServiceType defines what kind of service it is (singleton, or new instance on each call)
+type ServiceType int
+
+const (
+	ServiceTypeSingle ServiceType = iota
+	ServiceTypeMulti
+)
+
 // Service is a single service
 type Service struct {
 	Func     func () interface{}        // Function for this service
+	Type     ServiceType
+	Resolved interface{}
 }
 
 // NewContainer will create a new container
@@ -54,19 +79,15 @@ func NewContainer() Container {
 	return c
 }
 
-// GetContainer will return the current initialized container
-func GetContainer() Container {
-	return container
-}
-
 // Set will set the function for the given service
-func (c Container) Set(key string, f interface{}) {
+func (c Container) Set(key string, t ServiceType, f interface{}) {
 	fmt.Println("Setting key ", key)
 	s := &Service{
 		Func: func () interface{} {
 			fmt.Println("Resolving f")
 			return f.(func() interface{})()
 		},
+		Type: t,
 	}
 	c.services[key] = s
 }
@@ -78,6 +99,14 @@ func (c Container) Get(key string) interface{} {
 		return nil
 	}
 
-	fmt.Println("Get key", key)
-	return s.Func()
+	if s.Type == ServiceTypeMulti {
+		fmt.Println("Get key multi", key)
+		return s.Func()
+	}
+
+	fmt.Println("Get key singleton", key)
+	if s.Resolved == nil {
+		s.Resolved = s.Func()
+	}
+	return s.Resolved
 }

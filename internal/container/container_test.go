@@ -27,31 +27,43 @@ import (
 
 var called = 0
 
-func barFunc() interface{} {
-	called++
+func barFunc() string {
 	return "this is bar"
 }
-
-func singletonFunc() interface{} {
-	called++
-	return "this is a singleton"
-}
-
 
 func TestContainer(t *testing.T) {
 	c := NewContainer()
 
 	// We set a function that we can call here
-	c.Set("foo", func() interface{} {
-		return "this is foo"
+	c.Set("foo", ServiceTypeSingle, func() interface{} {
+		return func() string {
+			return "this is foo"
+		}
 	})
 
 	svc, ok := c.Get("foo").(func() string)
 	assert.True(t, ok)
 	assert.Equal(t, "this is foo", svc())
 
-	c.Set("foo", barFunc)
-	svc, ok = c.Get("foo").(func() string)
-	assert.True(t, ok)
-	assert.Equal(t, "this is bar", svc())
+
+	c.Set("foo", ServiceTypeSingle, func() interface{} { called++; return barFunc })
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+
+
+	c.Set("foo", ServiceTypeMulti, func() interface{} { called++; return barFunc })
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 2, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 3, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 4, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 5, called)
 }

@@ -65,5 +65,5 @@ func setupAuthKeyRepo() authkey.Repository {
 }
 
 func init() {
-	GetContainer().Set("auth-key", setupAuthKeyRepo)
+	Set("auth-key", setupAuthKeyRepo)
 }

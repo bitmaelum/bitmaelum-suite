@@ -54,5 +54,5 @@ func setupTicketRepo() ticket.Repository {
 }
 
 func init() {
-	GetContainer().Set("ticket", setupTicketRepo)
+	Set("ticket", setupTicketRepo)
 }

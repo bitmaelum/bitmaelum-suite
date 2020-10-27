@@ -40,5 +40,5 @@ func setupAccountRepo() account.Repository {
 }
 
 func init() {
-	GetContainer().Set("account", setupAccountRepo)
+	Set("account", func() interface{} { return setupAccountRepo })
 }

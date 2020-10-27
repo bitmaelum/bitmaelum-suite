@@ -52,5 +52,5 @@ func setupProofService() storage.Storable {
 }
 
 func init() {
-	GetContainer().Set("proof-of-work", setupProofService)
+	Set("proof-of-work", setupProofService)
 }

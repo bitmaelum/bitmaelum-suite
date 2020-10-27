@@ -100,7 +100,7 @@ func setup() {
 
 	// Setup container with mock repository for routing
 	repo, _ := resolver.NewMockRepository()
-	container.GetContainer().Set("resolver", func() *resolver.Service { return resolver.KeyRetrievalService(repo) })
+	container.Set("resolver", func() *resolver.Service { return resolver.KeyRetrievalService(repo) })
 
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 	var (

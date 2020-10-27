@@ -49,7 +49,8 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	assert.NoError(t, err)
 
 	accountRepo := account.NewMockRepository()
-	container.GetContainer().Set("account", func() account.Repository { return accountRepo })
+	//container.Set("account", func() interface{} { return accountRepo })
+	container.Set("account", func() interface{} { return accountRepo })
 	_ = accountRepo.Create(hash.New("example!"), *pubkey)
 	_ = accountRepo.Create(hash.New("user-1!"), *pubkey)
 	_ = accountRepo.Create(hash.New("user-2!"), *pubkey)
@@ -59,7 +60,7 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	// 42 creates BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io
 	rand.Seed(42)
 	apiKeyRepo := apikey.NewMockRepository()
-	container.GetContainer().Set("api-key", func() apikey.Repository { return apiKeyRepo })
+	container.Set("api-key", func() interface{} { return apiKeyRepo })
 	for _, k := range apiKeyFixtures {
 		// Create a new key, so it will randomize through our seed
 		nk := apikey.NewAccountKey(*k.AddrHash, k.Permissions, k.Expires, k.Desc)
