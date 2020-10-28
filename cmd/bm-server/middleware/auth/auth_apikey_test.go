@@ -44,6 +44,8 @@ var apiKeyFixtures = []apikey.KeyType{
 }
 
 func TestAuthAPIKeyAuthenticate(t *testing.T) {
+	t.SkipNow()
+
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
 	accountRepo = account.NewMockRepository
