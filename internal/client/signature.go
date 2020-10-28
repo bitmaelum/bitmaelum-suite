@@ -28,6 +28,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // SignHeader will add a client signature to a message header. This can be used to proof the origin of the message
@@ -83,8 +84,26 @@ func VerifyHeader(header message.Header) bool {
 	}
 	h := sha256.Sum256(data)
 
+	// If we have sent an onbehalf key, we need to validate this first
+	pubKey := addr.PublicKey
+	if header.From.OnBehalfSignature != "" && header.From.OnBehalfPublicKey != nil {
+		pubKey = *header.From.OnBehalfPublicKey
+
+		// Verify our onbehalf key
+		msg := hash.New(header.From.OnBehalfPublicKey.String())
+		sig, err := base64.StdEncoding.DecodeString(header.From.OnBehalfSignature)
+		if err != nil {
+			return false
+		}
+		ok, err := bmcrypto.Verify(addr.PublicKey, msg.Byte(), sig)
+		if err != nil || !ok {
+			// Cannot validate the onbehalf key
+			return false
+		}
+	}
+
 	// Verify signature
-	ok, err := bmcrypto.Verify(addr.PublicKey, h[:], []byte(targetSignature))
+	ok, err := bmcrypto.Verify(pubKey, h[:], []byte(targetSignature))
 	if err != nil {
 		return false
 	}

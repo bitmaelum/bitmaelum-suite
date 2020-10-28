@@ -48,8 +48,8 @@ func ValidDuration(ds string) (time.Duration, error) {
 	return vd, nil
 }
 
-// MangementPermissions checks all permission and returns an error when a permission is not valid
-func MangementPermissions(perms []string) error {
+// ManagementPermissions checks all permission and returns an error when a permission is not valid
+func ManagementPermissions(perms []string) error {
 	for _, p := range perms {
 		p = strings.ToLower(p)
 

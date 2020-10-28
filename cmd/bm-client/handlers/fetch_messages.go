@@ -31,7 +31,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
@@ -69,10 +68,7 @@ func FetchMessages(accounts []internal.AccountInfo) {
 }
 
 func displayBoxList(client *api.API, account *internal.AccountInfo, table *tablewriter.Table) {
-	addr, _ := address.NewAddress(account.Address)
-	addrHash := addr.Hash()
-
-	mbl, err := client.GetMailboxList(addrHash)
+	mbl, err := client.GetMailboxList(account.AddressHash())
 	if err != nil {
 		return
 	}
@@ -83,10 +79,7 @@ func displayBoxList(client *api.API, account *internal.AccountInfo, table *table
 }
 
 func displayBox(client *api.API, account *internal.AccountInfo, box string, table *tablewriter.Table) {
-	addr, _ := address.NewAddress(account.Address)
-	addrHash := addr.Hash()
-
-	mb, err := client.GetMailboxMessages(addrHash, box)
+	mb, err := client.GetMailboxMessages(account.AddressHash(), box)
 	if err != nil {
 		return
 	}

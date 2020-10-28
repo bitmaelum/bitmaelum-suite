@@ -17,37 +17,22 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package cmd
 
 import (
-	"testing"
-
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
-	"github.com/stretchr/testify/assert"
+	"github.com/spf13/cobra"
 )
 
-func TestInfoToOrg(t *testing.T) {
-	info := &OrganisationInfo{
-		Addr:        "foo",
-		FullName:    "bar",
-		PrivKey:     bmcrypto.PrivKey{},
-		PubKey:      bmcrypto.PubKey{},
-		Pow:         proofofwork.New(22, "foobar", 1234),
-		Validations: nil,
-	}
-
-	org, err := InfoToOrg(*info)
-	assert.NoError(t, err)
-	assert.Equal(t, "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae", org.Hash.String())
+var apiCmd = &cobra.Command{
+	Use:   "api",
+	Short: "Manage API keys",
+	Long:  `Manage your API keys`,
 }
 
-func TestAccountInfoAddressHash(t *testing.T) {
-	info := &AccountInfo{
-		Default: false,
-		Address: "example!",
-		Name:    "John DOe",
-	}
+var apiAddress *string
 
-	assert.Equal(t, "2244643da7475120bf84d744435d15ea297c36ca165ea0baaa69ec818d0e952f", info.AddressHash().String())
+func init() {
+	rootCmd.AddCommand(apiCmd)
+
+	apiAddress = apiCreateCmd.Flags().StringP("address", "a", "", "Address")
 }

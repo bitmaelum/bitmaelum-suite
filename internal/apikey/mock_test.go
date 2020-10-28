@@ -17,37 +17,42 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package apikey
 
 import (
 	"testing"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInfoToOrg(t *testing.T) {
-	info := &OrganisationInfo{
-		Addr:        "foo",
-		FullName:    "bar",
-		PrivKey:     bmcrypto.PrivKey{},
-		PubKey:      bmcrypto.PubKey{},
-		Pow:         proofofwork.New(22, "foobar", 1234),
-		Validations: nil,
-	}
+func TestMockRepo(t *testing.T) {
+	repo := NewMockRepository()
 
-	org, err := InfoToOrg(*info)
+	h := hash.New("example!")
+	k := NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc")
+	err := repo.Store(k)
 	assert.NoError(t, err)
-	assert.Equal(t, "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae", org.Hash.String())
-}
 
-func TestAccountInfoAddressHash(t *testing.T) {
-	info := &AccountInfo{
-		Default: false,
-		Address: "example!",
-		Name:    "John DOe",
-	}
+	k2, err := repo.Fetch(k.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"foo", "bar"}, k2.Permissions)
+	assert.Equal(t, "my desc", k2.Desc)
 
-	assert.Equal(t, "2244643da7475120bf84d744435d15ea297c36ca165ea0baaa69ec818d0e952f", info.AddressHash().String())
+	h = hash.New("example!")
+	k = NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc 2")
+	err = repo.Store(k)
+	assert.NoError(t, err)
+
+	keys, err := repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 2)
+
+	err = repo.Remove(k)
+	assert.NoError(t, err)
+
+	keys, err = repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 1)
 }

@@ -40,7 +40,7 @@ func TestSignHeader(t *testing.T) {
 	err := SignHeader(header)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "r4u8tkGcb9Wq2k3BSZQ5P2cipKBKH4VB524EEG/3Ijul6I1EuyR5RkgJoJKPjkSlN4XhLecnG/M0DBTcTA3H5JAitprZUTA0Va1rYktFBP/hzMKR/WehkaAshGm4+L5bf7JIpo8EzGU7CbWkyhwSn5GhlGN6deWRvpdy0fWXPRZqbdzAoEtVqdJKOAF1JkMMsXQfWeFzY1pcIYDqVSPOM0JFYRmcAyLaismgy42UV9QEy7Teyvy38aBraMylwFYJwwMKwoZjc9fDwcmMptWWKeLorksn3Jj86WXi6WCsOq5/BK3comjInfO8BKJ3pDDy8YUwOaUZuSTrlIfxXJvxxA==", header.ServerSignature)
+	assert.Equal(t, "Gb85h74QniufBocnLldn5duNvXzkAgrM/shrnVzOMu5+YDgwEwd6hVxYd57U3iC6aFeU87iyqCVnwI0a3AyiMOiq9Xsq4A5RwvWfjnOmsMegt1pEzgHkU4MuQrCn4JKSmleST1ETSpauAYjVIwYA31JXJnQpcKohN6MWoLPZRFGNi/mBUDv2x7S9mqchXxOhn2i/5f/wBr49Q9EUd/ihhS1JFEtcNEmNOMQnvj9ciBafUYqlBhP9fJ1LkQtsG3aJ4zcg5gBhjsAYIkgsbmbgMGEOFZIIryLXg1vcP+nRk59VugAeI2kawJXIq+qnnLBUUF1GS85ha9OeIhA9MdAJgg==", header.ServerSignature)
 
 	// Already present, don't overwrite
 	_ = bmtest.ReadJSON("../../testdata/header-002.json", &header)
@@ -60,7 +60,7 @@ func TestVerifyHeader(t *testing.T) {
 	assert.Empty(t, header.ServerSignature)
 	err := SignHeader(header)
 	assert.NoError(t, err)
-	assert.Equal(t, "r4u8tkGcb9Wq2k3BSZQ5P2cipKBKH4VB524EEG/3Ijul6I1EuyR5RkgJoJKPjkSlN4XhLecnG/M0DBTcTA3H5JAitprZUTA0Va1rYktFBP/hzMKR/WehkaAshGm4+L5bf7JIpo8EzGU7CbWkyhwSn5GhlGN6deWRvpdy0fWXPRZqbdzAoEtVqdJKOAF1JkMMsXQfWeFzY1pcIYDqVSPOM0JFYRmcAyLaismgy42UV9QEy7Teyvy38aBraMylwFYJwwMKwoZjc9fDwcmMptWWKeLorksn3Jj86WXi6WCsOq5/BK3comjInfO8BKJ3pDDy8YUwOaUZuSTrlIfxXJvxxA==", header.ServerSignature)
+	assert.Equal(t, "Gb85h74QniufBocnLldn5duNvXzkAgrM/shrnVzOMu5+YDgwEwd6hVxYd57U3iC6aFeU87iyqCVnwI0a3AyiMOiq9Xsq4A5RwvWfjnOmsMegt1pEzgHkU4MuQrCn4JKSmleST1ETSpauAYjVIwYA31JXJnQpcKohN6MWoLPZRFGNi/mBUDv2x7S9mqchXxOhn2i/5f/wBr49Q9EUd/ihhS1JFEtcNEmNOMQnvj9ciBafUYqlBhP9fJ1LkQtsG3aJ4zcg5gBhjsAYIkgsbmbgMGEOFZIIryLXg1vcP+nRk59VugAeI2kawJXIq+qnnLBUUF1GS85ha9OeIhA9MdAJgg==", header.ServerSignature)
 
 	// All is ok
 	ok := VerifyHeader(*header)

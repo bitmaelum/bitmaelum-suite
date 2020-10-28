@@ -21,14 +21,13 @@ package account
 
 import (
 	"io"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 )
 
 func (r *fileRepo) FetchMessageHeader(addr hash.Hash, box int, messageID string) (*message.Header, error) {
@@ -77,7 +76,7 @@ func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, of
 
 	// @TODO: We don't do anything with offset yet.
 
-	files, err := ioutil.ReadDir(r.getPath(addr, getBoxAsString(box)))
+	files, err := afero.ReadDir(r.fs, r.getPath(addr, getBoxAsString(box)))
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +135,7 @@ func (r *fileRepo) MoveToBox(addr hash.Hash, srcBox, dstBox int, msgID string) e
 	srcPath := r.getPath(addr, filepath.Join(getBoxAsString(srcBox), msgID))
 	dstPath := r.getPath(addr, filepath.Join(getBoxAsString(dstBox), msgID))
 
-	return os.Rename(srcPath, dstPath)
+	return r.fs.Rename(srcPath, dstPath)
 }
 
 // Send a message to specific box
@@ -156,5 +155,5 @@ func (r *fileRepo) SendToBox(addr hash.Hash, box int, msgID string) error {
 	// if box == "inbox" {
 	// 	dstPath = r.getPath(addr, filepath.Join(box, fmt.Sprintf("%d-%s", time.Now().Unix(), msgID)))
 	// }
-	return os.Rename(srcPath, dstPath)
+	return r.fs.Rename(srcPath, dstPath)
 }

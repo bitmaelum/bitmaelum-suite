@@ -20,6 +20,7 @@
 package container
 
 import (
+	"os"
 	"sync"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
@@ -36,7 +37,7 @@ var (
 func GetAPIKeyRepo() apikey.Repository {
 
 	apikeyOnce.Do(func() {
-		//If redis.host is set on the config file it will use redis instead of bolt
+		// If redis.host is set on the config file it will use redis instead of bolt
 		if config.Server.Redis.Host != "" {
 			opts := redis.Options{
 				Addr: config.Server.Redis.Host,
@@ -47,7 +48,12 @@ func GetAPIKeyRepo() apikey.Repository {
 			return
 		}
 
-		//If redis is not set then it will use BoltDB as default
+		// If redis is not set then it will use BoltDB as default
+
+		// Use temp dir if no dir is given
+		if config.Server.Bolt.DatabasePath == "" {
+			config.Server.Bolt.DatabasePath = os.TempDir()
+		}
 		apikeyRepository = apikey.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 

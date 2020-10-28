@@ -20,32 +20,27 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 )
 
-var readCmd = &cobra.Command{
-	Use:     "read",
-	Aliases: []string{"read-message", "r"},
-	Short:   "Read messages for your account",
-	Long: `Read message from your account
-`,
+var apiCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create API key",
+	Long:  `Your vault accounts can have additional settings. With this command you can easily manage these.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
+		info := vault.GetAccountOrDefault(v, *apiAddress)
 
-		info := vault.GetAccountOrDefault(v, *rAccount)
-		if info == nil {
-			logrus.Fatal("No account found in vault")
-			os.Exit(1)
-		}
-
-		// Fetch routing info
 		resolver := container.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
@@ -53,22 +48,48 @@ var readCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		handlers.ReadMessage(info, routingInfo, *rBox, *rMessageID, *rBlock)
+		var expiry = time.Time{}
+		fmt.Printf("EXPIRY: %#v\n", expiry)
+		if *acValidUntil > 0 {
+			expiry = time.Now().Add(*acValidUntil)
+			fmt.Printf("UNTIL EXPIRY: %#v\n", expiry)
+		}
+
+		key := apikey.NewKey(*acPerms, expiry, *acDesc)
+		fmt.Printf("%#v\n", key)
+		fmt.Printf("%#v\n", *acValidUntil)
+
+		client, err := api.NewAuthenticated(info, api.ClientOpts{
+			Host:          routingInfo.Routing,
+			AllowInsecure: config.Client.Server.AllowInsecure,
+			Debug:         config.Client.Server.DebugHTTP,
+		})
+		if err != nil {
+			logrus.Fatal(err)
+			os.Exit(1)
+		}
+
+		err = client.CreateAPIKey(info.AddressHash(), key)
+		if err != nil {
+			logrus.Fatal(err)
+			os.Exit(1)
+		}
 	},
 }
 
 var (
-	rAccount   *string
-	rBox       *string
-	rMessageID *string
-	rBlock     *string
+	acPerms      *[]string
+	acValidUntil *time.Duration
+	acDesc       *string
 )
 
 func init() {
-	rootCmd.AddCommand(readCmd)
+	apiCmd.AddCommand(apiCreateCmd)
 
-	rAccount = readCmd.Flags().StringP("account", "a", "", "Account")
-	rBox = readCmd.Flags().StringP("box", "b", "", "Box to fetch")
-	rMessageID = readCmd.Flags().StringP("message", "m", "", "Message ID")
-	rBlock = readCmd.Flags().StringP("block", "", "default", "block")
+	acPerms = apiCreateCmd.Flags().StringArray("perm", []string{}, "Permissions to set")
+	acValidUntil = apiCreateCmd.Flags().Duration("duration", time.Duration(0), "Time valid")
+	acDesc = apiCreateCmd.Flags().StringP("desc", "d", "", "Value to set")
+
+	_ = apiCreateCmd.MarkFlagRequired("perm")
+	_ = apiCreateCmd.MarkFlagRequired("desc")
 }

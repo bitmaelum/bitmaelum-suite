@@ -17,37 +17,15 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package account
 
 import (
-	"testing"
-
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
-	"github.com/stretchr/testify/assert"
+	"github.com/spf13/afero"
 )
 
-func TestInfoToOrg(t *testing.T) {
-	info := &OrganisationInfo{
-		Addr:        "foo",
-		FullName:    "bar",
-		PrivKey:     bmcrypto.PrivKey{},
-		PubKey:      bmcrypto.PubKey{},
-		Pow:         proofofwork.New(22, "foobar", 1234),
-		Validations: nil,
-	}
-
-	org, err := InfoToOrg(*info)
-	assert.NoError(t, err)
-	assert.Equal(t, "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae", org.Hash.String())
-}
-
-func TestAccountInfoAddressHash(t *testing.T) {
-	info := &AccountInfo{
-		Default: false,
-		Address: "example!",
-		Name:    "John DOe",
-	}
-
-	assert.Equal(t, "2244643da7475120bf84d744435d15ea297c36ca165ea0baaa69ec818d0e952f", info.AddressHash().String())
+// NewMockRepository returns a new mock repository by creating a file system with the afero memory mapped fs
+func NewMockRepository() Repository {
+	repo := NewFileRepository("/mockstorage")
+	repo.(*fileRepo).SetFileSystem(afero.NewMemMapFs(), false)
+	return repo
 }

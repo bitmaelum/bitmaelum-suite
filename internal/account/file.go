@@ -22,14 +22,15 @@ package account
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/nightlyone/lockfile"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 )
 
 const (
@@ -44,13 +45,53 @@ type PubKeys struct {
 
 type fileRepo struct {
 	basePath string
+	fs       afero.Fs
+	canLock  bool // Can the filesystem do file locking?
 }
 
 // NewFileRepository returns a new file repository
 func NewFileRepository(basePath string) Repository {
 	return &fileRepo{
 		basePath: basePath,
+		fs:       afero.NewOsFs(),
+		canLock:  true,
 	}
+}
+
+// SetFileSystem sets the filesystem. This is mostly used for setting an afero mock file system so we can easily mock
+// this system
+func (r *fileRepo) SetFileSystem(fs afero.Fs, canLock bool) {
+	r.fs = fs
+	r.canLock = canLock
+}
+
+// lockFile will lock the given file and returns it IF the filesystem currently initialized allows locking. It will return
+// a nil lockfile (which is valid) if no locking is possible.
+func (r *fileRepo) lockFile(p string) (*lockfile.Lockfile, error) {
+	if !r.canLock {
+		return nil, nil
+	}
+
+	l, err := lockfile.New(p)
+	return &l, err
+}
+
+// unLockFile unlocks the filelock if one is given
+func (r *fileRepo) unLockFile(l *lockfile.Lockfile) error {
+	if l != nil {
+		return l.Unlock()
+	}
+
+	return nil
+}
+
+// tryLockFile tries the filelock if one is given
+func (r *fileRepo) tryLockFile(l *lockfile.Lockfile) error {
+	if l != nil {
+		return l.TryLock()
+	}
+
+	return nil
 }
 
 // Store data on the given account path
@@ -58,15 +99,13 @@ func (r *fileRepo) store(addr hash.Hash, path string, data []byte) error {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("storing file on %s", fullPath)
 
-	return ioutil.WriteFile(fullPath, data, 0600)
+	return afero.WriteFile(r.fs, fullPath, data, 0600)
 }
 
 // Check if path in account exists
 func (r *fileRepo) pathExists(addr hash.Hash, path string) bool {
-	logrus.Trace("ADDR: ", addr)
-	logrus.Trace("PATH: ", path)
 	fullPath := r.getPath(addr, path)
-	_, err := os.Stat(fullPath)
+	_, err := r.fs.Stat(fullPath)
 
 	return !os.IsNotExist(err)
 }
@@ -84,7 +123,7 @@ func (r *fileRepo) fetch(addr hash.Hash, path string) ([]byte, error) {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file %s", fullPath)
 
-	b, err := ioutil.ReadFile(fullPath)
+	b, err := afero.ReadFile(r.fs, fullPath)
 	if err != nil {
 		logrus.Tracef("file: cannot read file: %s", fullPath)
 		return nil, err
@@ -97,7 +136,7 @@ func (r *fileRepo) fetchReader(addr hash.Hash, path string) (rdr io.ReadCloser, 
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file reader %s", fullPath)
 
-	f, err := os.Open(fullPath)
+	f, err := r.fs.Open(fullPath)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -115,7 +154,7 @@ func (r *fileRepo) fetchJSON(addr hash.Hash, path string, v interface{}) error {
 	fullPath := r.getPath(addr, path)
 	logrus.Debugf("fetching file %s", fullPath)
 
-	data, err := ioutil.ReadFile(fullPath)
+	data, err := afero.ReadFile(r.fs, fullPath)
 	if err != nil {
 		logrus.Tracef("file: cannot read file: %s", fullPath)
 		return err

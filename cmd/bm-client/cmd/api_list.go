@@ -21,31 +21,26 @@ package cmd
 
 import (
 	"os"
+	"strings"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 )
 
-var readCmd = &cobra.Command{
-	Use:     "read",
-	Aliases: []string{"read-message", "r"},
-	Short:   "Read messages for your account",
-	Long: `Read message from your account
-`,
+var apiListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List API keys",
+	Long:  `Your vault accounts can have additional settings. With this command you can easily manage these.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
+		info := vault.GetAccountOrDefault(v, *apiAddress)
 
-		info := vault.GetAccountOrDefault(v, *rAccount)
-		if info == nil {
-			logrus.Fatal("No account found in vault")
-			os.Exit(1)
-		}
-
-		// Fetch routing info
 		resolver := container.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
@@ -53,22 +48,38 @@ var readCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		handlers.ReadMessage(info, routingInfo, *rBox, *rMessageID, *rBlock)
+		client, err := api.NewAuthenticated(info, api.ClientOpts{
+			Host:          routingInfo.Routing,
+			AllowInsecure: config.Client.Server.AllowInsecure,
+			Debug:         config.Client.Server.DebugHTTP,
+		})
+		if err != nil {
+			logrus.Fatal(err)
+			os.Exit(1)
+		}
+
+		keys, err := client.ListAPIKeys(info.AddressHash())
+		if err != nil {
+			logrus.Fatal(err)
+			os.Exit(1)
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID", "Permissions", "Valid until", "Description"})
+
+		for _, key := range keys {
+			table.Append([]string{
+				key.ID,
+				strings.Join(key.Permissions, ","),
+				key.Expires.Format(time.ANSIC),
+				key.Desc,
+			})
+		}
+
+		table.Render()
 	},
 }
 
-var (
-	rAccount   *string
-	rBox       *string
-	rMessageID *string
-	rBlock     *string
-)
-
 func init() {
-	rootCmd.AddCommand(readCmd)
-
-	rAccount = readCmd.Flags().StringP("account", "a", "", "Account")
-	rBox = readCmd.Flags().StringP("box", "b", "", "Box to fetch")
-	rMessageID = readCmd.Flags().StringP("message", "m", "", "Message ID")
-	rBlock = readCmd.Flags().StringP("block", "", "default", "block")
+	apiCmd.AddCommand(apiListCmd)
 }

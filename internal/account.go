@@ -21,6 +21,7 @@ package internal
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -39,6 +40,12 @@ type AccountInfo struct {
 	PubKey    bmcrypto.PubKey          `json:"pub_key"`         // PEM encoded public key
 	Pow       *proofofwork.ProofOfWork `json:"proof,omitempty"` // Proof of work
 	RoutingID string                   `json:"routing_id"`      // ID of the routing used
+}
+
+// AddressHash will return the hash of the given address
+func (info *AccountInfo) AddressHash() hash.Hash {
+	addr, _ := address.NewAddress(info.Address)
+	return addr.Hash()
 }
 
 // OrganisationInfo represents a organisation configuration for a server

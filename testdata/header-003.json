@@ -1,0 +1,20 @@
+{
+    "from": {
+        "address": "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
+        "onbehalf_signature": "V/cdCpxF6Ktv7hDvvDzJm9okoJMo8ikx1lnaWyFNbkKGAWADQVexdMLtP2OeqMa8f9EVqWFimb3uznzeJ9EfHKvjg33vzfOfsYRmsRVtMyDyypb9ilFCzI2px3IevsWut8TQ78aQ7eNTUe++LCGQgKOyAwNuUR9ctQqh88KlCS2udFw0FF9P94xZrAaxiA0LSDigAyMzANQGG55BxKg+PSdPZDBh+zNLBfG2fTS4zKa4hzhycE4pVexQPqmsBgnHws9YQqQTouxDovym/7FRRAc8bqxzrWS0F0OCZcj0twS8qXSFwof/FGJTKrE1Kr4nNXNdqxHnFonWaWRwOv/uUA==",
+        "onbehalf_public_key": "ed25519 MCowBQYDK2VwAyEA4KhfZWs/+B9Xx6eU+zN+A1USGtXsCs5zJNRq8JOM9EA="
+    },
+    "to": {
+        "address": "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350"
+    },
+    "catalog": {
+        "size": 983,
+        "checksum": {
+            "ripemd160": "cc83e77af0fae70c3b655f36f110ec4d2eebaf1c",
+            "sha256": "79213f8941437dc22a315636a50d6920507a58fcf97b9ff32b4c15cd26a8209a"
+        },
+        "crypto": "rsa+aes256gcm",
+        "txid": "",
+        "encrypted_key": "Zm9vYmFy"
+    }
+}

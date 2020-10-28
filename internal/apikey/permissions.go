@@ -26,8 +26,8 @@ const (
 	PermGenerateInvites string = "invite"
 	// PermAPIKeys Permission to create api keys
 	PermAPIKeys string = "apikey"
-	// PermMail Permission to send email
-	PermMail string = "mail"
+	// PermSendMail Permission to send email
+	PermSendMail string = "send-mail"
 	// PermGetHeaders allows you to fetch header and catalog from messages
 	PermGetHeaders string = "get-headers"
 )
@@ -42,5 +42,5 @@ var ManagementPermissons = []string{
 // AccountPermissions is a set of permissions for specific accounts
 var AccountPermissions = []string{
 	PermGetHeaders,
-	PermMail,
+	PermSendMail,
 }
