@@ -17,47 +17,42 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package container
+package key
 
 import (
-	"os"
-	"sync"
+	"testing"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/key"
-	"github.com/go-redis/redis/v8"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/stretchr/testify/assert"
 )
 
-var (
-	apikeyOnce       sync.Once
-	apikeyRepository key.APIKeyRepo
-)
+func TestMockRepo(t *testing.T) {
+	repo := NewAPIMockRepository()
 
-func setupAPIKeyRepo() (interface{}, error) {
-	apikeyOnce.Do(func() {
-		// If redis.host is set on the config file it will use redis instead of bolt
-		if config.Server.Redis.Host != "" {
-			opts := redis.Options{
-				Addr: config.Server.Redis.Host,
-				DB:   config.Server.Redis.Db,
-			}
+	h := hash.New("example!")
+	k := NewAPIAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc")
+	err := repo.Store(k)
+	assert.NoError(t, err)
 
-			apikeyRepository = key.NewAPIKeyRedisRepository(&opts)
-			return
-		}
+	k2, err := repo.Fetch(k.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"foo", "bar"}, k2.Permissions)
+	assert.Equal(t, "my desc", k2.Desc)
 
-		// If redis is not set then it will use BoltDB as default
+	h = hash.New("example!")
+	k = NewAPIAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc 2")
+	err = repo.Store(k)
+	assert.NoError(t, err)
 
-		// Use temp dir if no dir is given
-		if config.Server.Bolt.DatabasePath == "" {
-			config.Server.Bolt.DatabasePath = os.TempDir()
-		}
-		apikeyRepository = key.NewAPIBoltRepository(config.Server.Bolt.DatabasePath)
-	})
+	keys, err := repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 2)
 
-	return apikeyRepository, nil
-}
+	err = repo.Remove(k)
+	assert.NoError(t, err)
 
-func init() {
-	Set("api-key", setupAPIKeyRepo)
+	keys, err = repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 1)
 }

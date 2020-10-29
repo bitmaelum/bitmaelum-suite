@@ -25,7 +25,7 @@ import (
 	"net/http"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware/auth"
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/sirupsen/logrus"
 )
 
@@ -99,13 +99,13 @@ func DecodeBody(w http.ResponseWriter, body io.ReadCloser, v interface{}) error 
 }
 
 // GetAPIKey returns the api key stored in the request context. If not found, it will return a dummy key with no permissions
-func GetAPIKey(req *http.Request) *apikey.KeyType {
+func GetAPIKey(req *http.Request) *key.APIKeyType {
 	val := req.Context().Value(auth.APIKeyContext)
 	if val == nil {
-		return &apikey.KeyType{}
+		return &key.APIKeyType{}
 	}
 
-	return val.(*apikey.KeyType)
+	return val.(*key.APIKeyType)
 }
 
 // IsAPIKeyAuthenticated returns true when the given request is authenticated by a api key

@@ -32,7 +32,7 @@ import (
 func TestRedisRepo(t *testing.T) {
 	m := &testing2.RedisClientMock{}
 
-	repo := redisRepo{
+	repo := &redisRepo{
 		client:  m,
 		context: context.Background(),
 	}

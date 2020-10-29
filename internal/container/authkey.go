@@ -20,17 +20,18 @@
 package container
 
 import (
+	"os"
 	"sync"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/authkey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
 )
 
 var (
 	authKeyOnce       sync.Once
-	authKeyRepository authkey.Repository
+	authKeyRepository key.AuthKeyRepo
 )
 
 func setupAuthKeyRepo() (interface{}, error) {
@@ -45,19 +46,17 @@ func setupAuthKeyRepo() (interface{}, error) {
 				DB:   config.Server.Redis.Db,
 			}
 
-			authKeyRepository = authkey.NewRedisRepository(&opts)
+			authKeyRepository = key.NewAuthKeyRedisRepository(&opts)
 			return
 		}
 
 		// If redis is not set then it will use BoltDB as default
 
-		// @TODO: add bolt
-
-		// // Use temp dir if no dir is given
-		// if config.Server.Bolt.DatabasePath == "" {
-		// 	config.Server.Bolt.DatabasePath = os.TempDir()
-		// }
-		// authKeyRepository = authkey.NewBoltRepository(config.Server.Bolt.DatabasePath)
+		// Use temp dir if no dir is given
+		if config.Server.Bolt.DatabasePath == "" {
+			config.Server.Bolt.DatabasePath = os.TempDir()
+		}
+		authKeyRepository = key.NewAuthBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
 	logrus.Trace("returning: ", authKeyRepository)

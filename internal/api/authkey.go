@@ -23,12 +23,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/authkey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // CreateAuthKey will create a new authorized key on the server
-func (api *API) CreateAuthKey(addrHash hash.Hash, key authkey.KeyType) error {
+func (api *API) CreateAuthKey(addrHash hash.Hash, key key.AuthKeyType) error {
 	// Zero is not 1970, but year 1
 	var expires int64
 	if !key.Expires.IsZero() {
@@ -83,7 +83,7 @@ func (api *API) DeleteAuthKey(addrHash hash.Hash, fingerprint string) error {
 }
 
 // ListAuthKeys lists all auth keys
-func (api *API) ListAuthKeys(addrHash hash.Hash) ([]authkey.KeyType, error) {
+func (api *API) ListAuthKeys(addrHash hash.Hash) ([]key.AuthKeyType, error) {
 	url := fmt.Sprintf("/account/%s/authkey", addrHash.String())
 	body, statusCode, err := api.Get(url)
 	if err != nil {
@@ -99,7 +99,7 @@ func (api *API) ListAuthKeys(addrHash hash.Hash) ([]authkey.KeyType, error) {
 	}
 
 	// Parse body for keys
-	keys := &[]authkey.KeyType{}
+	keys := &[]key.AuthKeyType{}
 	err = json.Unmarshal(body, &keys)
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func (api *API) ListAuthKeys(addrHash hash.Hash) ([]authkey.KeyType, error) {
 }
 
 // GetAuthKey gets a single key
-func (api *API) GetAuthKey(addrHash hash.Hash, fingerprint string) (*authkey.KeyType, error) {
+func (api *API) GetAuthKey(addrHash hash.Hash, fingerprint string) (*key.AuthKeyType, error) {
 	url := fmt.Sprintf("/account/%s/authkey/%s", addrHash.String(), fingerprint)
 	body, statusCode, err := api.Get(url)
 	if err != nil {
@@ -125,7 +125,7 @@ func (api *API) GetAuthKey(addrHash hash.Hash, fingerprint string) (*authkey.Key
 	}
 
 	// Parse body for key
-	key := &authkey.KeyType{}
+	key := &key.AuthKeyType{}
 	err = json.Unmarshal(body, &key)
 	if err != nil {
 		return nil, err

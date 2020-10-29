@@ -17,7 +17,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package key
 
 import (
 	"math/rand"
@@ -46,7 +46,7 @@ func TestGenerateKey(t *testing.T) {
 func TestNewAdminKey(t *testing.T) {
 	expiry := time.Unix(1603442983, 0)
 
-	key := NewAdminKey(expiry, "foobar")
+	key := NewAPIAdminKey(expiry, "foobar")
 	assert.True(t, strings.HasPrefix(key.ID, "BMK-"))
 	assert.True(t, key.Admin)
 	assert.Equal(t, "foobar", key.Desc)
@@ -62,15 +62,15 @@ func TestNewAdminKey(t *testing.T) {
 func TestNewKey(t *testing.T) {
 	expiry := time.Unix(1603442983, 0)
 
-	key := NewKey([]string{"foo"}, expiry, "")
+	key := NewAPIKey([]string{"foo"}, expiry, "")
 	assert.True(t, strings.HasPrefix(key.ID, "BMK-"))
 	assert.False(t, key.Admin)
-	assert.Nil(t, key.AddrHash)
+	assert.Nil(t, key.AddressHash)
 	assert.True(t, key.HasPermission("foo", nil))
 	assert.False(t, key.HasPermission("bar", nil))
 
 	h := hash.New("foobar")
-	key = NewAccountKey(h, []string{"foo"}, expiry, "")
+	key = NewAPIAccountKey(h, []string{"foo"}, expiry, "")
 	assert.True(t, key.HasPermission("foo", &h))
 	assert.False(t, key.HasPermission("bar", &h))
 

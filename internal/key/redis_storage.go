@@ -17,101 +17,97 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package key
 
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/go-redis/redis/v8"
 )
 
-// We don't use redis clients directly, but a redis result wrapper which does the calling of .Result() for us. This
-// makes testing and mocking redis clients possible. It serves no other purpose.
-
 type redisRepo struct {
-	client  internal.RedisResultWrapper
-	context context.Context
-}
-
-// NewRedisRepository initializes a new repository
-func NewRedisRepository(opts *redis.Options) Repository {
-	c := redis.NewClient(opts)
-
-	return &redisRepo{
-		client:  &internal.RedisBridge{Client: *c},
-		context: c.Context(),
-	}
+	client    internal.RedisResultWrapper
+	context   context.Context
+	KeyPrefix string // redis key prefix
 }
 
 // FetchByHash will retrieve all keys for the given account
-func (r redisRepo) FetchByHash(h string) ([]KeyType, error) {
-	keys := []KeyType{}
+func (r redisRepo) FetchByHash(h string, v interface{}) (interface{}, error) {
+	// v needs to be a pointer
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Ptr {
+		return nil, errNeedsPointerValue
+	}
 
 	items, err := r.client.SMembers(r.context, h)
 	if err != nil {
-		return nil, err
+		return nil, errKeyNotFound
 	}
 
+	var keys []interface{}
+
+	ve := reflect.TypeOf(v).Elem()
 	for _, item := range items {
-		key, err := r.Fetch(item)
+		// Create a new item based on the structure of v
+		newItem := reflect.New(ve).Interface()
+
+		err := r.Fetch(item, &newItem)
 		if err != nil {
 			continue
 		}
 
-		keys = append(keys, *key)
+		keys = append(keys, newItem.(interface{}))
 	}
 
 	return keys, nil
 }
 
 // Fetch a key from the repository, or err
-func (r redisRepo) Fetch(ID string) (*KeyType, error) {
-	data, err := r.client.Get(r.context, createRedisKey(ID))
+func (r redisRepo) Fetch(ID string, v interface{}) error {
+	data, err := r.client.Get(r.context, r.createRedisKey(ID))
 	if data == "" || err != nil {
-		return nil, errors.New("key not found")
+		return errKeyNotFound
 	}
 
-	key := &KeyType{}
-	err = json.Unmarshal([]byte(data), &key)
+	err = json.Unmarshal([]byte(data), v)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return key, nil
+	return nil
 }
 
 // Store the given key in the repository
-func (r redisRepo) Store(apiKey KeyType) error {
-	data, err := json.Marshal(apiKey)
+func (r redisRepo) Store(k GenericKey) error {
+	data, err := json.Marshal(k)
 	if err != nil {
 		return err
 	}
 
 	// Add to account set if an hash is given
-	if apiKey.AddrHash != nil {
-		_, _ = r.client.SAdd(r.context, apiKey.AddrHash.String(), apiKey.ID)
+	if k.GetAddressHash() != nil {
+		_, _ = r.client.SAdd(r.context, r.createRedisKey(k.GetAddressHash().String()), k.GetID())
 	}
 
-	_, err = r.client.Set(r.context, createRedisKey(apiKey.ID), data, 0)
+	_, err = r.client.Set(r.context, r.createRedisKey(k.GetID()), data, 0)
 	return err
 }
 
 // Remove the given key from the repository
-func (r redisRepo) Remove(apiKey KeyType) error {
-	if apiKey.AddrHash != nil {
-		_, _ = r.client.SRem(r.context, apiKey.AddrHash.String(), apiKey.ID)
+func (r redisRepo) Remove(k GenericKey) error {
+	if k.GetAddressHash() != nil {
+		_, _ = r.client.SRem(r.context, r.createRedisKey(k.GetAddressHash().String()), k.GetID())
 	}
 
-	_, err := r.client.Del(r.context, createRedisKey(apiKey.ID))
+	_, err := r.client.Del(r.context, r.createRedisKey(k.GetID()))
 	return err
 }
 
 // createRedisKey creates a key based on the given ID. This is needed otherwise we might send any data as api-id
 // to redis in order to extract other kind of data (and you don't want that).
-func createRedisKey(id string) string {
-	return fmt.Sprintf("apikey-%s", id)
+func (r redisRepo) createRedisKey(id string) string {
+	return fmt.Sprintf("%s-%s", r.KeyPrefix, id)
 }

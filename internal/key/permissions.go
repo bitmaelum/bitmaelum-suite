@@ -17,7 +17,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package key
 
 const (
 	// PermFlush Permission to restart/reload the system including flushing/forcing the queues
@@ -26,8 +26,6 @@ const (
 	PermGenerateInvites string = "invite"
 	// PermAPIKeys Permission to create api keys
 	PermAPIKeys string = "apikey"
-	// PermSendMail Permission to send email
-	PermSendMail string = "send-mail"
 	// PermGetHeaders allows you to fetch header and catalog from messages
 	PermGetHeaders string = "get-headers"
 )
@@ -42,5 +40,4 @@ var ManagementPermissons = []string{
 // AccountPermissions is a set of permissions for specific accounts
 var AccountPermissions = []string{
 	PermGetHeaders,
-	PermSendMail,
 }

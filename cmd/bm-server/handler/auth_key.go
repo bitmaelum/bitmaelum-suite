@@ -25,8 +25,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/authkey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -56,7 +56,7 @@ func CreateAuthKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newAuthKey := authkey.NewKey(*h, input.PublicKey, input.Signature, time.Unix(input.Expires, 0), input.Desc)
+	newAuthKey := key.NewAuthKey(*h, input.PublicKey, input.Signature, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store Auth key into persistent storage
 	repo := container.GetAuthKeyRepo()
@@ -110,14 +110,14 @@ func DeleteAuthKey(w http.ResponseWriter, req *http.Request) {
 
 	// Fetch key
 	repo := container.GetAuthKeyRepo()
-	key, err := repo.Fetch(keyID)
-	if err != nil || key.AddrHash.String() != h.String() {
+	k, err := repo.Fetch(keyID)
+	if err != nil || k.AddressHash.String() != h.String() {
 		// Only allow deleting of keys that we own as account
 		ErrorOut(w, http.StatusNotFound, "key not found")
 		return
 	}
 
-	_ = repo.Remove(*key)
+	_ = repo.Remove(*k)
 
 	// All is well
 	w.Header().Set("Content-Type", "application/json")
@@ -136,8 +136,8 @@ func GetAuthKeyDetails(w http.ResponseWriter, req *http.Request) {
 
 	// Fetch key
 	repo := container.GetAuthKeyRepo()
-	key, err := repo.Fetch(keyID)
-	if err != nil || key.AddrHash.String() != h.String() {
+	k, err := repo.Fetch(keyID)
+	if err != nil || k.AddressHash.String() != h.String() {
 		ErrorOut(w, http.StatusNotFound, "key not found")
 		return
 	}
@@ -145,5 +145,5 @@ func GetAuthKeyDetails(w http.ResponseWriter, req *http.Request) {
 	// Output key
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(key)
+	_ = json.NewEncoder(w).Encode(k)
 }

@@ -26,9 +26,9 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/authkey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
@@ -52,7 +52,7 @@ func CreateAuthorizedKey(info *internal.AccountInfo, targetKey *bmcrypto.PubKey,
 		expiry = time.Now().Add(validUntil)
 	}
 
-	key := authkey.NewKey(info.AddressHash(), targetKey, signature, expiry, desc)
+	key := key.NewAuthKey(info.AddressHash(), targetKey, signature, expiry, desc)
 	return client.CreateAuthKey(info.AddressHash(), key)
 }
 

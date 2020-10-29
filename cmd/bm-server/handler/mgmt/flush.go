@@ -26,13 +26,13 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 )
 
 // FlushQueues handler will flush all the queues normally on tickers
 func FlushQueues(w http.ResponseWriter, req *http.Request) {
-	key := handler.GetAPIKey(req)
-	if !key.HasPermission(apikey.PermFlush, nil) {
+	k := handler.GetAPIKey(req)
+	if !k.HasPermission(key.PermFlush, nil) {
 		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}

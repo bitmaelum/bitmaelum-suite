@@ -26,8 +26,8 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
@@ -59,8 +59,8 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	key := handler.GetAPIKey(req)
-	if !key.HasPermission(apikey.PermAPIKeys, h) {
+	k := handler.GetAPIKey(req)
+	if !k.HasPermission(key.PermAPIKeys, h) {
 		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
@@ -71,7 +71,7 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newAPIKey := apikey.NewAccountKey(*h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
+	newAPIKey := key.NewAPIAccountKey(*h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store API key into persistent storage
 	repo := container.GetAPIKeyRepo()

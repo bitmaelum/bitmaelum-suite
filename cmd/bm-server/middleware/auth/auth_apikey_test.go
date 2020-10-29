@@ -27,8 +27,8 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/account"
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -37,11 +37,11 @@ import (
 
 // Lots of code is abstracted into functions. THis is to please sonarcloud duplication system
 
-var apiKeyFixtures = []apikey.KeyType{
-	apikey.NewAccountKey(hash.New("user-1!"), []string{"a"}, time.Time{}, "my desc 1"),
-	apikey.NewAccountKey(hash.New("user-2!"), []string{"b"}, time.Time{}, "my desc 2"),
-	apikey.NewAccountKey(hash.New("user-3!"), []string{"b", "c"}, time.Time{}, "my desc 3"),
-	apikey.NewAccountKey(hash.New("expired!"), []string{"a", "b", "c"}, time.Unix(12521510, 0), "expired key"),
+var apiKeyFixtures = []key.APIKeyType{
+	key.NewAPIAccountKey(hash.New("user-1!"), []string{"a"}, time.Time{}, "my desc 1"),
+	key.NewAPIAccountKey(hash.New("user-2!"), []string{"b"}, time.Time{}, "my desc 2"),
+	key.NewAPIAccountKey(hash.New("user-3!"), []string{"b", "c"}, time.Time{}, "my desc 3"),
+	key.NewAPIAccountKey(hash.New("expired!"), []string{"a", "b", "c"}, time.Unix(12521510, 0), "expired key"),
 }
 
 func TestAuthAPIKeyAuthenticate(t *testing.T) {
@@ -68,11 +68,11 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 
 	// 42 creates BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io
 	rand.Seed(42)
-	apiKeyRepo := apikey.NewMockRepository()
+	apiKeyRepo := key.NewAPIMockRepository()
 	container.Set("api-key", func() (interface{}, error) { return apiKeyRepo, nil })
 	for _, k := range apiKeyFixtures {
 		// Create a new key, so it will randomize through our seed
-		nk := apikey.NewAccountKey(*k.AddrHash, k.Permissions, k.Expires, k.Desc)
+		nk := key.NewAPIAccountKey(*k.AddressHash, k.Permissions, k.Expires, k.Desc)
 		_ = apiKeyRepo.Store(nk)
 	}
 
@@ -168,9 +168,9 @@ func checkKey(t *testing.T, a APIKeyAuth, pass bool, token, addr, routeName stri
 		assert.True(t, ok)
 		assert.NotNil(t, ctx)
 		// Check token in context
-		k := ctx.Value(APIKeyContext).(*apikey.KeyType)
+		k := ctx.Value(APIKeyContext).(*key.APIKeyType)
 		assert.Equal(t, token, k.ID)
-		assert.Equal(t, hash.New(addr).String(), k.AddrHash.String())
+		assert.Equal(t, hash.New(addr).String(), k.AddressHash.String())
 		return
 	}
 

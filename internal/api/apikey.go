@@ -23,12 +23,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // CreateAPIKey Create a new API key
-func (api *API) CreateAPIKey(addrHash hash.Hash, key apikey.KeyType) error {
+func (api *API) CreateAPIKey(addrHash hash.Hash, key key.APIKeyType) error {
 	// Zero is not 1970, but year 1
 	var expires int64
 	if !key.Expires.IsZero() {
@@ -81,7 +81,7 @@ func (api *API) DeleteAPIKey(addrHash hash.Hash, ID string) error {
 }
 
 // ListAPIKeys lists alll API keys
-func (api *API) ListAPIKeys(addrHash hash.Hash) ([]apikey.KeyType, error) {
+func (api *API) ListAPIKeys(addrHash hash.Hash) ([]key.APIKeyType, error) {
 	url := fmt.Sprintf("/account/%s/apikey", addrHash.String())
 	body, statusCode, err := api.Get(url)
 	if err != nil {
@@ -97,7 +97,7 @@ func (api *API) ListAPIKeys(addrHash hash.Hash) ([]apikey.KeyType, error) {
 	}
 
 	// Parse body for keys
-	keys := &[]apikey.KeyType{}
+	keys := &[]key.APIKeyType{}
 	err = json.Unmarshal(body, &keys)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func (api *API) ListAPIKeys(addrHash hash.Hash) ([]apikey.KeyType, error) {
 }
 
 // GetAPIKey gets a single key
-func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*apikey.KeyType, error) {
+func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*key.APIKeyType, error) {
 	url := fmt.Sprintf("/account/%s/apikey/%s", addrHash.String(), ID)
 	body, statusCode, err := api.Get(url)
 	if err != nil {
@@ -123,7 +123,7 @@ func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*apikey.KeyType, error
 	}
 
 	// Parse body for key
-	key := &apikey.KeyType{}
+	key := &key.APIKeyType{}
 	err = json.Unmarshal(body, &key)
 	if err != nil {
 		return nil, err

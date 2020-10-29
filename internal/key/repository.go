@@ -17,42 +17,46 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package key
 
 import (
-	"testing"
-	"time"
+	"errors"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestMockRepo(t *testing.T) {
-	repo := NewMockRepository()
+var (
+	errKeyNotFound = errors.New("key not found")
+	errNeedsPointerValue = errors.New("Needs a pointer value")
+)
 
-	h := hash.New("example!")
-	k := NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc")
-	err := repo.Store(k)
-	assert.NoError(t, err)
+// GenericKey is a generic structure for storing and fetching keys
+type GenericKey interface {
+	GetID() string
+	GetAddressHash() *hash.Hash
+}
 
-	k2, err := repo.Fetch(k.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, []string{"foo", "bar"}, k2.Permissions)
-	assert.Equal(t, "my desc", k2.Desc)
+// StorageBackend is the main backend interface which can stores undefined structures. This can be api keys or auth
+// key or even other kind of keys.
+type StorageBackend interface {
+	FetchByHash(h string, v interface{}) (interface{}, error)
+	Fetch(ID string, v interface{}) error
+	Store(v GenericKey) error
+	Remove(v GenericKey) error
+}
 
-	h = hash.New("example!")
-	k = NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc 2")
-	err = repo.Store(k)
-	assert.NoError(t, err)
+// AuthKeyRepo is the repository to the outside world. It allows us to fetch and store auth keys
+type AuthKeyRepo interface {
+	FetchByHash(h string) ([]AuthKeyType, error)
+	Fetch(ID string) (*AuthKeyType, error)
+	Store(v AuthKeyType) error
+	Remove(v AuthKeyType) error
+}
 
-	keys, err := repo.FetchByHash(h.String())
-	assert.NoError(t, err)
-	assert.Len(t, keys, 2)
-
-	err = repo.Remove(k)
-	assert.NoError(t, err)
-
-	keys, err = repo.FetchByHash(h.String())
-	assert.NoError(t, err)
-	assert.Len(t, keys, 1)
+// APIKeyRepo is the repository to the outside world. It allows us to fetch and store api keys
+type APIKeyRepo interface {
+	FetchByHash(h string) ([]APIKeyType, error)
+	Fetch(ID string) (*APIKeyType, error)
+	Store(v APIKeyType) error
+	Remove(v APIKeyType) error
 }

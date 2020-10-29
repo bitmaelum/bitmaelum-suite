@@ -17,7 +17,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package authkey
+package key
 
 import (
 	"time"
@@ -26,32 +26,34 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// KeyType represents a public key that is authorized to send email. This public key is signed by the private key of the owner and stored in the signature.
-type KeyType struct {
-	Fingerprint string           `json:"fingerprint"` // Fingerprint SHA256 of the public key
-	AddrHash    *hash.Hash       `json:"addr_hash"`   // Address hash of the account that is authorized on
-	Expires     time.Time        `json:"expires"`     // Expiry time
-	PublicKey   *bmcrypto.PubKey `json:"public_key"`  // Actual public key
-	Signature   string           `json:"signature"`   // Signed public key by the owner's private key
-	Description string           `json:"description"` // User description
+// AuthKeyType represents a public key that is authorized to send email. This public key is signed by the private key of the owner and stored in the signature.
+type AuthKeyType struct {
+	Fingerprint string           `json:"fingerprint"`  // Fingerprint / ID
+	AddressHash hash.Hash        `json:"address_hash"` // Address hash
+	Expires     time.Time        `json:"expires"`      // Expiry time
+	PublicKey   *bmcrypto.PubKey `json:"public_key"`   // Actual public key
+	Signature   string           `json:"signature"`    // Signed public key by the owner's private key
+	Description string           `json:"description"`  // User description
 }
 
-// NewKey creates a new authorized key
-func NewKey(addrHash hash.Hash, pubKey *bmcrypto.PubKey, signature string, expiry time.Time, desc string) KeyType {
-	return KeyType{
+// GetID returns fingerprint of the public key
+func (a AuthKeyType) GetID() string {
+	return a.Fingerprint
+}
+
+// GetAddressHash returns address hash
+func (a AuthKeyType) GetAddressHash() *hash.Hash {
+	return &a.AddressHash
+}
+
+// NewAuthKey creates a new authorized key
+func NewAuthKey(addrHash hash.Hash, pubKey *bmcrypto.PubKey, signature string, expiry time.Time, desc string) AuthKeyType {
+	return AuthKeyType{
 		Fingerprint: pubKey.Fingerprint(),
+		AddressHash: addrHash,
 		Signature:   signature,
 		PublicKey:   pubKey,
 		Expires:     expiry,
-		AddrHash:    &addrHash,
 		Description: desc,
 	}
-}
-
-// Repository is a repository to fetch and store auth keys
-type Repository interface {
-	Fetch(fingerprint string) (*KeyType, error)
-	FetchByHash(h string) ([]KeyType, error)
-	Store(key KeyType) error
-	Remove(key KeyType) error
 }
