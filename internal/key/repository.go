@@ -26,8 +26,8 @@ import (
 )
 
 var (
-	errKeyNotFound = errors.New("key not found")
-	errNeedsPointerValue = errors.New("Needs a pointer value")
+	errKeyNotFound       = errors.New("key not found")
+	errNeedsPointerValue = errors.New("needs a pointer value")
 )
 
 // GenericKey is a generic structure for storing and fetching keys
