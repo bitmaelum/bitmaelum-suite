@@ -122,7 +122,7 @@ func LoadServerConfigOrPass(configPath string) error {
 func readConfigPath(p, src string, loader func(r io.Reader) error) error {
 	p, _ = homedir.Expand(p)
 
-	triedPaths = append(triedPaths, p + " ("+src+")")
+	triedPaths = append(triedPaths, p+" ("+src+")")
 
 	f, err := fs.Open(p)
 	if err != nil {

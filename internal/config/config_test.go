@@ -132,7 +132,7 @@ func TestServerConfig(t *testing.T) {
 
 func TestLoadClientConfig(t *testing.T) {
 	// Failed loading
-	err := readConfigPath("/foo/bar", Client.LoadConfig)
+	err := readConfigPath("/foo/bar", "", Client.LoadConfig)
 	assert.Error(t, err)
 }
 
