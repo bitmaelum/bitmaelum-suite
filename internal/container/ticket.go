@@ -20,6 +20,7 @@
 package container
 
 import (
+	"os"
 	"sync"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -47,6 +48,10 @@ func setupTicketRepo() (interface{}, error) {
 		}
 
 		//If redis is not set then it will use BoltDB as default
+		if config.Server.Bolt.DatabasePath == "" {
+			config.Server.Bolt.DatabasePath = os.TempDir()
+		}
+
 		ticketRepository = ticket.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 

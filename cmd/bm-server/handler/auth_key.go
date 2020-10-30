@@ -58,7 +58,7 @@ func CreateAuthKey(w http.ResponseWriter, req *http.Request) {
 
 	newAuthKey := key.NewAuthKey(*h, input.PublicKey, input.Signature, time.Unix(input.Expires, 0), input.Desc)
 
-	// Store Auth key into persistent storage
+	// Store auth key into persistent storage
 	repo := container.GetAuthKeyRepo()
 	err = repo.Store(newAuthKey)
 	if err != nil {

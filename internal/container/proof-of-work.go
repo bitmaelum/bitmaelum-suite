@@ -20,6 +20,7 @@
 package container
 
 import (
+	"os"
 	"sync"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/storage"
@@ -43,6 +44,10 @@ func setupProofService() (interface{}, error) {
 
 			proofService = storage.NewRedis(&opts)
 		} else {
+			if config.Server.Bolt.DatabasePath == "" {
+				config.Server.Bolt.DatabasePath = os.TempDir()
+			}
+
 			proofService = storage.NewBolt(&config.Server.Bolt.DatabasePath)
 		}
 
