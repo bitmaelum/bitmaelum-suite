@@ -17,70 +17,44 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package key
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
-	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 	bolt "go.etcd.io/bbolt"
 )
 
 type boltRepo struct {
-	client *bolt.DB
+	client     *bolt.DB
+	BucketName string
 }
-
-const (
-	apiKeyNotFound string = "apikey not found"
-)
-
-// BucketName is the bucket name to store the invitations on the bolt db
-const BucketName = "apikeys"
 
 // BoltDBFile is the filename to store the boltdb database
-const BoltDBFile = "apikeys.db"
+const BoltDBFile = "keys.db"
 
-// NewBoltRepository initializes a new repository
-func NewBoltRepository(dbpath string) Repository {
-	dbFile := filepath.Join(dbpath, BoltDBFile)
-	db, err := bolt.Open(dbFile, 0600, nil)
-	if err != nil {
-		logrus.Error("Unable to open filepath ", dbFile, err)
-		return nil
-	}
-
-	return boltRepo{
-		client: db,
-	}
-}
-
-func (b boltRepo) FetchByHash(h string) ([]KeyType, error) {
-	keys := []KeyType{}
+func (b boltRepo) FetchByHash(h string, v interface{}) (interface{}, error) {
+	var keys []interface{}
 
 	err := b.client.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(BucketName))
+		bucket := tx.Bucket([]byte(b.BucketName))
 		if bucket == nil {
 			logrus.Trace("keys for account not found in BOLT: ", h, nil)
-			return errors.New(apiKeyNotFound)
+			return errKeyNotFound
 		}
 
 		// @TODO: we iterate all keys, unmarshall them to see if we need to add on a list. Please refactor
 		//  into something better.. :(
 		c := bucket.Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			fmt.Printf("key=%s, value=%s\n", k, v)
-
-			key := &KeyType{}
-			err := json.Unmarshal(v, &key)
+		for k, data := c.First(); k != nil; k, data = c.Next() {
+			err := json.Unmarshal(data, &v)
 			if err != nil {
 				continue
 			}
 
-			if key.AddrHash.String() == h {
-				keys = append(keys, *key)
+			if v.(GenericKey).GetAddressHash().String() == h {
+				keys = append(keys, v.(GenericKey))
 			}
 		}
 
@@ -95,23 +69,21 @@ func (b boltRepo) FetchByHash(h string) ([]KeyType, error) {
 }
 
 // Fetch a key from the repository, or err
-func (b boltRepo) Fetch(ID string) (*KeyType, error) {
-	key := &KeyType{}
-
+func (b boltRepo) Fetch(ID string, v interface{}) error {
 	err := b.client.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(BucketName))
+		bucket := tx.Bucket([]byte(b.BucketName))
 		if bucket == nil {
 			logrus.Trace("apikey not found in BOLT: ", ID, nil)
-			return errors.New(apiKeyNotFound)
+			return errKeyNotFound
 		}
 
 		data := bucket.Get([]byte(ID))
 		if data == nil {
 			logrus.Trace("apikey not found in BOLT: ", data, nil)
-			return errors.New(apiKeyNotFound)
+			return errKeyNotFound
 		}
 
-		err := json.Unmarshal([]byte(data), &key)
+		err := json.Unmarshal([]byte(data), v)
 		if err != nil {
 			return err
 		}
@@ -119,42 +91,38 @@ func (b boltRepo) Fetch(ID string) (*KeyType, error) {
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return key, nil
+	return err
 }
 
 // Store the given key in the repository
-func (b boltRepo) Store(apiKey KeyType) error {
-	data, err := json.Marshal(apiKey)
+func (b boltRepo) Store(v GenericKey) error {
+	data, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
 
 	err = b.client.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(BucketName))
+		bucket, err := tx.CreateBucketIfNotExists([]byte(b.BucketName))
 		if err != nil {
-			logrus.Trace("unable to create bucket on BOLT: ", BucketName, err)
+			logrus.Trace("unable to create bucket on BOLT: ", b.BucketName, err)
 			return err
 		}
 
-		return bucket.Put([]byte(apiKey.ID), data)
+		return bucket.Put([]byte(v.GetID()), data)
 	})
 
 	return err
 }
 
 // Remove the given key from the repository
-func (b boltRepo) Remove(apiKey KeyType) error {
+func (b boltRepo) Remove(v GenericKey) error {
 	return b.client.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(BucketName))
+		bucket := tx.Bucket([]byte(b.BucketName))
 		if bucket == nil {
-			logrus.Trace("unable to delete apikey, apikey not found in BOLT: ", apiKey.ID, nil)
+			logrus.Trace("unable to delete apikey, apikey not found in BOLT: ", v.GetID(), nil)
 			return nil
 		}
 
-		return bucket.Delete([]byte(apiKey.ID))
+		return bucket.Delete([]byte(v.GetID()))
 	})
 }

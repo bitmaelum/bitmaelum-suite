@@ -17,47 +17,27 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package container
+package key
 
-import (
-	"os"
-	"sync"
-
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
-
-	"github.com/go-redis/redis/v8"
+const (
+	// PermFlush Permission to restart/reload the system including flushing/forcing the queues
+	PermFlush string = "flush"
+	// PermGenerateInvites Permission to generate invites remotely
+	PermGenerateInvites string = "invite"
+	// PermAPIKeys Permission to create api keys
+	PermAPIKeys string = "apikey"
+	// PermGetHeaders allows you to fetch header and catalog from messages
+	PermGetHeaders string = "get-headers"
 )
 
-var (
-	subscriptionOnce       sync.Once
-	subscriptionRepository subscription.Repository
-)
-
-func setupSubscriptionRepo() (interface{}, error) {
-	subscriptionOnce.Do(func() {
-		// If redis.host is set on the config file it will use redis instead of bolt
-		if config.Server.Redis.Host != "" {
-			opts := redis.Options{
-				Addr: config.Server.Redis.Host,
-				DB:   config.Server.Redis.Db,
-			}
-
-			subscriptionRepository = subscription.NewRedisRepository(&opts)
-			return
-		}
-
-		// If redis is not set then it will use BoltDB as default
-		if config.Server.Bolt.DatabasePath == "" {
-			config.Server.Bolt.DatabasePath = os.TempDir()
-		}
-
-		subscriptionRepository = subscription.NewBoltRepository(config.Server.Bolt.DatabasePath)
-	})
-
-	return subscriptionRepository, nil
+// ManagementPermissons is a list of all permissions available for remote management
+var ManagementPermissons = []string{
+	PermAPIKeys,
+	PermFlush,
+	PermGenerateInvites,
 }
 
-func init() {
-	Set("subscription", setupSubscriptionRepo)
+// AccountPermissions is a set of permissions for specific accounts
+var AccountPermissions = []string{
+	PermGetHeaders,
 }

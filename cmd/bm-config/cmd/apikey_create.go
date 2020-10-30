@@ -24,9 +24,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/spf13/cobra"
 )
@@ -73,34 +73,34 @@ Note: Creating an admin key can only be done locally on the mail-server.
 			os.Exit(1)
 		}
 
-		var key apikey.KeyType
+		var k key.APIKeyType
 		if *mgAdmin {
 			fmt.Printf("Creating new admin key\n")
 			if len(*mgPerms) > 0 {
 				fmt.Printf("Error: cannot specify permissions when you create an admin key (all permissions are automatically granted)\n")
 				os.Exit(1)
 			}
-			key = apikey.NewAdminKey(expires, *mgDesc)
+			k = key.NewAPIAdminKey(expires, *mgDesc)
 		} else {
 			fmt.Printf("Creating new regular key\n")
 			if len(*mgPerms) == 0 {
 				fmt.Printf("Error: need a set of permissions when generating a regular key\n")
 				os.Exit(1)
 			}
-			key = apikey.NewKey(*mgPerms, expires, *mgDesc)
+			k = key.NewAPIKey(*mgPerms, expires, *mgDesc)
 		}
 
 		// Store API key into persistent storage
 		repo := container.GetAPIKeyRepo()
-		err = repo.Store(key)
+		err = repo.Store(k)
 		if err != nil {
 			fmt.Printf("Error: cannot store key: %s\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Printf("Your API key: %s\n", key.ID)
-		if !key.Expires.IsZero() {
-			fmt.Printf("Key is valid until %s\n", key.Expires.Format(time.RFC822))
+		fmt.Printf("Your API key: %s\n", k.ID)
+		if !k.Expires.IsZero() {
+			fmt.Printf("Key is valid until %s\n", k.Expires.Format(time.RFC822))
 		}
 	},
 }

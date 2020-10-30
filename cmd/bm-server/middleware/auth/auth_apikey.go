@@ -26,8 +26,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -60,8 +60,6 @@ const (
 
 // @TODO make sure we can't use a key to fetch other people's info
 
-var apiKeyRepo = container.GetAPIKeyRepo
-
 // Authenticate will check if an API key matches the request
 func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (context.Context, bool) {
 	// Check if the address actually exists
@@ -70,34 +68,35 @@ func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (context.Cont
 		return nil, false
 	}
 
-	if !accountRepo().Exists(*haddr) {
+	accountRepo := container.GetAccountRepo()
+	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
 	}
 
 	// Check api key.
-	key, err := a.checkAPIKey(req.Header.Get("Authorization"), *haddr, route)
+	k, err := a.checkAPIKey(req.Header.Get("Authorization"), *haddr, route)
 	if err != nil {
 		return nil, false
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, APIKeyContext, key)
+	ctx = context.WithValue(ctx, APIKeyContext, k)
 
 	return ctx, true
 }
 
-func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeName string) (*apikey.KeyType, error) {
-	key, err := a.getAPIKey(bearerToken)
+func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeName string) (*key.APIKeyType, error) {
+	k, err := a.getAPIKey(bearerToken)
 	if err != nil {
 		return nil, err
 	}
 
-	if key.AddrHash.String() != addrHash.String() {
+	if k.AddressHash.String() != addrHash.String() {
 		return nil, ErrInvalidAPIKey
 	}
 
-	if !key.Expires.IsZero() && time.Now().After(key.Expires) {
+	if !k.Expires.IsZero() && time.Now().After(k.Expires) {
 		return nil, ErrExpiredAPIKey
 	}
 
@@ -112,9 +111,9 @@ func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeNa
 	}
 
 	for _, perm := range perms {
-		for _, userperm := range key.Permissions {
+		for _, userperm := range k.Permissions {
 			if userperm == perm {
-				return key, nil
+				return k, nil
 			}
 		}
 	}
@@ -123,7 +122,7 @@ func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeNa
 }
 
 // check authorization API key
-func (*APIKeyAuth) getAPIKey(bearerToken string) (*apikey.KeyType, error) {
+func (*APIKeyAuth) getAPIKey(bearerToken string) (*key.APIKeyType, error) {
 	if bearerToken == "" {
 		return nil, ErrInvalidAuthentication
 	}
@@ -133,10 +132,11 @@ func (*APIKeyAuth) getAPIKey(bearerToken string) (*apikey.KeyType, error) {
 	}
 	apiKeyID := bearerToken[7:]
 
-	key, err := apiKeyRepo().Fetch(apiKeyID)
+	apiKeyRepo := container.GetAPIKeyRepo()
+	k, err := apiKeyRepo.Fetch(apiKeyID)
 	if err != nil {
 		return nil, ErrInvalidAPIKey
 	}
 
-	return key, nil
+	return k, nil
 }

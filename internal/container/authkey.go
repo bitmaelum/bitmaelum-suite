@@ -24,40 +24,45 @@ import (
 	"sync"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
-
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	subscriptionOnce       sync.Once
-	subscriptionRepository subscription.Repository
+	authKeyOnce       sync.Once
+	authKeyRepository key.AuthKeyRepo
 )
 
-func setupSubscriptionRepo() (interface{}, error) {
-	subscriptionOnce.Do(func() {
+func setupAuthKeyRepo() (interface{}, error) {
+	authKeyOnce.Do(func() {
+		logrus.Trace("Setting up authKeyOnce")
+
 		// If redis.host is set on the config file it will use redis instead of bolt
+		logrus.Trace("config.Server.Redis.Host:", config.Server)
 		if config.Server.Redis.Host != "" {
 			opts := redis.Options{
 				Addr: config.Server.Redis.Host,
 				DB:   config.Server.Redis.Db,
 			}
 
-			subscriptionRepository = subscription.NewRedisRepository(&opts)
+			authKeyRepository = key.NewAuthKeyRedisRepository(&opts)
 			return
 		}
 
 		// If redis is not set then it will use BoltDB as default
+
+		// Use temp dir if no dir is given
 		if config.Server.Bolt.DatabasePath == "" {
 			config.Server.Bolt.DatabasePath = os.TempDir()
 		}
-
-		subscriptionRepository = subscription.NewBoltRepository(config.Server.Bolt.DatabasePath)
+		authKeyRepository = key.NewAuthBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	return subscriptionRepository, nil
+	logrus.Trace("returning: ", authKeyRepository)
+	return authKeyRepository, nil
 }
 
 func init() {
-	Set("subscription", setupSubscriptionRepo)
+	Set("auth-key", setupAuthKeyRepo)
 }

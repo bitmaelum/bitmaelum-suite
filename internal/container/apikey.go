@@ -23,19 +23,17 @@ import (
 	"os"
 	"sync"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/go-redis/redis/v8"
 )
 
 var (
 	apikeyOnce       sync.Once
-	apikeyRepository apikey.Repository
+	apikeyRepository key.APIKeyRepo
 )
 
-// GetAPIKeyRepo returns the repository for storing and fetching api keys
-func GetAPIKeyRepo() apikey.Repository {
-
+func setupAPIKeyRepo() (interface{}, error) {
 	apikeyOnce.Do(func() {
 		// If redis.host is set on the config file it will use redis instead of bolt
 		if config.Server.Redis.Host != "" {
@@ -44,7 +42,7 @@ func GetAPIKeyRepo() apikey.Repository {
 				DB:   config.Server.Redis.Db,
 			}
 
-			apikeyRepository = apikey.NewRedisRepository(&opts)
+			apikeyRepository = key.NewAPIKeyRedisRepository(&opts)
 			return
 		}
 
@@ -54,8 +52,12 @@ func GetAPIKeyRepo() apikey.Repository {
 		if config.Server.Bolt.DatabasePath == "" {
 			config.Server.Bolt.DatabasePath = os.TempDir()
 		}
-		apikeyRepository = apikey.NewBoltRepository(config.Server.Bolt.DatabasePath)
+		apikeyRepository = key.NewAPIBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	return apikeyRepository
+	return apikeyRepository, nil
+}
+
+func init() {
+	Set("api-key", setupAPIKeyRepo)
 }

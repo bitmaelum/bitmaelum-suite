@@ -17,11 +17,11 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package key
 
 import (
 	"encoding/json"
-	"errors"
+	"reflect"
 )
 
 type mockRepo struct {
@@ -29,77 +29,72 @@ type mockRepo struct {
 	addr map[string]map[string]int
 }
 
-// NewMockRepository initializes a new repository
-func NewMockRepository() Repository {
-	return &mockRepo{
-		keys: map[string][]byte{},
-		addr: map[string]map[string]int{},
-	}
-}
-
 // FetchByHash will retrieve all keys for the given account
-func (r mockRepo) FetchByHash(h string) ([]KeyType, error) {
-	var keys []KeyType
+func (r mockRepo) FetchByHash(h string, v interface{}) (interface{}, error) {
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Ptr {
+		return nil, errNeedsPointerValue
+	}
 
 	items, ok := r.addr[h]
 	if !ok {
-		return nil, errors.New("not found")
+		return nil, errKeyNotFound
 	}
 
+	var keys []interface{}
+
+	ve := reflect.TypeOf(v).Elem()
 	for item := range items {
-		key, err := r.Fetch(item)
+		// Create a new item based on the structure of v
+		newItem := reflect.New(ve).Interface()
+
+		err := r.Fetch(item, &newItem)
 		if err != nil {
 			continue
 		}
 
-		keys = append(keys, *key)
+		keys = append(keys, newItem.(interface{}))
 	}
 
 	return keys, nil
 }
 
 // Fetch a key from the repository, or err
-func (r mockRepo) Fetch(ID string) (*KeyType, error) {
+func (r mockRepo) Fetch(ID string, v interface{}) error {
 	data, ok := r.keys[ID]
 	if data == nil || !ok {
-		return nil, errors.New("key not found")
+		return errKeyNotFound
 	}
 
-	key := &KeyType{}
-	err := json.Unmarshal(data, &key)
-	if err != nil {
-		return nil, err
-	}
-
-	return key, nil
+	return json.Unmarshal(data, &v)
 }
 
 // Store the given key in the repository
-func (r mockRepo) Store(apiKey KeyType) error {
-	data, err := json.Marshal(apiKey)
+func (r mockRepo) Store(v GenericKey) error {
+	data, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
 
 	// Add to account set if an hash is given
-	if apiKey.AddrHash != nil {
-		h := apiKey.AddrHash.String()
+	if v.GetAddressHash() != nil {
+		h := v.GetAddressHash().String()
 		if r.addr[h] == nil {
 			r.addr[h] = map[string]int{}
 		}
-		r.addr[h][apiKey.ID] = 1
+		r.addr[h][v.GetID()] = 1
 	}
 
-	r.keys[apiKey.ID] = data
+	r.keys[v.GetID()] = data
 	return err
 }
 
 // Remove the given key from the repository
-func (r mockRepo) Remove(apiKey KeyType) error {
-	if apiKey.AddrHash != nil {
-		delete(r.addr[apiKey.ID], apiKey.AddrHash.String())
+func (r mockRepo) Remove(v GenericKey) error {
+	if v.GetAddressHash() != nil {
+		delete(r.addr[v.GetID()], v.GetAddressHash().String())
 	}
 
-	delete(r.keys, apiKey.ID)
+	delete(r.keys, v.GetID())
 	return nil
 }

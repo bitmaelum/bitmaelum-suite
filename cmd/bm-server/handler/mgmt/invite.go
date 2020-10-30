@@ -25,9 +25,9 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
@@ -40,8 +40,8 @@ type jsonOut map[string]interface{}
 
 // NewInvite handler will generate a new invite token for a given address
 func NewInvite(w http.ResponseWriter, req *http.Request) {
-	key := handler.GetAPIKey(req)
-	if !key.HasPermission(apikey.PermGenerateInvites, nil) {
+	k := handler.GetAPIKey(req)
+	if !k.HasPermission(key.PermGenerateInvites, nil) {
 		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}

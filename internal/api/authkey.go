@@ -27,8 +27,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// CreateAPIKey Create a new API key
-func (api *API) CreateAPIKey(addrHash hash.Hash, key key.APIKeyType) error {
+// CreateAuthKey will create a new authorized key on the server
+func (api *API) CreateAuthKey(addrHash hash.Hash, key key.AuthKeyType) error {
 	// Zero is not 1970, but year 1
 	var expires int64
 	if !key.Expires.IsZero() {
@@ -36,15 +36,17 @@ func (api *API) CreateAPIKey(addrHash hash.Hash, key key.APIKeyType) error {
 	}
 
 	data, err := json.MarshalIndent(jsonOut{
-		"permissions": key.Permissions,
+		"fingerprint": key.Fingerprint,
+		"public_key":  key.PublicKey,
+		"signature":   key.Signature,
 		"expires":     expires,
-		"description": key.Desc,
+		"description": key.Description,
 	}, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	url := fmt.Sprintf("/account/%s/apikey", addrHash.String())
+	url := fmt.Sprintf("/account/%s/authkey", addrHash.String())
 	body, statusCode, err := api.Post(url, data)
 	if err != nil {
 		return err
@@ -61,9 +63,9 @@ func (api *API) CreateAPIKey(addrHash hash.Hash, key key.APIKeyType) error {
 	return nil
 }
 
-// DeleteAPIKey deletes a new API key
-func (api *API) DeleteAPIKey(addrHash hash.Hash, ID string) error {
-	url := fmt.Sprintf("/account/%s/apikey/%s", addrHash.String(), ID)
+// DeleteAuthKey deletes a new auth key
+func (api *API) DeleteAuthKey(addrHash hash.Hash, fingerprint string) error {
+	url := fmt.Sprintf("/account/%s/authkey/%s", addrHash.String(), fingerprint)
 	body, statusCode, err := api.Delete(url)
 	if err != nil {
 		return err
@@ -80,9 +82,9 @@ func (api *API) DeleteAPIKey(addrHash hash.Hash, ID string) error {
 	return nil
 }
 
-// ListAPIKeys lists alll API keys
-func (api *API) ListAPIKeys(addrHash hash.Hash) ([]key.APIKeyType, error) {
-	url := fmt.Sprintf("/account/%s/apikey", addrHash.String())
+// ListAuthKeys lists all auth keys
+func (api *API) ListAuthKeys(addrHash hash.Hash) ([]key.AuthKeyType, error) {
+	url := fmt.Sprintf("/account/%s/authkey", addrHash.String())
 	body, statusCode, err := api.Get(url)
 	if err != nil {
 		return nil, err
@@ -97,7 +99,7 @@ func (api *API) ListAPIKeys(addrHash hash.Hash) ([]key.APIKeyType, error) {
 	}
 
 	// Parse body for keys
-	keys := &[]key.APIKeyType{}
+	keys := &[]key.AuthKeyType{}
 	err = json.Unmarshal(body, &keys)
 	if err != nil {
 		return nil, err
@@ -106,9 +108,9 @@ func (api *API) ListAPIKeys(addrHash hash.Hash) ([]key.APIKeyType, error) {
 	return *keys, nil
 }
 
-// GetAPIKey gets a single key
-func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*key.APIKeyType, error) {
-	url := fmt.Sprintf("/account/%s/apikey/%s", addrHash.String(), ID)
+// GetAuthKey gets a single key
+func (api *API) GetAuthKey(addrHash hash.Hash, fingerprint string) (*key.AuthKeyType, error) {
+	url := fmt.Sprintf("/account/%s/authkey/%s", addrHash.String(), fingerprint)
 	body, statusCode, err := api.Get(url)
 	if err != nil {
 		return nil, err
@@ -123,7 +125,7 @@ func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*key.APIKeyType, error
 	}
 
 	// Parse body for key
-	key := &key.APIKeyType{}
+	key := &key.AuthKeyType{}
 	err = json.Unmarshal(body, &key)
 	if err != nil {
 		return nil, err

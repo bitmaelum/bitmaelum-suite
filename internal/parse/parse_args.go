@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/xhit/go-str2duration/v2"
 )
 
@@ -54,7 +54,7 @@ func ManagementPermissions(perms []string) error {
 		p = strings.ToLower(p)
 
 		found := false
-		for _, ap := range apikey.ManagementPermissons {
+		for _, ap := range key.ManagementPermissons {
 			if p == ap {
 				found = true
 			}
@@ -73,7 +73,7 @@ func AccountPermissions(perms []string) error {
 		p = strings.ToLower(p)
 
 		found := false
-		for _, ap := range apikey.AccountPermissions {
+		for _, ap := range key.AccountPermissions {
 			if p == ap {
 				found = true
 			}

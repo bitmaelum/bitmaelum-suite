@@ -31,25 +31,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	expectedSignature = "smq7qWrkwTL1vquhEAn/WoRDZBT1BjUQaUSsmTSSPePLRpM1sjX10mJwxXlivYOIlgTtJ+0SIeBM9rDPBSTw5JJhOS9ZFmpAYEPG9tkU+9EjxfBNnEBPrsYaqE81tO7OtY4xFrlYecdhepGUQSxbZQU4+Ih5jE9jLb+SuUxR6lGw2u2P+Ngy75dD33zlMTTgnmaVTxBueRlfArDExW5QE+pFv9/uFi8xM5a7eGnQHSjufQ9gM6WOWzhyWAnKI+6XMwx3MoQ53H3OU2vn4tPSUQQyxB+L4WTH9JtC0nLC0ggzvo5LOdCw4rCljsciYiEZ2WssGD9kXLGFIU/ixEX2Kw=="
+)
+
 func TestSignHeader(t *testing.T) {
 	setup()
 
 	header := &message.Header{}
 	_ = bmtest.ReadJSON("../../testdata/header-002.json", &header)
-	assert.Empty(t, header.ServerSignature)
+	assert.Empty(t, header.Signatures.Server)
 	err := SignHeader(header)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "Gb85h74QniufBocnLldn5duNvXzkAgrM/shrnVzOMu5+YDgwEwd6hVxYd57U3iC6aFeU87iyqCVnwI0a3AyiMOiq9Xsq4A5RwvWfjnOmsMegt1pEzgHkU4MuQrCn4JKSmleST1ETSpauAYjVIwYA31JXJnQpcKohN6MWoLPZRFGNi/mBUDv2x7S9mqchXxOhn2i/5f/wBr49Q9EUd/ihhS1JFEtcNEmNOMQnvj9ciBafUYqlBhP9fJ1LkQtsG3aJ4zcg5gBhjsAYIkgsbmbgMGEOFZIIryLXg1vcP+nRk59VugAeI2kawJXIq+qnnLBUUF1GS85ha9OeIhA9MdAJgg==", header.ServerSignature)
+	assert.Equal(t, expectedSignature, header.Signatures.Server)
 
 	// Already present, don't overwrite
 	_ = bmtest.ReadJSON("../../testdata/header-002.json", &header)
-	assert.NotEmpty(t, header.ServerSignature)
-	header.ServerSignature = "foobar"
+	assert.NotEmpty(t, header.Signatures.Server)
+	header.Signatures.Server = "foobar"
 	err = SignHeader(header)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "foobar", header.ServerSignature)
+	assert.Equal(t, "foobar", header.Signatures.Server)
 }
 
 func TestVerifyHeader(t *testing.T) {
@@ -57,27 +61,27 @@ func TestVerifyHeader(t *testing.T) {
 
 	header := &message.Header{}
 	_ = bmtest.ReadJSON("../../testdata/header-002.json", &header)
-	assert.Empty(t, header.ServerSignature)
+	assert.Empty(t, header.Signatures.Server)
 	err := SignHeader(header)
 	assert.NoError(t, err)
-	assert.Equal(t, "Gb85h74QniufBocnLldn5duNvXzkAgrM/shrnVzOMu5+YDgwEwd6hVxYd57U3iC6aFeU87iyqCVnwI0a3AyiMOiq9Xsq4A5RwvWfjnOmsMegt1pEzgHkU4MuQrCn4JKSmleST1ETSpauAYjVIwYA31JXJnQpcKohN6MWoLPZRFGNi/mBUDv2x7S9mqchXxOhn2i/5f/wBr49Q9EUd/ihhS1JFEtcNEmNOMQnvj9ciBafUYqlBhP9fJ1LkQtsG3aJ4zcg5gBhjsAYIkgsbmbgMGEOFZIIryLXg1vcP+nRk59VugAeI2kawJXIq+qnnLBUUF1GS85ha9OeIhA9MdAJgg==", header.ServerSignature)
+	assert.Equal(t, expectedSignature, header.Signatures.Server)
 
 	// All is ok
 	ok := VerifyHeader(*header)
 	assert.True(t, ok)
 
 	// Incorrect decoding
-	header.ServerSignature = "A"
+	header.Signatures.Server = "A"
 	ok = VerifyHeader(*header)
 	assert.False(t, ok)
 
 	// Empty sig is not ok
-	header.ServerSignature = ""
+	header.Signatures.Server = ""
 	ok = VerifyHeader(*header)
 	assert.False(t, ok)
 
 	// incorrect key
-	header.ServerSignature = "Zm9vYmFy"
+	header.Signatures.Server = "Zm9vYmFy"
 	ok = VerifyHeader(*header)
 	assert.False(t, ok)
 }
@@ -96,7 +100,9 @@ func setup() {
 
 	// Setup container with mock repository for routing
 	repo, _ := resolver.NewMockRepository()
-	container.SetResolveService(resolver.KeyRetrievalService(repo))
+	container.Set("resolver", func() (interface{}, error) {
+		return resolver.KeyRetrievalService(repo), nil
+	})
 
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 	var (

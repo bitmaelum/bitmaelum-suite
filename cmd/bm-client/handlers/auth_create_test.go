@@ -20,19 +20,17 @@
 package handlers
 
 import (
-	"encoding/base64"
+	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
+	"github.com/stretchr/testify/assert"
 )
 
-// SignOnbehalf will sign a target key by the private key of info
-func SignOnbehalf(sourceKey bmcrypto.PrivKey, targetKey bmcrypto.PubKey) (string, error) {
-	h := hash.New(targetKey.String())
-	signedKey, err := bmcrypto.Sign(sourceKey, h.Byte())
-	if err != nil {
-		return "", err
-	}
+func TestSignKey(t *testing.T) {
+	sourcePrivkey, _, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-1.json")
+	_, targetPubkey, _ := testing2.ReadTestKey("../../../testdata/key-ed25519-2.json")
 
-	return base64.StdEncoding.EncodeToString(signedKey), nil
+	res, err := signKey(*sourcePrivkey, targetPubkey)
+	assert.NoError(t, err)
+	assert.Equal(t, "GRlSsdrkcciQSOiZNPHO0e0emRAv9x0rhB+eARdarkHeCJL9YOIHghen5C8+8IAaNGe0qHVPal+EcdXCKjQVBg==", res)
 }

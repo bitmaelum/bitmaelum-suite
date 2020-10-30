@@ -33,7 +33,7 @@ import (
 // SignHeader will add a server signature to a message header. This can be used to proof the origin of the message
 func SignHeader(header *message.Header) error {
 	// Already signed? Then skip
-	if len(header.ServerSignature) > 0 {
+	if len(header.Signatures.Server) > 0 {
 		return nil
 	}
 
@@ -48,7 +48,7 @@ func SignHeader(header *message.Header) error {
 		return err
 	}
 
-	header.ServerSignature = base64.StdEncoding.EncodeToString(sig)
+	header.Signatures.Server = base64.StdEncoding.EncodeToString(sig)
 	return nil
 }
 
@@ -62,16 +62,16 @@ func VerifyHeader(header message.Header) bool {
 	}
 
 	// No header at all
-	if len(header.ServerSignature) == 0 {
+	if len(header.Signatures.Server) == 0 {
 		return false
 	}
 
 	// Store signature
-	targetSignature, err := base64.StdEncoding.DecodeString(header.ServerSignature)
+	targetSignature, err := base64.StdEncoding.DecodeString(header.Signatures.Server)
 	if err != nil {
 		return false
 	}
-	header.ServerSignature = ""
+	header.Signatures.Server = ""
 
 	// Generate hash
 	data, err := json.Marshal(&header)

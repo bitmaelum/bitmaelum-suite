@@ -20,44 +20,48 @@
 package container
 
 import (
-	"os"
-	"sync"
+	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
-
-	"github.com/go-redis/redis/v8"
+	"github.com/stretchr/testify/assert"
 )
 
-var (
-	subscriptionOnce       sync.Once
-	subscriptionRepository subscription.Repository
-)
+var called = 0
 
-func setupSubscriptionRepo() (interface{}, error) {
-	subscriptionOnce.Do(func() {
-		// If redis.host is set on the config file it will use redis instead of bolt
-		if config.Server.Redis.Host != "" {
-			opts := redis.Options{
-				Addr: config.Server.Redis.Host,
-				DB:   config.Server.Redis.Db,
-			}
-
-			subscriptionRepository = subscription.NewRedisRepository(&opts)
-			return
-		}
-
-		// If redis is not set then it will use BoltDB as default
-		if config.Server.Bolt.DatabasePath == "" {
-			config.Server.Bolt.DatabasePath = os.TempDir()
-		}
-
-		subscriptionRepository = subscription.NewBoltRepository(config.Server.Bolt.DatabasePath)
-	})
-
-	return subscriptionRepository, nil
+func barFunc() string {
+	return "this is bar"
 }
 
-func init() {
-	Set("subscription", setupSubscriptionRepo)
+func TestContainer(t *testing.T) {
+	c := NewContainer()
+
+	// We set a function that we can call here
+	c.Set("foo", ServiceTypeSingle, func() (interface{}, error) {
+		return func() string {
+			return "this is foo"
+		}, nil
+	})
+
+	svc, ok := c.Get("foo").(func() string)
+	assert.True(t, ok)
+	assert.Equal(t, "this is foo", svc())
+
+	c.Set("foo", ServiceTypeSingle, func() (interface{}, error) { called++; return barFunc, nil })
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 1, called)
+
+	c.Set("foo", ServiceTypeMulti, func() (interface{}, error) { called++; return barFunc, nil })
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 2, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 3, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 4, called)
+	_, _ = c.Get("foo").(func() string)
+	assert.Equal(t, 5, called)
 }

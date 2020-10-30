@@ -17,47 +17,42 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package container
+package key
 
 import (
-	"os"
-	"sync"
+	"testing"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
-
-	"github.com/go-redis/redis/v8"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/stretchr/testify/assert"
 )
 
-var (
-	subscriptionOnce       sync.Once
-	subscriptionRepository subscription.Repository
-)
+func TestMockRepo(t *testing.T) {
+	repo := NewAPIMockRepository()
 
-func setupSubscriptionRepo() (interface{}, error) {
-	subscriptionOnce.Do(func() {
-		// If redis.host is set on the config file it will use redis instead of bolt
-		if config.Server.Redis.Host != "" {
-			opts := redis.Options{
-				Addr: config.Server.Redis.Host,
-				DB:   config.Server.Redis.Db,
-			}
+	h := hash.New("example!")
+	k := NewAPIAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc")
+	err := repo.Store(k)
+	assert.NoError(t, err)
 
-			subscriptionRepository = subscription.NewRedisRepository(&opts)
-			return
-		}
+	k2, err := repo.Fetch(k.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"foo", "bar"}, k2.Permissions)
+	assert.Equal(t, "my desc", k2.Desc)
 
-		// If redis is not set then it will use BoltDB as default
-		if config.Server.Bolt.DatabasePath == "" {
-			config.Server.Bolt.DatabasePath = os.TempDir()
-		}
+	h = hash.New("example!")
+	k = NewAPIAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc 2")
+	err = repo.Store(k)
+	assert.NoError(t, err)
 
-		subscriptionRepository = subscription.NewBoltRepository(config.Server.Bolt.DatabasePath)
-	})
+	keys, err := repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 2)
 
-	return subscriptionRepository, nil
-}
+	err = repo.Remove(k)
+	assert.NoError(t, err)
 
-func init() {
-	Set("subscription", setupSubscriptionRepo)
+	keys, err = repo.FetchByHash(h.String())
+	assert.NoError(t, err)
+	assert.Len(t, keys, 1)
 }

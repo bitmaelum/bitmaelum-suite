@@ -23,8 +23,10 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -64,6 +66,13 @@ func (pk *PubKey) MarshalJSON() ([]byte, error) {
 // String converts a key to "<type> <key> <description>"
 func (pk *PubKey) String() string {
 	return strings.TrimSpace(pk.Type + " " + pk.S + " " + pk.Description)
+}
+
+// Fingerprint return the fingerprint of the key
+func (pk *PubKey) Fingerprint() string {
+	binKey, _ := base64.StdEncoding.DecodeString(pk.S)
+	b := sha256.Sum256(binKey)
+	return hex.EncodeToString(b[:])
 }
 
 // UnmarshalJSON unmarshals bytes into a key

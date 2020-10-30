@@ -17,42 +17,21 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package key
 
 import (
 	"testing"
 	"time"
 
+	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMockRepo(t *testing.T) {
-	repo := NewMockRepository()
+func TestAuthKey(t *testing.T) {
+	_, pubkey, _ := testing2.ReadTestKey("../../testdata/key-1.json")
+	a := NewAuthKey(hash.New("example!"), pubkey, "sig", time.Time{}, "desc")
 
-	h := hash.New("example!")
-	k := NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc")
-	err := repo.Store(k)
-	assert.NoError(t, err)
-
-	k2, err := repo.Fetch(k.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, []string{"foo", "bar"}, k2.Permissions)
-	assert.Equal(t, "my desc", k2.Desc)
-
-	h = hash.New("example!")
-	k = NewAccountKey(h, []string{"foo", "bar"}, time.Time{}, "my desc 2")
-	err = repo.Store(k)
-	assert.NoError(t, err)
-
-	keys, err := repo.FetchByHash(h.String())
-	assert.NoError(t, err)
-	assert.Len(t, keys, 2)
-
-	err = repo.Remove(k)
-	assert.NoError(t, err)
-
-	keys, err = repo.FetchByHash(h.String())
-	assert.NoError(t, err)
-	assert.Len(t, keys, 1)
+	assert.Equal(t, "9c9afac4a3603d7b05fd0b3a57eba3c30da421c5dc1a18b2cffeef5ebca24480", a.GetID())
+	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", a.GetAddressHash().String())
 }

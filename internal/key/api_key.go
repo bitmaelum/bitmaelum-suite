@@ -17,7 +17,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package key
 
 import (
 	"math/rand"
@@ -27,54 +27,64 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// KeyType represents a key with a validity and permissions. When admin is true, permission checks are always true
-type KeyType struct {
-	ID          string     `json:"key"`
-	Expires     time.Time  `json:"expires"`
-	Permissions []string   `json:"permissions"`
-	Admin       bool       `json:"admin"`
-	AddrHash    *hash.Hash `json:"addr_hash"`
-	Desc        string     `json:"description"`
+// APIKeyType represents a key with a validity and permissions. When admin is true, permission checks are always true
+type APIKeyType struct {
+	ID          string     `json:"key"`          // ID
+	AddressHash *hash.Hash `json:"address_hash"` // Address hash
+	Expires     time.Time  `json:"expires"`      // Time the key expires
+	Permissions []string   `json:"permissions"`  // List of permissions for this key
+	Admin       bool       `json:"admin"`        // Admin key or not?
+	Desc        string     `json:"description"`  // Description of the key
 }
 
-// NewAdminKey creates a new admin key
-func NewAdminKey(expiry time.Time, desc string) KeyType {
-	return KeyType{
+// GetID returns ID
+func (key *APIKeyType) GetID() string {
+	return key.ID
+}
+
+// GetAddressHash returns address hash or nil
+func (key *APIKeyType) GetAddressHash() *hash.Hash {
+	return key.AddressHash
+}
+
+// NewAPIAdminKey creates a new admin key
+func NewAPIAdminKey(expiry time.Time, desc string) APIKeyType {
+	return APIKeyType{
 		ID:          GenerateKey("BMK-", 32),
+		AddressHash: nil,
 		Expires:     expiry,
 		Permissions: nil,
 		Admin:       true,
-		AddrHash:    nil,
 		Desc:        desc,
 	}
 }
 
-// NewAccountKey creates a new key with the given permissions and duration for the given account
-func NewAccountKey(addrHash hash.Hash, perms []string, expiry time.Time, desc string) KeyType {
-	return KeyType{
+// NewAPIAccountKey creates a new key with the given permissions and duration for the given account
+func NewAPIAccountKey(addrHash hash.Hash, perms []string, expiry time.Time, desc string) APIKeyType {
+	return APIKeyType{
 		ID:          GenerateKey("BMK-", 32),
+		AddressHash: &addrHash,
 		Expires:     expiry,
 		Permissions: perms,
 		Admin:       false,
-		AddrHash:    &addrHash,
 		Desc:        desc,
 	}
 }
 
-// NewKey creates a new key with the given permissions and duration
-func NewKey(perms []string, expiry time.Time, desc string) KeyType {
-	return KeyType{
+// NewAPIKey creates a new key with the given permissions and duration
+func NewAPIKey(perms []string, expiry time.Time, desc string) APIKeyType {
+	return APIKeyType{
 		ID:          GenerateKey("BMK-", 32),
+		AddressHash: nil,
 		Expires:     expiry,
 		Permissions: perms,
 		Admin:       false,
-		AddrHash:    nil,
 		Desc:        desc,
 	}
 }
 
 // HasPermission returns true when this key contains the given permission, or when the key is an admin key (granted all permissions)
-func (key *KeyType) HasPermission(perm string, addrHash *hash.Hash) bool {
+func (key *APIKeyType) HasPermission(perm string, addrHash *hash.Hash) bool {
 	if key.Admin {
 		return true
 	}
@@ -82,20 +92,12 @@ func (key *KeyType) HasPermission(perm string, addrHash *hash.Hash) bool {
 	perm = strings.ToLower(perm)
 
 	for _, p := range key.Permissions {
-		if strings.ToLower(p) == perm && (addrHash == nil || addrHash.String() == key.AddrHash.String()) {
+		if strings.ToLower(p) == perm && (addrHash == nil || addrHash.String() == key.AddressHash.String()) {
 			return true
 		}
 	}
 
 	return false
-}
-
-// Repository is a repository to fetch and store API keys
-type Repository interface {
-	Fetch(ID string) (*KeyType, error)
-	FetchByHash(h string) ([]KeyType, error)
-	Store(key KeyType) error
-	Remove(key KeyType) error
 }
 
 // GenerateKey generates a random key based on a given string length

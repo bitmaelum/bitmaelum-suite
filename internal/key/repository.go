@@ -17,49 +17,46 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package subscription
+package key
 
 import (
-	"context"
 	"errors"
-	"testing"
 
-	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestRedisRepo(t *testing.T) {
-	m := &testing2.RedisClientMock{}
+var (
+	errKeyNotFound       = errors.New("key not found")
+	errNeedsPointerValue = errors.New("needs a pointer value")
+)
 
-	repo := &redisRepo{
-		client:  m,
-		context: context.Background(),
-	}
+// GenericKey is a generic structure for storing and fetching keys
+type GenericKey interface {
+	GetID() string
+	GetAddressHash() *hash.Hash
+}
 
-	sub := New(hash.Hash("from"), hash.Hash("to"), "sub")
+// StorageBackend is the main backend interface which can stores undefined structures. This can be api keys or auth
+// key or even other kind of keys.
+type StorageBackend interface {
+	FetchByHash(h string, v interface{}) (interface{}, error)
+	Fetch(ID string, v interface{}) error
+	Store(v GenericKey) error
+	Remove(v GenericKey) error
+}
 
-	m.Queue("exists", int64(1), nil)
-	assert.True(t, repo.Has(&sub))
+// AuthKeyRepo is the repository to the outside world. It allows us to fetch and store auth keys
+type AuthKeyRepo interface {
+	FetchByHash(h string) ([]AuthKeyType, error)
+	Fetch(ID string) (*AuthKeyType, error)
+	Store(v AuthKeyType) error
+	Remove(v AuthKeyType) error
+}
 
-	m.Queue("exists", int64(0), nil)
-	assert.False(t, repo.Has(&sub))
-
-	m.Queue("exists", int64(33), nil)
-	assert.True(t, repo.Has(&sub))
-
-	m.Queue("exists", int64(0), errors.New("key not exist"))
-	assert.False(t, repo.Has(&sub))
-
-	m.Queue("set", "foobar", nil)
-	assert.NoError(t, repo.Store(&sub))
-
-	m.Queue("set", "foobar", errors.New("error"))
-	assert.Error(t, repo.Store(&sub))
-
-	m.Queue("del", int64(1), nil)
-	assert.NoError(t, repo.Remove(&sub))
-
-	m.Queue("del", int64(0), errors.New("error"))
-	assert.Error(t, repo.Remove(&sub))
+// APIKeyRepo is the repository to the outside world. It allows us to fetch and store api keys
+type APIKeyRepo interface {
+	FetchByHash(h string) ([]APIKeyType, error)
+	Fetch(ID string) (*APIKeyType, error)
+	Store(v APIKeyType) error
+	Remove(v APIKeyType) error
 }

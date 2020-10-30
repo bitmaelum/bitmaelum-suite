@@ -25,9 +25,9 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/apikey"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -55,7 +55,7 @@ var apiCreateCmd = &cobra.Command{
 			fmt.Printf("UNTIL EXPIRY: %#v\n", expiry)
 		}
 
-		key := apikey.NewKey(*acPerms, expiry, *acDesc)
+		key := key.NewAPIKey(*acPerms, expiry, *acDesc)
 		fmt.Printf("%#v\n", key)
 		fmt.Printf("%#v\n", *acValidUntil)
 

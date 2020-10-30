@@ -17,30 +17,36 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package apikey
+package cmd
 
-const (
-	// PermFlush Permission to restart/reload the system including flushing/forcing the queues
-	PermFlush string = "flush"
-	// PermGenerateInvites Permission to generate invites remotely
-	PermGenerateInvites string = "invite"
-	// PermAPIKeys Permission to create api keys
-	PermAPIKeys string = "apikey"
-	// PermSendMail Permission to send email
-	PermSendMail string = "send-mail"
-	// PermGetHeaders allows you to fetch header and catalog from messages
-	PermGetHeaders string = "get-headers"
+import (
+	"fmt"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-// ManagementPermissons is a list of all permissions available for remote management
-var ManagementPermissons = []string{
-	PermAPIKeys,
-	PermFlush,
-	PermGenerateInvites,
+// generateKeyCmd represents the generatekey command
+var generateKeyCmd = &cobra.Command{
+	Use:   "generate-key",
+	Short: "Generates a new key",
+	Long:  `This command generates a new key`,
+	Run: func(cmd *cobra.Command, args []string) {
+		privKey, pubKey, err := bmcrypto.GenerateKeyPair(*keyType)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		fmt.Println("Private key : ", privKey.String())
+		fmt.Println("Public key  : ", pubKey.String())
+	},
 }
 
-// AccountPermissions is a set of permissions for specific accounts
-var AccountPermissions = []string{
-	PermGetHeaders,
-	PermSendMail,
+var keyType *string
+
+func init() {
+	rootCmd.AddCommand(generateKeyCmd)
+
+	keyType = generateKeyCmd.Flags().StringP("type", "t", "ed25519", "The keytype (ed25519, rsa or ecdsa)")
 }

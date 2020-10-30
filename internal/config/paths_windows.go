@@ -25,6 +25,5 @@ func getSearchPaths() []string {
 	return []string{
 		"./",
 		"%ProgramData%/BitMaelum/etc/bitmaelum/",
-		"/etc/bitmaelum/",
 	}
 }
