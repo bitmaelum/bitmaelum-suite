@@ -20,12 +20,11 @@
 package container
 
 /*
- * This is a very basic container system. It is NOT directly an dependecy container, as it does not do any resolving
- * and dependencies. But it's here to easily change the functionality. This is needed when we want for instance to
- * mock a service. From the code point of view, we still can use container.Get("service"), while we have set this
- * to a mocked service.
+ * This is a very basic container system. We use this to easily locate services (ie: service locator) inside our code.
+ * With this container, we can also easily change a service to another instance, like a mocking service.
+ * From the code point of view, we still can use container.Get("service"), while we have set this to a mocked service.
  *
- * There is no functionality for dependencies etc
+ * There is no functionality for dependencies etc, but we have shared/unshared services.
  */
 
 // Container is the main container structure holding all service
