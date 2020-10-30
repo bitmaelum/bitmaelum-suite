@@ -72,24 +72,18 @@ func LoadClientConfigOrPass(configPath string) error {
 
 	// Try custom path first
 	if configPath != "" {
-		err = readConfigPath(configPath, Client.LoadConfig)
-		if err != nil {
-			return err
-		}
+		return readConfigPath(configPath, "from commandline", Client.LoadConfig)
 	}
 
 	configPath = os.Getenv("BITMAELUM_CLIENT_CONFIG")
 	if configPath != "" {
-		err = readConfigPath(configPath, Client.LoadConfig)
-		if err != nil {
-			return err
-		}
+		return readConfigPath(configPath, "from BITMAELUM_CLIENT_CONFIG environment", Client.LoadConfig)
 	}
 
 	// try on our search paths
 	for _, p := range getSearchPaths() {
 		p = filepath.Join(p, ClientConfigFile)
-		err = readConfigPath(p, Client.LoadConfig)
+		err = readConfigPath(p, "from hardcoded search path", Client.LoadConfig)
 		if err == nil || err != errNotFound {
 			return err
 		}
@@ -104,18 +98,18 @@ func LoadServerConfigOrPass(configPath string) error {
 
 	// Try custom path first
 	if configPath != "" {
-		return readConfigPath(configPath, Server.LoadConfig)
+		return readConfigPath(configPath, "from commandline", Server.LoadConfig)
 	}
 
 	configPath = os.Getenv("BITMAELUM_SERVER_CONFIG")
 	if configPath != "" {
-		return readConfigPath(configPath, Server.LoadConfig)
+		return readConfigPath(configPath, "from BITMAELUM_SERVER_CONFIG environment", Server.LoadConfig)
 	}
 
 	// try on our search paths
 	for _, p := range getSearchPaths() {
 		p = filepath.Join(p, ServerConfigFile)
-		err = readConfigPath(p, Server.LoadConfig)
+		err = readConfigPath(p, "from hardcoded search path", Server.LoadConfig)
 		if err == nil || err != errNotFound {
 			return err
 		}
@@ -125,10 +119,10 @@ func LoadServerConfigOrPass(configPath string) error {
 }
 
 // Expands the given path and loads the configuration
-func readConfigPath(p string, loader func(r io.Reader) error) error {
+func readConfigPath(p, src string, loader func(r io.Reader) error) error {
 	p, _ = homedir.Expand(p)
 
-	triedPaths = append(triedPaths, p)
+	triedPaths = append(triedPaths, p + " ("+src+")")
 
 	f, err := fs.Open(p)
 	if err != nil {
