@@ -29,7 +29,7 @@ import (
 
 // APIKeyType represents a key with a validity and permissions. When admin is true, permission checks are always true
 type APIKeyType struct {
-	ID          string     `json:"id"`           // ID
+	ID          string     `json:"key"`          // ID
 	AddressHash *hash.Hash `json:"address_hash"` // Address hash
 	Expires     time.Time  `json:"expires"`      // Time the key expires
 	Permissions []string   `json:"permissions"`  // List of permissions for this key

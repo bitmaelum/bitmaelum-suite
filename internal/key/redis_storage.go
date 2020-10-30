@@ -42,7 +42,7 @@ func (r redisRepo) FetchByHash(h string, v interface{}) (interface{}, error) {
 		return nil, errNeedsPointerValue
 	}
 
-	items, err := r.client.SMembers(r.context, h)
+	items, err := r.client.SMembers(r.context, r.createRedisKey(h))
 	if err != nil {
 		return nil, errKeyNotFound
 	}

@@ -62,7 +62,7 @@ func TestRedis(t *testing.T) {
 	err = repo.Store(*kt)
 	assert.NoError(t, err)
 
-	m.Queue("get", "{\"id\":\"abc\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key\"}", nil)
+	m.Queue("get", "{\"key\":\"abc\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key\"}", nil)
 	kt2, err := repo.Fetch("abc")
 	assert.NoError(t, err)
 	assert.Equal(t, "abc", kt2.ID)
@@ -79,8 +79,8 @@ func TestRedis(t *testing.T) {
 	assert.Nil(t, kt2)
 
 	m.Queue("smembers", []string{"foo", "bar"}, nil)
-	m.Queue("get", "{\"id\":\"abc\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key\"}", nil)
-	m.Queue("get", "{\"id\":\"def\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key 2\"}", nil)
+	m.Queue("get", "{\"key\":\"abc\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key\"}", nil)
+	m.Queue("get", "{\"key\":\"def\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key 2\"}", nil)
 	kts, err = repo.FetchByHash("set 1")
 	assert.NoError(t, err)
 	assert.Len(t, kts, 2)
