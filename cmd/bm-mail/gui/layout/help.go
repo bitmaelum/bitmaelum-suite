@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/gui/app"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/gui/components"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/app"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/components"
 	"github.com/rivo/tview"
 )
 

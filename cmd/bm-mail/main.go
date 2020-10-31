@@ -17,28 +17,43 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package cmd
+package main
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/gui"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"fmt"
+	"math/rand"
+	"os"
+	"time"
 
-	"github.com/spf13/cobra"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 )
 
-var guiCmd = &cobra.Command{
-	Use:     "gui",
-	Short:   "GUI",
-	Long: `GUI
-`,
-	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-
-		gui.Run(v)
-	},
+type options struct {
+	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
+	Password string `short:"p" long:"password" description:"Vault password" default:""`
+	Version  bool   `short:"v" long:"version" description:"Display version information"`
 }
 
+var opts options
 
-func init() {
-	rootCmd.AddCommand(guiCmd)
+func main() {
+	rand.Seed(time.Now().UnixNano())
+
+	internal.ParseOptions(&opts)
+	if opts.Version {
+		internal.WriteVersionInfo("BitMaelum Mail", os.Stdout)
+		fmt.Println()
+		os.Exit(1)
+	}
+
+	config.LoadClientConfig(opts.Config)
+
+	// Set main password for the vault
+	vault.VaultPassword = opts.Password
+
+	v := vault.OpenVault()
+	gui.Run(v)
 }

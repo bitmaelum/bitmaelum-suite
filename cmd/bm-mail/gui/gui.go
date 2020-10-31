@@ -1,8 +1,8 @@
 package gui
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/gui/app"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/gui/layout"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/app"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/layout"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/rivo/tview"
 )
