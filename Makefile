@@ -8,7 +8,7 @@ SHELL=/bin/bash -O globstar -c
 REPO="github.com/bitmaelum/bitmaelum-suite"
 
 # Our defined apps and tools
-APPS := bm-server bm-client bm-config
+APPS := bm-server bm-client bm-config bm-mail
 TOOLS := hash-address jwt proof-of-work readmail update-resolver resolve vault-edit resolve-auth update-pow jwt-validate migrate-hash check-org toaster
 
 # These files are checked for license headers
