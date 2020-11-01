@@ -1,3 +1,22 @@
+// Copyright (c) 2020 BitMaelum Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 package layout
 
 import (
@@ -7,7 +26,8 @@ import (
 	"github.com/rivo/tview"
 )
 
-func NewAccountScreen(app app.AppType) tview.Primitive {
+// NewAccountScreen creats a new account screen
+func NewAccountScreen(app app.Type) tview.Primitive {
 
 	list := tview.NewList().ShowSecondaryText(false)
 	list.SetBorder(true).SetTitle("Accounts")
@@ -29,7 +49,6 @@ func NewAccountScreen(app app.AppType) tview.Primitive {
 		app.Pages.SwitchToPage("main_menu")
 	})
 
-
 	grid := tview.NewGrid().SetColumns(0, 0).SetRows(0, 1)
 	grid.AddItem(list, 0, 0, 1, 1, 0, 0, true)
 	grid.AddItem(list2, 0, 1, 1, 1, 0, 0, false)
@@ -38,7 +57,7 @@ func NewAccountScreen(app app.AppType) tview.Primitive {
 	curActiveElement := 0
 	elements := []tview.Primitive{list, list2}
 
-	grid.SetInputCapture(func (event *tcell.EventKey) *tcell.EventKey {
+	grid.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTab {
 			curActiveElement++
 			if curActiveElement >= len(elements) {

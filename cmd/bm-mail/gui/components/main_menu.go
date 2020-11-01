@@ -1,3 +1,22 @@
+// Copyright (c) 2020 BitMaelum Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 package components
 
 import (
@@ -10,19 +29,21 @@ type mainMenuItem struct {
 	Shortcut rune
 }
 
+// MainMenu is our main menu
 type MainMenu struct {
 	*tview.Box
 
-	items []mainMenuItem
-	currentItem int
+	items       []mainMenuItem // Items in the main menu
+	currentItem int            // Current selected item
 
-	mainTextColor tcell.Color
-	selectedTextColor tcell.Color
-	selectedBackgroundColor tcell.Color
+	mainTextColor           tcell.Color // main color
+	selectedTextColor       tcell.Color // selected item color
+	selectedBackgroundColor tcell.Color // selected item background color
 
-	selected func(index int, mainText string, shortcut rune)
+	selected func(index int, mainText string, shortcut rune) // function when an item is selected
 }
 
+// NewMainMenu creates an empty main menu
 func NewMainMenu() *MainMenu {
 	return &MainMenu{
 		Box:                     tview.NewBox(),
@@ -32,6 +53,7 @@ func NewMainMenu() *MainMenu {
 	}
 }
 
+// Draw will draw the main menu on screen
 func (m *MainMenu) Draw(screen tcell.Screen) {
 	m.Box.Draw(screen)
 
@@ -74,26 +96,31 @@ func (m *MainMenu) Draw(screen tcell.Screen) {
 	}
 }
 
+// SetMainTextColor sets the main text color
 func (m *MainMenu) SetMainTextColor(c tcell.Color) *MainMenu {
 	m.mainTextColor = c
 	return m
 }
 
+// SetSelectedTextColor is the selected text color
 func (m *MainMenu) SetSelectedTextColor(c tcell.Color) *MainMenu {
 	m.selectedTextColor = c
 	return m
 }
 
+// SetSelectedBackgroundColor is the selected background color
 func (m *MainMenu) SetSelectedBackgroundColor(c tcell.Color) *MainMenu {
 	m.selectedBackgroundColor = c
 	return m
 }
 
+// SetSelectedFunc sets the function that is called when an item is selected
 func (m *MainMenu) SetSelectedFunc(handler func(int, string, rune)) *MainMenu {
 	m.selected = handler
 	return m
 }
 
+// AddItem adds a new item to the main menu
 func (m *MainMenu) AddItem(text string, shortcut rune) *MainMenu {
 	m.items = append(m.items, mainMenuItem{
 		Text:     text,
@@ -103,12 +130,15 @@ func (m *MainMenu) AddItem(text string, shortcut rune) *MainMenu {
 	return m
 }
 
+// Clear will remove all menu items
 func (m *MainMenu) Clear() *MainMenu {
 	m.items = nil
 
 	return m
 }
 
+// InputHandler will be called when the main menu is active and we have an input. It will deal with navigating through
+// the main menu
 func (m *MainMenu) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 	return m.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 		if event.Key() == tcell.KeyEscape {
@@ -136,26 +166,7 @@ func (m *MainMenu) InputHandler() func(event *tcell.EventKey, setFocus func(p tv
 				}
 			}
 		case tcell.KeyRune:
-			ch := event.Rune()
-			if ch != ' ' {
-				// It's not a space bar. Is it a shortcut?
-				var found bool
-				for index, item := range m.items {
-					if item.Shortcut == ch {
-						// We have a shortcut.
-						found = true
-						m.currentItem = index
-						break
-					}
-				}
-				if !found {
-					break
-				}
-			}
-			item := m.items[m.currentItem]
-			if m.selected != nil {
-				m.selected(m.currentItem, item.Text, item.Shortcut)
-			}
+			doRune(m, event.Rune())
 		}
 
 		if m.currentItem < 0 {
@@ -164,4 +175,28 @@ func (m *MainMenu) InputHandler() func(event *tcell.EventKey, setFocus func(p tv
 			m.currentItem = len(m.items) - 1
 		}
 	})
+}
+
+func doRune(m *MainMenu, ch rune) {
+	if ch != ' ' {
+		// It's not a space bar. Is it a shortcut?
+		var found bool
+		for index, item := range m.items {
+			if item.Shortcut == ch {
+				// We have a shortcut.
+				found = true
+				m.currentItem = index
+				break
+			}
+		}
+		if !found {
+			return
+		}
+	}
+
+	// call the selected function if any
+	item := m.items[m.currentItem]
+	if m.selected != nil {
+		m.selected(m.currentItem, item.Text, item.Shortcut)
+	}
 }
