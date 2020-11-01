@@ -31,8 +31,8 @@ import (
 )
 
 const (
-	mockToken     = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODU2OTYsImlhdCI6MTU3Nzg4MjA5NiwibmJmIjoxNTc3ODgyMDk2LCJzdWIiOiIxODgyYjkxYjdmNDlkNDc5Y2YxZWMyZjFlY2VlMzBkMGU1MzkyZTk2M2EyMTA5MDE1YjcxNDliZjcxMmFkMWI2In0.e9osJ5LRAkz6hgFMb9hSJe9SDcefi3l3t7q5NGXm4BisNKQa0lfmefVZXAdi5U8PKD3laSFjtkgIoN97TWc5o7b4KxFPziAb1KZ0JHz0oD8MBjFf0ebrlWv5GLsEozyFfyID9onvOVI6purY4ZBmiap3ncp2gHip7KFZQweVcR4"
-	mockSignature = "e9osJ5LRAkz6hgFMb9hSJe9SDcefi3l3t7q5NGXm4BisNKQa0lfmefVZXAdi5U8PKD3laSFjtkgIoN97TWc5o7b4KxFPziAb1KZ0JHz0oD8MBjFf0ebrlWv5GLsEozyFfyID9onvOVI6purY4ZBmiap3ncp2gHip7KFZQweVcR4"
+	mockToken     = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODIxMzAsImlhdCI6MTU3Nzg4MjA0MCwibmJmIjoxNTc3ODgyMDQwLCJzdWIiOiIxODgyYjkxYjdmNDlkNDc5Y2YxZWMyZjFlY2VlMzBkMGU1MzkyZTk2M2EyMTA5MDE1YjcxNDliZjcxMmFkMWI2In0.D0QCl93sfwtOVmHpt5LJ9OjnLfNR0d9WnyZIVVa-Ktxd-PSLC6b-UlhSV3NKnMz1mNdO3KQIf9_0RQcjWWxOUzH2kXANMNngeLz5bHQowiSDtTMFwKdwCdHhMaYCuMkEGvILfKRUuDhussSFZmcGcqDkIqKRFDN-0HyoHfCEHo4"
+	mockSignature = "D0QCl93sfwtOVmHpt5LJ9OjnLfNR0d9WnyZIVVa-Ktxd-PSLC6b-UlhSV3NKnMz1mNdO3KQIf9_0RQcjWWxOUzH2kXANMNngeLz5bHQowiSDtTMFwKdwCdHhMaYCuMkEGvILfKRUuDhussSFZmcGcqDkIqKRFDN-0HyoHfCEHo4"
 )
 
 func TestGenerateJWTToken(t *testing.T) {
@@ -52,6 +52,51 @@ func TestGenerateJWTToken(t *testing.T) {
 	assert.Equal(t, mockToken, token)
 }
 
+func TestValidateJwtTokenExpiry(t *testing.T) {
+	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
+	pubKey, _ := bmcrypto.NewPubKey(string(data))
+	haddr := hash.New("test!")
+
+	// The current time block in our mock token is 12:34:30 - 12:36:00 (1577882040 - 1577882130)
+
+	// In previous 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 34, 29, 0, time.UTC)
+	}
+	token, err := ValidateJWTToken(mockToken, haddr, *pubKey)
+	assert.Nil(t, err)
+	assert.NotNil(t, token)
+	assert.True(t, token.Valid)
+
+
+	// Before previous 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 33, 59, 0, time.UTC)
+	}
+	token, err = ValidateJWTToken(mockToken, haddr, *pubKey)
+	assert.Error(t, err)
+	assert.Nil(t, token)
+
+
+	// In next 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 34, 59, 0, time.UTC)
+	}
+	token, err = ValidateJWTToken(mockToken, haddr, *pubKey)
+	assert.Nil(t, err)
+	assert.NotNil(t, token)
+	assert.True(t, token.Valid)
+
+
+	// After next 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 35, 31, 0, time.UTC)
+	}
+	token, err = ValidateJWTToken(mockToken, haddr, *pubKey)
+	assert.Error(t, err)
+	assert.Nil(t, token)
+}
+
 func TestValidateJWTToken(t *testing.T) {
 	// Mock JWT time
 	jwt.TimeFunc = func() time.Time {
@@ -68,9 +113,9 @@ func TestValidateJWTToken(t *testing.T) {
 	assert.True(t, token.Valid)
 	assert.Equal(t, "RS256", token.Method.Alg())
 	assert.Equal(t, mockSignature, token.Signature)
-	assert.Equal(t, int64(1577882096), token.Claims.(*jwt.StandardClaims).IssuedAt)
-	assert.Equal(t, int64(1577885696), token.Claims.(*jwt.StandardClaims).ExpiresAt)
-	assert.Equal(t, int64(1577882096), token.Claims.(*jwt.StandardClaims).NotBefore)
+	assert.Equal(t, int64(1577882040), token.Claims.(*jwt.StandardClaims).IssuedAt)
+	assert.Equal(t, int64(1577882130), token.Claims.(*jwt.StandardClaims).ExpiresAt)
+	assert.Equal(t, int64(1577882040), token.Claims.(*jwt.StandardClaims).NotBefore)
 	assert.Equal(t, haddr.String(), token.Claims.(*jwt.StandardClaims).Subject)
 }
 

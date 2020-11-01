@@ -22,7 +22,6 @@ package internal
 import (
 	"crypto/subtle"
 	"errors"
-	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -44,10 +43,14 @@ const (
 
 // GenerateJWTToken generates a JWT token with the address and singed by the given private key
 func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
+	// Get the current 30 second block of time
+	now := jwt.TimeFunc()
+	ct := (now.Unix() / 30) * 30
+
 	claims := &jwt.StandardClaims{
-		ExpiresAt: jwt.TimeFunc().Add(time.Hour * time.Duration(1)).Unix(),
-		IssuedAt:  jwt.TimeFunc().Unix(),
-		NotBefore: jwt.TimeFunc().Unix(),
+		ExpiresAt: ct  + 30 + 30, // Expires after the NEXT 30 second block
+		NotBefore: ct - 30, // Start accepting in the previous 30 second block
+		IssuedAt:  ct - 30, // IssuesAt cannot be more than NotBefore
 		Subject:   addr.String(),
 	}
 
