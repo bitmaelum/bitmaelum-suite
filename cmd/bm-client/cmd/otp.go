@@ -57,5 +57,5 @@ func init() {
 	otpAccount = otpCmd.Flags().String("account", "a", "Account to be used for authentication")
 	otpServer = otpCmd.Flags().String("server", "s", "Server domain name to get public key from")
 
-	_ = otpCmd.MarkFlagRequired("otpServer")
+	_ = otpCmd.MarkFlagRequired("server")
 }

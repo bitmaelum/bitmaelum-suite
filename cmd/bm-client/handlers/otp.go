@@ -55,14 +55,14 @@ func OtpGenerate(info *internal.AccountInfo, otpServer *string) {
 		}
 
 		oi, err := resolver.ResolveOrganisation(*orgHash)
-		if err != nil {
+		if err == nil {
 			// Generate secret on the client and compute OTP
 			secret, err := bmcrypto.KeyExchange(info.PrivKey, oi.PublicKey)
 			if err != nil {
 				logrus.Fatal(err)
 			}
 
-			go printOtpLoop(secret, *otpServer)
+			printOtpLoop(secret, *otpServer)
 
 			return
 		}
@@ -72,18 +72,20 @@ func OtpGenerate(info *internal.AccountInfo, otpServer *string) {
 }
 
 func printOtpLoop(secret []byte, server string) {
-	otp := computeOTPFromSecret(secret, 8)
 
-	v := (time.Now().UnixNano() - getLastMinuteTimestamp()) / int64(time.Second)
+	for {
+		otp := computeOTPFromSecret(secret, 8)
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"OTP", "Server", "Valid for"})
-	table.Append([]string{otp, server, fmt.Sprintf("%d", v)})
+		v := 60 - ((time.Now().UnixNano() - getLastMinuteTimestamp()) / int64(time.Second))
 
-	table.Render()
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"OTP", "Server", "Valid for"})
+		table.Append([]string{otp, server, fmt.Sprintf("%d", v)})
 
-	<-time.After(1 * time.Second)
-	go printOtpLoop(secret, server)
+		table.Render()
+
+		<-time.After(1 * time.Second)
+	}
 }
 
 func getLastMinuteTimestamp() int64 {
