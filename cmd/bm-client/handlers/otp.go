@@ -20,10 +20,12 @@
 package handlers
 
 import (
-	"crypto/aes"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"math"
 	"net"
 	"os"
 	"strings"
@@ -36,6 +38,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 )
+
+const blockPeriod = 30
 
 // OtpGenerate will generate an OTP valid for otpServer
 func OtpGenerate(info *internal.AccountInfo, otpServer *string) {
@@ -76,7 +80,7 @@ func printOtpLoop(secret []byte, server string) {
 	for {
 		otp := computeOTPFromSecret(secret, 8)
 
-		v := 60 - ((time.Now().UnixNano() - getLastMinuteTimestamp()) / int64(time.Second))
+		v := blockPeriod - ((time.Now().UnixNano() - getBlockTimestamp()) / int64(time.Second))
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"OTP", "Server", "Valid for"})
@@ -85,7 +89,14 @@ func printOtpLoop(secret []byte, server string) {
 		table.Render()
 
 		<-time.After(1 * time.Second)
+		fmt.Printf("\033[5A")
 	}
+}
+
+func getBlockTimestamp() int64 {
+	t := time.Now().UnixNano()
+	t = (t / (blockPeriod * int64(time.Second)) * (blockPeriod * int64(time.Second)))
+	return t
 }
 
 func getLastMinuteTimestamp() int64 {
@@ -94,26 +105,29 @@ func getLastMinuteTimestamp() int64 {
 	return rounded.UnixNano()
 }
 
-func computeOTPFromSecret(secret []byte, otpLength int) string {
-	// Create a byte array to store current timestamp to be
-	// encrypted (we only need 8 bytes since its a 64bit
-	// integer but since AES block size is 16 byte long we
-	// need to match it)
-	plain := make([]byte, 16)
-	binary.LittleEndian.PutUint64(plain, uint64(getLastMinuteTimestamp()))
+func computeOTPFromSecret(secret []byte, length int) string {
 
-	// Create a AES block cipher with the secret
-	block, _ := aes.NewCipher(secret)
+	// Put the last nano timestamp int64 into a byte array
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(getBlockTimestamp()))
 
-	// And encrypt the byte-array timestamp
-	encrypted := make([]byte, len(plain))
-	block.Encrypt(encrypted, []byte(plain))
+	// Compute an HMAC with the secret
+	mac := hmac.New(sha256.New, secret)
+	mac.Write(buf)
+	sum := mac.Sum(nil)
 
-	// Convert the result to integer
-	i := binary.LittleEndian.Uint64(encrypted)
+	// From https://github.com/pquerna/otp/blob/3006c03e19424e57e998d0faa7afe846b291ca14/hotp/hotp.go#L101
+	// "Dynamic truncation" in RFC 4226
+	// http://tools.ietf.org/html/rfc4226#section-5.4
+	offset := sum[len(sum)-1] & 0xf
+	value := int64(((int(sum[offset]) & 0x7f) << 24) |
+		((int(sum[offset+1] & 0xff)) << 16) |
+		((int(sum[offset+2] & 0xff)) << 8) |
+		(int(sum[offset+3]) & 0xff))
 
-	// And get the last otpLength numbers
-	otp := fmt.Sprintf("%0*d", otpLength, i)
+	// Get the modulus to get the length we need
+	mod := int32(value % int64(math.Pow10(length)))
 
-	return otp[len(otp)-otpLength:]
+	otp := fmt.Sprintf("%0*d", length, mod)
+	return otp
 }
