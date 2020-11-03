@@ -68,7 +68,6 @@ func TestValidateJwtTokenExpiry(t *testing.T) {
 	assert.NotNil(t, token)
 	assert.True(t, token.Valid)
 
-
 	// Before previous 30 second block
 	jwt.TimeFunc = func() time.Time {
 		return time.Date(2020, 01, 01, 12, 33, 59, 0, time.UTC)
@@ -76,7 +75,6 @@ func TestValidateJwtTokenExpiry(t *testing.T) {
 	token, err = ValidateJWTToken(mockToken, haddr, *pubKey)
 	assert.Error(t, err)
 	assert.Nil(t, token)
-
 
 	// In next 30 second block
 	jwt.TimeFunc = func() time.Time {
@@ -86,7 +84,6 @@ func TestValidateJwtTokenExpiry(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, token)
 	assert.True(t, token.Valid)
-
 
 	// After next 30 second block
 	jwt.TimeFunc = func() time.Time {

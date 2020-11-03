@@ -48,9 +48,9 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 	ct := (now.Unix() / 30) * 30
 
 	claims := &jwt.StandardClaims{
-		ExpiresAt: ct  + 30 + 30, // Expires after the NEXT 30 second block
-		NotBefore: ct - 30, // Start accepting in the previous 30 second block
-		IssuedAt:  ct - 30, // IssuesAt cannot be more than NotBefore
+		ExpiresAt: ct + 30 + 30, // Expires after the NEXT 30 second block
+		NotBefore: ct - 30,      // Start accepting in the previous 30 second block
+		IssuedAt:  ct - 30,      // IssuesAt cannot be more than NotBefore
 		Subject:   addr.String(),
 	}
 
