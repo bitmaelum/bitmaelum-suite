@@ -20,6 +20,8 @@
 package key
 
 import (
+	"encoding/base64"
+	"errors"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -44,6 +46,19 @@ func (a AuthKeyType) GetID() string {
 // GetAddressHash returns address hash
 func (a AuthKeyType) GetAddressHash() *hash.Hash {
 	return &a.AddressHash
+}
+
+// Sign will sign the current authentication key with a private key
+func (a AuthKeyType) Sign(privkey bmcrypto.PrivKey) error {
+	h := hash.New(a.PublicKey.String())
+
+	signedKey, err := bmcrypto.Sign(privkey, h.Byte())
+	if err != nil {
+		return errors.New("cannot sing the public key")
+	}
+
+	a.Signature = base64.StdEncoding.EncodeToString(signedKey)
+	return nil
 }
 
 // NewAuthKey creates a new authorized key

@@ -20,7 +20,6 @@
 package handlers
 
 import (
-	"encoding/base64"
 	"errors"
 	"time"
 
@@ -30,13 +29,18 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // CreateAuthorizedKey creates a new authorized key
 func CreateAuthorizedKey(info *internal.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) error {
-	// Sign key
-	signature, err := signKey(info.PrivKey, targetKey)
+	var expiry = time.Time{}
+	if validUntil > 0 {
+		expiry = time.Now().Add(validUntil)
+	}
+
+	// Create and sign key
+	k := key.NewAuthKey(info.AddressHash(), targetKey, "", expiry, desc)
+	err := k.Sign(info.PrivKey)
 	if err != nil {
 		return err
 	}
@@ -47,24 +51,7 @@ func CreateAuthorizedKey(info *internal.AccountInfo, targetKey *bmcrypto.PubKey,
 		return err
 	}
 
-	var expiry = time.Time{}
-	if validUntil > 0 {
-		expiry = time.Now().Add(validUntil)
-	}
-
-	key := key.NewAuthKey(info.AddressHash(), targetKey, signature, expiry, desc)
-	return client.CreateAuthKey(info.AddressHash(), key)
-}
-
-func signKey(privkey bmcrypto.PrivKey, pubkey *bmcrypto.PubKey) (string, error) {
-	h := hash.New(pubkey.String())
-
-	signedKey, err := bmcrypto.Sign(privkey, h.Byte())
-	if err != nil {
-		return "", errors.New("cannot sing the public key")
-	}
-
-	return base64.StdEncoding.EncodeToString(signedKey), nil
+	return client.CreateAuthKey(info.AddressHash(), k)
 }
 
 func getAPIClient(info *internal.AccountInfo) (*api.API, error) {
