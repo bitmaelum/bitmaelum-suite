@@ -99,12 +99,6 @@ func getBlockTimestamp() int64 {
 	return t
 }
 
-func getLastMinuteTimestamp() int64 {
-	t := time.Now()
-	rounded := time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, time.UTC)
-	return rounded.UnixNano()
-}
-
 func computeOTPFromSecret(secret []byte, length int) string {
 
 	// Put the last nano timestamp int64 into a byte array
