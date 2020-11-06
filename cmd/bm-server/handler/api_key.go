@@ -25,9 +25,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
-	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 )
@@ -48,7 +48,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//
-	err = parse.AccountPermissions(input.Permissions)
+	err = internal.AccountPermissions(input.Permissions)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return

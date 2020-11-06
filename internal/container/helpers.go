@@ -20,7 +20,6 @@
 package container
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
@@ -32,12 +31,6 @@ import (
  * dependency container system I guess. It basically converts the interface{} returned by the container into the
  * correct interface.
  */
-
-// GetAccountRepo will return the current account repository
-func GetAccountRepo() account.Repository {
-	// return Get("account").(func() account.Repository)()
-	return Get("account").(account.Repository)
-}
 
 // GetAPIKeyRepo will return the current api key repository
 func GetAPIKeyRepo() key.APIKeyRepo {

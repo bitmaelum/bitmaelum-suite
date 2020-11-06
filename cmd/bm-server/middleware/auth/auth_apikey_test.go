@@ -25,8 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"

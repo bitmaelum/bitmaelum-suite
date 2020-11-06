@@ -27,8 +27,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -68,10 +68,10 @@ func checkAddressInResolver(addr address.Address) *resolver.Service {
 	return ks
 }
 
-func checkToken(token string, addr address.Address) *invite.Token {
+func checkToken(token string, addr address.Address) *signature.Token {
 	fmt.Printf("* Checking token format and extracting data: ")
 
-	it, err := invite.ParseInviteToken(token)
+	it, err := signature.ParseInviteToken(token)
 	if err != nil {
 		fmt.Println("\n  X it seems that this token is invalid")
 		os.Exit(1)
@@ -137,7 +137,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string, keyType bmcry
 
 		fmt.Printf("* Adding your new account into the vault: ")
 		info = &internal.AccountInfo{
-			Address:   bmAddr,
+			Address:   *addr,
 			Name:      name,
 			PrivKey:   *privKey,
 			PubKey:    *pubKey,
@@ -164,11 +164,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string, keyType bmcry
 	}
 
 	fmt.Printf("* Sending your account information to the server: ")
-	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          routingInfo.Routing,
-		AllowInsecure: config.Client.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHTTP,
-	})
+	client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		vault.RemoveAccount(*addr)

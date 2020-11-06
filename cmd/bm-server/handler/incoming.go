@@ -28,7 +28,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/server"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/gorilla/mux"
 )
 
@@ -63,7 +63,7 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Add a server signature to the header, so we know this is the origin of the message
-	err = server.SignHeader(header)
+	err = signature.SignServerHeader(header)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while signing incoming message")
 		return

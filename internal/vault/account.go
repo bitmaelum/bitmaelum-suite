@@ -35,7 +35,7 @@ func (v *Vault) AddAccount(account internal.AccountInfo) {
 func (v *Vault) RemoveAccount(addr address.Address) {
 	k := 0
 	for _, acc := range v.Store.Accounts {
-		if acc.Address != addr.String() {
+		if acc.Address.String() != addr.String() {
 			v.Store.Accounts[k] = acc
 			k++
 		}
@@ -46,7 +46,7 @@ func (v *Vault) RemoveAccount(addr address.Address) {
 // GetAccountInfo tries to find the given address and returns the account from the vault
 func (v *Vault) GetAccountInfo(addr address.Address) (*internal.AccountInfo, error) {
 	for i := range v.Store.Accounts {
-		if v.Store.Accounts[i].Address == addr.String() {
+		if v.Store.Accounts[i].Address.String() == addr.String() {
 			return &v.Store.Accounts[i], nil
 		}
 	}

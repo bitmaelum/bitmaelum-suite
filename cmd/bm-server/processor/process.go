@@ -24,14 +24,13 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/client"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	maincontainer "github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
-	"github.com/bitmaelum/bitmaelum-suite/internal/server"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
@@ -60,7 +59,7 @@ func ProcessMessage(msgID string) {
 		return
 	}
 
-	rs := container.GetResolveService()
+	rs := maincontainer.GetResolveService()
 	addrInfo, err := rs.ResolveAddress(header.To.Addr)
 	if err != nil {
 		logrus.Trace(err)
@@ -95,7 +94,7 @@ func ProcessMessage(msgID string) {
 // deliverLocal moves a message to a local mailbox.
 func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.Header) error {
 	// Check the serverSignature
-	if !server.VerifyHeader(*header) {
+	if !signature.VerifyServerHeader(*header) {
 		logrus.Errorf("message %s destined for %s has failed the server signature check. Seems that this message did not originate from the original mail server. Removing the message.", msgID, header.To.Addr)
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
@@ -105,7 +104,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 	}
 
 	// Check the clientSignature
-	if !client.VerifyHeader(*header) {
+	if !signature.VerifyClientHeader(*header) {
 		logrus.Errorf("message %s destined for %s has failed the client signature check. Seems that this message may have been spoofed. Removing the message.", msgID, header.To.Addr)
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
@@ -136,7 +135,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 // we get the ticket. Once we have the ticket, we can upload the message to the server in the same way
 // we upload a message from a client to a server.
 func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message.Header) error {
-	rs := container.GetResolveService()
+	rs := maincontainer.GetResolveService()
 	routingInfo, err := rs.ResolveRouting(addrInfo.RoutingID)
 	if err != nil {
 		logrus.Warnf("cannot find routing ID %s for %s. Retrying.", addrInfo.RoutingID, header.To.Addr)
@@ -265,9 +264,5 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 
 // getClient will return an API client pointing to the actual mail server found in the routing info
 func getClient(routingInfo resolver.RoutingInfo) (*api.API, error) {
-	return api.NewAnonymous(api.ClientOpts{
-		Host:          routingInfo.Routing,
-		AllowInsecure: config.Server.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHTTP,
-	})
+	return api.NewAnonymous(routingInfo.Routing)
 }

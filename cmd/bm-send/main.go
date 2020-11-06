@@ -1,0 +1,145 @@
+// Copyright (c) 2020 BitMaelum Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"os"
+	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/jessevdk/go-flags"
+)
+
+type options struct {
+	PrivateKey  string   `short:"p" long:"private_key" description:"Private key" required:"true" env:"BITMAELUM_SEND_PRIVATE_KEY"`
+	Subject     string   `short:"s" long:"subject" description:"Subject" required:"true"`
+	From        string   `short:"f" long:"from" description:"Sender" required:"true" env:"BITMAELUM_SEND_FROM"`
+	To          string   `short:"t" long:"to" description:"Recipient" required:"true"`
+	Message     string   `short:"m" long:"message" description:"Default message"`
+	Blocks      []string `short:"b" long:"block" description:"Body block"`
+	Attachments []string `short:"a" long:"attachment" description:"Attachment"`
+}
+
+var opts options
+
+var (
+	fromAddr *address.Address
+	toAddr   *address.Address
+	privKey  *bmcrypto.PrivKey
+)
+
+func main() {
+	rand.Seed(time.Now().UnixNano())
+
+	parseFlags()
+	spew.Dump(opts)
+
+	// Set default message block
+	if opts.Message != "" {
+		opts.Blocks = append(opts.Blocks, "default:"+opts.Message)
+	}
+
+	// Compose mail
+	envelope, err := message.Compose(*fromAddr, *toAddr, privKey, opts.Subject, opts.Blocks, opts.Attachments)
+	if err != nil {
+		fmt.Println("cannot compose message")
+		os.Exit(1)
+	}
+
+	// Fetch routing info for the SENDER, as we send to the sender's mail server (not the recipient)
+	svc := container.GetResolveService()
+	info, err := svc.ResolveAddress(toAddr.Hash())
+	if err != nil {
+		fmt.Println("cannot resolve recipient address")
+		os.Exit(1)
+	}
+	routingInfo, err := svc.ResolveRouting(info.RoutingID)
+	if err != nil {
+		fmt.Println("cannot resolve recipient routing")
+		os.Exit(1)
+	}
+
+	// Send mail
+	client, err := api.NewAuthenticated(*fromAddr, privKey, routingInfo.Routing)
+	if err != nil {
+		fmt.Println("cannot connect to api")
+		os.Exit(1)
+	}
+
+	err = messages.Send(*client, envelope)
+	if err != nil {
+		fmt.Println("cannot send message: ", err)
+		os.Exit(1)
+	}
+}
+
+func parseFlags() {
+	parser := flags.NewParser(&opts, flags.IgnoreUnknown)
+	_, err := parser.Parse()
+
+	if err != nil {
+		flagsError, _ := err.(*flags.Error)
+		if flagsError.Type == flags.ErrHelp {
+			os.Exit(1)
+		}
+
+		parser.WriteHelp(os.Stderr)
+		os.Exit(1)
+	}
+
+	if opts.Message == "" && len(opts.Blocks) == 0 {
+		_, _ = fmt.Fprintln(os.Stderr, "Please specify either a message (-m) or one or more blocks (-b)")
+		os.Exit(1)
+	}
+
+	if opts.Message != "" && len(opts.Blocks) > 0 {
+		_, _ = fmt.Fprintln(os.Stderr, "Please specify either a message (-m) or one or more blocks (-b)")
+		os.Exit(1)
+	}
+
+	// Check key
+	privKey, err = bmcrypto.NewPrivKey(opts.PrivateKey)
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Incorrect private key specified.")
+		os.Exit(1)
+	}
+
+	// Check from address
+	fromAddr, err = address.NewAddress(opts.From)
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Incorrect sender address specified.")
+		os.Exit(1)
+	}
+
+	// Check to address
+	toAddr, err = address.NewAddress(opts.To)
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Incorrect recipient address specified.")
+		os.Exit(1)
+	}
+}

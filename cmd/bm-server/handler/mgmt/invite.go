@@ -25,9 +25,9 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
-	"github.com/bitmaelum/bitmaelum-suite/internal/key"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
@@ -41,7 +41,7 @@ type jsonOut map[string]interface{}
 // NewInvite handler will generate a new invite token for a given address
 func NewInvite(w http.ResponseWriter, req *http.Request) {
 	k := handler.GetAPIKey(req)
-	if !k.HasPermission(key.PermGenerateInvites, nil) {
+	if !k.HasPermission(internal.PermGenerateInvites, nil) {
 		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
@@ -60,7 +60,7 @@ func NewInvite(w http.ResponseWriter, req *http.Request) {
 	}
 
 	validUntil := time.Now().Add(time.Duration(input.Days) * 24 * time.Hour)
-	token, err := invite.NewInviteToken(*addrHash, config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
+	token, err := signature.NewInviteToken(*addrHash, config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusInternalServerError, "cannot generate invite token")
 		return

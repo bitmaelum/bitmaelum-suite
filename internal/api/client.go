@@ -32,7 +32,10 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/ernesto-jimenez/httplogger"
 )
 
@@ -53,15 +56,44 @@ type ClientOpts struct {
 	Host          string
 	AllowInsecure bool
 	Debug         bool
+	JWTToken      string
 }
 
-// NewAnonymous creates a new client that connects anonymously to a BitMaelum server (normally
-// server-to-server communication)
-func NewAnonymous(opts ClientOpts) (*API, error) {
+// NewAnonymous creates a new client that connects anonymously to a BitMaelum server (normally server-to-server communications)
+func NewAnonymous(host string) (*API, error) {
+	return NewClient(ClientOpts{
+		Host:          host,
+		AllowInsecure: config.Server.Server.AllowInsecure,
+		Debug:         config.Client.Server.DebugHTTP,
+	})
+}
+
+// NewAuthenticated creates a new client that connects to a BitMaelum Server with specific credentials (normally client-to-server communications)
+func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string) (*API, error) {
+	// Create token based on the private key of the user
+	jwtToken, err := internal.GenerateJWTToken(addr.Hash(), *key)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewClient(ClientOpts{
+		Host:          host,
+		JWTToken:      jwtToken,
+		AllowInsecure: config.Server.Server.AllowInsecure,
+		Debug:         config.Client.Server.DebugHTTP,
+	})
+}
+
+// NewAuthenticated creates a new client that connects with the specified account to a BitMaelum server (normally
+// client-to-server communication)
+func NewClient(opts ClientOpts) (*API, error) {
 	var transport http.RoundTripper
+
 	transport = &http.Transport{
 		// Allow insecure and self-signed certificates if so configured
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: opts.AllowInsecure,
+		},
 	}
 
 	if opts.Debug {
@@ -69,52 +101,14 @@ func NewAnonymous(opts ClientOpts) (*API, error) {
 		transport = httplogger.NewLoggedTransport(transport, internal.NewHTTPLogger())
 	}
 
-	api := &API{
+	return &API{
 		host: CanonicalHost(opts.Host),
 		client: &http.Client{
 			Transport: transport,
 			Timeout:   15 * time.Second,
 		},
-	}
-
-	return api, nil
-}
-
-// NewAuthenticated creates a new client that connects with the specified account to a BitMaelum server (normally
-// client-to-server communication)
-func NewAuthenticated(info *internal.AccountInfo, opts ClientOpts) (*API, error) {
-	var jwtToken string
-	var transport http.RoundTripper
-
-	transport = &http.Transport{
-		// Allow insecure and self-signed certificates if so configured
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.AllowInsecure},
-	}
-
-	if opts.Debug {
-		// Wrap transport in debug logging
-		transport = httplogger.NewLoggedTransport(transport, internal.NewHTTPLogger())
-	}
-
-	if info != nil {
-		// Create JWT token based on the private key of the user
-		var err error
-		jwtToken, err = internal.GenerateJWTToken(info.AddressHash(), info.PrivKey)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	api := &API{
-		host: CanonicalHost(opts.Host),
-		client: &http.Client{
-			Transport: transport,
-			Timeout:   30 * time.Second,
-		},
-		jwt: jwtToken,
-	}
-
-	return api, nil
+		jwt: opts.JWTToken,
+	}, nil
 }
 
 // Get gets raw bytes from API

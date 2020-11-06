@@ -25,7 +25,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
@@ -49,14 +48,8 @@ func main() {
 		var pow *proofofwork.ProofOfWork
 
 		if len(v.Store.Accounts[i].Pow.Data) == 0 {
-			var err error
-			addr, err := address.NewAddress(v.Store.Accounts[i].Address)
-			if err != nil {
-				panic(err)
-			}
-
 			// proof of work is actually our hash address
-			v.Store.Accounts[i].Pow.Data = addr.Hash().String()
+			v.Store.Accounts[i].Pow.Data = v.Store.Accounts[i].Address.Hash().String()
 		}
 
 		if v.Store.Accounts[i].Pow.Bits >= opts.Bits && v.Store.Accounts[i].Pow.IsValid() && !opts.Force {

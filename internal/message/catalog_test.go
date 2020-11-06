@@ -28,10 +28,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
@@ -140,16 +137,6 @@ func TestCatalogAddAttachment(t *testing.T) {
 func TestCatalogAddBlock(t *testing.T) {
 	c := genCatalog()
 
-	// // Setup afero
-	// fs = afero.NewMemMapFs()
-	//
-	// // 1 px gif
-	// buf1, err := base64.StdEncoding.DecodeString("R0lGODlhAQABAAAAACH5BAEAAAAALAAAAAABAAEAAAI=")
-	// assert.NoError(t, err)
-	// _ = afero.WriteFile(fs, "/dir/image.png", buf1, 0644)
-	//
-	// _ = afero.WriteFile(fs, "/dir/largerfile.dat", buf2, 0644)
-
 	// Nothing attached
 	assert.Len(t, c.Blocks, 0)
 
@@ -208,17 +195,8 @@ func TestCatalogAddBlock(t *testing.T) {
 }
 
 func genCatalog() *Catalog {
-	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
+	addrFrom, _ := address.NewAddress("john!")
+	addrTo, _ := address.NewAddress("jane!")
 
-	info := internal.AccountInfo{
-		Default:   true,
-		Address:   "john!",
-		Name:      "John Doe",
-		Settings:  nil,
-		PrivKey:   *privKey,
-		PubKey:    *pubKey,
-		Pow:       &proofofwork.ProofOfWork{},
-		RoutingID: "",
-	}
-	return NewCatalog(&info)
+	return NewCatalog(addrFrom, addrTo, "subject")
 }

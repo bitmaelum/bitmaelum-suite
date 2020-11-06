@@ -29,8 +29,8 @@ import (
 
 // AccountInfo represents client account information
 type AccountInfo struct {
-	Default bool   `json:"default"` // Is this the default account
-	Address string `json:"address"` // The address of the account
+	Default bool            `json:"default"` // Is this the default account
+	Address address.Address `json:"address"` // The address of the account
 
 	Name     string            `json:"name"`     // Full name of the user
 	Settings map[string]string `json:"settings"` // Additional settings that can be user-defined
@@ -40,12 +40,6 @@ type AccountInfo struct {
 	PubKey    bmcrypto.PubKey          `json:"pub_key"`         // PEM encoded public key
 	Pow       *proofofwork.ProofOfWork `json:"proof,omitempty"` // Proof of work
 	RoutingID string                   `json:"routing_id"`      // ID of the routing used
-}
-
-// AddressHash will return the hash of the given address
-func (info *AccountInfo) AddressHash() hash.Hash {
-	addr, _ := address.NewAddress(info.Address)
-	return addr.Hash()
 }
 
 // OrganisationInfo represents a organisation configuration for a server

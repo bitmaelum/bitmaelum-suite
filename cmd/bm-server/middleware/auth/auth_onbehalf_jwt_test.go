@@ -24,8 +24,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	maincontainer "github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -55,10 +56,10 @@ func TestOnbehalfAuthJwtAuthenticate(t *testing.T) {
 	_, pubkey3, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-3.json")
 	assert.NoError(t, err)
 
-	container.Set("account", func() (interface{}, error) {
+	maincontainer.Set("account", func() (interface{}, error) {
 		return account.NewMockRepository(), nil
 	})
-	container.Set("auth-key", func() (interface{}, error) {
+	maincontainer.Set("auth-key", func() (interface{}, error) {
 		return key.NewAuthMockRepository(), nil
 	})
 
@@ -68,7 +69,7 @@ func TestOnbehalfAuthJwtAuthenticate(t *testing.T) {
 	// Sign key 2 with key 1
 	ak := key.NewAuthKey(hash.New("example!"), pubkey2, "", time.Date(2020, 01, 01, 13, 00, 00, 0, time.UTC), "my desc")
 	_ = ak.Sign(*privkey1)
-	authRepo := container.GetAuthKeyRepo()
+	authRepo := maincontainer.GetAuthKeyRepo()
 	_ = authRepo.Store(ak)
 
 	// Sign key 3 with key 1

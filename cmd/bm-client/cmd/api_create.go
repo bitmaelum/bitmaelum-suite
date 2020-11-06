@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -59,11 +58,7 @@ var apiCreateCmd = &cobra.Command{
 		fmt.Printf("%#v\n", key)
 		fmt.Printf("%#v\n", *acValidUntil)
 
-		client, err := api.NewAuthenticated(info, api.ClientOpts{
-			Host:          routingInfo.Routing,
-			AllowInsecure: config.Client.Server.AllowInsecure,
-			Debug:         config.Client.Server.DebugHTTP,
-		})
+		client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

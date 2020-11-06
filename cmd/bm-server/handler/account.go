@@ -26,7 +26,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -99,7 +99,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Verify token
-	it, err := invite.ParseInviteToken(input.Token)
+	it, err := signature.ParseInviteToken(input.Token)
 	if err != nil || !it.Verify(config.Routing.RoutingID, pubKey) {
 		ErrorOut(w, http.StatusBadRequest, "cannot validate token")
 		return

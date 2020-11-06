@@ -21,7 +21,6 @@ package api
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -57,15 +56,10 @@ func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
 		ProofOfWork pow.ProofOfWork `json:"proof_of_work"`
 	}
 
-	addr, err := address.NewAddress(info.Address)
-	if err != nil {
-		return err
-	}
-
 	input := &inputCreateAccount{
-		Addr:        addr.Hash(),
-		UserHash:    addr.LocalHash(),
-		OrgHash:     addr.OrgHash(),
+		Addr:        info.Address.Hash(),
+		UserHash:    info.Address.LocalHash(),
+		OrgHash:     info.Address.OrgHash(),
 		Token:       token,
 		PublicKey:   info.PubKey,
 		ProofOfWork: *info.Pow,

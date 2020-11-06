@@ -26,23 +26,16 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	clientSig "github.com/bitmaelum/bitmaelum-suite/internal/client"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 )
 
 // ReadMessage will read a specific message blocks
 func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID, blockType string) {
-	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          routingInfo.Routing,
-		AllowInsecure: config.Client.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHTTP,
-	})
+	client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -53,19 +46,19 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 		logrus.Fatal(err)
 	}
 
-	key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+	key, err := internal.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	// Verify the clientSignature
-	if !clientSig.VerifyHeader(msg.Header) {
+	if !signature.VerifyHeader(msg.Header) {
 		logrus.Fatalf("message %s has failed the client signature check. Seems that this message may have been spoofed.", messageID)
 	}
 
 	// Decrypt the catalog
 	catalog := &message.Catalog{}
-	err = encrypt.CatalogDecrypt(key, msg.Catalog, catalog)
+	err = internal.CatalogDecrypt(key, msg.Catalog, catalog)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -131,7 +124,7 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 		}
 		bb := bytes.NewBuffer(data)
 
-		r, err := encrypt.GetAesDecryptorReader(b.IV, b.Key, bb)
+		r, err := internal.GetAesDecryptorReader(b.IV, b.Key, bb)
 		if err != nil {
 			panic(err)
 		}
