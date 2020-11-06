@@ -48,17 +48,11 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
 
-	accountRepo := container.GetAccountRepo()
-	accountRepo.Exists(hash.New("foobar!"))
-
-	accountRepo = container.GetAccountRepo()
-	accountRepo.Exists(hash.New("foobar!"))
-
 	container.Set("account", func() (interface{}, error) {
 		return account.NewMockRepository(), nil
 	})
 
-	accountRepo = container.GetAccountRepo()
+	accountRepo := container.GetAccountRepo()
 	// container.Set("account", func() interface{} { return accountRepo })
 	_ = accountRepo.Create(hash.New("example!"), *pubkey)
 	_ = accountRepo.Create(hash.New("user-1!"), *pubkey)
@@ -154,6 +148,12 @@ func checkFalse(t *testing.T, a middleware.Authenticator, req *http.Request) {
 	ctx, ok := a.Authenticate(req, "")
 	assert.False(t, ok)
 	assert.Nil(t, ctx)
+}
+
+func checkTrue(t *testing.T, a middleware.Authenticator, req *http.Request, hash string) {
+	ctx, ok := a.Authenticate(req, "")
+	assert.True(t, ok)
+	assert.Equal(t, hash, ctx.Value(AddressContext))
 }
 
 func checkKey(t *testing.T, a APIKeyAuth, pass bool, token, addr, routeName string) {

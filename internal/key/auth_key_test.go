@@ -35,3 +35,14 @@ func TestAuthKey(t *testing.T) {
 	assert.Equal(t, "9c9afac4a3603d7b05fd0b3a57eba3c30da421c5dc1a18b2cffeef5ebca24480", a.GetID())
 	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", a.GetAddressHash().String())
 }
+
+func TestSignKey(t *testing.T) {
+	sourcePrivkey, _, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
+	_, targetPubkey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-2.json")
+
+	a := NewAuthKey(hash.New("example!"), targetPubkey, "sig", time.Time{}, "desc")
+
+	err := a.Sign(*sourcePrivkey)
+	assert.NoError(t, err)
+	assert.Equal(t, "GRlSsdrkcciQSOiZNPHO0e0emRAv9x0rhB+eARdarkHeCJL9YOIHghen5C8+8IAaNGe0qHVPal+EcdXCKjQVBg==", a.Signature)
+}
