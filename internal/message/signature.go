@@ -17,7 +17,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package signature
+package message
 
 import (
 	"crypto/sha256"
@@ -25,14 +25,73 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
+// SignHeader will add a server signature to a message header. This can be used to proof the origin of the message
+func SignServerHeader(header *Header) error {
+	// Already signed? Then skip
+	if len(header.Signatures.Server) > 0 {
+		return nil
+	}
+
+	data, err := json.Marshal(header)
+	if err != nil {
+		return err
+	}
+
+	h := sha256.Sum256(data)
+	sig, err := bmcrypto.Sign(config.Routing.PrivateKey, h[:])
+	if err != nil {
+		return err
+	}
+
+	header.Signatures.Server = base64.StdEncoding.EncodeToString(sig)
+	return nil
+}
+
+// VerifyHeader will verify a server signature from a message header. This can be used to proof the origin of the message
+func VerifyServerHeader(header Header) bool {
+	// Fetch public key from routing
+	rs := container.GetResolveService()
+	addr, err := rs.ResolveAddress(header.From.Addr)
+	if err != nil {
+		return false
+	}
+
+	// No header at all
+	if len(header.Signatures.Server) == 0 {
+		return false
+	}
+
+	// Store signature
+	targetSignature, err := base64.StdEncoding.DecodeString(header.Signatures.Server)
+	if err != nil {
+		return false
+	}
+	header.Signatures.Server = ""
+
+	// Generate hash
+	data, err := json.Marshal(&header)
+	if err != nil {
+		return false
+	}
+	h := sha256.Sum256(data)
+
+	// Verify signature
+	ok, err := bmcrypto.Verify(addr.RoutingInfo.PublicKey, h[:], []byte(targetSignature))
+	if err != nil {
+		return false
+	}
+
+	return ok
+}
+
 // SignHeader will add a client signature to a message header. This can be used to proof the origin of the message
-func SignClientHeader(header *message.Header, privKey bmcrypto.PrivKey) error {
+func SignClientHeader(header *Header, privKey bmcrypto.PrivKey) error {
 	// Already signed? Then skip
 	if len(header.Signatures.Client) > 0 {
 		fmt.Println("already signed")
@@ -55,7 +114,7 @@ func SignClientHeader(header *message.Header, privKey bmcrypto.PrivKey) error {
 }
 
 // VerifyHeader will verify a client signature from a message header. This can be used to proof the origin of the message
-func VerifyClientHeader(header message.Header) bool {
+func VerifyClientHeader(header Header) bool {
 	// Fetch public key from routing
 	rs := container.GetResolveService()
 	addr, err := rs.ResolveAddress(header.From.Addr)
@@ -85,7 +144,7 @@ func VerifyClientHeader(header message.Header) bool {
 
 	// If we have sent an authorized key key, we need to validate this first
 	pubKey := addr.PublicKey
-	if header.From.SignedBy == message.SignedByTypeAuthorized {
+	if header.From.SignedBy == SignedByTypeAuthorized {
 		pubKey = *header.AuthorizedBy.PublicKey
 
 		// Verify our authorized key

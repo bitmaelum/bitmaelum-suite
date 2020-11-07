@@ -26,7 +26,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	maincontainer "github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -132,7 +133,7 @@ func (*APIKeyAuth) getAPIKey(bearerToken string) (*key.APIKeyType, error) {
 	}
 	apiKeyID := bearerToken[7:]
 
-	apiKeyRepo := container.GetAPIKeyRepo()
+	apiKeyRepo := maincontainer.GetAPIKeyRepo()
 	k, err := apiKeyRepo.Fetch(apiKeyID)
 	if err != nil {
 		return nil, ErrInvalidAPIKey

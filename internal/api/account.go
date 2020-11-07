@@ -20,7 +20,7 @@
 package api
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -46,7 +46,7 @@ func (api *API) GetPublicKey(addr hash.Hash) (string, error) {
 }
 
 // CreateAccount creates new account on server
-func (api *API) CreateAccount(info internal.AccountInfo, token string) error {
+func (api *API) CreateAccount(info vault.AccountInfo, token string) error {
 	type inputCreateAccount struct {
 		Addr        hash.Hash       `json:"address"`
 		UserHash    hash.Hash       `json:"user_hash"`

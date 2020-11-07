@@ -71,7 +71,7 @@ func NewAnonymous(host string) (*API, error) {
 // NewAuthenticated creates a new client that connects to a BitMaelum Server with specific credentials (normally client-to-server communications)
 func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string) (*API, error) {
 	// Create token based on the private key of the user
-	jwtToken, err := internal.GenerateJWTToken(addr.Hash(), *key)
+	jwtToken, err := GenerateJWTToken(addr.Hash(), *key)
 	if err != nil {
 		return nil, err
 	}

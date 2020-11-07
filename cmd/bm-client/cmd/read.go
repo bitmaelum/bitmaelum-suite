@@ -53,7 +53,7 @@ var readCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		handlers.ReadMessage(info, routingInfo, *rBox, *rMessageID, *rBlock)
+		handlers.ReadMessage(info, routingInfo, *rBox, *rMessageID)
 	},
 }
 
@@ -61,7 +61,6 @@ var (
 	rAccount   *string
 	rBox       *string
 	rMessageID *string
-	rBlock     *string
 )
 
 func init() {
@@ -70,5 +69,4 @@ func init() {
 	rAccount = readCmd.Flags().StringP("account", "a", "", "Account")
 	rBox = readCmd.Flags().StringP("box", "b", "", "Box to fetch")
 	rMessageID = readCmd.Flags().StringP("message", "m", "", "Message ID")
-	rBlock = readCmd.Flags().StringP("block", "", "default", "block")
 }

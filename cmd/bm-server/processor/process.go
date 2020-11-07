@@ -25,12 +25,11 @@ import (
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	maincontainer "github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
-	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
@@ -94,7 +93,7 @@ func ProcessMessage(msgID string) {
 // deliverLocal moves a message to a local mailbox.
 func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.Header) error {
 	// Check the serverSignature
-	if !signature.VerifyServerHeader(*header) {
+	if !message.VerifyServerHeader(*header) {
 		logrus.Errorf("message %s destined for %s has failed the server signature check. Seems that this message did not originate from the original mail server. Removing the message.", msgID, header.To.Addr)
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
@@ -104,7 +103,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 	}
 
 	// Check the clientSignature
-	if !signature.VerifyClientHeader(*header) {
+	if !message.VerifyClientHeader(*header) {
 		logrus.Errorf("message %s destined for %s has failed the client signature check. Seems that this message may have been spoofed. Removing the message.", msgID, header.To.Addr)
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)

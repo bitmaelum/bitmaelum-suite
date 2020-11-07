@@ -118,7 +118,6 @@ func NewCatalog(sender, recipient *address.Address, subject string) *Catalog {
 	return c
 }
 
-
 // AddFlags adds extra flags to the message
 func (c *Catalog) AddFlags(flags ...string) {
 	c.Flags = append(c.Flags, flags...)
@@ -147,7 +146,7 @@ func (c *Catalog) AddBlock(entry Block) error {
 
 	// Very arbitrary size on when we should compress output first
 	if entry.Size >= 1024 {
-		reader = internal.ZlibCompress(entry.Reader)
+		reader = ZlibCompress(entry.Reader)
 		compression = "zlib"
 	}
 
@@ -201,7 +200,7 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 
 	// Very arbitrary size on when we should compress output first
 	if stats.Size() >= 1024 {
-		reader = internal.ZlibCompress(entry.Reader)
+		reader = ZlibCompress(entry.Reader)
 		compression = "zlib"
 	}
 
@@ -260,7 +259,6 @@ func (c *Catalog) GetFirstBlock() *BlockType {
 	return &c.Blocks[0]
 }
 
-
 // GenerateBlocks generates blocks that can be added to a catalog
 func GenerateBlocks(b []string) ([]Block, error) {
 	// Parse blocks
@@ -301,7 +299,6 @@ func GenerateBlocks(b []string) ([]Block, error) {
 
 	return blocks, nil
 }
-
 
 // GenerateAttachments creates message attachments that we can add to a catalog
 func GenerateAttachments(a []string) ([]Attachment, error) {

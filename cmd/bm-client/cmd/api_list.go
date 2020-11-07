@@ -53,7 +53,7 @@ var apiListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		keys, err := client.ListAPIKeys(info.AddressHash())
+		keys, err := client.ListAPIKeys(info.Address.Hash())
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

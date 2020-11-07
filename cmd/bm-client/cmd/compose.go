@@ -84,7 +84,7 @@ var composeCmd = &cobra.Command{
 		for i, attachment := range *attachments {
 			fmt.Printf("  Att.   #%d %s\n", i, attachment)
 		}
-
+		
 		err = handlers.ComposeMessage(*fromInfo, *toAddr, *subject, *blocks, *attachments)
 		if err != nil {
 			logrus.Fatal(err)

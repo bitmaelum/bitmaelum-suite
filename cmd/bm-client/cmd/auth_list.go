@@ -53,7 +53,7 @@ var authListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		keys, err := client.ListAuthKeys(info.AddressHash())
+		keys, err := client.ListAuthKeys(info.Address.Hash())
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

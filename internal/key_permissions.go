@@ -30,8 +30,8 @@ const (
 	PermGetHeaders string = "get-headers"
 )
 
-// ManagementPermissons is a list of all permissions available for remote management
-var ManagementPermissons = []string{
+// ManagementPermissions is a list of all permissions available for remote management
+var ManagementPermissions = []string{
 	PermAPIKeys,
 	PermFlush,
 	PermGenerateInvites,

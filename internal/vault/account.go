@@ -22,12 +22,28 @@ package vault
 import (
 	"errors"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
+// AccountInfo represents client account information
+type AccountInfo struct {
+	Default bool            `json:"default"` // Is this the default account
+	Address address.Address `json:"address"` // The address of the account
+
+	Name     string            `json:"name"`     // Full name of the user
+	Settings map[string]string `json:"settings"` // Additional settings that can be user-defined
+
+	// Communication and encryption information
+	PrivKey   bmcrypto.PrivKey         `json:"priv_key"`        // PEM encoded private key
+	PubKey    bmcrypto.PubKey          `json:"pub_key"`         // PEM encoded public key
+	Pow       *proofofwork.ProofOfWork `json:"proof,omitempty"` // Proof of work
+	RoutingID string                   `json:"routing_id"`      // ID of the routing used
+}
+
 // AddAccount adds a new account to the vault
-func (v *Vault) AddAccount(account internal.AccountInfo) {
+func (v *Vault) AddAccount(account AccountInfo) {
 	v.Store.Accounts = append(v.Store.Accounts, account)
 }
 
@@ -44,7 +60,7 @@ func (v *Vault) RemoveAccount(addr address.Address) {
 }
 
 // GetAccountInfo tries to find the given address and returns the account from the vault
-func (v *Vault) GetAccountInfo(addr address.Address) (*internal.AccountInfo, error) {
+func (v *Vault) GetAccountInfo(addr address.Address) (*AccountInfo, error) {
 	for i := range v.Store.Accounts {
 		if v.Store.Accounts[i].Address.String() == addr.String() {
 			return &v.Store.Accounts[i], nil
@@ -63,7 +79,7 @@ func (v *Vault) HasAccount(addr address.Address) bool {
 
 // GetDefaultAccount returns the default account from the vault. This could be the one set to default, or if none found,
 // the first account in the vault. Returns nil when no accounts are present in the vault.
-func (v *Vault) GetDefaultAccount() *internal.AccountInfo {
+func (v *Vault) GetDefaultAccount() *AccountInfo {
 	// No accounts, return nil
 	if len(v.Store.Accounts) == 0 {
 		return nil

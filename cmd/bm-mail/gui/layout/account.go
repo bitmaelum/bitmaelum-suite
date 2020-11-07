@@ -32,7 +32,7 @@ func NewAccountScreen(app app.Type) tview.Primitive {
 	list := tview.NewList().ShowSecondaryText(false)
 	list.SetBorder(true).SetTitle("Accounts")
 	for _, acc := range app.Vault.Store.Accounts {
-		list.AddItem(acc.Name+" <"+acc.Address+">", "", rune(0), nil)
+		list.AddItem(acc.Name+" <"+acc.Address.String()+">", "", rune(0), nil)
 	}
 
 	list2 := tview.NewList().ShowSecondaryText(false)

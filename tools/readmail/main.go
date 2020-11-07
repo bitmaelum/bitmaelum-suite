@@ -86,7 +86,7 @@ func main() {
 		panic(err)
 	}
 
-	decryptedKey, err := internal.Decrypt(info.PrivKey, header.Catalog.TransactionID, header.Catalog.EncryptedKey)
+	decryptedKey, err := message.Decrypt(info.PrivKey, header.Catalog.TransactionID, header.Catalog.EncryptedKey)
 	if err != nil {
 		panic(err)
 	}

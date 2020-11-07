@@ -34,7 +34,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -60,8 +59,8 @@ var VaultPassword string
 
 // StoreType hold the actual data that is encrypted inside the vault
 type StoreType struct {
-	Accounts      []internal.AccountInfo      `json:"accounts"`
-	Organisations []internal.OrganisationInfo `json:"organisations"`
+	Accounts      []AccountInfo      `json:"accounts"`
+	Organisations []OrganisationInfo `json:"organisations"`
 }
 
 // Vault defines our vault with path and password. Only the accounts should be exported
@@ -87,8 +86,8 @@ func New(p string, pwd []byte) (*Vault, error) {
 
 	v := &Vault{
 		Store: StoreType{
-			Accounts:      []internal.AccountInfo{},
-			Organisations: []internal.OrganisationInfo{},
+			Accounts:      []AccountInfo{},
+			Organisations: []OrganisationInfo{},
 		},
 		RawData:  []byte{},
 		password: pwd,
@@ -219,11 +218,11 @@ func (v *Vault) DecryptContainer(container *vaultContainer) error {
 
 	if container.Version == VersionV0 {
 		// Unmarshal "old" style, with no organisations present
-		var accounts []internal.AccountInfo
+		var accounts []AccountInfo
 		err = json.Unmarshal(plainText, &accounts)
 		if err == nil {
 			v.Store.Accounts = accounts
-			v.Store.Organisations = []internal.OrganisationInfo{}
+			v.Store.Organisations = []OrganisationInfo{}
 
 			// Write back to disk in a newer format
 			return v.WriteToDisk()
@@ -314,7 +313,7 @@ func (v *Vault) FindShortRoutingID(id string) string {
 
 // GetAccountOrDefault find the address from the vault. If address is empty, it will fetch the default address, or the
 // first address in the vault if no default address is present.
-func GetAccountOrDefault(vault *Vault, a string) *internal.AccountInfo {
+func GetAccountOrDefault(vault *Vault, a string) *AccountInfo {
 	if a == "" {
 		return vault.GetDefaultAccount()
 	}
@@ -324,7 +323,7 @@ func GetAccountOrDefault(vault *Vault, a string) *internal.AccountInfo {
 }
 
 // GetAccount returns the given account, or nil when not found
-func GetAccount(vault *Vault, a string) (*internal.AccountInfo, error) {
+func GetAccount(vault *Vault, a string) (*AccountInfo, error) {
 	addr, err := address.NewAddress(a)
 	if err != nil {
 		return nil, err

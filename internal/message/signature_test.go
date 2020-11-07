@@ -17,13 +17,13 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package signature
+package message
 
 import (
 	"testing"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -33,18 +33,133 @@ import (
 )
 
 const (
+	expectedServerSignature = "smq7qWrkwTL1vquhEAn/WoRDZBT1BjUQaUSsmTSSPePLRpM1sjX10mJwxXlivYOIlgTtJ+0SIeBM9rDPBSTw5JJhOS9ZFmpAYEPG9tkU+9EjxfBNnEBPrsYaqE81tO7OtY4xFrlYecdhepGUQSxbZQU4+Ih5jE9jLb+SuUxR6lGw2u2P+Ngy75dD33zlMTTgnmaVTxBueRlfArDExW5QE+pFv9/uFi8xM5a7eGnQHSjufQ9gM6WOWzhyWAnKI+6XMwx3MoQ53H3OU2vn4tPSUQQyxB+L4WTH9JtC0nLC0ggzvo5LOdCw4rCljsciYiEZ2WssGD9kXLGFIU/ixEX2Kw=="
 	expectedClientSignature = "lIqI1QYBRHl7yRW367Lx2n/PFadrYDZ2a2NGSaL40EKum0ncOIXs8CIqKZ+LCUgmK2a9iH2d3mbXVPwZ3PBGsVgReaomyG6NrDbZ0PCbgnjmrmkVAFV0bDHlOxUl/BzyV+seIL7FL0lu+cODaHkmzH16FsZ5Vqcf1/Qe2GR/0Ka6xbWcIcajGsKtTx+WtGeZGZ5oLbAFatEjiv5gMAn2umKpP+w7uKhPa6CsYkv2YMVw+z/1NU2CO0jE6/2muihF9x4nPw6yiy+sXP86B26FQXLBcMgTZ4TAtzr/b2KvcEDj8y8HISs/YHJvTdqAXzYTPnha37ZIIZ7ce27Z41GAUQ=="
 )
+
+func TestSignHeader(t *testing.T) {
+	setupServer()
+
+	header := &Header{}
+	_ = testing2.ReadJSON("../../testdata/header-002.json", &header)
+	assert.Empty(t, header.Signatures.Server)
+	err := SignServerHeader(header)
+	assert.NoError(t, err)
+
+	assert.Equal(t, expectedServerSignature, header.Signatures.Server)
+
+	// Already present, don't overwrite
+	_ = testing2.ReadJSON("../../testdata/header-002.json", &header)
+	assert.NotEmpty(t, header.Signatures.Server)
+	header.Signatures.Server = "foobar"
+	err = SignServerHeader(header)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "foobar", header.Signatures.Server)
+}
+
+func TestVerifyHeader(t *testing.T) {
+	setupServer()
+
+	header := &Header{}
+	_ = testing2.ReadJSON("../../testdata/header-002.json", &header)
+	assert.Empty(t, header.Signatures.Server)
+	err := SignServerHeader(header)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedServerSignature, header.Signatures.Server)
+
+	// All is ok
+	ok := VerifyServerHeader(*header)
+	assert.True(t, ok)
+
+	// Incorrect decoding
+	header.Signatures.Server = "A"
+	ok = VerifyServerHeader(*header)
+	assert.False(t, ok)
+
+	// Empty sig is not ok
+	header.Signatures.Server = ""
+	ok = VerifyServerHeader(*header)
+	assert.False(t, ok)
+
+	// incorrect key
+	header.Signatures.Server = "Zm9vYmFy"
+	ok = VerifyServerHeader(*header)
+	assert.False(t, ok)
+}
+
+func setupServer() {
+	// Note: our mail server uses key1
+	privKey, pubKey, err := testing2.ReadTestKey("../../testdata/key-1.json")
+	if err != nil {
+		panic(err)
+	}
+	config.Routing = config.RoutingConfig{
+		RoutingID:  "12345678",
+		PrivateKey: *privKey,
+		PublicKey:  *pubKey,
+	}
+
+	// Setup container with mock repository for routing
+	repo, _ := resolver.NewMockRepository()
+	container.Set("resolver", func() (interface{}, error) {
+		return resolver.KeyRetrievalService(repo), nil
+	})
+
+	pow := proofofwork.NewWithoutProof(1, "foobar")
+	var (
+		ai resolver.AddressInfo
+		ri resolver.RoutingInfo
+	)
+
+	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-2.json")
+	if err != nil {
+		panic(err)
+	}
+	ai = resolver.AddressInfo{
+		Hash:        "111100000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
+		PublicKey:   *pubKey,
+		RoutingID:   "87654321",
+		Pow:         pow.String(),
+		RoutingInfo: resolver.RoutingInfo{},
+	}
+	_ = repo.UploadAddress(&ai, *privKey, *pow)
+
+	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-3.json")
+	if err != nil {
+		panic(err)
+	}
+	ai = resolver.AddressInfo{
+		Hash:        "111100000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
+		PublicKey:   *pubKey,
+		RoutingID:   "12345678",
+		Pow:         pow.String(),
+		RoutingInfo: resolver.RoutingInfo{},
+	}
+	_ = repo.UploadAddress(&ai, *privKey, *pow)
+
+	// Note: our mail server uses key1
+	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-1.json")
+	if err != nil {
+		panic(err)
+	}
+	ri = resolver.RoutingInfo{
+		Hash:      "12345678",
+		PublicKey: *pubKey,
+		Routing:   "127.0.0.1",
+	}
+	_ = repo.UploadRouting(&ri, *privKey)
+}
 
 func TestSignClientHeader(t *testing.T) {
 	privKey := setupClient()
 
-	header := &message.Header{}
+	header := &Header{}
 	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
 	assert.Empty(t, header.Signatures.Client)
 	err := SignClientHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedSignature, header.Signatures.Client)
+	assert.Equal(t, expectedServerSignature, header.Signatures.Client)
 
 	// Already present, don't overwrite
 	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
@@ -59,12 +174,12 @@ func TestSignClientHeader(t *testing.T) {
 func TestVerifyClientHeader(t *testing.T) {
 	privKey := setupClient()
 
-	header := &message.Header{}
+	header := &Header{}
 	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
 	assert.Empty(t, header.Signatures.Client)
 	err := SignClientHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedSignature, header.Signatures.Client)
+	assert.Equal(t, expectedServerSignature, header.Signatures.Client)
 
 	// All is ok
 	ok := VerifyClientHeader(*header)

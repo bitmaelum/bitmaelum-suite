@@ -29,14 +29,14 @@ import (
 )
 
 // ComposeMessage composes a new message from the given account Info to the "to" with given subject, blocks and attachments
-func ComposeMessage(envConfig message.Addressing, subject string, b, a []string) error {
-	envelope, err := message.Compose(envConfig, subject, b, a)
+func ComposeMessage(addressing message.Addressing, subject string, b, a []string) error {
+	envelope, err := message.Compose(addressing, subject, b, a)
 	if err != nil {
 		return err
 	}
 
 	// Setup API connection to the server
-	client, err := api.NewAuthenticated(envConfig.Sender.Address, envConfig.Sender.PrivKey, envConfig.Sender.Host)
+	client, err := api.NewAuthenticated(addressing.Sender.Address, addressing.Sender.PrivKey, addressing.Sender.Host)
 	if err != nil {
 		return err
 	}
@@ -49,8 +49,8 @@ func ComposeMessage(envConfig message.Addressing, subject string, b, a []string)
 	return nil
 }
 
-func uploadToServer(envConfig message.Addressing, envelope *message.Envelope) error {
-	client, err := api.NewAuthenticated(envConfig.Sender.Address, envConfig.Sender.PrivKey, envConfig.Sender.Host)
+func uploadToServer(addressing message.Addressing, envelope *message.Envelope) error {
+	client, err := api.NewAuthenticated(addressing.Sender.Address, addressing.Sender.PrivKey, addressing.Sender.Host)
 	if err != nil {
 		return err
 	}

@@ -29,12 +29,13 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
 )
 
 // FetchMessages will display message information from accounts and boxes
-func FetchMessages(accounts []internal.AccountInfo) {
+func FetchMessages(accounts []vault.AccountInfo) {
 	table := tablewriter.NewWriter(os.Stdout)
 	// table.SetAutoMergeCells(true)
 
@@ -60,7 +61,7 @@ func FetchMessages(accounts []internal.AccountInfo) {
 	table.Render()
 }
 
-func displayBoxList(client *api.API, account *internal.AccountInfo, table *tablewriter.Table) {
+func displayBoxList(client *api.API, account *vault.AccountInfo, table *tablewriter.Table) {
 	mbl, err := client.GetMailboxList(account.Address.Hash())
 	if err != nil {
 		return
@@ -71,7 +72,7 @@ func displayBoxList(client *api.API, account *internal.AccountInfo, table *table
 	}
 }
 
-func displayBox(client *api.API, account *internal.AccountInfo, box string, table *tablewriter.Table) {
+func displayBox(client *api.API, account *vault.AccountInfo, box string, table *tablewriter.Table) {
 	mb, err := client.GetMailboxMessages(account.Address.Hash(), box)
 	if err != nil {
 		return
@@ -94,7 +95,7 @@ func displayBox(client *api.API, account *internal.AccountInfo, box string, tabl
 	}
 
 	for _, msg := range mb.Messages {
-		key, err := internal.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+		key, err := message.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			continue
 		}

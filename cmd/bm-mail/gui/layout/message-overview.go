@@ -38,7 +38,7 @@ func NewMessageOverviewScreen(app app.Type) tview.Primitive {
 
 	root := tview.NewTreeNode("Accounts").SetColor(tcell.ColorGreen).SetExpanded(true).SetSelectable(false)
 	for _, acc := range app.Vault.Store.Accounts {
-		accNode := tview.NewTreeNode(acc.Address).SetColor(tcell.ColorYellow)
+		accNode := tview.NewTreeNode(acc.Address.String()).SetColor(tcell.ColorYellow)
 		root.AddChild(accNode)
 	}
 

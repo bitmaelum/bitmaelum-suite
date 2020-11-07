@@ -34,7 +34,7 @@ import (
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
-func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidations []string, keyType bmcrypto.KeyType) {
+func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations []string, keyType bmcrypto.KeyType) {
 	fmt.Printf("* Verifying if organisation name is valid: ")
 	orgHash := hash.New(orgAddr)
 
@@ -60,8 +60,8 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 	var mnemonic string
 
 	fmt.Printf("* Checking if the organisation is already present in the vault: ")
-	var info *internal.OrganisationInfo
-	if vault.HasOrganisation(orgHash) {
+	var info *vault.OrganisationInfo
+	if v.HasOrganisation(orgHash) {
 		fmt.Printf("\n  X organisation already present in the vault.\n")
 		fmt.Println("")
 		os.Exit(1)
@@ -91,7 +91,7 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Adding your new organisation into the vault: ")
-		info = &internal.OrganisationInfo{
+		info = &vault.OrganisationInfo{
 			Addr:        orgAddr,
 			FullName:    fullName,
 			PrivKey:     *privKey,
@@ -100,8 +100,8 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 			Validations: val,
 		}
 
-		vault.AddOrganisation(*info)
-		err = vault.WriteToDisk()
+		v.AddOrganisation(*info)
+		err = v.WriteToDisk()
 		if err != nil {
 			fmt.Printf("\n  X error while saving organisation into vault: %#v", err)
 			fmt.Println("")

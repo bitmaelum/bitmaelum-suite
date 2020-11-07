@@ -22,17 +22,39 @@ package vault
 import (
 	"errors"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
+// OrganisationInfo represents a organisation configuration for a server
+type OrganisationInfo struct {
+	Addr        string                        `json:"addr"`          // org part from the bitmaelum address
+	FullName    string                        `json:"name"`          // Full name of the organisation
+	PrivKey     bmcrypto.PrivKey              `json:"priv_key"`      // PEM encoded private key
+	PubKey      bmcrypto.PubKey               `json:"pub_key"`       // PEM encoded public key
+	Pow         *proofofwork.ProofOfWork      `json:"pow,omitempty"` // Proof of work
+	Validations []organisation.ValidationType `json:"validations"`   // Validations
+}
+
+// ToOrg converts organisation info to an actual organisation structure
+func (info OrganisationInfo) ToOrg() *organisation.Organisation {
+	return &organisation.Organisation{
+		Hash:       hash.New(info.Addr),
+		FullName:   info.FullName,
+		PublicKey:  info.PubKey,
+		Validation: info.Validations,
+	}
+}
+
 // AddOrganisation adds an organisation to the vault
-func (v *Vault) AddOrganisation(organisation internal.OrganisationInfo) {
+func (v *Vault) AddOrganisation(organisation OrganisationInfo) {
 	v.Store.Organisations = append(v.Store.Organisations, organisation)
 }
 
 // GetOrganisationInfo tries to find the given organisation and returns the organisation from the vault
-func (v *Vault) GetOrganisationInfo(orgHash hash.Hash) (*internal.OrganisationInfo, error) {
+func (v *Vault) GetOrganisationInfo(orgHash hash.Hash) (*OrganisationInfo, error) {
 
 	for i := range v.Store.Organisations {
 		h := hash.New(v.Store.Organisations[i].Addr)

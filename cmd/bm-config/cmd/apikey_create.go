@@ -67,7 +67,7 @@ Note: Creating an admin key can only be done locally on the mail-server.
 			expires = time.Now().Add(validDuration)
 		}
 
-		err = internal.ManagementPermissions(*mgPerms)
+		err = internal.CheckManagementPermissions(*mgPerms)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
 			os.Exit(1)

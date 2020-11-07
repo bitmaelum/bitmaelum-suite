@@ -44,8 +44,9 @@ func ListAccounts(v *vault.Vault, displayKeys bool) {
 	table.SetHeader(headers)
 
 	for _, acc := range v.Store.Accounts {
+		suffix := ""
 		if acc.Default {
-			acc.Address += " (*)"
+			suffix = " (*)"
 		}
 
 		var route string
@@ -58,7 +59,7 @@ func ListAccounts(v *vault.Vault, displayKeys bool) {
 		}
 
 		values := []string{
-			acc.Address,
+			acc.Address.String() + suffix,
 			acc.Name,
 			acc.RoutingID[:10],
 			route,

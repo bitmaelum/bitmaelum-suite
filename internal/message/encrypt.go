@@ -17,13 +17,14 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package message
 
 import (
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
@@ -77,7 +78,7 @@ func encryptED25519(pubKey bmcrypto.PubKey, message []byte) ([]byte, string, str
 		return nil, "", "", err
 	}
 
-	encryptedMessage, err := MessageEncrypt(secret, message)
+	encryptedMessage, err := internal.MessageEncrypt(secret, message)
 	return encryptedMessage, txID.ToHex(), "ed25519+aes256gcm", err
 }
 
@@ -92,5 +93,5 @@ func decryptED25519(privKey bmcrypto.PrivKey, txIDString string, message []byte)
 		return nil, err
 	}
 
-	return MessageDecrypt(secret, message)
+	return internal.MessageDecrypt(secret, message)
 }

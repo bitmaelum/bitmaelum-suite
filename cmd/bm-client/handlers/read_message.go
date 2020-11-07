@@ -28,31 +28,31 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
-	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 )
 
 // ReadMessage will read a specific message blocks
-func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID, blockType string) {
+func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string) {
 	client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	// Fetch message from API
-	msg, err := client.GetMessage(info.AddressHash(), box, messageID)
+	msg, err := client.GetMessage(info.Address.Hash(), box, messageID)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	key, err := internal.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+	key, err := message.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	// Verify the clientSignature
-	if !signature.VerifyHeader(msg.Header) {
+	if !message.VerifyClientHeader(msg.Header) {
 		logrus.Fatalf("message %s has failed the client signature check. Seems that this message may have been spoofed.", messageID)
 	}
 
@@ -62,46 +62,6 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 	if err != nil {
 		logrus.Fatal(err)
 	}
-
-	// spew.Dump(catalog)
-	//
-	// for _, b := range catalog.Blocks {
-	// 	data, err := client.GetMessageBlock(*addr, box, messageID, b.ID)
-	// 	bb := bytes.NewBuffer(data)
-	//
-	// 	r, err := encrypt.GetAesDecryptorReader(b.IV, b.Key, bb)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	//
-	// 	content, err := ioutil.ReadAll(r)
-	// 	if err != nil {
-	// 		logrus.Fatal(err)
-	// 	}
-	//
-	// 	spew.Dump(b)
-	// 	spew.Dump(content)
-	// }
-	//
-	// for _, a := range catalog.Attachments {
-	// 	ar, err := client.GetMessageAttachment(*addr, box, messageID, a.ID)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	//
-	// 	r, err := encrypt.GetAesDecryptorReader(a.IV, a.Key, ar)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	//
-	// 	content, err := ioutil.ReadAll(r)
-	// 	if err != nil {
-	// 		logrus.Fatal(err)
-	// 	}
-	//
-	// 	spew.Dump(a)
-	// 	spew.Dump(content)
-	// }
 
 	fmt.Printf("--------------------------------------------------------\n")
 	fmt.Printf("From       : %s <%s>\n", catalog.From.Name, catalog.From.Address)
@@ -118,7 +78,7 @@ func ReadMessage(info *internal.AccountInfo, routingInfo *resolver.RoutingInfo, 
 		fmt.Printf("Block %02d: %-20s %8s\n", idx, b.Type, datasize.ByteSize(b.Size))
 		fmt.Printf("\n")
 
-		data, err := client.GetMessageBlock(info.AddressHash(), box, messageID, b.ID)
+		data, err := client.GetMessageBlock(info.Address.Hash(), box, messageID, b.ID)
 		if err != nil {
 			panic(err)
 		}

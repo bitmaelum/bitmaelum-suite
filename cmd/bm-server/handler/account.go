@@ -24,8 +24,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -152,7 +152,7 @@ func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewEncoder(w).Encode(settings)
 }
 
-// RetrieveKeys is the handler that will retrieve public keys directly from the mailserver
+// RetrieveKeys is the handler that will retrieve public keys directly from the mail server
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {

@@ -22,7 +22,6 @@ package vault
 import (
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/stretchr/testify/assert"
 )
@@ -33,7 +32,7 @@ func TestVaultAddOrganisation(t *testing.T) {
 
 	assert.Len(t, v.Store.Organisations, 0)
 
-	org := internal.OrganisationInfo{
+	org := OrganisationInfo{
 		Addr:     "example",
 		FullName: "Example Org",
 	}

@@ -53,7 +53,7 @@ func CheckManagementPermissions(perms []string) error {
 		p = strings.ToLower(p)
 
 		found := false
-		for _, ap := range ManagementPermissons {
+		for _, ap := range ManagementPermissions {
 			if p == ap {
 				found = true
 			}

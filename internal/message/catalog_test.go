@@ -38,7 +38,7 @@ func TestCatalogNewCatalog(t *testing.T) {
 
 	assert.Equal(t, "john!", c.From.Address)
 	assert.False(t, c.CreatedAt.Before(time.Now().Add(-1*time.Second)))
-	assert.Equal(t, "", c.Subject)
+	assert.Equal(t, "subject", c.Subject)
 }
 
 func TestCatalogAddFlags(t *testing.T) {
@@ -74,13 +74,11 @@ func TestCatalogAddLabels(t *testing.T) {
 func TestCatalogSetToAddress(t *testing.T) {
 	c := genCatalog()
 
-	assert.Empty(t, c.To)
-
-	addr, err := address.NewAddress("jane!")
+	addr, err := address.NewAddress("joe!")
 	assert.NoError(t, err)
-	c.SetToAddress(*addr, "Jane Doe")
-	assert.Equal(t, "jane!", c.To.Address)
-	assert.Equal(t, "Jane Doe", c.To.Name)
+	c.SetToAddress(*addr, "Joe Doe")
+	assert.Equal(t, "joe!", c.To.Address)
+	assert.Equal(t, "Joe Doe", c.To.Name)
 }
 
 func TestCatalogAddAttachment(t *testing.T) {

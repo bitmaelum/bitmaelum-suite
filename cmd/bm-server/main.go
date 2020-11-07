@@ -32,12 +32,13 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler/mgmt"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
-	auth "github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware/auth"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware/auth"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -110,12 +111,11 @@ You can generate a new one by running:
 	info, err := res.ResolveRouting(config.Routing.RoutingID)
 	if err != nil || info.Routing != config.Server.Server.Hostname {
 		// Upload routing
-		err := res.UploadRoutingInfo(internal.RoutingInfo{
-			RoutingID: config.Routing.RoutingID,
-			PrivKey:   config.Routing.PrivateKey,
-			PubKey:    config.Routing.PublicKey,
-			Route:     config.Server.Server.Hostname,
-		})
+		err := res.UploadRoutingInfo(resolver.RoutingInfo{
+			Hash:      config.Routing.RoutingID,
+			PublicKey: config.Routing.PublicKey,
+			Routing:   config.Server.Server.Hostname,
+		}, &config.Routing.PrivateKey)
 		if err != nil {
 			fmt.Print("There is an error while uploading routing information to the key resolver: ", err)
 			os.Exit(1)

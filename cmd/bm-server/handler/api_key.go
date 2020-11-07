@@ -48,7 +48,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//
-	err = internal.AccountPermissions(input.Permissions)
+	err = internal.CheckAccountPermissions(input.Permissions)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return

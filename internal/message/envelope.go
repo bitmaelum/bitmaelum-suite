@@ -25,7 +25,6 @@ import (
 	"io"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
@@ -44,13 +43,12 @@ type Envelope struct {
 	catalogKey []byte   // The key used for encryption
 }
 
-
 // Addressing is the configuration for an envelope (@TODO: bad naming)
 type Addressing struct {
 	Sender struct {
 		Address address.Address   // Address of the sender
 		PrivKey *bmcrypto.PrivKey // Private key of the sender
-		Host    string           // Host address of the sender mail server
+		Host    string            // Host address of the sender mail server
 	}
 	Recipient struct {
 		Address address.Address  // Address of the recipient
@@ -133,7 +131,7 @@ func (e *Envelope) CloseAndEncrypt(senderPrivKey *bmcrypto.PrivKey, recipientPub
 
 	// Set catalog information in the header
 	e.Header.Catalog.Size = uint64(len(e.EncryptedCatalog))
-	ek, tx, cr, err := internal.Encrypt(*recipientPubKey, e.catalogKey)
+	ek, tx, cr, err := Encrypt(*recipientPubKey, e.catalogKey)
 	if err != nil {
 		return err
 	}
@@ -142,7 +140,7 @@ func (e *Envelope) CloseAndEncrypt(senderPrivKey *bmcrypto.PrivKey, recipientPub
 	e.Header.Catalog.Crypto = cr
 
 	// Sign the header
-	err = signature.SignClientHeader(e.Header, *senderPrivKey)
+	err = SignClientHeader(e.Header, *senderPrivKey)
 	if err != nil {
 		return err
 	}

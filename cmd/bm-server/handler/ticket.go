@@ -24,7 +24,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	maincontainer "github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -85,7 +86,7 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	// @TODO: subscription ID is empty here, but we probably want to fetch this directly from the server, not from the
 	//  ticket body request (clients do not know anything about subscription ids)
 	t := ticket.NewValidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := maincontainer.GetTicketRepo()
 	err = ticketRepo.Store(t)
 	if err != nil {
 		logrus.Trace("cannot save ticket: ", err)
@@ -143,7 +144,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 		tckt := ticket.NewUnvalidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
 
 		// Store ticket
-		ticketRepo := container.GetTicketRepo()
+		ticketRepo := maincontainer.GetTicketRepo()
 		err = ticketRepo.Store(tckt)
 		if err != nil {
 			ErrorOut(w, http.StatusInternalServerError, cantSaveTicket)
@@ -156,7 +157,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Find the ticket in the repo
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := maincontainer.GetTicketRepo()
 	tckt, err := ticketRepo.Fetch(requestInfo.TicketID)
 	if err != nil {
 		ErrorOut(w, http.StatusPreconditionFailed, "ticket not found")
@@ -175,7 +176,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	tckt.Proof.Proof = requestInfo.Proof
 	tckt.Valid = tckt.Proof.HasDoneWork() && tckt.Proof.IsValid()
 	if tckt.Valid {
-		ticketRepo := container.GetTicketRepo()
+		ticketRepo := maincontainer.GetTicketRepo()
 		err = ticketRepo.Store(tckt)
 		if err != nil {
 			ErrorOut(w, http.StatusInternalServerError, cantSaveTicket)
@@ -199,7 +200,7 @@ func outputTicket(tckt *ticket.Ticket, w http.ResponseWriter) {
 }
 
 func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
-	subscriptionRepo := container.GetSubscriptionRepo()
+	subscriptionRepo := maincontainer.GetSubscriptionRepo()
 
 	// Check if we have the subscription stored
 	sub := subscription.New(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
@@ -214,7 +215,7 @@ func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
 	tckt := ticket.NewValidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
 
 	// Store the new validated ticket back in the repo
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := maincontainer.GetTicketRepo()
 	err := ticketRepo.Store(tckt)
 	if err != nil {
 		return nil, &httpError{
@@ -244,7 +245,7 @@ func validateLocalAddress(addr hash.Hash) error {
 func fetchTicketHeader(req *http.Request) (*ticket.Ticket, error) {
 	ticketID := req.Header.Get(ticket.TicketHeader)
 
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := maincontainer.GetTicketRepo()
 	t, err := ticketRepo.Fetch(ticketID)
 	if err != nil {
 		return nil, err

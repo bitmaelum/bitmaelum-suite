@@ -23,15 +23,15 @@ import (
 	"errors"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 // CreateAuthorizedKey creates a new authorized key
-func CreateAuthorizedKey(info *internal.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) error {
+func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) error {
 	var expiry = time.Time{}
 	if validUntil > 0 {
 		expiry = time.Now().Add(validUntil)
@@ -53,7 +53,7 @@ func CreateAuthorizedKey(info *internal.AccountInfo, targetKey *bmcrypto.PubKey,
 	return client.CreateAuthKey(info.Address.Hash(), k)
 }
 
-func getAPIClient(info *internal.AccountInfo) (*api.API, error) {
+func getAPIClient(info *vault.AccountInfo) (*api.API, error) {
 	resolver := container.GetResolveService()
 	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 	if err != nil {
