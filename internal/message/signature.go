@@ -56,7 +56,7 @@ func SignServerHeader(header *Header) error {
 // VerifyHeader will verify a server signature from a message header. This can be used to proof the origin of the message
 func VerifyServerHeader(header Header) bool {
 	// Fetch public key from routing
-	rs := container.GetResolveService()
+	rs := container.Instance.GetResolveService()
 	addr, err := rs.ResolveAddress(header.From.Addr)
 	if err != nil {
 		return false
@@ -116,7 +116,7 @@ func SignClientHeader(header *Header, privKey bmcrypto.PrivKey) error {
 // VerifyHeader will verify a client signature from a message header. This can be used to proof the origin of the message
 func VerifyClientHeader(header Header) bool {
 	// Fetch public key from routing
-	rs := container.GetResolveService()
+	rs := container.Instance.GetResolveService()
 	addr, err := rs.ResolveAddress(header.From.Addr)
 	if err != nil {
 		return false

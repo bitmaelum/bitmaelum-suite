@@ -51,7 +51,7 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 
 	messageID := mux.Vars(req)["message"]
 
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	header, _ := ar.FetchMessageHeader(*haddr, box, messageID)
 	catalog, _ := ar.FetchMessageCatalog(*haddr, box, messageID)
 
@@ -81,7 +81,7 @@ func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 	messageID := mux.Vars(req)["message"]
 	blockID := mux.Vars(req)["block"]
 
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	block, err := ar.FetchMessageBlock(*haddr, box, messageID, blockID)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, incorrectBox)
@@ -110,7 +110,7 @@ func GetMessageAttachment(w http.ResponseWriter, req *http.Request) {
 	messageID := mux.Vars(req)["message"]
 	attachmentID := mux.Vars(req)["attachment"]
 
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	attachment, size, err := ar.FetchMessageAttachment(*haddr, box, messageID, attachmentID)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, "incorrect attachment")

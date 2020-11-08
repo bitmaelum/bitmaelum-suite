@@ -64,28 +64,37 @@ func main() {
 		opts.Blocks = append(opts.Blocks, "default:"+opts.Message)
 	}
 
+	// Fetch both sender and recipient info
+	svc := container.Instance.GetResolveService()
+	senderInfo, err := svc.ResolveAddress(fromAddr.Hash())
+	if err != nil {
+		fmt.Println("cannot resolve sender address")
+		os.Exit(1)
+	}
+	recipientInfo, err := svc.ResolveAddress(toAddr.Hash())
+	if err != nil {
+		fmt.Println("cannot resolve recipient address")
+		os.Exit(1)
+	}
+
+	// Setup addressing
+	addressing := message.NewAddressing(
+		*fromAddr,
+		privKey,
+		senderInfo.RoutingInfo.Routing,
+		*toAddr,
+		&recipientInfo.PublicKey,
+	)
+
 	// Compose mail
-	envelope, err := message.Compose(*fromAddr, *toAddr, privKey, opts.Subject, opts.Blocks, opts.Attachments)
+	envelope, err := message.Compose(addressing, opts.Subject, opts.Blocks, opts.Attachments)
 	if err != nil {
 		fmt.Println("cannot compose message")
 		os.Exit(1)
 	}
 
-	// Fetch routing info for the SENDER, as we send to the sender's mail server (not the recipient)
-	svc := container.GetResolveService()
-	info, err := svc.ResolveAddress(toAddr.Hash())
-	if err != nil {
-		fmt.Println("cannot resolve recipient address")
-		os.Exit(1)
-	}
-	routingInfo, err := svc.ResolveRouting(info.RoutingID)
-	if err != nil {
-		fmt.Println("cannot resolve recipient routing")
-		os.Exit(1)
-	}
-
 	// Send mail
-	client, err := api.NewAuthenticated(*fromAddr, privKey, routingInfo.Routing)
+	client, err := api.NewAuthenticated(*fromAddr, privKey, senderInfo.RoutingInfo.Routing)
 	if err != nil {
 		fmt.Println("cannot connect to api")
 		os.Exit(1)

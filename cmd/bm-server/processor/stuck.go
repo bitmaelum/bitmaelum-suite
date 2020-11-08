@@ -40,7 +40,7 @@ func ProcessStuckIncomingMessages() {
 		return
 	}
 
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := container.Instance.GetTicketRepo()
 	for _, fileInfo := range files {
 		// Not a dir, so not a message
 		if !fileInfo.IsDir() {

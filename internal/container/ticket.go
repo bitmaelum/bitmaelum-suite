@@ -59,5 +59,5 @@ func setupTicketRepo() (interface{}, error) {
 }
 
 func init() {
-	Set("ticket", setupTicketRepo)
+	Instance.SetShared("ticket", setupTicketRepo)
 }

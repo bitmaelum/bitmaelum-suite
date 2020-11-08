@@ -23,8 +23,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -54,7 +54,7 @@ func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, va
 }
 
 func getAPIClient(info *vault.AccountInfo) (*api.API, error) {
-	resolver := container.GetResolveService()
+	resolver := container.Instance.GetResolveService()
 	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 	if err != nil {
 		return nil, errors.New("cannot find routing ID for this account")

@@ -25,7 +25,6 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/proof_of_work"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -58,5 +57,5 @@ func setupProofService() (interface{}, error) {
 }
 
 func init() {
-	container.Set("proof-of-work", setupProofService)
+	Instance.SetShared("proof-of-work", setupProofService)
 }

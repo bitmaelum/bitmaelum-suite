@@ -24,7 +24,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -46,7 +46,7 @@ func CreateOrganisationInvite(vault *vault.Vault, orgAddr, inviteAddr, shortRout
 	fmt.Println("Found Routing ID: ", routingID)
 
 	// Verify the routing ID exists
-	svc := container.GetResolveService()
+	svc := container.Instance.GetResolveService()
 	_, err = svc.ResolveRouting(routingID)
 	if err != nil {
 		fmt.Println("Cannot find the specified routing ID on the resolver")

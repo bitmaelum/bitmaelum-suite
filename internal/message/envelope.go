@@ -56,6 +56,27 @@ type Addressing struct {
 	}
 }
 
+func NewAddressing(senderAddress address.Address, senderPrivKey *bmcrypto.PrivKey, host string, recipientAddress address.Address, recipientPubKey *bmcrypto.PubKey) Addressing {
+	return Addressing{
+		Sender: struct {
+			Address address.Address
+			PrivKey *bmcrypto.PrivKey
+			Host    string
+		}{
+			Address: senderAddress,
+			PrivKey: senderPrivKey,
+			Host:    host,
+		},
+		Recipient: struct {
+            Address address.Address
+            PubKey  *bmcrypto.PubKey
+		}{
+			Address: recipientAddress,
+			PubKey:  recipientPubKey,
+		},
+	}
+}
+
 // NewEnvelope creates a new (open) envelope which is used for holding a complete message
 func NewEnvelope() (*Envelope, error) {
 	var err error

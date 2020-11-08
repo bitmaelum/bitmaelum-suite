@@ -27,7 +27,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -48,11 +48,11 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
 
-	container.Set("account", func() (interface{}, error) {
+	container.Instance.SetShared("account", func() (interface{}, error) {
 		return account.NewMockRepository(), nil
 	})
 
-	accountRepo := container.GetAccountRepo()
+	accountRepo := container.Instance.GetAccountRepo()
 	// container.Set("account", func() interface{} { return accountRepo })
 	_ = accountRepo.Create(hash.New("example!"), *pubkey)
 	_ = accountRepo.Create(hash.New("user-1!"), *pubkey)
@@ -63,7 +63,7 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	// 42 creates BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io
 	rand.Seed(42)
 	apiKeyRepo := key.NewAPIMockRepository()
-	container.Set("api-key", func() (interface{}, error) { return apiKeyRepo, nil })
+	container.Instance.SetShared("api-key", func() (interface{}, error) { return apiKeyRepo, nil })
 	for _, k := range apiKeyFixtures {
 		// Create a new key, so it will randomize through our seed
 		nk := key.NewAPIAccountKey(*k.AddressHash, k.Permissions, k.Expires, k.Desc)

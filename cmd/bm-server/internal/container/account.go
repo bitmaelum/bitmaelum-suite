@@ -24,7 +24,6 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 )
 
 var (
@@ -41,5 +40,5 @@ func setupAccountRepo() (interface{}, error) {
 }
 
 func init() {
-	container.Set("account", setupAccountRepo)
+	Instance.SetShared("account", setupAccountRepo)
 }

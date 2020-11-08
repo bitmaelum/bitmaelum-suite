@@ -25,9 +25,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/c2h5oh/datasize"
@@ -44,7 +44,7 @@ func FetchMessages(accounts []vault.AccountInfo) {
 
 	for _, info := range accounts {
 		// Fetch routing info
-		resolver := container.GetResolveService()
+		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
 			continue

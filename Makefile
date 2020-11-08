@@ -9,7 +9,7 @@ REPO="github.com/bitmaelum/bitmaelum-suite"
 
 # Our defined apps and tools
 APPS := bm-server bm-client bm-config bm-mail bm-send
-TOOLS := hash-address jwt proof-of-work readmail update-resolver resolve vault-edit resolve-auth update-pow jwt-validate migrate-hash check-org toaster
+TOOLS := hash-address jwt proof-of-work readmail update-resolver resolve vault-edit resolve-auth update-pow jwt-validate check-org toaster
 
 # These files are checked for license headers
 LICENSE_CHECK_DIRS=internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go

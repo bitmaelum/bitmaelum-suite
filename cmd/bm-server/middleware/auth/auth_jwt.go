@@ -54,7 +54,7 @@ func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (context.Context, b
 		return nil, false
 	}
 
-	accountRepo := container.GetAccountRepo()
+	accountRepo := container.Instance.GetAccountRepo()
 	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
@@ -87,7 +87,7 @@ func checkToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
 	}
 	tokenString := bearerToken[7:]
 
-	accountRepo := container.GetAccountRepo()
+	accountRepo := container.Instance.GetAccountRepo()
 	keys, err := accountRepo.FetchKeys(addr)
 	if err != nil {
 		logrus.Trace("auth: cannot fetch keys: ", err)

@@ -59,7 +59,7 @@ func CreateAuthKey(w http.ResponseWriter, req *http.Request) {
 	newAuthKey := key.NewAuthKey(*h, input.PublicKey, input.Signature, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store auth key into persistent storage
-	repo := container.GetAuthKeyRepo()
+	repo := container.Instance.GetAuthKeyRepo()
 	err = repo.Store(newAuthKey)
 	if err != nil {
 		msg := fmt.Sprintf("error while storing key: %s", err)
@@ -84,7 +84,7 @@ func ListAuthKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Store Auth key into persistent storage
-	repo := container.GetAuthKeyRepo()
+	repo := container.Instance.GetAuthKeyRepo()
 	keys, err := repo.FetchByHash(h.String())
 	if err != nil {
 		msg := fmt.Sprintf("error while retrieving keys: %s", err)
@@ -109,7 +109,7 @@ func DeleteAuthKey(w http.ResponseWriter, req *http.Request) {
 	keyID := mux.Vars(req)["key"]
 
 	// Fetch key
-	repo := container.GetAuthKeyRepo()
+	repo := container.Instance.GetAuthKeyRepo()
 	k, err := repo.Fetch(keyID)
 	if err != nil || k.AddressHash.String() != h.String() {
 		// Only allow deleting of keys that we own as account
@@ -135,7 +135,7 @@ func GetAuthKeyDetails(w http.ResponseWriter, req *http.Request) {
 	keyID := mux.Vars(req)["key"]
 
 	// Fetch key
-	repo := container.GetAuthKeyRepo()
+	repo := container.Instance.GetAuthKeyRepo()
 	k, err := repo.Fetch(keyID)
 	if err != nil || k.AddressHash.String() != h.String() {
 		ErrorOut(w, http.StatusNotFound, "key not found")

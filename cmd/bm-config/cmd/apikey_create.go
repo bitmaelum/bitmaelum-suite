@@ -91,7 +91,7 @@ Note: Creating an admin key can only be done locally on the mail-server.
 		}
 
 		// Store API key into persistent storage
-		repo := container.GetAPIKeyRepo()
+		repo := container.Instance.GetAPIKeyRepo()
 		err = repo.Store(k)
 		if err != nil {
 			fmt.Printf("Error: cannot store key: %s\n", err)

@@ -74,7 +74,7 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 	newAPIKey := key.NewAPIAccountKey(*h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store API key into persistent storage
-	repo := container.GetAPIKeyRepo()
+	repo := container.Instance.GetAPIKeyRepo()
 	err = repo.Store(newAPIKey)
 	if err != nil {
 		msg := fmt.Sprintf("error while storing key: %s", err)

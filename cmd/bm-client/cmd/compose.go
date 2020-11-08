@@ -27,7 +27,9 @@ import (
 	"os/exec"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/sirupsen/logrus"
@@ -84,8 +86,30 @@ var composeCmd = &cobra.Command{
 		for i, attachment := range *attachments {
 			fmt.Printf("  Att.   #%d %s\n", i, attachment)
 		}
-		
-		err = handlers.ComposeMessage(*fromInfo, *toAddr, *subject, *blocks, *attachments)
+
+		// Resolve all stuff
+		resolver := container.Instance.GetResolveService()
+		routingInfo, err := resolver.ResolveRouting(fromInfo.RoutingID)
+		if err != nil {
+			logrus.Fatal("Cannot find routing ID for this account")
+			os.Exit(1)
+		}
+
+		recipientInfo, err := resolver.ResolveAddress(toAddr.Hash())
+		if err != nil {
+			logrus.Fatal("Cannot resolve recipient")
+			os.Exit(1)
+		}
+
+		// Setup addressing and compose the message
+		addressing := message.NewAddressing(
+			fromInfo.Address,
+			&fromInfo.PrivKey,
+			routingInfo.Routing,
+			*toAddr,
+			&recipientInfo.PublicKey,
+		)
+		err = handlers.ComposeMessage(addressing, *subject, *blocks, *attachments)
 		if err != nil {
 			logrus.Fatal(err)
 		}

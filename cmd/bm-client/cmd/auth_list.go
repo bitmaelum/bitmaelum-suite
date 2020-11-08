@@ -23,8 +23,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
@@ -40,7 +40,7 @@ var authListCmd = &cobra.Command{
 		v := vault.OpenVault()
 		info := vault.GetAccountOrDefault(v, *authAccount)
 
-		resolver := container.GetResolveService()
+		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
 			logrus.Fatal("Cannot find routing ID for this account")

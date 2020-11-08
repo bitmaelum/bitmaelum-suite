@@ -23,9 +23,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -48,7 +48,7 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 	fmt.Printf("ok.\n")
 
 	fmt.Printf("* Checking if organisation is already known in the resolver service: ")
-	ks := container.GetResolveService()
+	ks := container.Instance.GetResolveService()
 	_, err = ks.ResolveOrganisation(orgHash)
 	if err == nil {
 		fmt.Printf("\n  X it seems that this organisation is already in use. Please specify another organisation.")

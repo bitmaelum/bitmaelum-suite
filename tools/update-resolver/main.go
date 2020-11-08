@@ -62,7 +62,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		rs := container.GetResolveService()
+		rs := container.Instance.GetResolveService()
 		err = rs.UploadAddressInfo(*info, "")
 		if err != nil {
 			fmt.Printf("Error for account %s: %s\n", info.Address, err)
@@ -77,7 +77,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		rs := container.GetResolveService()
+		rs := container.Instance.GetResolveService()
 		err := rs.UploadOrganisationInfo(*info)
 		if err != nil {
 			fmt.Printf("Error for organisation %s: %s\n", info.Addr, err)

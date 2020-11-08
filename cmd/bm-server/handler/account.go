@@ -82,7 +82,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	// Check if we need to verify against the mail server key, or the organisation key
 	var pubKey = config.Routing.PublicKey
 	if !orgHash.IsEmpty() {
-		r := container.GetResolveService()
+		r := container.Instance.GetResolveService()
 		oh, err := hash.NewFromHash(input.OrgHash)
 		if err != nil {
 			ErrorOut(w, http.StatusBadRequest, "incorrect org hash")
@@ -106,7 +106,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if account exists
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	if ar.Exists(input.Addr) {
 		ErrorOut(w, http.StatusBadRequest, "account already exists")
 		return
@@ -134,7 +134,7 @@ func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if account exists
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	if !ar.Exists(*haddr) {
 		ErrorOut(w, http.StatusNotFound, "address not found")
 		return
@@ -161,7 +161,7 @@ func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if account exists
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	if !ar.Exists(*haddr) {
 		ErrorOut(w, http.StatusNotFound, "public keys not found")
 		return

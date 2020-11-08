@@ -159,7 +159,7 @@ func CompleteIncoming(w http.ResponseWriter, req *http.Request) {
 	processor.QueueIncomingMessage(t.ID)
 
 	// Remove ticket
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := container.Instance.GetTicketRepo()
 	ticketRepo.Remove(t.ID)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -188,7 +188,7 @@ func DeleteIncoming(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Remove ticket
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := container.Instance.GetTicketRepo()
 	ticketRepo.Remove(t.ID)
 
 	w.Header().Set("Content-Type", "application/json")

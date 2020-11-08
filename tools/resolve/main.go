@@ -61,7 +61,7 @@ func resolveAddress(addr string) {
 	}
 	addrHash := a.Hash()
 
-	svc := container.GetResolveService()
+	svc := container.Instance.GetResolveService()
 	info, err := svc.ResolveAddress(addrHash)
 	if err != nil {
 		logrus.Fatal(err)
@@ -74,7 +74,7 @@ func resolveAddress(addr string) {
 }
 
 func resolveRouting(routingID string) {
-	svc := container.GetResolveService()
+	svc := container.Instance.GetResolveService()
 	info, err := svc.ResolveRouting(routingID)
 	if err != nil {
 		logrus.Fatal(err)
@@ -88,7 +88,7 @@ func resolveRouting(routingID string) {
 func resolveOrganisation(orgAddr string) {
 	orgHash := hash.New(orgAddr)
 
-	svc := container.GetResolveService()
+	svc := container.Instance.GetResolveService()
 	info, err := svc.ResolveOrganisation(orgHash)
 	if err != nil {
 		logrus.Fatal(err)

@@ -22,6 +22,10 @@ package container
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
+	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
+	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 )
 
 /*
@@ -30,8 +34,48 @@ import (
  * correct interface.
  */
 
-// GetAccountRepo will return the current account repository
-func GetAccountRepo() account.Repository {
-	// return Get("account").(func() account.Repository)()
-	return container.Get("account").(account.Repository)
+type ServerContainer struct {
+	Container container.Container
+	Instance *container.Container
 }
+
+var Instance = ServerContainer{
+	Container: container.NewContainer(),
+	Instance: &container.Instance,
+}
+
+func (c *ServerContainer) SetShared(key string, f container.ServiceFunc) {
+	c.Container.SetShared(key, f)
+}
+
+// GetAccountRepo will return the current account repository
+func (c *ServerContainer) GetAccountRepo() account.Repository {
+	// return Get("account").(func() account.Repository)()
+	return c.Container.Get("account").(account.Repository)
+}
+
+// GetAPIKeyRepo will return the current api key repository
+func (c *ServerContainer) GetAPIKeyRepo() key.APIKeyRepo {
+	return c.Instance.Get("api-key").(key.APIKeyRepo)
+}
+
+// GetAuthKeyRepo will return the current auth key repository
+func (c *ServerContainer) GetAuthKeyRepo() key.AuthKeyRepo {
+	return c.Instance.Get("auth-key").(key.AuthKeyRepo)
+}
+
+// GetResolveService will return the current resolver service
+func (c *ServerContainer) GetResolveService() *resolver.Service {
+	return c.Instance.Get("resolver").(*resolver.Service)
+}
+
+// GetSubscriptionRepo will return the current subscription repository
+func (c *ServerContainer) GetSubscriptionRepo() subscription.Repository {
+	return c.Instance.Get("subscription").(subscription.Repository)
+}
+
+// GetTicketRepo will return the current ticket repository
+func (c *ServerContainer) GetTicketRepo() ticket.Repository {
+	return c.Instance.Get("ticket").(ticket.Repository)
+}
+

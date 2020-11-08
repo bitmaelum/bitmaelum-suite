@@ -31,12 +31,12 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler/mgmt"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware/auth"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/gorilla/handlers"
@@ -68,7 +68,7 @@ func main() {
 
 	logrus.Info("Starting " + internal.VersionString("bm-server"))
 
-	_ = container.GetResolveService()
+	// _ = container.Instance.GetResolveService()
 
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
@@ -107,7 +107,7 @@ You can generate a new one by running:
 	}
 
 	// Check if route exist on the key resolver, and upload new info if needed
-	res := container.GetResolveService()
+	res := container.Instance.GetResolveService()
 	info, err := res.ResolveRouting(config.Routing.RoutingID)
 	if err != nil || info.Routing != config.Server.Server.Hostname {
 		// Upload routing

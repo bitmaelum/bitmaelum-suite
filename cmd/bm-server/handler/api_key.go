@@ -63,7 +63,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 	newAPIKey := key.NewAPIAccountKey(*h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store API key into persistent storage
-	repo := container.GetAPIKeyRepo()
+	repo := container.Instance.GetAPIKeyRepo()
 	err = repo.Store(newAPIKey)
 	if err != nil {
 		msg := fmt.Sprintf("error while storing key: %s", err)
@@ -88,7 +88,7 @@ func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Store API key into persistent storage
-	repo := container.GetAPIKeyRepo()
+	repo := container.Instance.GetAPIKeyRepo()
 	keys, err := repo.FetchByHash(h.String())
 	if err != nil {
 		msg := fmt.Sprintf("error while retrieving keys: %s", err)
@@ -113,7 +113,7 @@ func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 	keyID := mux.Vars(req)["key"]
 
 	// Fetch key
-	repo := container.GetAPIKeyRepo()
+	repo := container.Instance.GetAPIKeyRepo()
 	k, err := repo.Fetch(keyID)
 	if err != nil || k.AddressHash.String() != h.String() {
 		// Only allow deleting of keys that we own as account
@@ -139,7 +139,7 @@ func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
 	keyID := mux.Vars(req)["key"]
 
 	// Fetch key
-	repo := container.GetAPIKeyRepo()
+	repo := container.Instance.GetAPIKeyRepo()
 	k, err := repo.Fetch(keyID)
 	if err != nil || k.AddressHash.String() != h.String() {
 		ErrorOut(w, http.StatusNotFound, "key not found")

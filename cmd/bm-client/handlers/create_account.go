@@ -23,10 +23,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -54,7 +54,7 @@ func verifyAddress(bmAddr string) *address.Address {
 func checkAddressInResolver(addr address.Address) *resolver.Service {
 	fmt.Printf("* Checking if address is already known in the resolver service: ")
 
-	ks := container.GetResolveService()
+	ks := container.Instance.GetResolveService()
 	_, err := ks.ResolveAddress(addr.Hash())
 
 	if err == nil {

@@ -22,7 +22,7 @@ package handlers
 import (
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
 )
@@ -50,7 +50,7 @@ func ListAccounts(v *vault.Vault, displayKeys bool) {
 		}
 
 		var route string
-		resolver := container.GetResolveService()
+		resolver := container.Instance.GetResolveService()
 		r, err := resolver.ResolveRouting(acc.RoutingID)
 		if err != nil {
 			route = "route not found"

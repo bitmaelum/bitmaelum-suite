@@ -59,5 +59,5 @@ func setupAPIKeyRepo() (interface{}, error) {
 }
 
 func init() {
-	Set("api-key", setupAPIKeyRepo)
+	Instance.SetShared("api-key", setupAPIKeyRepo)
 }
