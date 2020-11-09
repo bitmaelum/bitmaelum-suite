@@ -20,49 +20,86 @@
 package container
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	maincontainer "github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 )
 
-type ClientContainer struct {
-	Container container.Container
-	Instance *container.Container
+/*
+ * For more information about MultiContainers, please see:
+ *    github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container/container.go
+ */
+
+// MultiContainer is a struct that holds both the general and client container
+type MultiContainer struct {
+	general maincontainer.Container // The general container used in the internal packages
+	client  maincontainer.Container // The client container used in this command
 }
 
-var Instance = ClientContainer{
-	Container: container.NewContainer(),
-	Instance: &container.Instance,
+// Instance is the main bitmaelum service container
+var Instance = MultiContainer{
+	general: &maincontainer.Instance,
+	client:  maincontainer.NewContainer(),
 }
 
-func (c *ClientContainer) SetShared(key string, f container.ServiceFunc) {
-	c.Container.SetShared(key, f)
+// SetShared will set a definition inside the client container
+func (c *MultiContainer) SetShared(key string, f maincontainer.ServiceFunc) {
+	c.client.SetShared(key, f)
+}
+
+// SetNonShared will set a definition inside the client container
+func (c *MultiContainer) SetNonShared(key string, f maincontainer.ServiceFunc) {
+	c.client.SetNonShared(key, f)
+}
+
+// Get will fetch a definition from the client container
+func (c *MultiContainer) Get(key string) interface{} {
+	return c.client.Get(key)
 }
 
 // GetAPIKeyRepo will return the current api key repository
-func (c *ClientContainer) GetAPIKeyRepo() key.APIKeyRepo {
-	return c.Instance.Get("api-key").(key.APIKeyRepo)
+func (c *MultiContainer) GetAPIKeyRepo() key.APIKeyRepo {
+	if c.client.Has("api-key") {
+		return c.client.Get("api-key").(key.APIKeyRepo)
+	}
+
+	return c.general.Get("api-key").(key.APIKeyRepo)
 }
 
 // GetAuthKeyRepo will return the current auth key repository
-func (c *ClientContainer) GetAuthKeyRepo() key.AuthKeyRepo {
-	return c.Instance.Get("auth-key").(key.AuthKeyRepo)
+func (c *MultiContainer) GetAuthKeyRepo() key.AuthKeyRepo {
+	if c.client.Has("auth-key") {
+		return c.client.Get("auth-key").(key.AuthKeyRepo)
+	}
+
+	return c.general.Get("auth-key").(key.AuthKeyRepo)
 }
 
 // GetResolveService will return the current resolver service
-func (c *ClientContainer) GetResolveService() *resolver.Service {
-	return c.Instance.Get("resolver").(*resolver.Service)
+func (c *MultiContainer) GetResolveService() *resolver.Service {
+	if c.client.Has("resolver") {
+		return c.client.Get("resolver").(*resolver.Service)
+	}
+
+	return c.general.Get("resolver").(*resolver.Service)
 }
 
 // GetSubscriptionRepo will return the current subscription repository
-func (c *ClientContainer) GetSubscriptionRepo() subscription.Repository {
-	return c.Instance.Get("subscription").(subscription.Repository)
+func (c *MultiContainer) GetSubscriptionRepo() subscription.Repository {
+	if c.client.Has("subscription") {
+		return c.client.Get("subscription").(subscription.Repository)
+	}
+
+	return c.general.Get("subscription").(subscription.Repository)
 }
 
 // GetTicketRepo will return the current ticket repository
-func (c *ClientContainer) GetTicketRepo() ticket.Repository {
-	return c.Instance.Get("ticket").(ticket.Repository)
-}
+func (c *MultiContainer) GetTicketRepo() ticket.Repository {
+	if c.client.Has("ticket") {
+		return c.client.Get("ticket").(ticket.Repository)
+	}
 
+	return c.general.Get("ticket").(ticket.Repository)
+}

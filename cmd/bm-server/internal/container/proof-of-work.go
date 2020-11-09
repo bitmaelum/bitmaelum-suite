@@ -23,14 +23,14 @@ import (
 	"os"
 	"sync"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/proof_of_work"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/pow"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/go-redis/redis/v8"
 )
 
 var (
 	proofOnce    sync.Once
-	proofService proof_of_work.Storable
+	proofService pow.Storable
 )
 
 func setupProofService() (interface{}, error) {
@@ -42,13 +42,13 @@ func setupProofService() (interface{}, error) {
 				DB:   config.Server.Redis.Db,
 			}
 
-			proofService = proof_of_work.NewRedis(&opts)
+			proofService = pow.NewRedis(&opts)
 		} else {
 			if config.Server.Bolt.DatabasePath == "" {
 				config.Server.Bolt.DatabasePath = os.TempDir()
 			}
 
-			proofService = proof_of_work.NewBolt(&config.Server.Bolt.DatabasePath)
+			proofService = pow.NewBolt(&config.Server.Bolt.DatabasePath)
 		}
 
 	})

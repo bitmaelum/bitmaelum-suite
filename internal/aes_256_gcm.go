@@ -96,6 +96,7 @@ func MessageDecrypt(key []byte, message []byte) ([]byte, error) {
 	return aead.Open(nil, nonce, ciphertext, nil)
 }
 
+// CreateCatalogKey generates a new key that is used for encrypting a catalog
 func CreateCatalogKey() ([]byte, error) {
 	return keyGenerator(keySize)
 }

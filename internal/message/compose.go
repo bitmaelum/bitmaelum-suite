@@ -23,6 +23,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
+// Compose will create a new message and places it inside an envelope. This can be used for actual sending the message
 func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, error) {
 	cat, err := generateCatalog(addressing.Sender.Address, addressing.Recipient.Address, subject, b, a)
 	if err != nil {

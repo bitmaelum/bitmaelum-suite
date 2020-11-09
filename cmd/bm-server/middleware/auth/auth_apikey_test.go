@@ -26,8 +26,8 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -156,7 +156,7 @@ func checkTrue(t *testing.T, a middleware.Authenticator, req *http.Request, hash
 	assert.Equal(t, hash, ctx.Value(AddressContext))
 }
 
-func checkKey(t *testing.T, a APIKeyAuth, pass bool, token, addr, routeName string) {
+func checkKey(t *testing.T, a APIKeyAuth, shouldPass bool, token, addr, routeName string) {
 	req, _ := http.NewRequest("GET", "/foo", nil)
 	req.Header.Set("authorization", "bearer "+token)
 	req = mux.SetURLVars(req, map[string]string{
@@ -164,7 +164,7 @@ func checkKey(t *testing.T, a APIKeyAuth, pass bool, token, addr, routeName stri
 	})
 
 	ctx, ok := a.Authenticate(req, routeName)
-	if pass {
+	if shouldPass {
 		assert.True(t, ok)
 		assert.NotNil(t, ctx)
 		// Check token in context

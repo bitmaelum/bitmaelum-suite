@@ -45,25 +45,30 @@ type ServiceDefinition struct {
 	Type ServiceType
 }
 
+// Container is the interface each container needs to implement
+type Container interface {
+	SetShared(key string, f ServiceFunc)
+	SetNonShared(key string, f ServiceFunc)
+	Get(key string) interface{}
+	Has(key string) bool
+}
 
-// Container is the main container structure holding all service
-type Container struct {
+// Type is the main container structure holding all service
+type Type struct {
 	definitions map[string]*ServiceDefinition
 	resolved    map[string]interface{}
 }
 
 // NewContainer will create a new container
 func NewContainer() Container {
-	c := Container{
+	return &Type{
 		definitions: make(map[string]*ServiceDefinition),
 		resolved:    make(map[string]interface{}),
 	}
-
-	return c
 }
 
-// Set will set the function for the given service
-func (c *Container) SetNonShared(key string, f ServiceFunc) {
+// SetNonShared will set the function for the given service. It is not shared, meaning you will get a new instance on each call to get
+func (c *Type) SetNonShared(key string, f ServiceFunc) {
 	c.definitions[key] = &ServiceDefinition{
 		Func: f,
 		Type: ServiceTypeNonShared,
@@ -73,8 +78,8 @@ func (c *Container) SetNonShared(key string, f ServiceFunc) {
 	delete(c.resolved, key)
 }
 
-// Set will set the function for the given service
-func (c *Container) SetShared(key string, f ServiceFunc) {
+// SetShared will set the function for the given service. It will return a shared instance on each call to get
+func (c *Type) SetShared(key string, f ServiceFunc) {
 	c.definitions[key] = &ServiceDefinition{
 		Func: f,
 		Type: ServiceTypeShared,
@@ -84,9 +89,15 @@ func (c *Container) SetShared(key string, f ServiceFunc) {
 	delete(c.resolved, key)
 }
 
+// Has will return true when the definition exists
+func (c *Type) Has(key string) bool {
+	_, ok := c.definitions[key]
+
+	return ok
+}
 
 // Get will retrieve the function for the given service, or nil when not found
-func (c *Container) Get(key string) interface{} {
+func (c *Type) Get(key string) interface{} {
 	s, ok := c.definitions[key]
 	if !ok {
 		return nil

@@ -20,12 +20,9 @@
 package handlers
 
 import (
-	"errors"
-
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
-	"golang.org/x/sync/errgroup"
 )
 
 // ComposeMessage composes a new message from the given account Info to the "to" with given subject, blocks and attachments
@@ -47,54 +44,4 @@ func ComposeMessage(addressing message.Addressing, subject string, b, a []string
 		return err
 	}
 	return nil
-}
-
-func uploadToServer(addressing message.Addressing, envelope *message.Envelope) error {
-	client, err := api.NewAuthenticated(addressing.Sender.Address, addressing.Sender.PrivKey, addressing.Sender.Host)
-	if err != nil {
-		return err
-	}
-
-	// Get upload ticket
-	t, err := client.GetTicket(envelope.Header.From.Addr, envelope.Header.To.Addr, "")
-	if err != nil {
-		return errors.New("cannot get ticket from server: " + err.Error())
-	}
-	if !t.Valid {
-		return errors.New("invalid ticket returned by server")
-	}
-
-	// parallelize uploads
-	g := new(errgroup.Group)
-	g.Go(func() error {
-		return client.UploadHeader(*t, envelope.Header)
-	})
-	g.Go(func() error {
-		return client.UploadCatalog(*t, envelope.EncryptedCatalog)
-	})
-	for id, r := range envelope.BlockReaders {
-		// Store locally, otherwise the anonymous go function doesn't know which "id" and "r"
-		id := id
-		r := r
-		g.Go(func() error {
-			return client.UploadBlock(*t, id, *r)
-		})
-	}
-	for id, r := range envelope.AttachmentReaders {
-		// Store locally, otherwise the anonymous go function doesn't know which "id" and "r"
-		id := id
-		r := r
-		g.Go(func() error {
-			return client.UploadBlock(*t, id, *r)
-		})
-	}
-
-	// Wait until all are completed
-	if err := g.Wait(); err != nil {
-		_ = client.DeleteMessage(*t)
-		return err
-	}
-
-	// All done, mark upload as completed
-	return client.CompleteUpload(*t)
 }

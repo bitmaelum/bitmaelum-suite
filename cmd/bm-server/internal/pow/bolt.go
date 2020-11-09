@@ -17,7 +17,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package proof_of_work
+package pow
 
 import (
 	"encoding/json"
@@ -33,10 +33,10 @@ type boltStorage struct {
 	client *bolt.DB
 }
 
-//BucketName is the bucket name to store the invitations on the bolt db
+// BucketName is the bucket name to store the invitations on the bolt db
 const BucketName = "pow"
 
-//BoltDBFile is the filename to store the boltdb database
+// BoltDBFile is the filename to store the boltdb database
 const BoltDBFile = "pow.db"
 
 // NewBolt initializes a new repository

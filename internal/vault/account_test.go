@@ -41,7 +41,7 @@ func TestVaultAccount(t *testing.T) {
 	}
 	v.AddAccount(acc)
 	assert.Len(t, v.Store.Accounts, 1)
-	assert.Equal(t, "example!", v.Store.Accounts[0].Address)
+	assert.Equal(t, "example!", v.Store.Accounts[0].Address.String())
 
 	a, _ := address.NewAddress("example!")
 	assert.True(t, v.HasAccount(*a))
@@ -52,7 +52,7 @@ func TestVaultAccount(t *testing.T) {
 	a, _ = address.NewAddress("example!")
 	o, err := v.GetAccountInfo(*a)
 	assert.NoError(t, err)
-	assert.Equal(t, "example!", o.Address)
+	assert.Equal(t, "example!", o.Address.String())
 
 	a, _ = address.NewAddress("notexist!")
 	o, err = v.GetAccountInfo(*a)
@@ -98,12 +98,12 @@ func TestVaultGetDefaultAccount(t *testing.T) {
 	assert.Len(t, v.Store.Accounts, 3)
 
 	da := v.GetDefaultAccount()
-	assert.Equal(t, "acc2!", da.Address)
+	assert.Equal(t, "acc2!", da.Address.String())
 
 	// Without default set, pick the first
 	v.Store.Accounts[1].Default = false
 	da = v.GetDefaultAccount()
-	assert.Equal(t, "acc1!", da.Address)
+	assert.Equal(t, "acc1!", da.Address.String())
 
 	v, _ = New("", []byte{})
 	da = v.GetDefaultAccount()

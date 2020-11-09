@@ -41,7 +41,7 @@ func TestGenerateJWTToken(t *testing.T) {
 		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)
 	}
 
-	data, _ := ioutil.ReadFile("../testdata/privkey.rsa")
+	data, _ := ioutil.ReadFile("../../testdata/privkey.rsa")
 	privKey, err := bmcrypto.NewPrivKey(string(data))
 	assert.Nil(t, err)
 
@@ -53,7 +53,7 @@ func TestGenerateJWTToken(t *testing.T) {
 }
 
 func TestValidateJwtTokenExpiry(t *testing.T) {
-	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
+	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
 	pubKey, _ := bmcrypto.NewPubKey(string(data))
 	haddr := hash.New("test!")
 
@@ -100,7 +100,7 @@ func TestValidateJWTToken(t *testing.T) {
 		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)
 	}
 
-	data, _ := ioutil.ReadFile("../testdata/pubkey.rsa")
+	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
 	pubKey, _ := bmcrypto.NewPubKey(string(data))
 
 	haddr := hash.New("test!")

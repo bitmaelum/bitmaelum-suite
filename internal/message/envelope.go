@@ -56,6 +56,7 @@ type Addressing struct {
 	}
 }
 
+// NewAddressing sets up a new addressing struct that can be used for composing and sending a message
 func NewAddressing(senderAddress address.Address, senderPrivKey *bmcrypto.PrivKey, host string, recipientAddress address.Address, recipientPubKey *bmcrypto.PubKey) Addressing {
 	return Addressing{
 		Sender: struct {
@@ -68,8 +69,8 @@ func NewAddressing(senderAddress address.Address, senderPrivKey *bmcrypto.PrivKe
 			Host:    host,
 		},
 		Recipient: struct {
-            Address address.Address
-            PubKey  *bmcrypto.PubKey
+			Address address.Address
+			PubKey  *bmcrypto.PubKey
 		}{
 			Address: recipientAddress,
 			PubKey:  recipientPubKey,

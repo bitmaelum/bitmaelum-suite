@@ -134,8 +134,8 @@ func TestGetAccountOrDefault(t *testing.T) {
 	v.AddAccount(*acc)
 
 	acc = GetAccountOrDefault(v, "")
-	assert.Equal(t, "example3!", acc.Address)
+	assert.Equal(t, "example3!", acc.Address.String())
 
 	acc = GetAccountOrDefault(v, "example2!")
-	assert.Equal(t, "example2!", acc.Address)
+	assert.Equal(t, "example2!", acc.Address.String())
 }

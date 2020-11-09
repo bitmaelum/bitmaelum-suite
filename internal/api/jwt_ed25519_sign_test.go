@@ -35,7 +35,7 @@ func TestSigningMethodEdDSAAlg(t *testing.T) {
 func TestSigningMethodEdDSASign(t *testing.T) {
 	m := &SigningMethodEdDSA{}
 
-	privKey, pubKey, _ := testing2.ReadTestKey("../testdata/key-ed25519-1.json")
+	privKey, pubKey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
 
 	s, err := m.Sign("foobar", privKey.K.(ed25519.PrivateKey))
 	assert.NoError(t, err)

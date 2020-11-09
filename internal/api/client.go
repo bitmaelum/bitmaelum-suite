@@ -84,8 +84,7 @@ func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string) 
 	})
 }
 
-// NewAuthenticated creates a new client that connects with the specified account to a BitMaelum server (normally
-// client-to-server communication)
+// NewClient creates a new client based on the given options
 func NewClient(opts ClientOpts) (*API, error) {
 	var transport http.RoundTripper
 

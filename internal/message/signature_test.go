@@ -102,7 +102,7 @@ func setupServer() {
 
 	// Setup container with mock repository for routing
 	repo, _ := resolver.NewMockRepository()
-	container.Set("resolver", func() (interface{}, error) {
+	container.Instance.SetShared("resolver", func() (interface{}, error) {
 		return resolver.KeyRetrievalService(repo), nil
 	})
 
@@ -159,7 +159,7 @@ func TestSignClientHeader(t *testing.T) {
 	assert.Empty(t, header.Signatures.Client)
 	err := SignClientHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedServerSignature, header.Signatures.Client)
+	assert.Equal(t, expectedClientSignature, header.Signatures.Client)
 
 	// Already present, don't overwrite
 	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
@@ -179,7 +179,7 @@ func TestVerifyClientHeader(t *testing.T) {
 	assert.Empty(t, header.Signatures.Client)
 	err := SignClientHeader(header, *privKey)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedServerSignature, header.Signatures.Client)
+	assert.Equal(t, expectedClientSignature, header.Signatures.Client)
 
 	// All is ok
 	ok := VerifyClientHeader(*header)
@@ -206,7 +206,7 @@ func setupClient() *bmcrypto.PrivKey {
 
 	// Setup container with mock repository for routing
 	repo, _ := resolver.NewMockRepository()
-	container.Set("resolver", func() (interface{}, error) {
+	container.Instance.SetShared("resolver", func() (interface{}, error) {
 		return resolver.KeyRetrievalService(repo), nil
 	})
 

@@ -27,33 +27,32 @@ import (
 )
 
 // Instance is the main bitmaelum service container
-var Instance = Container{
+var Instance = Type{
 	definitions: make(map[string]*ServiceDefinition),
 	resolved:    make(map[string]interface{}),
 }
 
 // GetAPIKeyRepo will return the current api key repository
-func (c *Container) GetAPIKeyRepo() key.APIKeyRepo {
+func (c *Type) GetAPIKeyRepo() key.APIKeyRepo {
 	return c.Get("api-key").(key.APIKeyRepo)
 }
 
 // GetAuthKeyRepo will return the current auth key repository
-func (c *Container) GetAuthKeyRepo() key.AuthKeyRepo {
+func (c *Type) GetAuthKeyRepo() key.AuthKeyRepo {
 	return c.Get("auth-key").(key.AuthKeyRepo)
 }
 
 // GetResolveService will return the current resolver service
-func (c *Container) GetResolveService() *resolver.Service {
+func (c *Type) GetResolveService() *resolver.Service {
 	return c.Get("resolver").(*resolver.Service)
 }
 
 // GetSubscriptionRepo will return the current subscription repository
-func (c *Container) GetSubscriptionRepo() subscription.Repository {
+func (c *Type) GetSubscriptionRepo() subscription.Repository {
 	return c.Get("subscription").(subscription.Repository)
 }
 
 // GetTicketRepo will return the current ticket repository
-func (c *Container) GetTicketRepo() ticket.Repository {
+func (c *Type) GetTicketRepo() ticket.Repository {
 	return c.Get("ticket").(ticket.Repository)
 }
-
