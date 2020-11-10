@@ -61,7 +61,7 @@ func main() {
 	}
 
 	config.LoadServerConfig(opts.Config)
-	internal.SetLogging(config.Server.Logging.Level, config.Server.Logging.LogPath)
+	internal.SetLogging(config.Server.Logging.Format, config.Server.Logging.Level, config.Server.Logging.LogPath)
 
 	checkAndUpdateRouting()
 

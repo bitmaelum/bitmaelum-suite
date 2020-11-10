@@ -32,11 +32,15 @@ import (
 var fs = afero.NewOsFs()
 
 // SetLogging will set the correct level and log path
-func SetLogging(level, path string) {
-	formatter := new(prefixed.TextFormatter)
-	formatter.FullTimestamp = true
-	formatter.TimestampFormat = time.Stamp
-	logrus.SetFormatter(formatter)
+func SetLogging(format, level, path string) {
+	if format == "json" {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	} else {
+		formatter := new(prefixed.TextFormatter)
+		formatter.FullTimestamp = true
+		formatter.TimestampFormat = time.Stamp
+		logrus.SetFormatter(formatter)
+	}
 
 	// Default to stderr
 	logrus.SetOutput(os.Stderr)

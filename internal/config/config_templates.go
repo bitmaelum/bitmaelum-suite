@@ -51,6 +51,9 @@ config:
     logging:
         # LogLevel: trace, debug, info, warn, error, crit
         log_level: trace
+
+        # Log format. Either text or json
+        log_format: text
         
         # Where to store logs. Can be one of the following:
         #   <path>,  
