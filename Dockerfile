@@ -15,4 +15,4 @@ COPY --from=builder /app/release/linux-amd64/bm-* /usr/bin/
 RUN mkdir /etc/bitmaelum && ln -sf /bitmaelum/server-config.yml /etc/bitmaelum/server-config.yml
 
 EXPOSE 2424
-CMD ./usr/bin/bm-server
+CMD /usr/bin/bm-server

@@ -146,6 +146,11 @@ build: info $(APPS) $(TOOLS) ## Build default platform binaries
 
 all: test build ## Run tests and build default platform binaries
 
+docker: ## Create docker image and push to dockerhub
+	$(info Building BitMaelum docker image)
+	docker build -t bitmaelum/bitmaelum-suite:latest .
+	docker push bitmaelum/bitmaelum-suite:latest
+
 help: ## Display available commands
 	echo "BitMaelum make commands"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
