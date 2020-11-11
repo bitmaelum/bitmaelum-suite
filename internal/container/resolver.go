@@ -43,11 +43,13 @@ func setupResolverService() (interface{}, error) {
 				_ = repo.Add(r)
 			}
 		}
+
+		// We add either the client or the server resolver
 		if config.Client.Resolver.Remote.Enabled {
-			_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHTTP))
+			_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHTTP, config.Client.Resolver.Remote.AllowInsecure))
 		}
 		if config.Server.Resolver.Remote.Enabled {
-			_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false))
+			_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false, config.Client.Resolver.Remote.AllowInsecure))
 		}
 
 		resolveService = resolver.KeyRetrievalService(repo)
@@ -56,8 +58,8 @@ func setupResolverService() (interface{}, error) {
 	return resolveService, nil
 }
 
-func getRemoteRepository(url string, debug bool) *resolver.Repository {
-	repo := resolver.NewRemoteRepository(url, debug)
+func getRemoteRepository(url string, debug, allowInsecure bool) *resolver.Repository {
+	repo := resolver.NewRemoteRepository(url, debug, allowInsecure)
 	return &repo
 }
 

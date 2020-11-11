@@ -96,8 +96,9 @@ type ServerConfig struct {
 		} `yaml:"sqlite"`
 
 		Remote struct {
-			Enabled bool   `yaml:"enabled"`
-			URL     string `yaml:"url"`
+			Enabled       bool   `yaml:"enabled"`
+			URL           string `yaml:"url"`
+			AllowInsecure bool   `yaml:"allow_insecure"`
 		} `yaml:"remote"`
 	} `yaml:"resolver"`
 }

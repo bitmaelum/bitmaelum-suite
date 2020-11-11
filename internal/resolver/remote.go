@@ -21,6 +21,7 @@ package resolver
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -66,8 +67,11 @@ type OrganisationDownload struct {
 }
 
 // NewRemoteRepository creates new remote resolve repository
-func NewRemoteRepository(baseURL string, debug bool) Repository {
-	var transport http.RoundTripper = &http.Transport{}
+func NewRemoteRepository(baseURL string, debug, allowInsecure bool) Repository {
+	var transport http.RoundTripper = &http.Transport{
+		// Allow insecure and self-signed certificates if so configured
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: allowInsecure},
+	}
 
 	if debug {
 		// Wrap transport in debug logging

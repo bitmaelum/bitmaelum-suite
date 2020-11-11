@@ -43,6 +43,9 @@ config:
             # Enable remote resolving
             enabled: true
             url: "https://resolver.bitmaelum.com"
+            # Allow insecure connections (to selfsigned certs)
+            allow_insecure: false
+
 `
 
 const serverConfigTemplate string = `# BitMaelum Server Configuration Template. Edit for your own needs.
@@ -155,6 +158,9 @@ config:
             enabled: true
             # URL to the remote resolver
             url: "https://resolver.bitmaelum.com"
+            # Allow insecure connections (to selfsigned certs)
+            allow_insecure: false
+
 `
 
 // GenerateClientConfig Generates a default client configuration

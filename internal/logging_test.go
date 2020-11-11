@@ -32,20 +32,20 @@ import (
 func TestSetLogging(t *testing.T) {
 	std := logrus.StandardLogger()
 
-	SetLogging("trace", "stdout")
+	SetLogging("text", "trace", "stdout")
 	assert.Equal(t, logrus.TraceLevel, std.Level)
-	SetLogging("debug", "stdout")
+	SetLogging("text", "debug", "stdout")
 	assert.Equal(t, logrus.DebugLevel, std.Level)
-	SetLogging("info", "stdout")
+	SetLogging("text", "info", "stdout")
 	assert.Equal(t, logrus.InfoLevel, std.Level)
-	SetLogging("warning", "stdout")
+	SetLogging("text", "warning", "stdout")
 	assert.Equal(t, logrus.WarnLevel, std.Level)
-	SetLogging("error", "stdout")
+	SetLogging("text", "error", "stdout")
 	assert.Equal(t, logrus.ErrorLevel, std.Level)
 
 	// incorrect setting
-	SetLogging("debug", "stdout")
-	SetLogging("foobar", "stdout")
+	SetLogging("text", "debug", "stdout")
+	SetLogging("text", "foobar", "stdout")
 	assert.Equal(t, logrus.ErrorLevel, std.Level)
 }
 
@@ -54,13 +54,13 @@ func TestOutput(t *testing.T) {
 	std := logrus.StandardLogger()
 
 	// Test output
-	SetLogging("debug", "stdout")
+	SetLogging("text", "debug", "stdout")
 	assert.Equal(t, os.Stdout, std.Out)
 
-	SetLogging("debug", "stderr")
+	SetLogging("text", "debug", "stderr")
 	assert.Equal(t, os.Stderr, std.Out)
 
-	SetLogging("debug", "/path/to/file.log")
+	SetLogging("text", "debug", "/path/to/file.log")
 	ok, _ := afero.Exists(fs, "/path/to/file.log")
 	assert.True(t, ok)
 	assert.IsType(t, &mem.File{}, std.Out)
@@ -69,9 +69,9 @@ func TestOutput(t *testing.T) {
 func TestSyslog(t *testing.T) {
 	std := logrus.StandardLogger()
 
-	SetLogging("debug", "syslog")
+	SetLogging("text", "debug", "syslog")
 	assert.Equal(t, os.Stderr, std.Out)
 
-	SetLogging("debug", "syslog:syslog.io:12345")
+	SetLogging("text", "debug", "syslog:syslog.io:12345")
 	assert.Equal(t, os.Stderr, std.Out)
 }
