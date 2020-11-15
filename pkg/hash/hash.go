@@ -33,8 +33,8 @@ var (
 )
 
 var (
-	// EmptyOrgHash is a hash of an empty string. Used for checking against empty org hashes
-	EmptyOrgHash = New("")
+	// emptyOrgHash is a hash of an empty string. Used for checking against empty org hashes
+	emptyOrgHash = New("")
 )
 
 // Hash is a hashed entity. This could be an address, localpart, organisation part or anything else. Currently only
@@ -69,6 +69,11 @@ func (ha Hash) String() string {
 // Byte casts an hash address to string
 func (ha Hash) Byte() []byte {
 	return []byte(ha)
+}
+
+// IsEmpty returns true when this hash is of an empty string
+func (ha Hash) IsEmpty() bool {
+	return ha.String() == emptyOrgHash.String()
 }
 
 // Verify will check if the hashes for local and org found matches the actual target hash
