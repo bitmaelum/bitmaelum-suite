@@ -58,6 +58,8 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 	switch key.Type {
 	case bmcrypto.KeyTypeRSA:
 		signMethod = jwt.SigningMethodRS256
+	case bmcrypto.KeyTypeRSAV1:
+		signMethod = jwt.SigningMethodRS256
 	case bmcrypto.KeyTypeECDSA:
 		signMethod = jwt.SigningMethodES384
 	case bmcrypto.KeyTypeED25519:
@@ -94,6 +96,12 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	// Make sure the token actually uses the correct signing method
 	switch key.Type {
 	case bmcrypto.KeyTypeRSA:
+		_, ok := token.Method.(*jwt.SigningMethodRSA)
+		if !ok {
+			logrus.Tracef("auth: jwt: " + invalidSigningMethod)
+			return nil, errors.New(invalidSigningMethod)
+		}
+	case bmcrypto.KeyTypeRSAV1:
 		_, ok := token.Method.(*jwt.SigningMethodRSA)
 		if !ok {
 			logrus.Tracef("auth: jwt: " + invalidSigningMethod)

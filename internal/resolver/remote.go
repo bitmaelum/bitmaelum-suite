@@ -30,6 +30,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -156,21 +157,18 @@ func (r *remoteRepo) resolve(url string, v interface{}) error {
 	return ErrKeyNotFound
 }
 
-func (r *remoteRepo) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
-	// Do a prefetch so we can get the current serial number
-	addr, err := hash.NewFromHash(info.Hash)
-	if err != nil {
-		return err
-	}
-
+func (r *remoteRepo) UploadAddress(addr address.Address, info *AddressInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork, orgToken string) error {
 	// Fetch the current serial number (if record is present)
 	var serial uint64
-	kd, err := r.fetchAddress(*addr)
+	kd, err := r.fetchAddress(addr.Hash())
 	if err == nil {
 		serial = kd.Serial
 	}
 
 	data := &map[string]string{
+		"user_hash":  addr.LocalHash().String(),
+		"org_hash":   addr.OrgHash().String(),
+		"org_token":  orgToken,
 		"public_key": info.PublicKey.String(),
 		"routing_id": info.RoutingID,
 		"proof":      proof.String(),
@@ -333,9 +331,13 @@ func logHTTP(v interface{}, err error) {
 
 	switch v := v.(type) {
 	case *http.Request:
-		data, err = httputil.DumpRequest(v, true)
+		if v != nil {
+			data, err = httputil.DumpRequest(v, true)
+		}
 	case *http.Response:
-		data, err = httputil.DumpResponse(v, true)
+		if v != nil {
+			data, err = httputil.DumpResponse(v, true)
+		}
 	}
 	if err != nil {
 		logrus.Tracef("%s\n\n", err)

@@ -34,7 +34,7 @@ func Encrypt(pubKey PubKey, message []byte) ([]byte, string, string, error) {
 	}
 
 	switch pubKey.Type {
-	case KeyTypeRSA:
+	case KeyTypeRSA, KeyTypeRSAV1:
 		encryptedMessage, err := encryptRsa(pubKey.K.(*rsa.PublicKey), message)
 		return encryptedMessage, "", "rsa+aes256gcm", err
 		// TODO: Implement KeyTypeECDSA
@@ -42,7 +42,7 @@ func Encrypt(pubKey PubKey, message []byte) ([]byte, string, string, error) {
 		return encryptED25519(pubKey, message)
 	}
 
-	return nil, "", "", errors.New("encryption not implemented for" + pubKey.Type)
+	return nil, "", "", errors.New("encryption not implemented for" + pubKey.Type.String())
 }
 
 // Decrypt a message with the given key
@@ -52,7 +52,7 @@ func Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
 	}
 
 	switch key.Type {
-	case KeyTypeRSA:
+	case KeyTypeRSA, KeyTypeRSAV1:
 		return decryptRsa(key.K.(*rsa.PrivateKey), message)
 	// TODO: Implement KeyTypeECDSA
 	case KeyTypeED25519:
@@ -60,7 +60,7 @@ func Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
 
 	}
 
-	return nil, errors.New("encryption not implemented for" + key.Type)
+	return nil, errors.New("encryption not implemented for" + key.Type.String())
 }
 
 func encryptRsa(key *rsa.PublicKey, message []byte) ([]byte, error) {

@@ -26,6 +26,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
@@ -86,6 +87,8 @@ func TestVerifyHeader(t *testing.T) {
 }
 
 func setup() *bmcrypto.PrivKey {
+	addr, _ := address.NewAddress("foobar!")
+
 	// Setup container with mock repository for routing
 	repo, _ := resolver.NewMockRepository()
 	container.Set("resolver", func() (interface{}, error) {
@@ -109,7 +112,7 @@ func setup() *bmcrypto.PrivKey {
 		Pow:         pow.String(),
 		Hash:        "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
 	}
-	_ = repo.UploadAddress(&ai, *privKey, *pow)
+	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
 
 	ri = resolver.RoutingInfo{
 		PublicKey: *pubKey,
@@ -132,7 +135,7 @@ func setup() *bmcrypto.PrivKey {
 		Hash:        "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
 		Pow:         pow.String(),
 	}
-	_ = repo.UploadAddress(&ai, *privKey, *pow)
+	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
 
 	return privKey
 }

@@ -54,7 +54,7 @@ func TestRSAPubKey(t *testing.T) {
 	// Correct
 	pk, err := NewPubKey(TestKeySet1[0])
 	assert.NoError(t, err)
-	assert.Equal(t, "rsa", pk.Type)
+	assert.Equal(t, "rsa", pk.Type.String())
 	assert.Equal(t, "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB", pk.S)
 	assert.Equal(t, 65537, pk.K.(*rsa.PublicKey).E)
 	assert.Equal(t, "", pk.Description)
@@ -78,7 +78,7 @@ func TestRSAPubKey(t *testing.T) {
 	pk, _ = NewPubKey(TestKeySet1[0])
 	npk, err := NewPubKeyFromInterface(pk.K)
 	assert.NoError(t, err)
-	assert.Equal(t, "rsa", npk.Type)
+	assert.Equal(t, "rsa", npk.Type.String())
 	assert.Equal(t, "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB", npk.S)
 	assert.Equal(t, pk.K, npk.K.(*rsa.PublicKey))
 	assert.Equal(t, "", npk.Description)
@@ -89,14 +89,14 @@ func TestED25519PubKey(t *testing.T) {
 	// Correct ED25519
 	pk, err := NewPubKey(TestKeySet2[0])
 	assert.NoError(t, err)
-	assert.Equal(t, "ed25519", pk.Type)
+	assert.Equal(t, "ed25519", pk.Type.String())
 	assert.Equal(t, "MCowBQYDK2VwAyEAOT5K9VqRFjJ2Q0RWWqT8+OndKQrmzXCuMTSnhfvVpws=", pk.S)
 	assert.Equal(t, key, pk.K.(ed25519.PublicKey))
 	assert.Equal(t, "my foo bar", pk.Description)
 
 	pk, err = NewPubKeyFromInterface(key)
 	assert.NoError(t, err)
-	assert.Equal(t, "ed25519", pk.Type)
+	assert.Equal(t, "ed25519", pk.Type.String())
 	assert.Equal(t, "MCowBQYDK2VwAyEAOT5K9VqRFjJ2Q0RWWqT8+OndKQrmzXCuMTSnhfvVpws=", pk.S)
 	assert.Equal(t, key, pk.K.(ed25519.PublicKey))
 	assert.Equal(t, "", pk.Description)
@@ -110,7 +110,7 @@ func TestECDSAPub(t *testing.T) {
 
 	pk, err := NewPubKey(TestKeySet3[0])
 	assert.NoError(t, err)
-	assert.Equal(t, "ecdsa", pk.Type)
+	assert.Equal(t, "ecdsa", pk.Type.String())
 	assert.Equal(t, "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE58d01mIg3iWGqBHY7N6ch4L4LWya8Es2luWC08Wjn994nLgIOUp+cdMUfDYBe/x1aPE/yghGe3rrF4jW8uxVWy40BZK4NIu5yjMgSw0WBGTxOmZsVaA/xaOzvZSMTXxM", pk.S)
 	assert.Equal(t, x, pk.K.(*ecdsa.PublicKey).X)
 	assert.Equal(t, y, pk.K.(*ecdsa.PublicKey).Y)
@@ -128,7 +128,7 @@ func TestECDSAPriv(t *testing.T) {
 
 	pk, err := NewPrivKey(TestKeySet4[0])
 	assert.NoError(t, err)
-	assert.Equal(t, "ecdsa", pk.Type)
+	assert.Equal(t, "ecdsa", pk.Type.String())
 	assert.Equal(t, "MIGkAgEBBDBLD4tDPxb/Xw2SzOsDEwl42LinqQmlWmcusiQJSnHn2VJsHzTuBoj7zE0dGhBS/ESgBwYFK4EEACKhZANiAATnx3TWYiDeJYaoEdjs3pyHgvgtbJrwSzaW5YLTxaOf33icuAg5Sn5x0xR8NgF7/HVo8T/KCEZ7eusXiNby7FVbLjQFkrg0i7nKMyBLDRYEZPE6ZmxVoD/Fo7O9lIxNfEw=", pk.S)
 	assert.Equal(t, d, pk.K.(*ecdsa.PrivateKey).D)
 	assert.Equal(t, "P-384", pk.K.(*ecdsa.PrivateKey).Curve.Params().Name)
@@ -139,13 +139,13 @@ func TestED25519Priv(t *testing.T) {
 
 	pk, err := NewPrivKey(TestKeySet5[0])
 	assert.NoError(t, err)
-	assert.Equal(t, "ed25519", pk.Type)
+	assert.Equal(t, "ed25519", pk.Type.String())
 	assert.Equal(t, "MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7", pk.S)
 	assert.Equal(t, b, pk.K.(ed25519.PrivateKey).Seed())
 
 	npk, err := NewPrivKeyFromInterface(pk.K)
 	assert.NoError(t, err)
-	assert.Equal(t, "ed25519", pk.Type)
+	assert.Equal(t, "ed25519", pk.Type.String())
 	assert.Equal(t, "MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7", pk.S)
 	assert.Equal(t, pk.K, npk.K.(ed25519.PrivateKey))
 }
@@ -163,7 +163,7 @@ func TestIncorrectKeys(t *testing.T) {
 func TestPrivateKeyJSON(t *testing.T) {
 	pk, err := NewPrivKey(TestKeySet5[0])
 	assert.NoError(t, err)
-	assert.Equal(t, "ed25519", pk.Type)
+	assert.Equal(t, "ed25519", pk.Type.String())
 
 	data, err := pk.MarshalJSON()
 	assert.NoError(t, err)
@@ -175,7 +175,7 @@ func TestPrivateKeyJSON(t *testing.T) {
 	foo := &PrivKey{}
 	err = foo.UnmarshalJSON([]byte("\"ed25519 MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7\""))
 	assert.NoError(t, err)
-	assert.Equal(t, "ed25519", foo.Type)
+	assert.Equal(t, "ed25519", foo.Type.String())
 	assert.Equal(t, "MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7", foo.S)
 }
 
@@ -183,7 +183,7 @@ func TestPubKeyJSON(t *testing.T) {
 	// Pub keys
 	pk, err := NewPubKey(TestKeySet1[0])
 	assert.NoError(t, err)
-	assert.Equal(t, "rsa", pk.Type)
+	assert.Equal(t, "rsa", pk.Type.String())
 
 	data, err := pk.MarshalJSON()
 	assert.NoError(t, err)
@@ -195,7 +195,7 @@ func TestPubKeyJSON(t *testing.T) {
 	foo := &PubKey{}
 	err = foo.UnmarshalJSON([]byte("\"rsa MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB\""))
 	assert.NoError(t, err)
-	assert.Equal(t, "rsa", foo.Type)
+	assert.Equal(t, "rsa", foo.Type.String())
 	assert.Equal(t, "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB", foo.S)
 }
 

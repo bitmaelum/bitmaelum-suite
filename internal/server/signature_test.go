@@ -27,6 +27,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/stretchr/testify/assert"
 )
@@ -87,6 +88,8 @@ func TestVerifyHeader(t *testing.T) {
 }
 
 func setup() {
+	addr, _ := address.NewAddress("foobar!")
+
 	// Note: our mail server uses key1
 	privKey, pubKey, err := bmtest.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
@@ -121,7 +124,7 @@ func setup() {
 		Pow:         pow.String(),
 		RoutingInfo: resolver.RoutingInfo{},
 	}
-	_ = repo.UploadAddress(&ai, *privKey, *pow)
+	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
 
 	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-3.json")
 	if err != nil {
@@ -134,7 +137,7 @@ func setup() {
 		Pow:         pow.String(),
 		RoutingInfo: resolver.RoutingInfo{},
 	}
-	_ = repo.UploadAddress(&ai, *privKey, *pow)
+	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
 
 	// Note: our mail server uses key1
 	privKey, pubKey, err = bmtest.ReadTestKey("../../testdata/key-1.json")

@@ -20,6 +20,7 @@
 package resolver
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -69,9 +70,9 @@ func (r *ChainRepository) ResolveRouting(routingID string) (*RoutingInfo, error)
 }
 
 // ResolveOrganisation resolves organisation
-func (r *ChainRepository) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
+func (r *ChainRepository) ResolveOrganisation(hash hash.Hash) (*OrganisationInfo, error) {
 	for idx := range r.repos {
-		info, err := r.repos[idx].ResolveOrganisation(orgHash)
+		info, err := r.repos[idx].ResolveOrganisation(hash)
 		if err == nil {
 			return info, nil
 		}
@@ -81,9 +82,9 @@ func (r *ChainRepository) ResolveOrganisation(orgHash hash.Hash) (*OrganisationI
 }
 
 // UploadAddress public key through the chained repos
-func (r *ChainRepository) UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
+func (r *ChainRepository) UploadAddress(addr address.Address, info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork, orgToken string) error {
 	for idx := range r.repos {
-		err := r.repos[idx].UploadAddress(info, privKey, pow)
+		err := r.repos[idx].UploadAddress(addr, info, privKey, pow, orgToken)
 		if err != nil {
 			return err
 		}

@@ -49,7 +49,7 @@ func setupResolverService() (interface{}, error) {
 			_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHTTP, config.Client.Resolver.Remote.AllowInsecure))
 		}
 		if config.Server.Resolver.Remote.Enabled {
-			_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false, config.Client.Resolver.Remote.AllowInsecure))
+			_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false, config.Server.Resolver.Remote.AllowInsecure))
 		}
 
 		resolveService = resolver.KeyRetrievalService(repo)

@@ -64,8 +64,8 @@ func TestClientConfig(t *testing.T) {
 
 	Client.Accounts.ProofOfWork = 0
 	err = LoadClientConfigOrPass("")
-	assert.NoError(t, err)
-	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
+	assert.Error(t, err)
+	assert.Equal(t, 0, Client.Accounts.ProofOfWork)
 
 	// Read from non-existing env
 	Client.Accounts.ProofOfWork = 0
@@ -113,8 +113,8 @@ func TestServerConfig(t *testing.T) {
 	// Read from predetermined paths
 	Server.Accounts.ProofOfWork = 0
 	err = LoadServerConfigOrPass("")
-	assert.NoError(t, err)
-	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
+	assert.Error(t, err)
+	assert.Equal(t, 0, Server.Accounts.ProofOfWork)
 
 	// Read from non-existing env
 	Server.Accounts.ProofOfWork = 0

@@ -17,16 +17,17 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package bmcrypto
+package internal
 
 import (
 	"testing"
 
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateED25519KeypairFromMnemonic(t *testing.T) {
-	s, priv1, pub1, err := GenerateKeypairWithMnemonic(KeyTypeED25519)
+	s, priv1, pub1, err := GenerateKeypairWithMnemonic(bmcrypto.KeyTypeED25519)
 	assert.NoError(t, err)
 
 	priv2, pub2, err := GenerateKeypairFromMnemonic(s)
@@ -37,7 +38,7 @@ func TestGenerateED25519KeypairFromMnemonic(t *testing.T) {
 }
 
 func TestGenerateRSAKeypairFromMnemonic(t *testing.T) {
-	s, priv1, pub1, err := GenerateKeypairWithMnemonic(KeyTypeRSA)
+	s, priv1, pub1, err := GenerateKeypairWithMnemonic(bmcrypto.KeyTypeRSA)
 	assert.NoError(t, err)
 
 	priv2, pub2, err := GenerateKeypairFromMnemonic(s)

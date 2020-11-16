@@ -25,6 +25,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -164,7 +165,7 @@ func (r *sqliteRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, 
 	}, nil
 }
 
-func (r *sqliteRepo) UploadAddress(info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork) error {
+func (r *sqliteRepo) UploadAddress(addr address.Address, info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork, orgToken string) error {
 	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , routing_id) VALUES (?, ?, ?)", addressTableName)
 	st, err := r.conn.Prepare(query)
 	if err != nil {

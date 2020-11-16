@@ -33,7 +33,7 @@ var generateKeyCmd = &cobra.Command{
 	Short: "Generates a new key",
 	Long:  `This command generates a new key`,
 	Run: func(cmd *cobra.Command, args []string) {
-		privKey, pubKey, err := bmcrypto.GenerateKeyPair(*keyType)
+		privKey, pubKey, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyType(*keyType))
 		if err != nil {
 			logrus.Fatal(err)
 		}

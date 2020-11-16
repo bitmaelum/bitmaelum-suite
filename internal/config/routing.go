@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/spf13/afero"
@@ -79,7 +80,7 @@ func SaveRouting(p string, routing *RoutingConfig) error {
 
 // GenerateRoutingFromMnemonic generates a new routing file from the given seed
 func GenerateRoutingFromMnemonic(mnemonic string) (*RoutingConfig, error) {
-	privKey, pubKey, err := bmcrypto.GenerateKeypairFromMnemonic(mnemonic)
+	privKey, pubKey, err := internal.GenerateKeypairFromMnemonic(mnemonic)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +95,7 @@ func GenerateRoutingFromMnemonic(mnemonic string) (*RoutingConfig, error) {
 
 // GenerateRouting generates a new routing structure
 func GenerateRouting() (string, *RoutingConfig, error) {
-	mnemonic, privKey, pubKey, err := bmcrypto.GenerateKeypairWithMnemonic(bmcrypto.KeyTypeED25519)
+	mnemonic, privKey, pubKey, err := internal.GenerateKeypairWithMnemonic(bmcrypto.KeyTypeED25519)
 	if err != nil {
 		return "", nil, err
 	}

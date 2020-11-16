@@ -22,6 +22,7 @@ package resolver
 import (
 	"errors"
 
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -39,8 +40,8 @@ type Repository interface {
 
 // AddressRepository is the interface to manage address resolving
 type AddressRepository interface {
-	ResolveAddress(addr hash.Hash) (*AddressInfo, error)
-	UploadAddress(info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
+	ResolveAddress(hash hash.Hash) (*AddressInfo, error)
+	UploadAddress(addr address.Address, info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork, orgToken string) error
 	DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error
 }
 
@@ -53,7 +54,7 @@ type RoutingRepository interface {
 
 // OrganisationRepository is the interface to manage organisation resolving
 type OrganisationRepository interface {
-	ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error)
+	ResolveOrganisation(hash hash.Hash) (*OrganisationInfo, error)
 	UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
 	DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error
 }

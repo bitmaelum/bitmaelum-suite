@@ -27,14 +27,18 @@ import (
 	"errors"
 )
 
-var curveFunc = elliptic.P384
-var rsaBits int = 2048
+var (
+	curveFunc = elliptic.P384     // Curve used for ECDSA
+	RsaBits   = []int{2048, 4096} // RSA key sizes
+)
 
 // GenerateKeyPair generates a private/public keypair based on the given type
-func GenerateKeyPair(kt string) (*PrivKey, *PubKey, error) {
+func GenerateKeyPair(kt KeyType) (*PrivKey, *PubKey, error) {
 	switch kt {
 	case KeyTypeRSA:
-		return generateKeyPairRSA()
+		return generateKeyPairRSA(0)
+	case KeyTypeRSAV1:
+		return generateKeyPairRSA(1)
 	case KeyTypeECDSA:
 		return generateKeyPairECDSA()
 	case KeyTypeED25519:
@@ -44,8 +48,8 @@ func GenerateKeyPair(kt string) (*PrivKey, *PubKey, error) {
 	return nil, nil, errors.New("incorrect key type specified")
 }
 
-func generateKeyPairRSA() (*PrivKey, *PubKey, error) {
-	privRSAKey, err := rsa.GenerateKey(randReader, rsaBits)
+func generateKeyPairRSA(version int) (*PrivKey, *PubKey, error) {
+	privRSAKey, err := rsa.GenerateKey(randReader, RsaBits[version])
 	if err != nil {
 		return nil, nil, err
 	}
@@ -57,6 +61,16 @@ func generateKeyPairRSA() (*PrivKey, *PubKey, error) {
 	pubKey, err := NewPubKeyFromInterface(privKey.K.(*rsa.PrivateKey).Public())
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// Set the correct version of the key, since rsa can have multiple versions
+	switch version {
+	case 0:
+		privKey.Type = KeyTypeRSA
+		pubKey.Type = KeyTypeRSA
+	case 1:
+		privKey.Type = KeyTypeRSAV1
+		pubKey.Type = KeyTypeRSAV1
 	}
 
 	return privKey, pubKey, nil

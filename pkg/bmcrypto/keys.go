@@ -29,21 +29,26 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 )
 
+type KeyType string
+
+func (kt KeyType) String() string {
+	return string(kt)
+}
+
 const (
-	// KeyTypeRSA defines RSA keys
-	KeyTypeRSA string = "rsa"
-	// KeyTypeECDSA defines ECDSA keys
-	KeyTypeECDSA string = "ecdsa"
-	// KeyTypeED25519 defines ED25519 keys
-	KeyTypeED25519 string = "ed25519"
+	KeyTypeRSA     KeyType = "rsa"
+	KeyTypeECDSA   KeyType = "ecdsa"
+	KeyTypeED25519 KeyType = "ed25519"
+	KeyTypeRSAV1   KeyType = "rsav1"
 )
 
 // PrivKey is a structure containing a private key in multiple formats
 type PrivKey struct {
-	Type string      // Type of the private key
+	Type KeyType     // Type of the private key
 	S    string      // String representation <type> <PEM key>
 	B    []byte      // Byte representation of string
 	K    interface{} // Key interface{}
@@ -51,7 +56,7 @@ type PrivKey struct {
 
 // PubKey is a structure containing a public key in multiple formats
 type PubKey struct {
-	Type        string      // Type of the the private key
+	Type        KeyType     // Type of the the private key
 	S           string      // String representation <type> <PEM key> <description>
 	B           []byte      // Byte representation of string
 	K           interface{} // Key interface{}
@@ -65,7 +70,7 @@ func (pk *PubKey) MarshalJSON() ([]byte, error) {
 
 // String converts a key to "<type> <key> <description>"
 func (pk *PubKey) String() string {
-	return strings.TrimSpace(pk.Type + " " + pk.S + " " + pk.Description)
+	return strings.TrimSpace(pk.Type.String() + " " + pk.S + " " + pk.Description)
 }
 
 // Fingerprint return the fingerprint of the key
@@ -100,7 +105,7 @@ func (pk *PrivKey) MarshalJSON() ([]byte, error) {
 
 // Strings returns the key in a textual representation
 func (pk *PrivKey) String() string {
-	return pk.Type + " " + pk.S
+	return fmt.Sprintf("%s %s", pk.Type, pk.S)
 }
 
 // UnmarshalJSON unmarshals bytes into a key
@@ -123,12 +128,12 @@ func (pk *PrivKey) UnmarshalJSON(b []byte) error {
 
 // CanEncrypt returns true if the key(type) is able to be used for encryption/decryption
 func (pk *PubKey) CanEncrypt() bool {
-	return pk.Type == KeyTypeRSA
+	return pk.Type == KeyTypeRSA || pk.Type == KeyTypeRSAV1
 }
 
 // CanEncrypt returns true if the key(type) is able to be used for encryption/decryption
 func (pk *PrivKey) CanEncrypt() bool {
-	return pk.Type == KeyTypeRSA
+	return pk.Type == KeyTypeRSA || pk.Type == KeyTypeRSAV1
 }
 
 // CanKeyExchange returns true if the key(type) is able to be used for key exchange
@@ -153,9 +158,11 @@ func NewPubKey(data string) (*PubKey, error) {
 	parts := strings.SplitN(data, " ", 3)
 
 	// Check and set type
-	switch strings.ToLower(parts[0]) {
+	switch KeyType(parts[0]) {
 	case KeyTypeRSA:
 		pk.Type = KeyTypeRSA
+	case KeyTypeRSAV1:
+		pk.Type = KeyTypeRSAV1
 	case KeyTypeECDSA:
 		pk.Type = KeyTypeECDSA
 	case KeyTypeED25519:
@@ -199,9 +206,11 @@ func NewPrivKey(data string) (*PrivKey, error) {
 	parts := strings.SplitN(data, " ", 2)
 
 	// Check and set type
-	switch strings.ToLower(parts[0]) {
+	switch KeyType(parts[0]) {
 	case KeyTypeRSA:
 		pk.Type = KeyTypeRSA
+	case KeyTypeRSAV1:
+		pk.Type = KeyTypeRSAV1
 	case KeyTypeECDSA:
 		pk.Type = KeyTypeECDSA
 	case KeyTypeED25519:
@@ -240,20 +249,25 @@ func NewPrivKey(data string) (*PrivKey, error) {
 
 // NewPrivKeyFromInterface creates a new key based on an interface{} (like rsa.PrivateKey)
 func NewPrivKeyFromInterface(key interface{}) (*PrivKey, error) {
-	var t string
-	switch key.(type) {
+	var kt KeyType
+	switch v := key.(type) {
 	case *rsa.PrivateKey:
-		t = KeyTypeRSA
+		switch v.Size() {
+		case RsaBits[0]:
+			kt = KeyTypeRSA
+		case RsaBits[1]:
+			kt = KeyTypeRSAV1
+		}
 	case *ecdsa.PrivateKey:
-		t = KeyTypeECDSA
+		kt = KeyTypeECDSA
 	case ed25519.PrivateKey:
-		t = KeyTypeED25519
+		kt = KeyTypeED25519
 	default:
 		return nil, errors.New("unknown key type")
 	}
 
 	pk := &PrivKey{
-		Type: t,
+		Type: kt,
 		K:    key,
 	}
 
@@ -269,20 +283,21 @@ func NewPrivKeyFromInterface(key interface{}) (*PrivKey, error) {
 
 // NewPubKeyFromInterface creates a new key based on an interface{} (like rsa.PublicKey)
 func NewPubKeyFromInterface(key interface{}) (*PubKey, error) {
-	var t string
+	var kt KeyType
+
 	switch key.(type) {
 	case *rsa.PublicKey:
-		t = KeyTypeRSA
+		kt = KeyTypeRSA
 	case *ecdsa.PublicKey:
-		t = KeyTypeECDSA
+		kt = KeyTypeECDSA
 	case ed25519.PublicKey:
-		t = KeyTypeED25519
+		kt = KeyTypeED25519
 	default:
 		return nil, errors.New("unknown key type")
 	}
 
 	pk := &PubKey{
-		Type: t,
+		Type: kt,
 		K:    key,
 	}
 

@@ -20,6 +20,7 @@
 package resolver
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -66,7 +67,7 @@ func (r *mockRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, er
 	return nil, ErrKeyNotFound
 }
 
-func (r *mockRepo) UploadAddress(info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork) error {
+func (r *mockRepo) UploadAddress(addr address.Address, info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork, orgToken string) error {
 	r.address[info.Hash] = *info
 	return nil
 }

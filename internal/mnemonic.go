@@ -17,7 +17,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package bmcrypto
+package internal
 
 import (
 	"crypto/aes"
@@ -28,6 +28,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	deterministicRsaKeygen "github.com/cloudflare/gokey/rsa"
 	"github.com/tyler-smith/go-bip39"
 	"golang.org/x/crypto/hkdf"
@@ -44,17 +45,26 @@ func (dz devZero) Read(p []byte) (n int, err error) {
 }
 
 // GenerateRSAKeypairFromMnemonic generates a keypair based on the given mnemonic
-func GenerateRSAKeypairFromMnemonic(mnemonic string) (*PrivKey, *PubKey, error) {
+func GenerateRSAKeypairFromMnemonic(mnemonic string, keyType bmcrypto.KeyType) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	e, err := bip39.MnemonicToByteArray(mnemonic, true)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return genRSAKey(e)
+	var bits int
+	if keyType == bmcrypto.KeyTypeRSA {
+		bits = bmcrypto.RsaBits[0]
+	}
+	if keyType == bmcrypto.KeyTypeRSAV1 {
+		bits = bmcrypto.RsaBits[1]
+	}
+
+
+	return genRSAKey(e, bits)
 }
 
 // GenerateRSAKeypairWithMnemonic generates a mnemonic, and a RSA keypair that can be generated through the same mnemonic again.
-func GenerateRSAKeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
+func GenerateRSAKeypairWithMnemonic(version int) (string, *bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	// Generate large enough random string
 	e, err := bip39.NewEntropy(192)
 	if err != nil {
@@ -67,7 +77,7 @@ func GenerateRSAKeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
 		return "", nil, nil, err
 	}
 
-	privKey, pubKey, err := genRSAKey(e)
+	privKey, pubKey, err := genRSAKey(e, bmcrypto.RsaBits[version])
 	if err != nil {
 		return "", nil, nil, err
 	}
@@ -76,11 +86,13 @@ func GenerateRSAKeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
 }
 
 // GenerateKeypairFromMnemonic generates a keypair based on the given mnemonic
-func GenerateKeypairFromMnemonic(mnemonic string) (*PrivKey, *PubKey, error) {
+func GenerateKeypairFromMnemonic(mnemonic string) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
+	// @TODO: We should be able to use different kind of keys and such
+
 	// Check if it's a RSA mnemonic
 	words := strings.SplitN(mnemonic, " ", 2)
 	if strings.ToLower(words[0]) == "rsa" {
-		return GenerateRSAKeypairFromMnemonic(strings.Join(words[1:], " "))
+		return GenerateRSAKeypairFromMnemonic(strings.Join(words[1:], " "), bmcrypto.KeyTypeRSA)
 	}
 
 	e, err := bip39.MnemonicToByteArray(mnemonic, true)
@@ -92,11 +104,13 @@ func GenerateKeypairFromMnemonic(mnemonic string) (*PrivKey, *PubKey, error) {
 }
 
 // GenerateKeypairWithMnemonic generates a mnemonic, and a keypair that can be generated through the same mnemonic again.
-func GenerateKeypairWithMnemonic(kt string) (string, *PrivKey, *PubKey, error) {
+func GenerateKeypairWithMnemonic(kt bmcrypto.KeyType) (string, *bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	switch kt {
-	case KeyTypeRSA:
-		return GenerateRSAKeypairWithMnemonic()
-	case KeyTypeED25519:
+	case bmcrypto.KeyTypeRSA:
+		return GenerateRSAKeypairWithMnemonic(0)
+	case bmcrypto.KeyTypeRSAV1:
+		return GenerateRSAKeypairWithMnemonic(1)
+	case bmcrypto.KeyTypeED25519:
 		return GenerateED25519KeypairWithMnemonic()
 	default:
 		return "", nil, nil, errors.New("key type not supported")
@@ -104,7 +118,7 @@ func GenerateKeypairWithMnemonic(kt string) (string, *PrivKey, *PubKey, error) {
 }
 
 // GenerateED25519KeypairWithMnemonic generates a mnemonic, and a ED25519 keypair that can be generated through the same mnemonic again.
-func GenerateED25519KeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
+func GenerateED25519KeypairWithMnemonic() (string, *bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	// Generate large enough random string
 	e, err := bip39.NewEntropy(192)
 	if err != nil {
@@ -125,7 +139,7 @@ func GenerateED25519KeypairWithMnemonic() (string, *PrivKey, *PubKey, error) {
 	return mnemonic, privKey, pubKey, nil
 }
 
-func genRSAKey(e []byte) (*PrivKey, *PubKey, error) {
+func genRSAKey(e []byte, bits int) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	// Stretch 192 bits to 256 bits
 	rd := hkdf.New(sha256.New, e, []byte{}, []byte{})
 	expbuf := make([]byte, 32)
@@ -140,16 +154,16 @@ func genRSAKey(e []byte) (*PrivKey, *PubKey, error) {
 	stream := cipher.NewCTR(block, make([]byte, 16))
 
 	randReader := cipher.StreamReader{S: stream, R: devZero{}}
-	privRSAKey, err := deterministicRsaKeygen.GenerateKey(randReader, rsaBits)
+	privRSAKey, err := deterministicRsaKeygen.GenerateKey(randReader, bits)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	privKey, err := NewPrivKeyFromInterface(privRSAKey)
+	privKey, err := bmcrypto.NewPrivKeyFromInterface(privRSAKey)
 	if err != nil {
 		return nil, nil, err
 	}
-	pubKey, err := NewPubKeyFromInterface(privRSAKey.Public())
+	pubKey, err := bmcrypto.NewPubKeyFromInterface(privRSAKey.Public())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -157,7 +171,7 @@ func genRSAKey(e []byte) (*PrivKey, *PubKey, error) {
 	return privKey, pubKey, nil
 }
 
-func genKey(e []byte) (*PrivKey, *PubKey, error) {
+func genKey(e []byte) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	// Stretch 192 bits to 256 bits
 	rd := hkdf.New(sha256.New, e, []byte{}, []byte{})
 	expbuf := make([]byte, 32)
@@ -168,11 +182,11 @@ func genKey(e []byte) (*PrivKey, *PubKey, error) {
 
 	// Generate keypair
 	r := ed25519.NewKeyFromSeed(expbuf[:32])
-	privKey, err := NewPrivKeyFromInterface(r)
+	privKey, err := bmcrypto.NewPrivKeyFromInterface(r)
 	if err != nil {
 		return nil, nil, err
 	}
-	pubKey, err := NewPubKeyFromInterface(r.Public())
+	pubKey, err := bmcrypto.NewPubKeyFromInterface(r.Public())
 	if err != nil {
 		return nil, nil, err
 	}

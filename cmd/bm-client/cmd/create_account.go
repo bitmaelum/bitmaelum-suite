@@ -22,6 +22,7 @@ package cmd
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/spf13/cobra"
 )
 
@@ -34,11 +35,11 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
 
-		handlers.CreateAccount(v, *addr, *name, *token, *rsa)
+		handlers.CreateAccount(v, *addr, *name, *token, bmcrypto.KeyType(*keytype))
 	},
 }
 
-var addr, name, token *string
+var addr, name, token, keytype *string
 var rsa *bool
 
 func init() {
@@ -47,7 +48,7 @@ func init() {
 	addr = createAccountCmd.Flags().String("address", "", "Address to create")
 	name = createAccountCmd.Flags().String("name", "", "Your full name")
 	token = createAccountCmd.Flags().String("token", "", "Invitation token from server")
-	rsa = createAccountCmd.Flags().Bool("rsa", false, "Generate RSA keypair instead of ED25519")
+	keytype = createAccountCmd.Flags().String("keytype", "ed25519", "Type of key you want to generate (defaults to ed25519)")
 
 	_ = createAccountCmd.MarkFlagRequired("address")
 	_ = createAccountCmd.MarkFlagRequired("name")

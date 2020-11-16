@@ -26,6 +26,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	lru "github.com/hashicorp/golang-lru"
@@ -132,13 +133,18 @@ func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, err
 }
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
-func (s *Service) UploadAddressInfo(info internal.AccountInfo) error {
-	return s.repo.UploadAddress(&AddressInfo{
+func (s *Service) UploadAddressInfo(info internal.AccountInfo, orgToken string) error {
+	addr, err := address.NewAddress(info.Address)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.UploadAddress(*addr, &AddressInfo{
 		Hash:      info.AddressHash().String(),
 		PublicKey: info.PubKey,
 		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
-	}, info.PrivKey, *info.Pow)
+	}, info.PrivKey, *info.Pow, orgToken)
 }
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers

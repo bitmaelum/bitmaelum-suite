@@ -44,6 +44,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("NEW: %s\n", a.Hash().String())
+		fmt.Printf("Hash: %s\n", a.Hash().String())
+		fmt.Printf(" Local: %s\n", a.LocalHash().String())
+		fmt.Printf(" Org: %s\n", a.OrgHash().String())
 	}
 }

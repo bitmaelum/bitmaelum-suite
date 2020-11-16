@@ -41,7 +41,7 @@ type ecdsaSignature struct {
 // Sign a message based on the given key.
 func Sign(key PrivKey, message []byte) ([]byte, error) {
 	switch key.Type {
-	case KeyTypeRSA:
+	case KeyTypeRSA, KeyTypeRSAV1:
 		h := crypto.SHA256.New()
 		h.Write(message)
 		hash := h.Sum(nil)

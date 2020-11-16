@@ -47,7 +47,7 @@ func TestTransactionId(t *testing.T) {
 }
 
 func TestWrongKeyType(t *testing.T) {
-	privKey, pubKey, _ := generateKeyPairRSA()
+	privKey, pubKey, _ := generateKeyPairRSA(0)
 
 	_, _, err := DualKeyExchange(*pubKey)
 	assert.Error(t, err)
