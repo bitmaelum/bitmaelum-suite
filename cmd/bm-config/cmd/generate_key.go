@@ -48,5 +48,5 @@ var keyType *string
 func init() {
 	rootCmd.AddCommand(generateKeyCmd)
 
-	keyType = generateKeyCmd.Flags().StringP("type", "t", "ed25519", "The keytype (ed25519, rsa or ecdsa)")
+	keyType = generateKeyCmd.Flags().StringP("keytype", "k", "ed25519", "The keytype (defaults to ed25519)")
 }
