@@ -37,7 +37,7 @@ func TestGenerate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.IsType(t, (*rsa.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (*rsa.PublicKey)(nil), pubKey.K)
-	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size() * 8, RsaBits[0])
+	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size()*8, RsaBits[0])
 
 	// Check if we can verify with this key
 	sig, err := Sign(*privKey, message)
@@ -80,6 +80,6 @@ func TestRSAV1(t *testing.T) {
 	assert.Nil(t, err)
 	assert.IsType(t, (*rsa.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (*rsa.PublicKey)(nil), pubKey.K)
-	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size() * 8, RsaBits[1])
+	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size()*8, RsaBits[1])
 
 }

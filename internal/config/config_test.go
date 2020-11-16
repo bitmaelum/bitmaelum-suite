@@ -69,13 +69,13 @@ func TestClientConfig(t *testing.T) {
 
 	// Read from non-existing env
 	Client.Accounts.ProofOfWork = 0
-	os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
+	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
 	err = LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
 	// Read from existing env
 	Client.Accounts.ProofOfWork = 0
-	os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/client-config.yml")
+	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/client-config.yml")
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
@@ -118,13 +118,13 @@ func TestServerConfig(t *testing.T) {
 
 	// Read from non-existing env
 	Server.Accounts.ProofOfWork = 0
-	os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/does/not/exist.yml")
+	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/does/not/exist.yml")
 	err = LoadServerConfigOrPass("")
 	assert.Error(t, err)
 
 	// Read from existing env
 	Server.Accounts.ProofOfWork = 0
-	os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/server-config.yml")
+	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/server-config.yml")
 	err = LoadServerConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Server.Accounts.ProofOfWork)

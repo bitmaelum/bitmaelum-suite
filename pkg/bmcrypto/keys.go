@@ -33,12 +33,15 @@ import (
 	"strings"
 )
 
+// KeyType defines a type for a given key in a certain configuration (like: rsa 2048 or rsa 4096 etc)
 type KeyType string
 
+// String returns the textual representation of the keytype
 func (kt KeyType) String() string {
 	return string(kt)
 }
 
+// Keytype constants
 const (
 	KeyTypeRSA     KeyType = "rsa"
 	KeyTypeECDSA   KeyType = "ecdsa"

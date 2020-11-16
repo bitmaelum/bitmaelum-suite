@@ -28,8 +28,9 @@ import (
 )
 
 var (
-	curveFunc = elliptic.P384     // Curve used for ECDSA
-	RsaBits   = []int{2048, 4096} // RSA key sizes
+	curveFunc = elliptic.P384 // Curve used for ECDSA
+	// RsaBits is an array with the given RSA versions and their corresponding bit sizes
+	RsaBits = []int{2048, 4096} // RSA key sizes
 )
 
 // GenerateKeyPair generates a private/public keypair based on the given type
