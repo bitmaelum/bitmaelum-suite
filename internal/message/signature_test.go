@@ -89,6 +89,8 @@ func TestVerifyHeader(t *testing.T) {
 }
 
 func setupServer() {
+	addr, _ := address.NewAddress("foobar!")
+
 	// Note: our mail server uses key1
 	privKey, pubKey, err := testing2.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
@@ -123,7 +125,7 @@ func setupServer() {
 		Pow:         pow.String(),
 		RoutingInfo: resolver.RoutingInfo{},
 	}
-	_ = repo.UploadAddress(&ai, *privKey, *pow)
+	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
 
 	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-3.json")
 	if err != nil {
@@ -136,7 +138,7 @@ func setupServer() {
 		Pow:         pow.String(),
 		RoutingInfo: resolver.RoutingInfo{},
 	}
-	_ = repo.UploadAddress(&ai, *privKey, *pow)
+	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
 
 	// Note: our mail server uses key1
 	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-1.json")
