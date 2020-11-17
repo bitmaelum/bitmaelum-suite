@@ -7,16 +7,9 @@
 [![Gitter](https://badges.gitter.im/bitmaelum/community.svg)](https://gitter.im/bitmaelum/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=bitmaelum_bitmaelum-suite&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=bitmaelum_bitmaelum-suite)
          
-         ____  _ _   __  __            _                 
-        |  _ \(_) | |  \/  |          | |                
-        | |_) |_| |_| \  / | __ _  ___| |_   _ _ __ ___  
-        |  _ <| | __| |\/| |/ _` |/ _ \ | | | | '_ ` _ \ 
-        | |_) | | |_| |  | | (_| |  __/ | |_| | | | | | |
-        |____/|_|\__|_|  |_|\__,_|\___|_|\__,_|_| |_| |_|
-           P r i v a c y   i s   y o u r s   a g a i n                                          
 
 
-# What if...
+## Imagine...
 we could redesign email without any need for backward compatibility. What would it look like? 
 Could we solve the problems we face nowadays like spam, email forgery, phishing emails and, maybe the most important 
 one: privacy?
@@ -30,20 +23,21 @@ To build and test BitMaelum, check out [build document](docs/build.md).
 
 BitMaelum tries to be a system that:
 
+  - Privacy first
   - Deal with less to no spam at all
   - Nullifies mail address harvesting (it becomes useless)
   - Host your mail wherever you like
   - Move your messages to another provider without losing your mail address
   - Allows that only you can subscribe and unsubscribe from mailing lists
   - Slow connection / mobile friendly 
-  - Privacy first
+ 
 
 For more features, please take a look at [our wiki](https://github.com/bitmaelum/bitmaelum-suite/wiki/Feature-list)
 
 
 # Quickstart
 
-To start with BitMaelum right away, check out [our wiki](https://github.com/bitmaelum/bitmaelum-suite/wiki/Quickstart)
+To start with BitMaelum right away, check out [Quickstart guide](https://github.com/bitmaelum/bitmaelum-suite/wiki/Quickstart)
 
 
 # Development
