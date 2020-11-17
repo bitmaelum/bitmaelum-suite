@@ -108,49 +108,39 @@ func setupServer() {
 		return resolver.KeyRetrievalService(repo), nil
 	})
 
-	pow := proofofwork.NewWithoutProof(1, "foobar")
-	var (
-		ai resolver.AddressInfo
-		ri resolver.RoutingInfo
-	)
-
-	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-2.json")
-	if err != nil {
-		panic(err)
-	}
-	ai = resolver.AddressInfo{
-		Hash:        "111100000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
-		PublicKey:   *pubKey,
-		RoutingID:   "87654321",
-		Pow:         pow.String(),
-		RoutingInfo: resolver.RoutingInfo{},
-	}
-	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
-
-	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-3.json")
-	if err != nil {
-		panic(err)
-	}
-	ai = resolver.AddressInfo{
-		Hash:        "111100000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
-		PublicKey:   *pubKey,
-		RoutingID:   "12345678",
-		Pow:         pow.String(),
-		RoutingInfo: resolver.RoutingInfo{},
-	}
-	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
+	uploadAddress(repo, *addr, "111100000000000000000000000097026f0daeaec1aeb8351b096637679cf350", "87654321", "../../testdata/key-2.json")
+	uploadAddress(repo, *addr, "111100000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc", "12345678", "../../testdata/key-3.json")
 
 	// Note: our mail server uses key1
 	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
 		panic(err)
 	}
-	ri = resolver.RoutingInfo{
+	ri := resolver.RoutingInfo{
 		Hash:      "12345678",
 		PublicKey: *pubKey,
 		Routing:   "127.0.0.1",
 	}
 	_ = repo.UploadRouting(&ri, *privKey)
+}
+
+func uploadAddress(repo resolver.AddressRepository, addr address.Address, addrHash string, routingId string, keyPath string) {
+	pow := proofofwork.NewWithoutProof(1, "foobar")
+
+	privKey, pubKey, err := testing2.ReadTestKey(keyPath)
+	if err != nil {
+		panic(err)
+	}
+
+	ai := resolver.AddressInfo{
+		Hash:        addrHash,
+		PublicKey:   *pubKey,
+		RoutingID:   routingId,
+		Pow:         pow.String(),
+		RoutingInfo: resolver.RoutingInfo{},
+	}
+	_ = repo.UploadAddress(addr, &ai, *privKey, *pow, "")
+
 }
 
 func TestSignClientHeader(t *testing.T) {
