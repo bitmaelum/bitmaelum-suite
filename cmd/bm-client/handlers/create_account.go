@@ -137,7 +137,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, keyType bmcrypto.
 
 		fmt.Printf("* Adding your new account into the vault: ")
 		info = &vault.AccountInfo{
-			Address:   *addr,
+			Address:   addr,
 			Name:      name,
 			PrivKey:   *privKey,
 			PubKey:    *pubKey,
@@ -164,7 +164,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, keyType bmcrypto.
 	}
 
 	fmt.Printf("* Sending your account information to the server: ")
-	client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
+	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		v.RemoveAccount(*addr)

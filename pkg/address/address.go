@@ -20,7 +20,7 @@
 package address
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -39,10 +39,37 @@ type Address struct {
 	Org   string // Org part is either "" in case of <local>!  or <local>@<organisation>!
 }
 
+// UnmarshalJSON will unmarshal a string of bytes into an address
+func (a *Address) UnmarshalJSON(b []byte) error {
+	var s string
+
+	// Decode string first
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return err
+	}
+
+	tmp, err := NewAddress(s)
+	if err != nil {
+		return err
+	}
+
+	// Copy data
+	a.Local = tmp.Local
+	a.Org = tmp.Org
+
+	return nil
+}
+
+// MarshalJSON will marshal an address into a string of bytes for JSON output
+func (a *Address) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.String())
+}
+
 // NewAddress returns a valid address structure based on the given address
 func NewAddress(address string) (*Address, error) {
 	if !addressRegex.MatchString(strings.ToLower(address)) {
-		return nil, errors.New("incorrect address format specified")
+		return nil, fmt.Errorf("incorrect address format specified '%s'", address)
 	}
 
 	matches := addressRegex.FindStringSubmatch(strings.ToLower(address))

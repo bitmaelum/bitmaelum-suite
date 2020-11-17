@@ -60,5 +60,5 @@ func getAPIClient(info *vault.AccountInfo) (*api.API, error) {
 		return nil, errors.New("cannot find routing ID for this account")
 	}
 
-	return api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
+	return api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
 }

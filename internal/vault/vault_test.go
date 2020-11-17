@@ -58,7 +58,7 @@ func TestNew(t *testing.T) {
 	addr, _ := address.NewAddress("foobar!")
 	acc := &AccountInfo{
 		Default:   false,
-		Address:   *addr,
+		Address:   addr,
 		Name:      "Foo Bar",
 		Settings:  nil,
 		PrivKey:   *privKey,
@@ -93,13 +93,13 @@ func TestFindShortRoutingId(t *testing.T) {
 	v, _ := New("", []byte{})
 
 	addr, _ := address.NewAddress("example!")
-	acc = AccountInfo{Address: *addr, RoutingID: "123456780000"}
+	acc = AccountInfo{Address: addr, RoutingID: "123456780000"}
 	v.AddAccount(acc)
-	acc = AccountInfo{Address: *addr, RoutingID: "123456780001"}
+	acc = AccountInfo{Address: addr, RoutingID: "123456780001"}
 	v.AddAccount(acc)
-	acc = AccountInfo{Address: *addr, RoutingID: "123456780002"}
+	acc = AccountInfo{Address: addr, RoutingID: "123456780002"}
 	v.AddAccount(acc)
-	acc = AccountInfo{Address: *addr, RoutingID: "154353535335"}
+	acc = AccountInfo{Address: addr, RoutingID: "154353535335"}
 	v.AddAccount(acc)
 
 	assert.Equal(t, "154353535335", v.FindShortRoutingID("154"))
@@ -121,16 +121,16 @@ func TestGetAccountOrDefault(t *testing.T) {
 
 	v, _ := New("", []byte{})
 	addr, _ := address.NewAddress("example1!")
-	acc = &AccountInfo{Address: *addr, RoutingID: "123456780000"}
+	acc = &AccountInfo{Address: addr, RoutingID: "123456780000"}
 	v.AddAccount(*acc)
 	addr, _ = address.NewAddress("example2!")
-	acc = &AccountInfo{Address: *addr, RoutingID: "123456780001"}
+	acc = &AccountInfo{Address: addr, RoutingID: "123456780001"}
 	v.AddAccount(*acc)
 	addr, _ = address.NewAddress("example3!")
-	acc = &AccountInfo{Address: *addr, RoutingID: "123456780002", Default: true}
+	acc = &AccountInfo{Address: addr, RoutingID: "123456780002", Default: true}
 	v.AddAccount(*acc)
 	addr, _ = address.NewAddress("example4!")
-	acc = &AccountInfo{Address: *addr, RoutingID: "154353535335"}
+	acc = &AccountInfo{Address: addr, RoutingID: "154353535335"}
 	v.AddAccount(*acc)
 
 	acc = GetAccountOrDefault(v, "")

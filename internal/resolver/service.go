@@ -133,7 +133,7 @@ func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, err
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadAddressInfo(info vault.AccountInfo, orgToken string) error {
-	return s.repo.UploadAddress(info.Address, &AddressInfo{
+	return s.repo.UploadAddress(*info.Address, &AddressInfo{
 		Hash:      info.Address.Hash().String(),
 		PublicKey: info.PubKey,
 		RoutingID: info.RoutingID,
