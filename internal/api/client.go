@@ -63,7 +63,7 @@ type ClientOpts struct {
 func NewAnonymous(host string) (*API, error) {
 	return NewClient(ClientOpts{
 		Host:          host,
-		AllowInsecure: config.Server.Server.AllowInsecure,
+		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})
 }
@@ -79,7 +79,7 @@ func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string) 
 	return NewClient(ClientOpts{
 		Host:          host,
 		JWTToken:      jwtToken,
-		AllowInsecure: config.Server.Server.AllowInsecure,
+		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 	})
 }
