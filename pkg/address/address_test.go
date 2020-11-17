@@ -140,4 +140,14 @@ func TestJSON(t *testing.T) {
 	err = json.Unmarshal(b, &c)
 	assert.NoError(t, err)
 	assert.Equal(t, "john@foobar!", c.String())
+
+	b = []byte{12, 34}
+	c = Address{}
+	err = json.Unmarshal(b, &c)
+	assert.Error(t, err)
+
+	b = []byte("this$#@@@$-is-not-a-valid-address")
+	c = Address{}
+	err = json.Unmarshal(b, &c)
+	assert.Error(t, err)
 }
