@@ -336,8 +336,22 @@ func GetAccount(vault *Vault, a string) (*AccountInfo, error) {
 func OpenVault() *Vault {
 	fromVault := false
 
-	if VaultPassword == "" {
-		VaultPassword, fromVault = console.AskPassword()
+	// Check if vault exists
+	if vaultExists(config.Client.Accounts.Path) {
+		if VaultPassword == "" {
+			VaultPassword, fromVault = console.AskPassword()
+		}
+	} else {
+		if VaultPassword == "" {
+			fmt.Printf("A vault could not be found. Creating a new vault at '%s'.\n", config.Client.Accounts.Path)
+			b, err := console.AskDoublePassword()
+			VaultPassword = string(b)
+			if err != nil {
+				fmt.Printf("Error while creating vault: %s", err)
+				fmt.Println("")
+				os.Exit(1)
+			}
+		}
 	}
 
 	// Unlock vault
@@ -354,4 +368,9 @@ func OpenVault() *Vault {
 	}
 
 	return v
+}
+
+func vaultExists(p string) bool {
+	_, err := os.Stat(config.Client.Accounts.Path)
+	return err == nil
 }

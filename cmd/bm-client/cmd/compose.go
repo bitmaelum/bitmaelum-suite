@@ -103,7 +103,7 @@ var composeCmd = &cobra.Command{
 
 		// Setup addressing and compose the message
 		addressing := message.NewAddressing(
-			fromInfo.Address,
+			*fromInfo.Address,
 			&fromInfo.PrivKey,
 			routingInfo.Routing,
 			*toAddr,

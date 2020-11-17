@@ -124,7 +124,7 @@ func setupServer() {
 	_ = repo.UploadRouting(&ri, *privKey)
 }
 
-func uploadAddress(repo resolver.AddressRepository, addr address.Address, addrHash string, routingId string, keyPath string) {
+func uploadAddress(repo resolver.AddressRepository, addr address.Address, addrHash string, routingID string, keyPath string) {
 	pow := proofofwork.NewWithoutProof(1, "foobar")
 
 	privKey, pubKey, err := testing2.ReadTestKey(keyPath)
@@ -135,7 +135,7 @@ func uploadAddress(repo resolver.AddressRepository, addr address.Address, addrHa
 	ai := resolver.AddressInfo{
 		Hash:        addrHash,
 		PublicKey:   *pubKey,
-		RoutingID:   routingId,
+		RoutingID:   routingID,
 		Pow:         pow.String(),
 		RoutingInfo: resolver.RoutingInfo{},
 	}

@@ -36,7 +36,7 @@ func TestVaultAccount(t *testing.T) {
 
 	addr, _ := address.NewAddress("example!")
 	acc := AccountInfo{
-		Address: *addr,
+		Address: addr,
 		Name:    "Example Account",
 	}
 	v.AddAccount(acc)
@@ -78,21 +78,21 @@ func TestVaultGetDefaultAccount(t *testing.T) {
 	addr, _ := address.NewAddress("acc1!")
 	acc := AccountInfo{
 		Default: false,
-		Address: *addr,
+		Address: addr,
 	}
 	v.AddAccount(acc)
 
 	addr, _ = address.NewAddress("acc2!")
 	acc = AccountInfo{
 		Default: true,
-		Address: *addr,
+		Address: addr,
 	}
 	v.AddAccount(acc)
 
 	addr, _ = address.NewAddress("acc3!")
 	acc = AccountInfo{
 		Default: false,
-		Address: *addr,
+		Address: addr,
 	}
 	v.AddAccount(acc)
 	assert.Len(t, v.Store.Accounts, 3)
@@ -127,7 +127,7 @@ func TestAccountInfoAddressHash(t *testing.T) {
 	addr, _ := address.NewAddress("example!")
 	info := &AccountInfo{
 		Default: false,
-		Address: *addr,
+		Address: addr,
 		Name:    "John DOe",
 	}
 

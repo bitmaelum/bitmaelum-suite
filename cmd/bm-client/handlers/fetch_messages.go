@@ -50,7 +50,7 @@ func FetchMessages(accounts []vault.AccountInfo) {
 			continue
 		}
 
-		client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
+		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
 		if err != nil {
 			continue
 		}

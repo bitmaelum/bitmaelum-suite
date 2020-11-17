@@ -58,7 +58,7 @@ var apiCreateCmd = &cobra.Command{
 		fmt.Printf("%#v\n", key)
 		fmt.Printf("%#v\n", *acValidUntil)
 
-		client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
+		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

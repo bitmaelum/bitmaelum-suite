@@ -47,7 +47,7 @@ var apiListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
+		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

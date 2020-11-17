@@ -35,7 +35,7 @@ import (
 
 // ReadMessage will read a specific message blocks
 func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string) {
-	client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
+	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
 	if err != nil {
 		logrus.Fatal(err)
 	}
