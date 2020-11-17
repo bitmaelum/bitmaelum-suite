@@ -26,12 +26,12 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -43,6 +43,7 @@ type options struct {
 	Message     string   `short:"m" long:"message" description:"Default message"`
 	Blocks      []string `short:"b" long:"block" description:"Body block"`
 	Attachments []string `short:"a" long:"attachment" description:"Attachment"`
+	Resolver    string   `short:"r" long:"resolver" description:"Resolver" env:"BITMAELUM_SEND_RESOLVER_URL" default:"resolver.bitmaelum.com"`
 }
 
 var opts options
@@ -57,12 +58,20 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	parseFlags()
-	spew.Dump(opts)
 
-	// Set default message block
+	if opts.Message != "" && len(opts.Blocks) > 0 {
+		fmt.Println("either you send a message, or one or more blocks, but not both")
+		os.Exit(1)
+	}
+
+	// Set default message block if a message is specified
 	if opts.Message != "" {
 		opts.Blocks = append(opts.Blocks, "default:"+opts.Message)
 	}
+
+	// Set resolve settings, as we don't use a client configuration file
+	config.Client.Resolver.Remote.Enabled = true
+	config.Client.Resolver.Remote.URL = opts.Resolver
 
 	// Fetch both sender and recipient info
 	svc := container.Instance.GetResolveService()
