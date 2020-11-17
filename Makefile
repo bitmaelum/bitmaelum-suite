@@ -54,12 +54,12 @@ GO_LICENSE_BIN = $(GOPATH)/bin/addlicense
 
 # Downloads external tools as they are not available by default
 get_test_tools: ## go get all build tools needed to testing
-	go get -u honnef.co/go/tools/cmd/staticcheck
-	go get -u github.com/google/addlicense
-	go get -u github.com/gordonklaus/ineffassign
-	go get -u github.com/fzipp/gocyclo/cmd/gocyclo
-	go get -u golang.org/x/tools/cmd/goimports
-	go get -u golang.org/x/lint/golint
+	GO111MODULE=off go get -u honnef.co/go/tools/cmd/staticcheck
+	GO111MODULE=off go get -u github.com/google/addlicense
+	GO111MODULE=off go get -u github.com/gordonklaus/ineffassign
+	GO111MODULE=off go get -u github.com/fzipp/gocyclo/cmd/gocyclo
+	GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+	GO111MODULE=off go get -u golang.org/x/lint/golint
 
 lint: ## Formats your go code to specified standards
 	$(GO_GOIMPORTS_BIN) -w  --format-only .
