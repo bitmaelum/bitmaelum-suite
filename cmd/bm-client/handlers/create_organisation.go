@@ -23,9 +23,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -34,7 +34,7 @@ import (
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
-func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidations []string, keyType bmcrypto.KeyType) {
+func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations []string, keyType bmcrypto.KeyType) {
 	fmt.Printf("* Verifying if organisation name is valid: ")
 	orgHash := hash.New(orgAddr)
 
@@ -48,7 +48,7 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 	fmt.Printf("ok.\n")
 
 	fmt.Printf("* Checking if organisation is already known in the resolver service: ")
-	ks := container.GetResolveService()
+	ks := container.Instance.GetResolveService()
 	_, err = ks.ResolveOrganisation(orgHash)
 	if err == nil {
 		fmt.Printf("\n  X it seems that this organisation is already in use. Please specify another organisation.")
@@ -60,8 +60,8 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 	var mnemonic string
 
 	fmt.Printf("* Checking if the organisation is already present in the vault: ")
-	var info *internal.OrganisationInfo
-	if vault.HasOrganisation(orgHash) {
+	var info *vault.OrganisationInfo
+	if v.HasOrganisation(orgHash) {
 		fmt.Printf("\n  X organisation already present in the vault.\n")
 		fmt.Println("")
 		os.Exit(1)
@@ -91,7 +91,7 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Adding your new organisation into the vault: ")
-		info = &internal.OrganisationInfo{
+		info = &vault.OrganisationInfo{
 			Addr:        orgAddr,
 			FullName:    fullName,
 			PrivKey:     *privKey,
@@ -100,8 +100,8 @@ func CreateOrganisation(vault *vault.Vault, orgAddr, fullName string, orgValidat
 			Validations: val,
 		}
 
-		vault.AddOrganisation(*info)
-		err = vault.WriteToDisk()
+		v.AddOrganisation(*info)
+		err = v.WriteToDisk()
 		if err != nil {
 			fmt.Printf("\n  X error while saving organisation into vault: %#v", err)
 			fmt.Println("")

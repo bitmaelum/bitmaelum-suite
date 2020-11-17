@@ -52,7 +52,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r := container.GetResolveService()
+	r := container.Instance.GetResolveService()
 	info, err := r.ResolveAddress(addr.Hash())
 	if err != nil {
 		log.Fatal(err)

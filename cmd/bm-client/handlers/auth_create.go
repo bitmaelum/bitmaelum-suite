@@ -23,23 +23,22 @@ import (
 	"errors"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 // CreateAuthorizedKey creates a new authorized key
-func CreateAuthorizedKey(info *internal.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) error {
+func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) error {
 	var expiry = time.Time{}
 	if validUntil > 0 {
 		expiry = time.Now().Add(validUntil)
 	}
 
 	// Create and sign key
-	k := key.NewAuthKey(info.AddressHash(), targetKey, "", expiry, desc)
+	k := key.NewAuthKey(info.Address.Hash(), targetKey, "", expiry, desc)
 	err := k.Sign(info.PrivKey)
 	if err != nil {
 		return err
@@ -51,19 +50,15 @@ func CreateAuthorizedKey(info *internal.AccountInfo, targetKey *bmcrypto.PubKey,
 		return err
 	}
 
-	return client.CreateAuthKey(info.AddressHash(), k)
+	return client.CreateAuthKey(info.Address.Hash(), k)
 }
 
-func getAPIClient(info *internal.AccountInfo) (*api.API, error) {
-	resolver := container.GetResolveService()
+func getAPIClient(info *vault.AccountInfo) (*api.API, error) {
+	resolver := container.Instance.GetResolveService()
 	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 	if err != nil {
 		return nil, errors.New("cannot find routing ID for this account")
 	}
 
-	return api.NewAuthenticated(info, api.ClientOpts{
-		Host:          routingInfo.Routing,
-		AllowInsecure: config.Client.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHTTP,
-	})
+	return api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
 }

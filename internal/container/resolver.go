@@ -69,5 +69,5 @@ func getSQLiteRepository(dsn string) (resolver.Repository, error) {
 }
 
 func init() {
-	Set("resolver", setupResolverService)
+	Instance.SetShared("resolver", setupResolverService)
 }

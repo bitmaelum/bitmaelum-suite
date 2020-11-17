@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -68,7 +68,7 @@ func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (context.Cont
 		return nil, false
 	}
 
-	accountRepo := container.GetAccountRepo()
+	accountRepo := container.Instance.GetAccountRepo()
 	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
@@ -132,7 +132,7 @@ func (*APIKeyAuth) getAPIKey(bearerToken string) (*key.APIKeyType, error) {
 	}
 	apiKeyID := bearerToken[7:]
 
-	apiKeyRepo := container.GetAPIKeyRepo()
+	apiKeyRepo := container.Instance.GetAPIKeyRepo()
 	k, err := apiKeyRepo.Fetch(apiKeyID)
 	if err != nil {
 		return nil, ErrInvalidAPIKey

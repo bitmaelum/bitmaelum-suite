@@ -40,7 +40,6 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 }
 
 var addr, name, token, keytype *string
-var rsa *bool
 
 func init() {
 	rootCmd.AddCommand(createAccountCmd)

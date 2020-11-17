@@ -21,13 +21,14 @@ package message
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/compress"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -102,15 +103,17 @@ type Block struct {
 }
 
 // NewCatalog initialises a new catalog. This catalog has to be filled with more info, blocks and attachments
-func NewCatalog(info *internal.AccountInfo) *Catalog {
+func NewCatalog(sender, recipient *address.Address, subject string) *Catalog {
 	c := &Catalog{}
 
 	c.CreatedAt = time.Now()
+	c.From.Address = sender.String()
+	// c.From.Name = info.Name
+	// c.From.ProofOfWork = info.Pow
+	// c.From.PublicKey = &info.PubKey
 
-	c.From.Address = info.Address
-	c.From.Name = info.Name
-	c.From.ProofOfWork = info.Pow
-	c.From.PublicKey = &info.PubKey
+	c.Subject = subject
+	c.To.Address = recipient.String()
 
 	return c
 }
@@ -143,18 +146,18 @@ func (c *Catalog) AddBlock(entry Block) error {
 
 	// Very arbitrary size on when we should compress output first
 	if entry.Size >= 1024 {
-		reader = compress.ZlibCompress(entry.Reader)
+		reader = ZlibCompress(entry.Reader)
 		compression = "zlib"
 	}
 
 	// Generate key iv for this block
-	iv, key, err := encrypt.GenerateIvAndKey()
+	iv, key, err := internal.GenerateIvAndKey()
 	if err != nil {
 		return err
 	}
 
 	// Wrap reader with encryption reader
-	reader, err = encrypt.GetAesEncryptorReader(iv, key, reader)
+	reader, err = internal.GetAesEncryptorReader(iv, key, reader)
 	if err != nil {
 		return err
 	}
@@ -197,18 +200,18 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 
 	// Very arbitrary size on when we should compress output first
 	if stats.Size() >= 1024 {
-		reader = compress.ZlibCompress(entry.Reader)
+		reader = ZlibCompress(entry.Reader)
 		compression = "zlib"
 	}
 
 	// Generate Key and IV that we will use for encryption
-	iv, key, err := encrypt.GenerateIvAndKey()
+	iv, key, err := internal.GenerateIvAndKey()
 	if err != nil {
 		return err
 	}
 
 	// Wrap our reader with the encryption reader
-	reader, err = encrypt.GetAesEncryptorReader(iv, key, reader)
+	reader, err = internal.GetAesEncryptorReader(iv, key, reader)
 	if err != nil {
 		return err
 	}
@@ -254,4 +257,69 @@ func (c *Catalog) GetBlock(blockType string) (*BlockType, error) {
 // GetFirstBlock returns the first block found in the message
 func (c *Catalog) GetFirstBlock() *BlockType {
 	return &c.Blocks[0]
+}
+
+// GenerateBlocks generates blocks that can be added to a catalog
+func GenerateBlocks(b []string) ([]Block, error) {
+	// Parse blocks
+	var blocks []Block
+	for _, block := range b {
+		split := strings.SplitN(block, ",", 2)
+		if len(split) <= 1 {
+			return nil, fmt.Errorf("please specify blocks in the format '<type>,<content>' or '<type>,file:<filename>'")
+		}
+
+		// By default assume content is inline
+		size := int64(len(split[1]))
+		var r io.Reader = strings.NewReader(split[1])
+
+		if strings.HasPrefix(split[1], "file:") {
+			// Open file as a reader
+			f, err := os.Open(strings.TrimPrefix(split[1], "file:"))
+			if err != nil {
+				return nil, err
+			}
+
+			// Read file size
+			fi, err := f.Stat()
+			if err != nil {
+				return nil, err
+			}
+
+			r = f
+			size = fi.Size()
+		}
+
+		blocks = append(blocks, Block{
+			Type:   split[0],
+			Size:   uint64(size),
+			Reader: r,
+		})
+	}
+
+	return blocks, nil
+}
+
+// GenerateAttachments creates message attachments that we can add to a catalog
+func GenerateAttachments(a []string) ([]Attachment, error) {
+	// Parse attachments
+	var attachments []Attachment
+	for _, attachment := range a {
+		_, err := os.Stat(attachment)
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("attachment %s does not exist", attachment)
+		}
+
+		reader, err := os.Open(attachment)
+		if err != nil {
+			return nil, fmt.Errorf("attachment %s cannot be opened", attachment)
+		}
+
+		attachments = append(attachments, Attachment{
+			Path:   attachment,
+			Reader: reader,
+		})
+	}
+
+	return attachments, nil
 }

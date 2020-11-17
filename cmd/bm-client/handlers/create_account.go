@@ -23,12 +23,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -54,7 +54,7 @@ func verifyAddress(bmAddr string) *address.Address {
 func checkAddressInResolver(addr address.Address) *resolver.Service {
 	fmt.Printf("* Checking if address is already known in the resolver service: ")
 
-	ks := container.GetResolveService()
+	ks := container.Instance.GetResolveService()
 	_, err := ks.ResolveAddress(addr.Hash())
 
 	if err == nil {
@@ -68,10 +68,10 @@ func checkAddressInResolver(addr address.Address) *resolver.Service {
 	return ks
 }
 
-func checkToken(token string, addr address.Address) *invite.Token {
+func checkToken(token string, addr address.Address) *signature.Token {
 	fmt.Printf("* Checking token format and extracting data: ")
 
-	it, err := invite.ParseInviteToken(token)
+	it, err := signature.ParseInviteToken(token)
 	if err != nil {
 		fmt.Println("\n  X it seems that this token is invalid")
 		os.Exit(1)
@@ -88,7 +88,7 @@ func checkToken(token string, addr address.Address) *invite.Token {
 	return it
 }
 
-func checkAccountInVault(vault *vault.Vault, addr address.Address) *internal.AccountInfo {
+func checkAccountInVault(vault *vault.Vault, addr address.Address) *vault.AccountInfo {
 	fmt.Printf("* Checking if the account is already present in the vault: ")
 
 	if vault.HasAccount(addr) {
@@ -107,7 +107,7 @@ func checkAccountInVault(vault *vault.Vault, addr address.Address) *internal.Acc
 }
 
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
-func CreateAccount(vault *vault.Vault, bmAddr, name, token string, keyType bmcrypto.KeyType) {
+func CreateAccount(v *vault.Vault, bmAddr, name, token string, keyType bmcrypto.KeyType) {
 	var mnemonicToShow string
 
 	fmt.Println("")
@@ -115,7 +115,7 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string, keyType bmcry
 	addr := verifyAddress(bmAddr)
 	ks := checkAddressInResolver(*addr)
 	it := checkToken(token, *addr)
-	info := checkAccountInVault(vault, *addr)
+	info := checkAccountInVault(v, *addr)
 
 	if info == nil {
 		fmt.Printf("* Generating your secret key to send and read mail: ")
@@ -136,8 +136,8 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string, keyType bmcry
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Adding your new account into the vault: ")
-		info = &internal.AccountInfo{
-			Address:   bmAddr,
+		info = &vault.AccountInfo{
+			Address:   *addr,
 			Name:      name,
 			PrivKey:   *privKey,
 			PubKey:    *pubKey,
@@ -145,8 +145,8 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string, keyType bmcry
 			RoutingID: it.RoutingID, // Fetch from token
 		}
 
-		vault.AddAccount(*info)
-		err = vault.WriteToDisk()
+		v.AddAccount(*info)
+		err = v.WriteToDisk()
 		if err != nil {
 			fmt.Printf("\n  X error while saving account into vault: %#v", err)
 			fmt.Println("")
@@ -164,15 +164,11 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string, keyType bmcry
 	}
 
 	fmt.Printf("* Sending your account information to the server: ")
-	client, err := api.NewAuthenticated(info, api.ClientOpts{
-		Host:          routingInfo.Routing,
-		AllowInsecure: config.Client.Server.AllowInsecure,
-		Debug:         config.Client.Server.DebugHTTP,
-	})
+	client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
-		vault.RemoveAccount(*addr)
-		_ = vault.WriteToDisk()
+		v.RemoveAccount(*addr)
+		_ = v.WriteToDisk()
 
 		fmt.Printf("cannot initialize API")
 		fmt.Println("")
@@ -182,8 +178,8 @@ func CreateAccount(vault *vault.Vault, bmAddr, name, token string, keyType bmcry
 	err = client.CreateAccount(*info, token)
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
-		vault.RemoveAccount(*addr)
-		_ = vault.WriteToDisk()
+		v.RemoveAccount(*addr)
+		_ = v.WriteToDisk()
 
 		fmt.Printf("\n  X error from API while trying to create account: " + err.Error())
 		fmt.Println("")

@@ -26,9 +26,9 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
-	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
@@ -60,12 +60,12 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 	}
 
 	k := handler.GetAPIKey(req)
-	if !k.HasPermission(key.PermAPIKeys, h) {
+	if !k.HasPermission(internal.PermAPIKeys, h) {
 		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
-	err = parse.ManagementPermissions(input.Permissions)
+	err = internal.CheckManagementPermissions(input.Permissions)
 	if err != nil {
 		handler.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return
@@ -74,7 +74,7 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 	newAPIKey := key.NewAPIAccountKey(*h, input.Permissions, time.Unix(input.Expires, 0), input.Desc)
 
 	// Store API key into persistent storage
-	repo := container.GetAPIKeyRepo()
+	repo := container.Instance.GetAPIKeyRepo()
 	err = repo.Store(newAPIKey)
 	if err != nil {
 		msg := fmt.Sprintf("error while storing key: %s", err)

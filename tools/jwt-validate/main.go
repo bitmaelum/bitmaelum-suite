@@ -24,7 +24,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/davecgh/go-spew/spew"
@@ -57,7 +57,7 @@ func main() {
 	}
 	tokenString := auth[7:]
 
-	token, err := internal.ValidateJWTToken(tokenString, addr.Hash(), *key)
+	token, err := api.ValidateJWTToken(tokenString, addr.Hash(), *key)
 	if err == nil {
 		fmt.Printf("Token validated correctly")
 		spew.Dump(token)

@@ -24,9 +24,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
-	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
 )
@@ -50,14 +50,14 @@ server. Only the specified address can register the account`,
 			return
 		}
 
-		duration, err := parse.ValidDuration(d)
+		duration, err := internal.ValidDuration(d)
 		if err != nil {
 			outError("incorrect duration specified", asJSON)
 			return
 		}
 
 		validUntil := time.Now().Add(duration)
-		token, err := invite.NewInviteToken(addr.Hash(), config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
+		token, err := signature.NewInviteToken(addr.Hash(), config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
 		if err != nil {
 			msg := fmt.Sprintf("error while inviting address: %s", err)
 			outError(msg, asJSON)

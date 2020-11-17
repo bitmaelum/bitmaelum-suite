@@ -24,9 +24,8 @@ import (
 	"encoding/base64"
 	"strconv"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	lru "github.com/hashicorp/golang-lru"
@@ -133,14 +132,9 @@ func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, err
 }
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
-func (s *Service) UploadAddressInfo(info internal.AccountInfo, orgToken string) error {
-	addr, err := address.NewAddress(info.Address)
-	if err != nil {
-		return err
-	}
-
-	return s.repo.UploadAddress(*addr, &AddressInfo{
-		Hash:      info.AddressHash().String(),
+func (s *Service) UploadAddressInfo(info vault.AccountInfo, orgToken string) error {
+	return s.repo.UploadAddress(info.Address, &AddressInfo{
+		Hash:      info.Address.Hash().String(),
 		PublicKey: info.PubKey,
 		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
@@ -148,16 +142,12 @@ func (s *Service) UploadAddressInfo(info internal.AccountInfo, orgToken string) 
 }
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers
-func (s *Service) UploadRoutingInfo(info internal.RoutingInfo) error {
-	return s.repo.UploadRouting(&RoutingInfo{
-		Hash:      info.RoutingID,
-		PublicKey: info.PubKey,
-		Routing:   info.Route,
-	}, info.PrivKey)
+func (s *Service) UploadRoutingInfo(info RoutingInfo, privKey *bmcrypto.PrivKey) error {
+	return s.repo.UploadRouting(&info, *privKey)
 }
 
 // UploadOrganisationInfo uploads resolve information to one (or more) resolvers
-func (s *Service) UploadOrganisationInfo(info internal.OrganisationInfo) error {
+func (s *Service) UploadOrganisationInfo(info vault.OrganisationInfo) error {
 	return s.repo.UploadOrganisation(&OrganisationInfo{
 		Hash:        hash.New(info.Addr).String(),
 		PublicKey:   info.PubKey,

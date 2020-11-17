@@ -22,7 +22,6 @@ package handlers
 import (
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
 )
@@ -44,17 +43,13 @@ func ListOrganisations(v *vault.Vault, displayKeys bool) {
 	table.SetHeader(headers)
 
 	for _, org := range v.Store.Organisations {
-		o, err := internal.InfoToOrg(org)
-		if err != nil {
-			continue
-		}
 
 		if len(org.Validations) == 0 {
 			values := []string{
 				"...@" + org.Addr + "!",
 				org.FullName,
 				"-",
-				o.Hash.String(),
+				org.ToOrg().Hash.String(),
 			}
 			if displayKeys {
 				values = append(values, org.PrivKey.S, org.PubKey.S)
@@ -64,11 +59,11 @@ func ListOrganisations(v *vault.Vault, displayKeys bool) {
 		}
 
 		for i, val := range org.Validations {
-			var valstr string
-			if ok, err := val.Validate(*o); err == nil && ok {
-				valstr = "\U00002713 " + val.String()
+			var valStr string
+			if ok, err := val.Validate(*org.ToOrg()); err == nil && ok {
+				valStr = "\U00002713 " + val.String()
 			} else {
-				valstr = "\U00002717 " + val.String()
+				valStr = "\U00002717 " + val.String()
 			}
 
 			var values []string
@@ -77,15 +72,15 @@ func ListOrganisations(v *vault.Vault, displayKeys bool) {
 				values = []string{
 					"...@" + org.Addr + "!",
 					org.FullName,
-					valstr,
-					o.Hash.String(),
+					valStr,
+					org.ToOrg().Hash.String(),
 				}
 			} else {
 				// Additional validation rows
 				values = []string{
 					"",
 					"",
-					valstr,
+					valStr,
 					"",
 				}
 			}

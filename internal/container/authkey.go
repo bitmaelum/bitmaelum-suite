@@ -64,5 +64,5 @@ func setupAuthKeyRepo() (interface{}, error) {
 }
 
 func init() {
-	Set("auth-key", setupAuthKeyRepo)
+	Instance.SetShared("auth-key", setupAuthKeyRepo)
 }

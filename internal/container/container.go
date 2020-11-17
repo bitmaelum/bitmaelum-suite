@@ -27,43 +27,16 @@ package container
  * There is no functionality for dependencies etc, but we have shared/unshared services.
  */
 
-// Container is the main container structure holding all service
-type Container struct {
-	definitions map[string]*ServiceDefinition
-	resolved    map[string]interface{}
-}
-
-// The main container instance
-var container = Container{
-	definitions: make(map[string]*ServiceDefinition), // List of definitions
-	resolved:    make(map[string]interface{}),        // Resolved definition functions
-}
-
-// Get returns a service from the container
-func Get(key string) interface{} {
-	return container.Get(key)
-}
-
 // ServiceFunc is the function that needs to be resolved in the definition
 type ServiceFunc func() (interface{}, error)
-
-// Set sets a service from the container as a singleton
-func Set(key string, build ServiceFunc) {
-	container.Set(key, ServiceTypeSingle, build)
-}
-
-// SetMulti sets a service from the container. It will return a new instance on each call
-func SetMulti(key string, build ServiceFunc) {
-	container.Set(key, ServiceTypeMulti, build)
-}
 
 // ServiceType defines what kind of service it is (singleton, or new instance on each call)
 type ServiceType int
 
 // Service types
 const (
-	ServiceTypeSingle ServiceType = iota
-	ServiceTypeMulti
+	ServiceTypeShared    ServiceType = iota // Service is shared. Each call returns the same instance
+	ServiceTypeNonShared                    // Service is not shared. Each call returns a new instance
 )
 
 // ServiceDefinition is a single service definition
@@ -72,36 +45,66 @@ type ServiceDefinition struct {
 	Type ServiceType
 }
 
+// Container is the interface each container needs to implement
+type Container interface {
+	SetShared(key string, f ServiceFunc)
+	SetNonShared(key string, f ServiceFunc)
+	Get(key string) interface{}
+	Has(key string) bool
+}
+
+// Type is the main container structure holding all service
+type Type struct {
+	definitions map[string]*ServiceDefinition
+	resolved    map[string]interface{}
+}
+
 // NewContainer will create a new container
 func NewContainer() Container {
-	c := Container{
+	return &Type{
 		definitions: make(map[string]*ServiceDefinition),
 		resolved:    make(map[string]interface{}),
 	}
-
-	return c
 }
 
-// Set will set the function for the given service
-func (c Container) Set(key string, t ServiceType, f ServiceFunc) {
+// SetNonShared will set the function for the given service. It is not shared, meaning you will get a new instance on each call to get
+func (c *Type) SetNonShared(key string, f ServiceFunc) {
 	c.definitions[key] = &ServiceDefinition{
 		Func: f,
-		Type: t,
+		Type: ServiceTypeNonShared,
 	}
 
 	// Delete existing resolved object if any
 	delete(c.resolved, key)
 }
 
+// SetShared will set the function for the given service. It will return a shared instance on each call to get
+func (c *Type) SetShared(key string, f ServiceFunc) {
+	c.definitions[key] = &ServiceDefinition{
+		Func: f,
+		Type: ServiceTypeShared,
+	}
+
+	// Delete existing resolved object if any
+	delete(c.resolved, key)
+}
+
+// Has will return true when the definition exists
+func (c *Type) Has(key string) bool {
+	_, ok := c.definitions[key]
+
+	return ok
+}
+
 // Get will retrieve the function for the given service, or nil when not found
-func (c Container) Get(key string) interface{} {
+func (c *Type) Get(key string) interface{} {
 	s, ok := c.definitions[key]
 	if !ok {
 		return nil
 	}
 
 	// Multi means we don't use a shared instance but instead instantiate a new object each time called
-	if s.Type == ServiceTypeMulti {
+	if s.Type == ServiceTypeNonShared {
 		obj, err := s.Func()
 		if err != nil {
 			return nil

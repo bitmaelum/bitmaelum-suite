@@ -31,8 +31,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/olekukonko/tablewriter"
@@ -42,7 +42,7 @@ import (
 const blockPeriod = 30
 
 // OtpGenerate will generate an OTP valid for otpServer
-func OtpGenerate(info *internal.AccountInfo, otpServer *string) {
+func OtpGenerate(info *vault.AccountInfo, otpServer *string) {
 	// Get
 	recs, err := net.LookupTXT("_bitmaelum." + *otpServer)
 	if err != nil {
@@ -50,7 +50,7 @@ func OtpGenerate(info *internal.AccountInfo, otpServer *string) {
 		logrus.Fatal(err)
 	}
 
-	resolver := container.GetResolveService()
+	resolver := container.Instance.GetResolveService()
 
 	for _, txt := range recs {
 		orgHash, err := hash.NewFromHash(strings.ToLower(txt))

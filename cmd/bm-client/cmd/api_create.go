@@ -24,9 +24,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
@@ -41,7 +40,7 @@ var apiCreateCmd = &cobra.Command{
 		v := vault.OpenVault()
 		info := vault.GetAccountOrDefault(v, *apiAddress)
 
-		resolver := container.GetResolveService()
+		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
 			logrus.Fatal("Cannot find routing ID for this account")
@@ -59,17 +58,13 @@ var apiCreateCmd = &cobra.Command{
 		fmt.Printf("%#v\n", key)
 		fmt.Printf("%#v\n", *acValidUntil)
 
-		client, err := api.NewAuthenticated(info, api.ClientOpts{
-			Host:          routingInfo.Routing,
-			AllowInsecure: config.Client.Server.AllowInsecure,
-			Debug:         config.Client.Server.DebugHTTP,
-		})
+		client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)
 		}
 
-		err = client.CreateAPIKey(info.AddressHash(), key)
+		err = client.CreateAPIKey(info.Address.Hash(), key)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

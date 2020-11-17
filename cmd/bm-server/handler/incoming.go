@@ -28,7 +28,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/server"
 	"github.com/gorilla/mux"
 )
 
@@ -63,7 +62,7 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Add a server signature to the header, so we know this is the origin of the message
-	err = server.SignHeader(header)
+	err = message.SignServerHeader(header)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "error while signing incoming message")
 		return
@@ -160,7 +159,7 @@ func CompleteIncoming(w http.ResponseWriter, req *http.Request) {
 	processor.QueueIncomingMessage(t.ID)
 
 	// Remove ticket
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := container.Instance.GetTicketRepo()
 	ticketRepo.Remove(t.ID)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -189,7 +188,7 @@ func DeleteIncoming(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Remove ticket
-	ticketRepo := container.GetTicketRepo()
+	ticketRepo := container.Instance.GetTicketRepo()
 	ticketRepo.Remove(t.ID)
 
 	w.Header().Set("Content-Type", "application/json")

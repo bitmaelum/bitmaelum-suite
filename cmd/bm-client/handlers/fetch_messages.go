@@ -25,50 +25,44 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
 )
 
 // FetchMessages will display message information from accounts and boxes
-func FetchMessages(accounts []internal.AccountInfo) {
+func FetchMessages(accounts []vault.AccountInfo) {
 	table := tablewriter.NewWriter(os.Stdout)
-	//table.SetAutoMergeCells(true)
+	// table.SetAutoMergeCells(true)
 
 	headers := []string{"Account", "Box", "ID", "Subject", "From", "Date", "# Blocks", "# Attachments"}
 	table.SetHeader(headers)
 
-	for _, account := range accounts {
+	for _, info := range accounts {
 		// Fetch routing info
-		resolver := container.GetResolveService()
-		routingInfo, err := resolver.ResolveRouting(account.RoutingID)
+		resolver := container.Instance.GetResolveService()
+		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
 			continue
 		}
 
-		client, err := api.NewAuthenticated(&account, api.ClientOpts{
-			Host:          routingInfo.Routing,
-			AllowInsecure: config.Client.Server.AllowInsecure,
-			Debug:         config.Client.Server.DebugHTTP,
-		})
+		client, err := api.NewAuthenticated(info.Address, &info.PrivKey, routingInfo.Routing)
 		if err != nil {
 			continue
 		}
 
-		displayBoxList(client, &account, table)
+		displayBoxList(client, &info, table)
 	}
 
 	table.Render()
 }
 
-func displayBoxList(client *api.API, account *internal.AccountInfo, table *tablewriter.Table) {
-	mbl, err := client.GetMailboxList(account.AddressHash())
+func displayBoxList(client *api.API, account *vault.AccountInfo, table *tablewriter.Table) {
+	mbl, err := client.GetMailboxList(account.Address.Hash())
 	if err != nil {
 		return
 	}
@@ -78,15 +72,15 @@ func displayBoxList(client *api.API, account *internal.AccountInfo, table *table
 	}
 }
 
-func displayBox(client *api.API, account *internal.AccountInfo, box string, table *tablewriter.Table) {
-	mb, err := client.GetMailboxMessages(account.AddressHash(), box)
+func displayBox(client *api.API, account *vault.AccountInfo, box string, table *tablewriter.Table) {
+	mb, err := client.GetMailboxMessages(account.Address.Hash(), box)
 	if err != nil {
 		return
 	}
 
 	if box == "1" {
 		values := []string{
-			account.Address,
+			account.Address.String(),
 			box,
 			"", "", "", "", "", "",
 		}
@@ -101,12 +95,12 @@ func displayBox(client *api.API, account *internal.AccountInfo, box string, tabl
 	}
 
 	for _, msg := range mb.Messages {
-		key, err := bmcrypto.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+		key, err := message.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			continue
 		}
 		catalog := &message.Catalog{}
-		err = encrypt.CatalogDecrypt(key, msg.Catalog, catalog)
+		err = internal.CatalogDecrypt(key, msg.Catalog, catalog)
 		if err != nil {
 			continue
 		}

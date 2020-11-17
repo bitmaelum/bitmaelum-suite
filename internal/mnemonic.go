@@ -59,7 +59,6 @@ func GenerateRSAKeypairFromMnemonic(mnemonic string, keyType bmcrypto.KeyType) (
 		bits = bmcrypto.RsaBits[1]
 	}
 
-
 	return genRSAKey(e, bits)
 }
 

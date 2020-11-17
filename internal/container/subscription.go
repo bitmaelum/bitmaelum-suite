@@ -59,5 +59,5 @@ func setupSubscriptionRepo() (interface{}, error) {
 }
 
 func init() {
-	Set("subscription", setupSubscriptionRepo)
+	Instance.SetShared("subscription", setupSubscriptionRepo)
 }

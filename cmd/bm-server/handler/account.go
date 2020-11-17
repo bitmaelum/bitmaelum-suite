@@ -24,9 +24,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/invite"
+	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -82,7 +82,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	// Check if we need to verify against the mail server key, or the organisation key
 	var pubKey = config.Routing.PublicKey
 	if !orgHash.IsEmpty() {
-		r := container.GetResolveService()
+		r := container.Instance.GetResolveService()
 		oh, err := hash.NewFromHash(input.OrgHash)
 		if err != nil {
 			ErrorOut(w, http.StatusBadRequest, "incorrect org hash")
@@ -99,14 +99,14 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Verify token
-	it, err := invite.ParseInviteToken(input.Token)
+	it, err := signature.ParseInviteToken(input.Token)
 	if err != nil || !it.Verify(config.Routing.RoutingID, pubKey) {
 		ErrorOut(w, http.StatusBadRequest, "cannot validate token")
 		return
 	}
 
 	// Check if account exists
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	if ar.Exists(input.Addr) {
 		ErrorOut(w, http.StatusBadRequest, "account already exists")
 		return
@@ -134,7 +134,7 @@ func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if account exists
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	if !ar.Exists(*haddr) {
 		ErrorOut(w, http.StatusNotFound, "address not found")
 		return
@@ -152,7 +152,7 @@ func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
 	_ = json.NewEncoder(w).Encode(settings)
 }
 
-// RetrieveKeys is the handler that will retrieve public keys directly from the mailserver
+// RetrieveKeys is the handler that will retrieve public keys directly from the mail server
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
@@ -161,7 +161,7 @@ func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if account exists
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	if !ar.Exists(*haddr) {
 		ErrorOut(w, http.StatusNotFound, "public keys not found")
 		return

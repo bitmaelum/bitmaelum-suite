@@ -28,10 +28,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
@@ -41,7 +38,7 @@ func TestCatalogNewCatalog(t *testing.T) {
 
 	assert.Equal(t, "john!", c.From.Address)
 	assert.False(t, c.CreatedAt.Before(time.Now().Add(-1*time.Second)))
-	assert.Equal(t, "", c.Subject)
+	assert.Equal(t, "subject", c.Subject)
 }
 
 func TestCatalogAddFlags(t *testing.T) {
@@ -77,13 +74,11 @@ func TestCatalogAddLabels(t *testing.T) {
 func TestCatalogSetToAddress(t *testing.T) {
 	c := genCatalog()
 
-	assert.Empty(t, c.To)
-
-	addr, err := address.NewAddress("jane!")
+	addr, err := address.NewAddress("joe!")
 	assert.NoError(t, err)
-	c.SetToAddress(*addr, "Jane Doe")
-	assert.Equal(t, "jane!", c.To.Address)
-	assert.Equal(t, "Jane Doe", c.To.Name)
+	c.SetToAddress(*addr, "Joe Doe")
+	assert.Equal(t, "joe!", c.To.Address)
+	assert.Equal(t, "Joe Doe", c.To.Name)
 }
 
 func TestCatalogAddAttachment(t *testing.T) {
@@ -139,16 +134,6 @@ func TestCatalogAddAttachment(t *testing.T) {
 
 func TestCatalogAddBlock(t *testing.T) {
 	c := genCatalog()
-
-	// // Setup afero
-	// fs = afero.NewMemMapFs()
-	//
-	// // 1 px gif
-	// buf1, err := base64.StdEncoding.DecodeString("R0lGODlhAQABAAAAACH5BAEAAAAALAAAAAABAAEAAAI=")
-	// assert.NoError(t, err)
-	// _ = afero.WriteFile(fs, "/dir/image.png", buf1, 0644)
-	//
-	// _ = afero.WriteFile(fs, "/dir/largerfile.dat", buf2, 0644)
 
 	// Nothing attached
 	assert.Len(t, c.Blocks, 0)
@@ -208,17 +193,8 @@ func TestCatalogAddBlock(t *testing.T) {
 }
 
 func genCatalog() *Catalog {
-	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
+	addrFrom, _ := address.NewAddress("john!")
+	addrTo, _ := address.NewAddress("jane!")
 
-	info := internal.AccountInfo{
-		Default:   true,
-		Address:   "john!",
-		Name:      "John Doe",
-		Settings:  nil,
-		PrivKey:   *privKey,
-		PubKey:    *pubKey,
-		Pow:       &proofofwork.ProofOfWork{},
-		RoutingID: "",
-	}
-	return NewCatalog(&info)
+	return NewCatalog(addrFrom, addrTo, "subject")
 }

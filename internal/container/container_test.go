@@ -35,7 +35,7 @@ func TestContainer(t *testing.T) {
 	c := NewContainer()
 
 	// We set a function that we can call here
-	c.Set("foo", ServiceTypeSingle, func() (interface{}, error) {
+	c.SetShared("foo", func() (interface{}, error) {
 		return func() string {
 			return "this is foo"
 		}, nil
@@ -45,7 +45,7 @@ func TestContainer(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "this is foo", svc())
 
-	c.Set("foo", ServiceTypeSingle, func() (interface{}, error) { called++; return barFunc, nil })
+	c.SetShared("foo", func() (interface{}, error) { called++; return barFunc, nil })
 	_, _ = c.Get("foo").(func() string)
 	assert.Equal(t, 1, called)
 	_, _ = c.Get("foo").(func() string)
@@ -55,7 +55,7 @@ func TestContainer(t *testing.T) {
 	_, _ = c.Get("foo").(func() string)
 	assert.Equal(t, 1, called)
 
-	c.Set("foo", ServiceTypeMulti, func() (interface{}, error) { called++; return barFunc, nil })
+	c.SetNonShared("foo", func() (interface{}, error) { called++; return barFunc, nil })
 	_, _ = c.Get("foo").(func() string)
 	assert.Equal(t, 2, called)
 	_, _ = c.Get("foo").(func() string)

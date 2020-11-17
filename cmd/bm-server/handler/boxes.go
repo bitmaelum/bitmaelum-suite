@@ -24,8 +24,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/account"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 )
@@ -55,7 +55,7 @@ func CreateBox(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	err = ar.CreateBox(*haddr, input.ParentBoxID)
 	if err != nil {
 		ErrorOut(w, http.StatusBadRequest, err.Error())
@@ -80,7 +80,7 @@ func DeleteBox(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	err = ar.DeleteBox(*haddr, box)
 	if err != nil {
 		ErrorOut(w, http.StatusNotFound, err.Error())
@@ -100,7 +100,7 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Retrieve all boxes
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	boxes, err := ar.GetAllBoxes(*haddr)
 	if err != nil {
 		ErrorOut(w, http.StatusInternalServerError, "cannot read boxes")
@@ -161,7 +161,7 @@ func getMessageList(req *http.Request) (*account.MessageList, *httpError) {
 		}
 	}
 
-	ar := container.GetAccountRepo()
+	ar := container.Instance.GetAccountRepo()
 	if !ar.ExistsBox(*haddr, box) {
 		return nil, &httpError{
 			err:        accountNotFound,

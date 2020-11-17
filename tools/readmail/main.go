@@ -27,12 +27,9 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/encrypt"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	hash2 "github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 type options struct {
@@ -67,8 +64,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	hash := hash2.New(info.Address)
-	fmt.Printf("Reading message for user %s (%s) (%s)\n", info.Name, info.Address, hash.String())
+	fmt.Printf("Reading message for user %s (%s) (%s)\n", info.Name, info.Address, info.Address.Hash().String())
 
 	data, err := ioutil.ReadFile(opts.Path + "/header.json")
 	if err != nil {
@@ -90,13 +86,13 @@ func main() {
 		panic(err)
 	}
 
-	decryptedKey, err := bmcrypto.Decrypt(info.PrivKey, header.Catalog.TransactionID, header.Catalog.EncryptedKey)
+	decryptedKey, err := message.Decrypt(info.PrivKey, header.Catalog.TransactionID, header.Catalog.EncryptedKey)
 	if err != nil {
 		panic(err)
 	}
 
 	catalog := &message.Catalog{}
-	err = encrypt.CatalogDecrypt(decryptedKey, data, catalog)
+	err = internal.CatalogDecrypt(decryptedKey, data, catalog)
 	if err != nil {
 		panic(err)
 	}
@@ -111,15 +107,15 @@ func main() {
 			panic(err)
 		}
 
-		r, err := encrypt.GetAesDecryptorReader(block.IV, block.Key, f)
+		r, err := internal.GetAesDecryptorReader(block.IV, block.Key, f)
 		if err != nil {
-			f.Close()
+			_ = f.Close()
 			panic(err)
 		}
 
 		content, err := ioutil.ReadAll(r)
 		if err != nil {
-			f.Close()
+			_ = f.Close()
 			panic(err)
 		}
 

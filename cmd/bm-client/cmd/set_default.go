@@ -47,7 +47,7 @@ var setDefaultCmd = &cobra.Command{
 		for i := range v.Store.Accounts {
 			v.Store.Accounts[i].Default = false
 
-			if v.Store.Accounts[i].Address == *sdFrom {
+			if v.Store.Accounts[i].Address.String() == *sdFrom {
 				v.Store.Accounts[i].Default = true
 			}
 		}

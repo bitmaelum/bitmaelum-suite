@@ -24,10 +24,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
-	"github.com/bitmaelum/bitmaelum-suite/internal/parse"
 	"github.com/spf13/cobra"
 )
 
@@ -56,7 +56,7 @@ Note: Creating an admin key can only be done locally on the mail-server.
 		}
 
 		// Our custom parser allows (and defaults) to using days
-		validDuration, err := parse.ValidDuration(*mgValid)
+		validDuration, err := internal.ValidDuration(*mgValid)
 		if err != nil {
 			fmt.Printf("Error: incorrect duration specified.\n")
 			os.Exit(1)
@@ -67,7 +67,7 @@ Note: Creating an admin key can only be done locally on the mail-server.
 			expires = time.Now().Add(validDuration)
 		}
 
-		err = parse.ManagementPermissions(*mgPerms)
+		err = internal.CheckManagementPermissions(*mgPerms)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
 			os.Exit(1)
@@ -91,7 +91,7 @@ Note: Creating an admin key can only be done locally on the mail-server.
 		}
 
 		// Store API key into persistent storage
-		repo := container.GetAPIKeyRepo()
+		repo := container.Instance.GetAPIKeyRepo()
 		err = repo.Store(k)
 		if err != nil {
 			fmt.Printf("Error: cannot store key: %s\n", err)

@@ -25,8 +25,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -54,7 +54,7 @@ func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (context.Context, b
 		return nil, false
 	}
 
-	accountRepo := container.GetAccountRepo()
+	accountRepo := container.Instance.GetAccountRepo()
 	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
 		return nil, false
@@ -87,7 +87,7 @@ func checkToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
 	}
 	tokenString := bearerToken[7:]
 
-	accountRepo := container.GetAccountRepo()
+	accountRepo := container.Instance.GetAccountRepo()
 	keys, err := accountRepo.FetchKeys(addr)
 	if err != nil {
 		logrus.Trace("auth: cannot fetch keys: ", err)
@@ -95,7 +95,7 @@ func checkToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
 	}
 
 	for _, key := range keys {
-		token, err := internal.ValidateJWTToken(tokenString, addr, key)
+		token, err := api.ValidateJWTToken(tokenString, addr, key)
 		if err == nil {
 			return token, nil
 		}

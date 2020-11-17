@@ -22,6 +22,7 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"runtime"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -62,20 +63,26 @@ func TestClientConfig(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
 
-	Client.Accounts.ProofOfWork = 0
-	err = LoadClientConfigOrPass("")
-	assert.Error(t, err)
-	assert.Equal(t, 0, Client.Accounts.ProofOfWork)
+	// Read from searchpath
+	if runtime.GOOS != "windows" {
+		// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
+		// the searchpath for windows is different. HOwever, we expect a regular path like /etc/bitmaelum/*.yml
+		// for this test to succeed.
+		Client.Accounts.ProofOfWork = 0
+		err = LoadClientConfigOrPass("")
+		assert.NoError(t, err)
+		assert.Equal(t, 22, Client.Accounts.ProofOfWork)
+	}
 
 	// Read from non-existing env
 	Client.Accounts.ProofOfWork = 0
-	os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
+	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
 	err = LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
 	// Read from existing env
 	Client.Accounts.ProofOfWork = 0
-	os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/client-config.yml")
+	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/client-config.yml")
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
@@ -111,20 +118,26 @@ func TestServerConfig(t *testing.T) {
 	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
 
 	// Read from predetermined paths
-	Server.Accounts.ProofOfWork = 0
-	err = LoadServerConfigOrPass("")
-	assert.Error(t, err)
-	assert.Equal(t, 0, Server.Accounts.ProofOfWork)
+	if runtime.GOOS != "windows" {
+		// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
+		// the searchpath for windows is different. HOwever, we expect a regular path like /etc/bitmaelum/*.yml
+		// for this test to succeed.
+
+		Server.Accounts.ProofOfWork = 0
+		err = LoadServerConfigOrPass("")
+		assert.NoError(t, err)
+		assert.Equal(t, 22, Server.Accounts.ProofOfWork)
+	}
 
 	// Read from non-existing env
 	Server.Accounts.ProofOfWork = 0
-	os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/does/not/exist.yml")
+	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/does/not/exist.yml")
 	err = LoadServerConfigOrPass("")
 	assert.Error(t, err)
 
 	// Read from existing env
 	Server.Accounts.ProofOfWork = 0
-	os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/server-config.yml")
+	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/server-config.yml")
 	err = LoadServerConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 22, Server.Accounts.ProofOfWork)

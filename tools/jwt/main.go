@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -65,14 +66,14 @@ func main() {
 	fmt.Printf("%s\n", info.PubKey)
 	fmt.Println("")
 
-	ts, err := internal.GenerateJWTToken(fromAddr.Hash(), info.PrivKey)
+	ts, err := api.GenerateJWTToken(fromAddr.Hash(), info.PrivKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	fmt.Println(ts)
 	fmt.Println("")
 
-	token, err := internal.ValidateJWTToken(ts, fromAddr.Hash(), info.PubKey)
+	token, err := api.ValidateJWTToken(ts, fromAddr.Hash(), info.PubKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}

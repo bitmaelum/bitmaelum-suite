@@ -23,7 +23,7 @@ import (
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
 
@@ -46,14 +46,14 @@ var readCmd = &cobra.Command{
 		}
 
 		// Fetch routing info
-		resolver := container.GetResolveService()
+		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
 			logrus.Fatal("Cannot find routing ID for this account")
 			os.Exit(1)
 		}
 
-		handlers.ReadMessage(info, routingInfo, *rBox, *rMessageID, *rBlock)
+		handlers.ReadMessage(info, routingInfo, *rBox, *rMessageID)
 	},
 }
 
@@ -61,7 +61,6 @@ var (
 	rAccount   *string
 	rBox       *string
 	rMessageID *string
-	rBlock     *string
 )
 
 func init() {
@@ -70,5 +69,4 @@ func init() {
 	rAccount = readCmd.Flags().StringP("account", "a", "", "Account")
 	rBox = readCmd.Flags().StringP("box", "b", "", "Box to fetch")
 	rMessageID = readCmd.Flags().StringP("message", "m", "", "Message ID")
-	rBlock = readCmd.Flags().StringP("block", "", "default", "block")
 }

@@ -22,8 +22,8 @@ package vault
 import (
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	bmtest "github.com/bitmaelum/bitmaelum-suite/internal/testing"
+	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -53,11 +53,12 @@ func TestNew(t *testing.T) {
 	err = v.WriteToDisk()
 	assert.Errorf(t, err, "vault seems to have invalid data. Refusing to overwrite the current vault")
 
-	privKey, pubKey, _ := bmtest.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, _ := testing2.ReadTestKey("../../testdata/key-1.json")
 
-	acc := &internal.AccountInfo{
+	addr, _ := address.NewAddress("foobar!")
+	acc := &AccountInfo{
 		Default:   false,
-		Address:   "foobar!",
+		Address:   *addr,
 		Name:      "Foo Bar",
 		Settings:  nil,
 		PrivKey:   *privKey,
@@ -87,17 +88,18 @@ func TestNew(t *testing.T) {
 }
 
 func TestFindShortRoutingId(t *testing.T) {
-	var acc internal.AccountInfo
+	var acc AccountInfo
 
 	v, _ := New("", []byte{})
 
-	acc = internal.AccountInfo{Address: "example!", RoutingID: "123456780000"}
+	addr, _ := address.NewAddress("example!")
+	acc = AccountInfo{Address: *addr, RoutingID: "123456780000"}
 	v.AddAccount(acc)
-	acc = internal.AccountInfo{Address: "example!", RoutingID: "123456780001"}
+	acc = AccountInfo{Address: *addr, RoutingID: "123456780001"}
 	v.AddAccount(acc)
-	acc = internal.AccountInfo{Address: "example!", RoutingID: "123456780002"}
+	acc = AccountInfo{Address: *addr, RoutingID: "123456780002"}
 	v.AddAccount(acc)
-	acc = internal.AccountInfo{Address: "example!", RoutingID: "154353535335"}
+	acc = AccountInfo{Address: *addr, RoutingID: "154353535335"}
 	v.AddAccount(acc)
 
 	assert.Equal(t, "154353535335", v.FindShortRoutingID("154"))
@@ -115,21 +117,25 @@ func TestVaultChangePassword(t *testing.T) {
 }
 
 func TestGetAccountOrDefault(t *testing.T) {
-	var acc *internal.AccountInfo
+	var acc *AccountInfo
 
 	v, _ := New("", []byte{})
-	acc = &internal.AccountInfo{Address: "example1!", RoutingID: "123456780000"}
+	addr, _ := address.NewAddress("example1!")
+	acc = &AccountInfo{Address: *addr, RoutingID: "123456780000"}
 	v.AddAccount(*acc)
-	acc = &internal.AccountInfo{Address: "example2!", RoutingID: "123456780001"}
+	addr, _ = address.NewAddress("example2!")
+	acc = &AccountInfo{Address: *addr, RoutingID: "123456780001"}
 	v.AddAccount(*acc)
-	acc = &internal.AccountInfo{Address: "example3!", RoutingID: "123456780002", Default: true}
+	addr, _ = address.NewAddress("example3!")
+	acc = &AccountInfo{Address: *addr, RoutingID: "123456780002", Default: true}
 	v.AddAccount(*acc)
-	acc = &internal.AccountInfo{Address: "example4!", RoutingID: "154353535335"}
+	addr, _ = address.NewAddress("example4!")
+	acc = &AccountInfo{Address: *addr, RoutingID: "154353535335"}
 	v.AddAccount(*acc)
 
 	acc = GetAccountOrDefault(v, "")
-	assert.Equal(t, "example3!", acc.Address)
+	assert.Equal(t, "example3!", acc.Address.String())
 
 	acc = GetAccountOrDefault(v, "example2!")
-	assert.Equal(t, "example2!", acc.Address)
+	assert.Equal(t, "example2!", acc.Address.String())
 }
