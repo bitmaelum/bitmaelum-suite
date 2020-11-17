@@ -20,6 +20,7 @@
 package address
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -125,4 +126,18 @@ func TestRemainders(t *testing.T) {
 	a, err = NewAddress("john@acme!")
 	assert.NoError(t, err)
 	assert.True(t, a.HasOrganisationPart())
+}
+
+func TestJSON(t *testing.T) {
+	a, err := NewAddress("john@foobar!")
+	assert.NoError(t, err)
+
+	b, err := json.Marshal(a)
+	assert.NoError(t, err)
+	assert.Equal(t, "\"john@foobar!\"", string(b))
+
+	c := Address{}
+	err = json.Unmarshal(b, &c)
+	assert.NoError(t, err)
+	assert.Equal(t, "john@foobar!", c.String())
 }
