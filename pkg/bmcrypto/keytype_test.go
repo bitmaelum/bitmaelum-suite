@@ -71,7 +71,7 @@ func TestRSAPubKey(t *testing.T) {
 
 	// right type, wrong data
 	_, err = PublicKeyFromString(TestKeySet1[3])
-	assert.EqualError(t, err, "incorrect key data")
+	assert.EqualError(t, err, "incorrect key format")
 
 	// wrong type, right data
 	_, err = PublicKeyFromString(TestKeySet1[4])
@@ -121,7 +121,7 @@ func TestECDSAPub(t *testing.T) {
 
 	// Check public key data, but it's a private key
 	_, err = PublicKeyFromString(TestKeySet4[0])
-	assert.EqualError(t, err, "incorrect key data")
+	assert.EqualError(t, err, "incorrect key format")
 }
 
 func TestECDSAPriv(t *testing.T) {
