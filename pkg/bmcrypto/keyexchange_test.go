@@ -86,5 +86,4 @@ func TestKeyExchange(t *testing.T) {
 	k, err = KeyExchange(*privBobK, *pubAliceK)
 	assert.NoError(t, err)
 	assert.Equal(t, ed25519SharedSecret, k)
-
 }

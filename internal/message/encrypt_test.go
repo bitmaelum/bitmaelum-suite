@@ -56,20 +56,3 @@ func TestEncrypt(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, []byte("foobar"), plaintext)
 }
-
-func TestErrors(t *testing.T) {
-	kt, err := bmcrypto.FindKeyType("ecdsa")
-	assert.NoError(t, err)
-	priv, pub, err := bmcrypto.GenerateKeyPair(kt)
-	assert.NoError(t, err)
-
-	cipher, txID, c, err := Encrypt(*pub, []byte("foobar"))
-	assert.Error(t, err)
-	assert.Nil(t, cipher)
-	assert.Equal(t, "ecdsa", c)
-	assert.Equal(t, "", txID)
-
-	_, err = Decrypt(*priv, "", []byte("foobar"))
-	assert.Error(t, err)
-
-}

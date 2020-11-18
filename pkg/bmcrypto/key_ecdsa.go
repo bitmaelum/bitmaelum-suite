@@ -64,13 +64,14 @@ func (k *KeyEcdsa) String() string {
 
 // ParsePrivateKeyData will parse a string representation of a key and returns the given key
 func (k *KeyEcdsa) ParsePrivateKeyData(buf []byte) (interface{}, error) {
-	return x509.ParseECPrivateKey(buf)
+	return x509.ParsePKCS8PrivateKey(buf)
+	// return x509.ParseECPrivateKey(buf)
 }
 
 // ParsePrivateKeyInterface will parse a interface and returns the key representation
 func (k *KeyEcdsa) ParsePrivateKeyInterface(key interface{}) ([]byte, error) {
 	switch key := key.(type) {
-	case ecdsa.PrivateKey:
+	case *ecdsa.PrivateKey:
 		return x509.MarshalPKCS8PrivateKey(key)
 	}
 
@@ -133,13 +134,30 @@ func (k *KeyEcdsa) Sign(_ io.Reader, key PrivKey, message []byte) ([]byte, error
 }
 
 // Encrypt will encrypt the given bytes with the public key. Will return the ciphertext, a transaction ID (if needed), the crypto used and an error
-func (k *KeyEcdsa) Encrypt(key PubKey, bytes []byte) ([]byte, string, string, error) {
-	panic("implement me")
+func (k *KeyEcdsa) Encrypt(key PubKey, message []byte) ([]byte, string, string, error) {
+	secret, txID, err := DualKeyExchange(key)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	encryptedMessage, err := MessageEncrypt(secret, message)
+
+	return encryptedMessage, txID.ToHex(), "ecdsa+aes", err
 }
 
 // Decrypt will decrypt the given bytes with the private key
-func (k *KeyEcdsa) Decrypt(key PrivKey, s string, bytes []byte) ([]byte, error) {
-	panic("implement me")
+func (k *KeyEcdsa) Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
+	tx, err := TxIDFromString(txID)
+	if err != nil {
+		return nil, err
+	}
+
+	secret, ok, err := DualKeyGetSecret(key, *tx)
+	if !ok || err != nil {
+		return nil, err
+	}
+
+	return MessageDecrypt(secret, message)
 }
 
 // ParsePublicKeyData will parse a interface and returns the key representation
@@ -165,4 +183,9 @@ func (k *KeyEcdsa) KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 		privK.K.(*ecdsa.PrivateKey).D.Bytes(),
 	)
 	return ke.Bytes(), nil
+}
+
+// DualKeyExchange allows for a ECIES key exchange
+func (k *KeyEcdsa) DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
+	return nil, nil, errors.New("not supported yet")
 }

@@ -217,3 +217,8 @@ func (k *KeyRsa) ParsePublicKeyData(buf []byte) (interface{}, error) {
 func (k *KeyRsa) KeyExchange(_ PrivKey, _ PubKey) ([]byte, error) {
 	return nil, errors.New("cannot exchange with RSA")
 }
+
+// DualKeyExchange allows for a ECIES key exchange
+func (k *KeyRsa) DualKeyExchange(_ PubKey) ([]byte, *TransactionID, error) {
+	return nil, nil, errors.New("cannot dual exchange with RSA")
+}

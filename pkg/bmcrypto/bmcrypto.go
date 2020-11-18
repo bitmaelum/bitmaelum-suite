@@ -57,13 +57,17 @@ func Verify(key PubKey, message []byte, sig []byte) (bool, error) {
 
 // GenerateKeyPair generates a private/public keypair based on the given type
 func GenerateKeyPair(kt KeyType) (*PrivKey, *PubKey, error) {
+	if kt == nil {
+		return nil, nil, errors.New("need a valid keytype")
+	}
+
 	return kt.GenerateKeyPair(randReader)
 }
 
 // KeyExchange exchange a message given the Private and other's Public Key
 func KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 	if !privK.Type.CanKeyExchange() {
-		return nil, errors.New("unknown key type for key exchange")
+		return nil, errors.New("key type cannot be used for key exchange")
 	}
 
 	return privK.Type.KeyExchange(privK, pubK)

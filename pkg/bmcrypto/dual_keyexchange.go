@@ -69,30 +69,7 @@ func DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
 		return nil, nil, errors.New("this type cannot be used for dual key exchange")
 	}
 
-	rs, err := generateRandomScalar()
-	if err != nil {
-		return nil, nil, errors.New("error while getting a random scalar")
-	}
-
-	r := ed25519.NewKeyFromSeed(rs)
-	R := r.Public()
-
-	// Step 1: D = rA
-	D, err := curve25519.X25519(
-		EdPrivToX25519(r.Seed()),
-		EdPubToX25519(pub.K.(ed25519.PublicKey)),
-	)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	f := hs(D)      // Step 2: f = Hs(D)
-	P := f.Public() // Step 3-5: convert F into private Key (F=fG)
-
-	return D, &TransactionID{
-		P: P.(ed25519.PublicKey)[:32],
-		R: R.(ed25519.PublicKey)[:32],
-	}, nil
+	return pub.Type.DualKeyExchange(pub)
 }
 
 // DualKeyGetSecret verifies if the transaction ID matches our private key. If so, it will return the

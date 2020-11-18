@@ -78,16 +78,16 @@ func TestGenerate(t *testing.T) {
 
 	// Unknown key
 	_, _, err = GenerateKeyPair(nil)
-	assert.EqualError(t, err, "incorrect key type specified")
+	assert.Error(t, err)
 }
 
-func TestRSAV1(t *testing.T) {
-	kt, err := FindKeyType("rsav1")
+func TestRSA4096(t *testing.T) {
+	kt, err := FindKeyType("rsa4096")
 	assert.NoError(t, err)
+
 	privKey, pubKey, err := GenerateKeyPair(kt)
 	assert.Nil(t, err)
 	assert.IsType(t, (*rsa.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (*rsa.PublicKey)(nil), pubKey.K)
 	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size()*8, 4096)
-
 }

@@ -31,7 +31,8 @@ import (
 )
 
 var TestKeySet1 = []string{
-	"rsa MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB",
+	"rsa MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAySB+eJGwb1Wu8KERTBLxKfMaZ7VRP92Q0LmJbqF5X2NrLyO+WkcYCcTqqoeW9unfoEiT4dS0I2YRLNcXztTaPs9xcoAWuXxPHwMKdjFKWQubttUoAAU08HpCkceO2y29NsrgOfKgUUc+D8FRXtyAe+GUg6wpWhxtT1BmjIgT4LIJKTKJ7cUdLxDQuKmT0uj0B+LQ4DTo4SvE7aV+Lb4wD2kwB0CHckHsbVC1jFPPcSLEtaSAjssaHe6v2c0oS2VdvuHq2pMa2lnuR/+wXeWn+zf0Rft0rcZNbIDpRt+DQH5g6VhA1Ww802mB/XYGaZcljzR5ArCDX8flvHP04ZcVWQIDAQAB",
+	// "rsa MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB",
 	"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB",
 	"fooobar",
 	"rsa foo",
@@ -44,7 +45,8 @@ var TestKeySet3 = []string{
 	"ecdsa MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE58d01mIg3iWGqBHY7N6ch4L4LWya8Es2luWC08Wjn994nLgIOUp+cdMUfDYBe/x1aPE/yghGe3rrF4jW8uxVWy40BZK4NIu5yjMgSw0WBGTxOmZsVaA/xaOzvZSMTXxM",
 }
 var TestKeySet4 = []string{
-	"ecdsa MIGkAgEBBDBLD4tDPxb/Xw2SzOsDEwl42LinqQmlWmcusiQJSnHn2VJsHzTuBoj7zE0dGhBS/ESgBwYFK4EEACKhZANiAATnx3TWYiDeJYaoEdjs3pyHgvgtbJrwSzaW5YLTxaOf33icuAg5Sn5x0xR8NgF7/HVo8T/KCEZ7eusXiNby7FVbLjQFkrg0i7nKMyBLDRYEZPE6ZmxVoD/Fo7O9lIxNfEw=",
+	"ecdsa MIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDDt8LNhN1AHVrBuBqKrryGgUS0EdRdjRuYGjONDYI96Vy8IcGsz4HQrX0biOzfE5iuhZANiAAT67cjQyt3qJUktq0dJy/KZ/15NhPpqBlG7NCwVyeyqcU2IlpE0bM+58BOkBpHCYq7zxEfXurDYIuCMKNKExJXXUeCczPBNHg9pWVVCPTHkypb69VURfYgQSo/58vSXCjU=",
+	"ecdsa MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE+u3I0Mrd6iVJLatHScvymf9eTYT6agZRuzQsFcnsqnFNiJaRNGzPufATpAaRwmKu88RH17qw2CLgjCjShMSV11HgnMzwTR4PaVlVQj0x5MqW+vVVEX2IEEqP+fL0lwo1",
 }
 var TestKeySet5 = []string{
 	"ed25519 MC4CAQAwBQYDK2VwBCIEIMdUuZk8GXMMRnrbZ90JDNIrz5h7ac2whZiqpveDSgZ7",
@@ -55,7 +57,7 @@ func TestRSAPubKey(t *testing.T) {
 	pk, err := PublicKeyFromString(TestKeySet1[0])
 	assert.NoError(t, err)
 	assert.Equal(t, "rsa", pk.Type.String())
-	assert.Equal(t, "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB", pk.S)
+	assert.Equal(t, "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAySB+eJGwb1Wu8KERTBLxKfMaZ7VRP92Q0LmJbqF5X2NrLyO+WkcYCcTqqoeW9unfoEiT4dS0I2YRLNcXztTaPs9xcoAWuXxPHwMKdjFKWQubttUoAAU08HpCkceO2y29NsrgOfKgUUc+D8FRXtyAe+GUg6wpWhxtT1BmjIgT4LIJKTKJ7cUdLxDQuKmT0uj0B+LQ4DTo4SvE7aV+Lb4wD2kwB0CHckHsbVC1jFPPcSLEtaSAjssaHe6v2c0oS2VdvuHq2pMa2lnuR/+wXeWn+zf0Rft0rcZNbIDpRt+DQH5g6VhA1Ww802mB/XYGaZcljzR5ArCDX8flvHP04ZcVWQIDAQAB", pk.S)
 	assert.Equal(t, 65537, pk.K.(*rsa.PublicKey).E)
 	assert.Equal(t, "", pk.Description)
 
@@ -73,13 +75,13 @@ func TestRSAPubKey(t *testing.T) {
 
 	// wrong type, right data
 	_, err = PublicKeyFromString(TestKeySet1[4])
-	assert.EqualError(t, err, "incorrect key type")
+	assert.EqualError(t, err, "unsupported key type")
 
 	pk, _ = PublicKeyFromString(TestKeySet1[0])
 	npk, err := PublicKeyFromInterface(pk.Type, pk.K)
 	assert.NoError(t, err)
 	assert.Equal(t, "rsa", npk.Type.String())
-	assert.Equal(t, "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB", npk.S)
+	assert.Equal(t, "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAySB+eJGwb1Wu8KERTBLxKfMaZ7VRP92Q0LmJbqF5X2NrLyO+WkcYCcTqqoeW9unfoEiT4dS0I2YRLNcXztTaPs9xcoAWuXxPHwMKdjFKWQubttUoAAU08HpCkceO2y29NsrgOfKgUUc+D8FRXtyAe+GUg6wpWhxtT1BmjIgT4LIJKTKJ7cUdLxDQuKmT0uj0B+LQ4DTo4SvE7aV+Lb4wD2kwB0CHckHsbVC1jFPPcSLEtaSAjssaHe6v2c0oS2VdvuHq2pMa2lnuR/+wXeWn+zf0Rft0rcZNbIDpRt+DQH5g6VhA1Ww802mB/XYGaZcljzR5ArCDX8flvHP04ZcVWQIDAQAB", npk.S)
 	assert.Equal(t, pk.K, npk.K.(*rsa.PublicKey))
 	assert.Equal(t, "", npk.Description)
 }
@@ -117,19 +119,19 @@ func TestECDSAPub(t *testing.T) {
 	assert.Equal(t, "P-384", pk.K.(*ecdsa.PublicKey).Curve.Params().Name)
 	assert.Equal(t, "", pk.Description)
 
-	// Check private key data
+	// Check public key data, but it's a private key
 	_, err = PublicKeyFromString(TestKeySet4[0])
 	assert.EqualError(t, err, "incorrect key data")
 }
 
 func TestECDSAPriv(t *testing.T) {
 	d := new(big.Int)
-	d.SetString("11552901970705313238876759535655836311969175439875617508331015348976563282371780402868289145078300182831985971100740", 10)
+	d.SetString("36622354286273408401742860803717975834272203860876773101980455299082624468593645020123023501111501921279897088878123", 10)
 
 	pk, err := PrivateKeyFromString(TestKeySet4[0])
 	assert.NoError(t, err)
 	assert.Equal(t, "ecdsa", pk.Type.String())
-	assert.Equal(t, "MIGkAgEBBDBLD4tDPxb/Xw2SzOsDEwl42LinqQmlWmcusiQJSnHn2VJsHzTuBoj7zE0dGhBS/ESgBwYFK4EEACKhZANiAATnx3TWYiDeJYaoEdjs3pyHgvgtbJrwSzaW5YLTxaOf33icuAg5Sn5x0xR8NgF7/HVo8T/KCEZ7eusXiNby7FVbLjQFkrg0i7nKMyBLDRYEZPE6ZmxVoD/Fo7O9lIxNfEw=", pk.S)
+	assert.Equal(t, "MIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDDt8LNhN1AHVrBuBqKrryGgUS0EdRdjRuYGjONDYI96Vy8IcGsz4HQrX0biOzfE5iuhZANiAAT67cjQyt3qJUktq0dJy/KZ/15NhPpqBlG7NCwVyeyqcU2IlpE0bM+58BOkBpHCYq7zxEfXurDYIuCMKNKExJXXUeCczPBNHg9pWVVCPTHkypb69VURfYgQSo/58vSXCjU=", pk.S)
 	assert.Equal(t, d, pk.K.(*ecdsa.PrivateKey).D)
 	assert.Equal(t, "P-384", pk.K.(*ecdsa.PrivateKey).Curve.Params().Name)
 }
@@ -187,7 +189,7 @@ func TestPubKeyJSON(t *testing.T) {
 
 	data, err := pk.MarshalJSON()
 	assert.NoError(t, err)
-	assert.Equal(t, "\"rsa MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC57qC/BeoYcM6ijazuaCdJkbT8pvPpFEDVzf9ZQ9axswXU3mywSOaR3wflriSjmvRfUNs/BAjshgtJqgviUXx7lE5aG9mcUyvomyFFpfCR2l2Lvow0H8y7JoL6yxMSQf8gpAcaQzPB8dsfGe+DqA+5wjxXPOhC1QUcllt08yBB3wIDAQAB\"", string(data))
+	assert.Equal(t, "\"rsa MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAySB+eJGwb1Wu8KERTBLxKfMaZ7VRP92Q0LmJbqF5X2NrLyO+WkcYCcTqqoeW9unfoEiT4dS0I2YRLNcXztTaPs9xcoAWuXxPHwMKdjFKWQubttUoAAU08HpCkceO2y29NsrgOfKgUUc+D8FRXtyAe+GUg6wpWhxtT1BmjIgT4LIJKTKJ7cUdLxDQuKmT0uj0B+LQ4DTo4SvE7aV+Lb4wD2kwB0CHckHsbVC1jFPPcSLEtaSAjssaHe6v2c0oS2VdvuHq2pMa2lnuR/+wXeWn+zf0Rft0rcZNbIDpRt+DQH5g6VhA1Ww802mB/XYGaZcljzR5ArCDX8flvHP04ZcVWQIDAQAB\"", string(data))
 
 	err = pk.UnmarshalJSON([]byte("fasfdsadfA"))
 	assert.IsType(t, &json.SyntaxError{}, err)
@@ -201,7 +203,7 @@ func TestPubKeyJSON(t *testing.T) {
 
 func TestFingerprint(t *testing.T) {
 	pk, _ := PublicKeyFromString(TestKeySet1[0])
-	assert.Equal(t, "54fe2065620a04c17b022aa0f07461a862919e7c832d79aa211e6cebd784620b", pk.Fingerprint())
+	assert.Equal(t, "4d6dc360edab1276404d3ece66868d6b390288b5e4bad42c75b350b792127046", pk.Fingerprint())
 
 	pk, _ = PublicKeyFromString(TestKeySet2[0])
 	assert.Equal(t, "3bde10ad2dc6508163a8a4944c46684102ed777e57f73514c75e6e62448a3d85", pk.Fingerprint())

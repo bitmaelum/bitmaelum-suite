@@ -74,6 +74,8 @@ type KeyType interface {
 
 	// KeyExchange allows for a key exchange (if possible in the keytype)
 	KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error)
+	// DualKeyExchange allows for a ECIES key exchange
+	DualKeyExchange(_ PubKey) ([]byte, *TransactionID, error)
 }
 
 // KeyTypes is a list of all keytypes available
