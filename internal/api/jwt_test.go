@@ -151,4 +151,3 @@ func init() {
 	var edDSASigningMethod bmcrypto.SigningMethodEdDSA
 	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
 }
-
