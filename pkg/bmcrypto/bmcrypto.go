@@ -72,3 +72,21 @@ func KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 
 	return privK.Type.KeyExchange(privK, pubK)
 }
+
+// Encrypt a message with the given key
+func Encrypt(pubKey PubKey, message []byte) ([]byte, string, string, error) {
+	if !pubKey.Type.CanEncrypt() && !pubKey.Type.CanKeyExchange() {
+		return nil, "", "", errors.New("this key type is not usable for encryption")
+	}
+
+	return pubKey.Type.Encrypt(pubKey, message)
+}
+
+// Decrypt a message with the given key
+func Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
+	if !key.Type.CanEncrypt() && !key.Type.CanKeyExchange() {
+		return nil, errors.New("this key type is not usable for encryption")
+	}
+
+	return key.Type.Decrypt(key, txID, message)
+}

@@ -152,7 +152,7 @@ func (e *Envelope) CloseAndEncrypt(senderPrivKey *bmcrypto.PrivKey, recipientPub
 
 	// Set catalog information in the header
 	e.Header.Catalog.Size = uint64(len(e.EncryptedCatalog))
-	ek, tx, cr, err := Encrypt(*recipientPubKey, e.catalogKey)
+	ek, tx, cr, err := bmcrypto.Encrypt(*recipientPubKey, e.catalogKey)
 	if err != nil {
 		return err
 	}

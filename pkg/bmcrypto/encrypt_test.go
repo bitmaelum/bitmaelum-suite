@@ -17,23 +17,22 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package message
+package bmcrypto
 
 import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEncrypt(t *testing.T) {
 	// RSA Encryption
 	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
-	pubKey, _ := bmcrypto.PublicKeyFromString(string(data))
+	pubKey, _ := PublicKeyFromString(string(data))
 
 	data, _ = ioutil.ReadFile("../../testdata/privkey.rsa")
-	privKey, _ := bmcrypto.PrivateKeyFromString(string(data))
+	privKey, _ := PrivateKeyFromString(string(data))
 
 	cipher, _, c, err := Encrypt(*pubKey, []byte("foobar"))
 	assert.Nil(t, err)
@@ -45,8 +44,8 @@ func TestEncrypt(t *testing.T) {
 	assert.Equal(t, []byte("foobar"), plaintext)
 
 	// ED25519 Dual Key-Exchange + Encryption
-	priv25519Key, _ := bmcrypto.PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
-	pub25519Key, _ := bmcrypto.PublicKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
+	priv25519Key, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
+	pub25519Key, _ := PublicKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
 	cipher, txID, c, err := pub25519Key.Type.Encrypt(*pub25519Key, []byte("foobar"))
 	assert.Nil(t, err)
 	assert.Equal(t, "ed25519+aes", c)
