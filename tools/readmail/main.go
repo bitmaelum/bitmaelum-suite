@@ -30,6 +30,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 type options struct {
@@ -92,7 +93,7 @@ func main() {
 	}
 
 	catalog := &message.Catalog{}
-	err = internal.CatalogDecrypt(decryptedKey, data, catalog)
+	err = bmcrypto.CatalogDecrypt(decryptedKey, data, catalog)
 	if err != nil {
 		panic(err)
 	}
@@ -107,7 +108,7 @@ func main() {
 			panic(err)
 		}
 
-		r, err := internal.GetAesDecryptorReader(block.IV, block.Key, f)
+		r, err := bmcrypto.GetAesDecryptorReader(block.IV, block.Key, f)
 		if err != nil {
 			_ = f.Close()
 			panic(err)

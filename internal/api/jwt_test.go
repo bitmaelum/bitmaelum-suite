@@ -42,7 +42,7 @@ func TestGenerateJWTToken(t *testing.T) {
 	}
 
 	data, _ := ioutil.ReadFile("../../testdata/privkey.rsa")
-	privKey, err := bmcrypto.NewPrivKey(string(data))
+	privKey, err := bmcrypto.PrivKeyFromString(string(data))
 	assert.Nil(t, err)
 
 	haddr := hash.New("test!")
@@ -54,7 +54,7 @@ func TestGenerateJWTToken(t *testing.T) {
 
 func TestValidateJwtTokenExpiry(t *testing.T) {
 	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
-	pubKey, _ := bmcrypto.NewPubKey(string(data))
+	pubKey, _ := bmcrypto.PubKeyFromString(string(data))
 	haddr := hash.New("test!")
 
 	// The current time block in our mock token is 12:34:30 - 12:36:00 (1577882040 - 1577882130)
@@ -101,7 +101,7 @@ func TestValidateJWTToken(t *testing.T) {
 	}
 
 	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
-	pubKey, _ := bmcrypto.NewPubKey(string(data))
+	pubKey, _ := bmcrypto.PubKeyFromString(string(data))
 
 	haddr := hash.New("test!")
 
@@ -117,7 +117,9 @@ func TestValidateJWTToken(t *testing.T) {
 }
 
 func TestED25519(t *testing.T) {
-	priv, pub, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeED25519)
+	kt, err := bmcrypto.FindKeyType("ed25519")
+	assert.NoError(t, err)
+	priv, pub, err := bmcrypto.GenerateKeyPair(kt)
 	assert.NoError(t, err)
 
 	tokenStr, err := GenerateJWTToken(hash.New("test!"), *priv)
@@ -130,7 +132,9 @@ func TestED25519(t *testing.T) {
 }
 
 func TestECDSA(t *testing.T) {
-	priv, pub, err := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeECDSA)
+	kt, err := bmcrypto.FindKeyType("ecdsa")
+	assert.NoError(t, err)
+	priv, pub, err := bmcrypto.GenerateKeyPair(kt)
 	assert.NoError(t, err)
 
 	tokenStr, err := GenerateJWTToken(hash.New("test!"), *priv)

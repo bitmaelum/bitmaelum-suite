@@ -28,7 +28,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -151,13 +150,13 @@ func (c *Catalog) AddBlock(entry Block) error {
 	}
 
 	// Generate key iv for this block
-	iv, key, err := internal.GenerateIvAndKey()
+	iv, key, err := bmcrypto.GenerateIvAndKey()
 	if err != nil {
 		return err
 	}
 
 	// Wrap reader with encryption reader
-	reader, err = internal.GetAesEncryptorReader(iv, key, reader)
+	reader, err = bmcrypto.GetAesEncryptorReader(iv, key, reader)
 	if err != nil {
 		return err
 	}
@@ -205,13 +204,13 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 	}
 
 	// Generate Key and IV that we will use for encryption
-	iv, key, err := internal.GenerateIvAndKey()
+	iv, key, err := bmcrypto.GenerateIvAndKey()
 	if err != nil {
 		return err
 	}
 
 	// Wrap our reader with the encryption reader
-	reader, err = internal.GetAesEncryptorReader(iv, key, reader)
+	reader, err = bmcrypto.GetAesEncryptorReader(iv, key, reader)
 	if err != nil {
 		return err
 	}

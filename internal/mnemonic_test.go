@@ -27,7 +27,9 @@ import (
 )
 
 func TestGenerateED25519KeypairFromMnemonic(t *testing.T) {
-	s, priv1, pub1, err := GenerateKeypairWithMnemonic(bmcrypto.KeyTypeED25519)
+	kt, err := bmcrypto.FindKeyType("ed25519")
+	assert.NoError(t, err)
+	s, priv1, pub1, err := GenerateKeypairWithMnemonic(kt)
 	assert.NoError(t, err)
 
 	priv2, pub2, err := GenerateKeypairFromMnemonic(s)
@@ -38,7 +40,9 @@ func TestGenerateED25519KeypairFromMnemonic(t *testing.T) {
 }
 
 func TestGenerateRSAKeypairFromMnemonic(t *testing.T) {
-	s, priv1, pub1, err := GenerateKeypairWithMnemonic(bmcrypto.KeyTypeRSA)
+	kt, err := bmcrypto.FindKeyType("rsa")
+	assert.NoError(t, err)
+	s, priv1, pub1, err := GenerateKeypairWithMnemonic(kt)
 	assert.NoError(t, err)
 
 	priv2, pub2, err := GenerateKeypairFromMnemonic(s)

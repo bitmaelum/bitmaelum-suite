@@ -17,13 +17,12 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package api
+package bmcrypto
 
 import (
 	"crypto/ed25519"
 	"testing"
 
-	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,7 +34,8 @@ func TestSigningMethodEdDSAAlg(t *testing.T) {
 func TestSigningMethodEdDSASign(t *testing.T) {
 	m := &SigningMethodEdDSA{}
 
-	privKey, pubKey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
+	privKey, _ := PrivKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
+	pubKey, _ := PubKeyFromString("ed25519 MCowBQYDK2VwAyEARdZSwluYtMWTGI6Rvl0Bhu40RBDn6D88wyzFL1IR3DU=")
 
 	s, err := m.Sign("foobar", privKey.K.(ed25519.PrivateKey))
 	assert.NoError(t, err)

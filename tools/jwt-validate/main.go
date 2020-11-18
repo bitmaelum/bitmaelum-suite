@@ -39,7 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	key, err := bmcrypto.NewPubKey(os.Args[2])
+	key, err := bmcrypto.PubKeyFromString(os.Args[2])
 	if err != nil {
 		panic(err)
 	}

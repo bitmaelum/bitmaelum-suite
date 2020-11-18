@@ -65,8 +65,8 @@ func TxIDFromString(s string) (*TransactionID, error) {
 // for alice and bob to communicate through a non-deterministic DH.
 // It returns the (shared) secret, a transaction ID that needs to be send over to the other user.
 func DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
-	if pub.Type != KeyTypeED25519 {
-		return nil, nil, errors.New("can only use ed25519 keys in dual key exchange")
+	if !pub.Type.CanDualKeyExchange() {
+		return nil, nil, errors.New("this type cannot be used for dual key exchange")
 	}
 
 	r := ed25519.NewKeyFromSeed(generateRandomScalar())
@@ -93,8 +93,8 @@ func DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
 // DualKeyGetSecret verifies if the transaction ID matches our private key. If so, it will return the
 // secret that has been exchanged
 func DualKeyGetSecret(priv PrivKey, txID TransactionID) ([]byte, bool, error) {
-	if priv.Type != KeyTypeED25519 {
-		return nil, false, errors.New("can only use ed25519 keys in dual key exchange")
+	if !priv.Type.CanDualKeyExchange() {
+		return nil, false, errors.New("this type cannot be used for dual key exchange")
 	}
 
 	// Step 1-3: D' = aR

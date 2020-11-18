@@ -45,11 +45,11 @@ func TestSignRSA(t *testing.T) {
 
 	data, err := ioutil.ReadFile("../../testdata/privkey.rsa")
 	assert.NoError(t, err)
-	privKey, err := NewPrivKey(string(data))
+	privKey, err := PrivKeyFromString(string(data))
 	assert.NoError(t, err)
 	data, err = ioutil.ReadFile("../../testdata/pubkey.rsa")
 	assert.NoError(t, err)
-	pubKey, err := NewPubKey(string(data))
+	pubKey, err := PubKeyFromString(string(data))
 	assert.NoError(t, err)
 
 	sig, err := Sign(*privKey, signMessage)
@@ -70,11 +70,11 @@ func TestSignECDSA(t *testing.T) {
 
 	data, err := ioutil.ReadFile("../../testdata/privkey.ecdsa")
 	assert.NoError(t, err)
-	privKey, err := NewPrivKey(string(data))
+	privKey, err := PrivKeyFromString(string(data))
 	assert.NoError(t, err)
 	data, err = ioutil.ReadFile("../../testdata/pubkey.ecdsa")
 	assert.NoError(t, err)
-	pubKey, err := NewPubKey(string(data))
+	pubKey, err := PubKeyFromString(string(data))
 	assert.NoError(t, err)
 
 	sig, err := Sign(*privKey, signMessage)
@@ -95,11 +95,11 @@ func TestSignED25519(t *testing.T) {
 
 	data, err := ioutil.ReadFile("../../testdata/privkey.ed25519")
 	assert.NoError(t, err)
-	privKey, err := NewPrivKey(string(data))
+	privKey, err := PrivKeyFromString(string(data))
 	assert.NoError(t, err)
 	data, err = ioutil.ReadFile("../../testdata/pubkey.ed25519")
 	assert.NoError(t, err)
-	pubKey, err := NewPubKey(string(data))
+	pubKey, err := PubKeyFromString(string(data))
 	assert.NoError(t, err)
 
 	sig, err := Sign(*privKey, signMessage)
@@ -118,21 +118,11 @@ func TestSignED25519(t *testing.T) {
 func TestSignErr(t *testing.T) {
 	data, err := ioutil.ReadFile("../../testdata/privkey.ed25519")
 	assert.NoError(t, err)
-	privKey, err := NewPrivKey(string(data))
+	_, err = PrivKeyFromString(string(data))
 	assert.NoError(t, err)
 
 	data, err = ioutil.ReadFile("../../testdata/pubkey.ed25519")
 	assert.NoError(t, err)
-	pubKey, err := NewPubKey(string(data))
+	_, err = PubKeyFromString(string(data))
 	assert.NoError(t, err)
-
-	privKey.Type = "fooooobar-notexist"
-	sig, err := Sign(*privKey, []byte("message"))
-	assert.Errorf(t, err, "unknown key type for signing")
-	assert.Nil(t, sig)
-
-	pubKey.Type = "foooobar-notexist"
-	ok, err := Verify(*pubKey, []byte{}, []byte{})
-	assert.Errorf(t, err, "unknown key type for signing")
-	assert.False(t, ok)
 }

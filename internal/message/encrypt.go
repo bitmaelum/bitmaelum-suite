@@ -20,78 +20,25 @@
 package message
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
 	"errors"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 // Encrypt a message with the given key
 func Encrypt(pubKey bmcrypto.PubKey, message []byte) ([]byte, string, string, error) {
-	if !pubKey.CanEncrypt() && !pubKey.CanKeyExchange() {
+	if !pubKey.Type.CanEncrypt() && !pubKey.Type.CanKeyExchange() {
 		return nil, "", "", errors.New("this key type is not usable for encryption")
 	}
 
-	switch pubKey.Type {
-	case bmcrypto.KeyTypeRSA, bmcrypto.KeyTypeRSAV1:
-		encryptedMessage, err := encryptRsa(pubKey.K.(*rsa.PublicKey), message)
-		return encryptedMessage, "", "rsa+aes256gcm", err
-		// TODO: Implement KeyTypeECDSA
-	case bmcrypto.KeyTypeED25519:
-		return encryptED25519(pubKey, message)
-	}
-
-	return nil, "", "", errors.New("encryption not implemented for" + pubKey.Type.String())
+	return pubKey.Type.Encrypt(pubKey, message)
 }
 
 // Decrypt a message with the given key
 func Decrypt(key bmcrypto.PrivKey, txID string, message []byte) ([]byte, error) {
-	if !key.CanEncrypt() && !key.CanKeyExchange() {
+	if !key.Type.CanEncrypt() && !key.Type.CanKeyExchange() {
 		return nil, errors.New("this key type is not usable for encryption")
 	}
 
-	switch key.Type {
-	case bmcrypto.KeyTypeRSA, bmcrypto.KeyTypeRSAV1:
-		return decryptRsa(key.K.(*rsa.PrivateKey), message)
-	// TODO: Implement KeyTypeECDSA
-	case bmcrypto.KeyTypeED25519:
-		return decryptED25519(key, txID, message)
-
-	}
-
-	return nil, errors.New("encryption not implemented for" + key.Type.String())
-}
-
-func encryptRsa(key *rsa.PublicKey, message []byte) ([]byte, error) {
-	return rsa.EncryptPKCS1v15(rand.Reader, key, message)
-}
-
-func decryptRsa(key *rsa.PrivateKey, message []byte) ([]byte, error) {
-	return rsa.DecryptPKCS1v15(rand.Reader, key, message)
-}
-
-func encryptED25519(pubKey bmcrypto.PubKey, message []byte) ([]byte, string, string, error) {
-	secret, txID, err := bmcrypto.DualKeyExchange(pubKey)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	encryptedMessage, err := internal.MessageEncrypt(secret, message)
-	return encryptedMessage, txID.ToHex(), "ed25519+aes256gcm", err
-}
-
-func decryptED25519(privKey bmcrypto.PrivKey, txIDString string, message []byte) ([]byte, error) {
-	txID, err := bmcrypto.TxIDFromString(txIDString)
-	if err != nil {
-		return nil, err
-	}
-
-	secret, ok, err := bmcrypto.DualKeyGetSecret(privKey, *txID)
-	if !ok || err != nil {
-		return nil, err
-	}
-
-	return internal.MessageDecrypt(secret, message)
+	return key.Type.Decrypt(key, txID, message)
 }

@@ -54,22 +54,7 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 		Subject:   addr.String(),
 	}
 
-	var signMethod jwt.SigningMethod
-	switch key.Type {
-	case bmcrypto.KeyTypeRSA:
-		signMethod = jwt.SigningMethodRS256
-	case bmcrypto.KeyTypeRSAV1:
-		signMethod = jwt.SigningMethodRS256
-	case bmcrypto.KeyTypeECDSA:
-		signMethod = jwt.SigningMethodES384
-	case bmcrypto.KeyTypeED25519:
-		sm := &SigningMethodEdDSA{}
-		signMethod = sm
-		var edDSASigningMethod SigningMethodEdDSA
-		jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
-	}
-
-	token := jwt.NewWithClaims(signMethod, claims)
+	token := jwt.NewWithClaims(key.Type.JWTSignMethod(), claims)
 
 	return token.SignedString(key.K)
 }
@@ -78,7 +63,7 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (*jwt.Token, error) {
 	logrus.Tracef("validating JWT token: %s %s %s", tokenString, addr.String(), key.S)
 
-	var edDSASigningMethod SigningMethodEdDSA
+	var edDSASigningMethod bmcrypto.SigningMethodEdDSA
 	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
 
 	// Just return the key from the token
@@ -93,33 +78,8 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 		return nil, err
 	}
 
-	// Make sure the token actually uses the correct signing method
-	switch key.Type {
-	case bmcrypto.KeyTypeRSA:
-		_, ok := token.Method.(*jwt.SigningMethodRSA)
-		if !ok {
-			logrus.Tracef("auth: jwt: " + invalidSigningMethod)
-			return nil, errors.New(invalidSigningMethod)
-		}
-	case bmcrypto.KeyTypeRSAV1:
-		_, ok := token.Method.(*jwt.SigningMethodRSA)
-		if !ok {
-			logrus.Tracef("auth: jwt: " + invalidSigningMethod)
-			return nil, errors.New(invalidSigningMethod)
-		}
-	case bmcrypto.KeyTypeECDSA:
-		_, ok := token.Method.(*jwt.SigningMethodECDSA)
-		if !ok {
-			logrus.Tracef("auth: jwt: " + invalidSigningMethod)
-			return nil, errors.New(invalidSigningMethod)
-		}
-	case bmcrypto.KeyTypeED25519:
-		_, ok := token.Method.(*SigningMethodEdDSA)
-		if !ok {
-			logrus.Tracef("auth: jwt: " + invalidSigningMethod)
-			return nil, errors.New(invalidSigningMethod)
-		}
-	default:
+	// Make sure the signature method of the JWT matches our public key
+	if !key.Type.JWTHasValidSignMethod(token) {
 		logrus.Tracef("auth: jwt: " + invalidSigningMethod)
 		return nil, errors.New(invalidSigningMethod)
 	}

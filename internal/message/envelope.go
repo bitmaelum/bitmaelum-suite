@@ -24,7 +24,6 @@ import (
 	"errors"
 	"io"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
@@ -89,7 +88,7 @@ func NewEnvelope() (*Envelope, error) {
 	}
 
 	// Always create a catalog key for later use
-	envelope.catalogKey, err = internal.CreateCatalogKey()
+	envelope.catalogKey, err = bmcrypto.CreateCatalogKey()
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +138,7 @@ func (e *Envelope) CloseAndEncrypt(senderPrivKey *bmcrypto.PrivKey, recipientPub
 	}
 
 	// Encrypt the catalog
-	e.EncryptedCatalog, err = internal.JSONEncrypt(e.catalogKey, e.catalog)
+	e.EncryptedCatalog, err = bmcrypto.JSONEncrypt(e.catalogKey, e.catalog)
 	if err != nil {
 		return err
 	}
