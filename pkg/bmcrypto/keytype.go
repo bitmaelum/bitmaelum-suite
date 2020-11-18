@@ -78,6 +78,11 @@ type KeyType interface {
 	DualKeyExchange(_ PubKey) ([]byte, *TransactionID, error)
 }
 
+var (
+	errIncorrectKeyFormat = errors.New("incorrect key format")
+	errUnsupportedKeyType = errors.New("unsupported key type")
+)
+
 // KeyTypes is a list of all keytypes available
 var KeyTypes = []KeyType{
 	NewRsaKey(2048),              // RSA 2048 bits
@@ -125,13 +130,13 @@ func (pk *PrivKey) UnmarshalJSON(b []byte) error {
 // PrivateKeyFromString creates a new private key based on the string data "<type> <key>"
 func PrivateKeyFromString(data string) (*PrivKey, error) {
 	if !strings.Contains(data, " ") {
-		return nil, errors.New("incorrect key format")
+		return nil, errIncorrectKeyFormat
 	}
 
 	// <type> <data>
 	parts := strings.SplitN(data, " ", 2)
 	if len(parts) != 2 {
-		return nil, errors.New("incorrect key format")
+		return nil, errIncorrectKeyFormat
 	}
 
 	pk := &PrivKey{}
@@ -140,7 +145,7 @@ func PrivateKeyFromString(data string) (*PrivKey, error) {
 	var err error
 	pk.Type, err = FindKeyType(parts[0])
 	if err != nil {
-		return nil, errors.New("unsupported key type")
+		return nil, errUnsupportedKeyType
 	}
 
 	// Set values
@@ -151,14 +156,14 @@ func PrivateKeyFromString(data string) (*PrivKey, error) {
 	buf := make([]byte, base64.StdEncoding.DecodedLen(len(pk.B)))
 	n, err := base64.StdEncoding.Decode(buf, pk.B)
 	if err != nil {
-		return nil, errors.New("incorrect key data")
+		return nil, errIncorrectKeyFormat
 	}
 
 	// Parse key
 	pk.K, err = pk.Type.ParsePrivateKeyData(buf[:n])
 
 	if err != nil {
-		return nil, errors.New("incorrect key data")
+		return nil, errIncorrectKeyFormat
 	}
 
 	return pk, nil
@@ -168,7 +173,7 @@ func PrivateKeyFromString(data string) (*PrivKey, error) {
 func PrivateKeyFromInterface(kt KeyType, key interface{}) (*PrivKey, error) {
 	buf, err := kt.ParsePrivateKeyInterface(key)
 	if err != nil {
-		return nil, errors.New("incorrect key")
+		return nil, errIncorrectKeyFormat
 	}
 
 	s := base64.StdEncoding.EncodeToString(buf)
@@ -230,7 +235,7 @@ func (pk *PubKey) UnmarshalJSON(b []byte) error {
 // PublicKeyFromString creates a new public key based on the string data "<type> <key> <description>"
 func PublicKeyFromString(data string) (*PubKey, error) {
 	if !strings.Contains(data, " ") {
-		return nil, errors.New("incorrect key format")
+		return nil, errIncorrectKeyFormat
 	}
 
 	// <type> <data>
@@ -239,7 +244,7 @@ func PublicKeyFromString(data string) (*PubKey, error) {
 		parts = append(parts, "")
 	}
 	if len(parts) != 3 {
-		return nil, errors.New("incorrect key format")
+		return nil, errIncorrectKeyFormat
 	}
 
 	pk := &PubKey{}
@@ -248,7 +253,7 @@ func PublicKeyFromString(data string) (*PubKey, error) {
 	var err error
 	pk.Type, err = FindKeyType(parts[0])
 	if err != nil {
-		return nil, errors.New("unsupported key type")
+		return nil, errUnsupportedKeyType
 	}
 
 	// Set values
@@ -260,13 +265,13 @@ func PublicKeyFromString(data string) (*PubKey, error) {
 	buf := make([]byte, base64.StdEncoding.DecodedLen(len(pk.B)))
 	n, err := base64.StdEncoding.Decode(buf, pk.B)
 	if err != nil {
-		return nil, errors.New("incorrect key data")
+		return nil, errIncorrectKeyFormat
 	}
 
 	// Parse key
 	pk.K, err = pk.Type.ParsePublicKeyData(buf[:n])
 	if err != nil {
-		return nil, errors.New("incorrect key data")
+		return nil, errIncorrectKeyFormat
 	}
 
 	return pk, nil
@@ -276,7 +281,7 @@ func PublicKeyFromString(data string) (*PubKey, error) {
 func PublicKeyFromInterface(kt KeyType, key interface{}) (*PubKey, error) {
 	buf, err := kt.ParsePublicKeyInterface(key)
 	if err != nil {
-		return nil, errors.New("incorrect key")
+		return nil, errIncorrectKeyFormat
 	}
 
 	s := base64.StdEncoding.EncodeToString(buf)
