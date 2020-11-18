@@ -60,8 +60,8 @@ func TestWrongKeyType(t *testing.T) {
 
 func TestDualKeyExchange(t *testing.T) {
 
-	privKey, _ := PrivKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
-	pubKey, _ := PubKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
+	privKey, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
+	pubKey, _ := PublicKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
 
 	D, txID, err := DualKeyExchange(*pubKey)
 	assert.NoError(t, err)
@@ -71,7 +71,7 @@ func TestDualKeyExchange(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, D, Dprime)
 
-	privKey2, _ := PrivKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEII6nA1nsVQu1Pid+CoH6yxw9Z2yOU9++S30awQvIW3m/")
+	privKey2, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEII6nA1nsVQu1Pid+CoH6yxw9Z2yOU9++S30awQvIW3m/")
 	Dprime, ok, err = DualKeyGetSecret(*privKey2, *txID)
 	assert.NoError(t, err)
 	assert.False(t, ok)
@@ -79,8 +79,8 @@ func TestDualKeyExchange(t *testing.T) {
 }
 
 func BenchmarkDualKeyExchange(b *testing.B) {
-	privKey, _ := PrivKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
-	pubKey, _ := PubKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
+	privKey, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
+	pubKey, _ := PublicKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
 
 	for i := 0; i < b.N; i++ {
 		D, txID, err := DualKeyExchange(*pubKey)

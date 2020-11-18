@@ -64,7 +64,7 @@ func (k *KeyEd25519) String() string {
 
 // ParsePrivateKeyData will parse a string representation of a key and returns the given key
 func (k *KeyEd25519) ParsePrivateKeyData(buf []byte) (interface{}, error) {
-	return x509.ParseECPrivateKey(buf)
+	return x509.ParsePKCS8PrivateKey(buf)
 }
 
 // ParsePrivateKeyInterface will parse a interface and returns the key representation
@@ -96,11 +96,11 @@ func (k *KeyEd25519) GenerateKeyPair(r io.Reader) (*PrivKey, *PubKey, error) {
 
 	// Generate keypair
 	pk := ed25519.NewKeyFromSeed(expBuf[:32])
-	privKey, err := PrivKeyFromInterface(pk)
+	privKey, err := PrivateKeyFromInterface(k, pk)
 	if err != nil {
 		return nil, nil, err
 	}
-	pubKey, err := PubKeyFromInterface(pk.Public())
+	pubKey, err := PublicKeyFromInterface(k, pk.Public())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -110,10 +110,6 @@ func (k *KeyEd25519) GenerateKeyPair(r io.Reader) (*PrivKey, *PubKey, error) {
 
 // JWTSignMethod will return the signing method used for this keytype
 func (k *KeyEd25519) JWTSignMethod() jwt.SigningMethod {
-	// Setup ed25519 signing method inside the JWT package first
-	var edDSASigningMethod SigningMethodEdDSA
-	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
-
 	return &SigningMethodEdDSA{}
 }
 
@@ -161,13 +157,18 @@ func (k *KeyEd25519) Decrypt(key PrivKey, txID string, message []byte) ([]byte, 
 }
 
 // ParsePublicKeyData will parse a interface and returns the key representation
-func (k *KeyEd25519) ParsePublicKeyData(bytes []byte) (interface{}, error) {
-	panic("implement me")
+func (k *KeyEd25519) ParsePublicKeyData(buf []byte) (interface{}, error) {
+	return x509.ParsePKIXPublicKey(buf)
 }
 
 // ParsePublicKeyInterface will parse a interface and returns the key representation
-func (k *KeyEd25519) ParsePublicKeyInterface(i interface{}) ([]byte, error) {
-	panic("implement me")
+func (k *KeyEd25519) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
+	switch key := key.(type) {
+	case ed25519.PublicKey:
+		return x509.MarshalPKIXPublicKey(key)
+	}
+
+	return nil, errors.New("incorrect key")
 }
 
 // KeyExchange allows for a key exchange (if possible in the keytype)

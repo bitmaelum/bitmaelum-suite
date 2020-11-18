@@ -31,9 +31,9 @@ import (
 func TestSignature(t *testing.T) {
 	addr := hash.New("john@acme!")
 
-	privKey, err := bmcrypto.PrivKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
+	privKey, err := bmcrypto.PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
 	assert.NoError(t, err)
-	pubKey, err := bmcrypto.PubKeyFromString("ed25519 MCowBQYDK2VwAyEARdZSwluYtMWTGI6Rvl0Bhu40RBDn6D88wyzFL1IR3DU=")
+	pubKey, err := bmcrypto.PublicKeyFromString("ed25519 MCowBQYDK2VwAyEARdZSwluYtMWTGI6Rvl0Bhu40RBDn6D88wyzFL1IR3DU=")
 	assert.NoError(t, err)
 
 	// Assume this is the current time during tests

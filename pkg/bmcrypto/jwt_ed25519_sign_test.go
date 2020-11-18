@@ -34,8 +34,8 @@ func TestSigningMethodEdDSAAlg(t *testing.T) {
 func TestSigningMethodEdDSASign(t *testing.T) {
 	m := &SigningMethodEdDSA{}
 
-	privKey, _ := PrivKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
-	pubKey, _ := PubKeyFromString("ed25519 MCowBQYDK2VwAyEARdZSwluYtMWTGI6Rvl0Bhu40RBDn6D88wyzFL1IR3DU=")
+	privKey, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
+	pubKey, _ := PublicKeyFromString("ed25519 MCowBQYDK2VwAyEARdZSwluYtMWTGI6Rvl0Bhu40RBDn6D88wyzFL1IR3DU=")
 
 	s, err := m.Sign("foobar", privKey.K.(ed25519.PrivateKey))
 	assert.NoError(t, err)

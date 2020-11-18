@@ -105,7 +105,7 @@ func (r *sqliteRepo) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 		return nil, err
 	}
 
-	pk, err := bmcrypto.PubKeyFromString(p)
+	pk, err := bmcrypto.PublicKeyFromString(p)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (r *sqliteRepo) ResolveRouting(routingID string) (*RoutingInfo, error) {
 		return nil, err
 	}
 
-	pk, err := bmcrypto.PubKeyFromString(p)
+	pk, err := bmcrypto.PublicKeyFromString(p)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (r *sqliteRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, 
 		return nil, err
 	}
 
-	pk, err := bmcrypto.PubKeyFromString(p)
+	pk, err := bmcrypto.PublicKeyFromString(p)
 	if err != nil {
 		return nil, err
 	}

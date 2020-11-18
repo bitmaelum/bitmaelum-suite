@@ -45,11 +45,11 @@ func TestSignRSA(t *testing.T) {
 
 	data, err := ioutil.ReadFile("../../testdata/privkey.rsa")
 	assert.NoError(t, err)
-	privKey, err := PrivKeyFromString(string(data))
+	privKey, err := PrivateKeyFromString(string(data))
 	assert.NoError(t, err)
 	data, err = ioutil.ReadFile("../../testdata/pubkey.rsa")
 	assert.NoError(t, err)
-	pubKey, err := PubKeyFromString(string(data))
+	pubKey, err := PublicKeyFromString(string(data))
 	assert.NoError(t, err)
 
 	sig, err := Sign(*privKey, signMessage)
@@ -70,11 +70,11 @@ func TestSignECDSA(t *testing.T) {
 
 	data, err := ioutil.ReadFile("../../testdata/privkey.ecdsa")
 	assert.NoError(t, err)
-	privKey, err := PrivKeyFromString(string(data))
+	privKey, err := PrivateKeyFromString(string(data))
 	assert.NoError(t, err)
 	data, err = ioutil.ReadFile("../../testdata/pubkey.ecdsa")
 	assert.NoError(t, err)
-	pubKey, err := PubKeyFromString(string(data))
+	pubKey, err := PublicKeyFromString(string(data))
 	assert.NoError(t, err)
 
 	sig, err := Sign(*privKey, signMessage)
@@ -95,11 +95,11 @@ func TestSignED25519(t *testing.T) {
 
 	data, err := ioutil.ReadFile("../../testdata/privkey.ed25519")
 	assert.NoError(t, err)
-	privKey, err := PrivKeyFromString(string(data))
+	privKey, err := PrivateKeyFromString(string(data))
 	assert.NoError(t, err)
 	data, err = ioutil.ReadFile("../../testdata/pubkey.ed25519")
 	assert.NoError(t, err)
-	pubKey, err := PubKeyFromString(string(data))
+	pubKey, err := PublicKeyFromString(string(data))
 	assert.NoError(t, err)
 
 	sig, err := Sign(*privKey, signMessage)
@@ -118,11 +118,11 @@ func TestSignED25519(t *testing.T) {
 func TestSignErr(t *testing.T) {
 	data, err := ioutil.ReadFile("../../testdata/privkey.ed25519")
 	assert.NoError(t, err)
-	_, err = PrivKeyFromString(string(data))
+	_, err = PrivateKeyFromString(string(data))
 	assert.NoError(t, err)
 
 	data, err = ioutil.ReadFile("../../testdata/pubkey.ed25519")
 	assert.NoError(t, err)
-	_, err = PubKeyFromString(string(data))
+	_, err = PublicKeyFromString(string(data))
 	assert.NoError(t, err)
 }

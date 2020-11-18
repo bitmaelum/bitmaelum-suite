@@ -69,7 +69,12 @@ func DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
 		return nil, nil, errors.New("this type cannot be used for dual key exchange")
 	}
 
-	r := ed25519.NewKeyFromSeed(generateRandomScalar())
+	rs, err := generateRandomScalar()
+	if err != nil {
+		return nil, nil, errors.New("error while getting a random scalar")
+	}
+
+	r := ed25519.NewKeyFromSeed(rs)
 	R := r.Public()
 
 	// Step 1: D = rA
@@ -117,25 +122,22 @@ func DualKeyGetSecret(priv PrivKey, txID TransactionID) ([]byte, bool, error) {
 	return nil, false, nil
 }
 
-func generateRandomScalar() []byte {
+func generateRandomScalar() ([]byte, error) {
 	// get 256bits/32bytes of random data
 	buf := make([]byte, 32)
 	_, err := io.ReadFull(randReader, buf)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var buf32 [32]byte
 	copy(buf32[:], buf[:32])
 
 	scReduce32(&buf32)
-	return buf32[:]
+	return buf32[:], nil
 }
 
 func hs(b []byte) ed25519.PrivateKey {
-	if len(b) != 32 {
-		panic("incorrect hash len")
-	}
 	h := sha3.NewLegacyKeccak256()
 	h.Write(b)
 

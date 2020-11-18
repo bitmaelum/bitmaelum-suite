@@ -63,9 +63,6 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (*jwt.Token, error) {
 	logrus.Tracef("validating JWT token: %s %s %s", tokenString, addr.String(), key.S)
 
-	var edDSASigningMethod bmcrypto.SigningMethodEdDSA
-	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
-
 	// Just return the key from the token
 	kf := func(token *jwt.Token) (interface{}, error) {
 		return key.K, nil
@@ -107,4 +104,9 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 
 	logrus.Trace("auth: jwt: token is valid")
 	return token, nil
+}
+
+func init() {
+	var edDSASigningMethod bmcrypto.SigningMethodEdDSA
+	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
 }

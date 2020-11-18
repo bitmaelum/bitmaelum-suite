@@ -142,11 +142,11 @@ func (k *KeyRsa) GenerateKeyPair(r io.Reader) (*PrivKey, *PubKey, error) {
 		return nil, nil, err
 	}
 
-	privKey, err := PrivKeyFromInterface(privRSAKey)
+	privKey, err := PrivateKeyFromInterface(k, privRSAKey)
 	if err != nil {
 		return nil, nil, err
 	}
-	pubKey, err := PubKeyFromInterface(privRSAKey.Public())
+	pubKey, err := PublicKeyFromInterface(k, privRSAKey.Public())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -197,13 +197,20 @@ func (k *KeyRsa) Decrypt(key PrivKey, _ string, message []byte) ([]byte, error) 
 }
 
 // ParsePublicKeyInterface will parse a interface and returns the key representation
-func (k *KeyRsa) ParsePublicKeyInterface(i interface{}) ([]byte, error) {
-	panic("implement me")
+func (k *KeyRsa) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
+	switch key := key.(type) {
+	case *rsa.PublicKey:
+		if key.Size()*8 == k.BitSize {
+			return x509.MarshalPKIXPublicKey(key)
+		}
+	}
+
+	return nil, errors.New("incorrect key")
 }
 
 // ParsePublicKeyData will parse a interface and returns the key representation
-func (k *KeyRsa) ParsePublicKeyData(bytes []byte) (interface{}, error) {
-	panic("implement me")
+func (k *KeyRsa) ParsePublicKeyData(buf []byte) (interface{}, error) {
+	return x509.ParsePKIXPublicKey(buf)
 }
 
 // KeyExchange allows for a key exchange (if possible in the keytype)

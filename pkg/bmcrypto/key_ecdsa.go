@@ -84,11 +84,11 @@ func (k *KeyEcdsa) GenerateKeyPair(r io.Reader) (*PrivKey, *PubKey, error) {
 		return nil, nil, err
 	}
 
-	privKey, err := PrivKeyFromInterface(pk)
+	privKey, err := PrivateKeyFromInterface(k, pk)
 	if err != nil {
 		return nil, nil, err
 	}
-	pubKey, err := PubKeyFromInterface(pk.Public())
+	pubKey, err := PublicKeyFromInterface(k, pk.Public())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -143,13 +143,18 @@ func (k *KeyEcdsa) Decrypt(key PrivKey, s string, bytes []byte) ([]byte, error) 
 }
 
 // ParsePublicKeyData will parse a interface and returns the key representation
-func (k *KeyEcdsa) ParsePublicKeyData(bytes []byte) (interface{}, error) {
-	panic("implement me")
+func (k *KeyEcdsa) ParsePublicKeyData(buf []byte) (interface{}, error) {
+	return x509.ParsePKIXPublicKey(buf)
 }
 
 // ParsePublicKeyInterface will parse a interface and returns the key representation
-func (k *KeyEcdsa) ParsePublicKeyInterface(i interface{}) ([]byte, error) {
-	panic("implement me")
+func (k *KeyEcdsa) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
+	switch key := key.(type) {
+	case *ecdsa.PublicKey:
+		return x509.MarshalPKIXPublicKey(key)
+	}
+
+	return nil, errors.New("incorrect key")
 }
 
 // KeyExchange allows for a key exchange (if possible in the keytype)

@@ -42,7 +42,7 @@ func TestGenerateJWTToken(t *testing.T) {
 	}
 
 	data, _ := ioutil.ReadFile("../../testdata/privkey.rsa")
-	privKey, err := bmcrypto.PrivKeyFromString(string(data))
+	privKey, err := bmcrypto.PrivateKeyFromString(string(data))
 	assert.Nil(t, err)
 
 	haddr := hash.New("test!")
@@ -54,7 +54,7 @@ func TestGenerateJWTToken(t *testing.T) {
 
 func TestValidateJwtTokenExpiry(t *testing.T) {
 	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
-	pubKey, _ := bmcrypto.PubKeyFromString(string(data))
+	pubKey, _ := bmcrypto.PublicKeyFromString(string(data))
 	haddr := hash.New("test!")
 
 	// The current time block in our mock token is 12:34:30 - 12:36:00 (1577882040 - 1577882130)
@@ -101,7 +101,7 @@ func TestValidateJWTToken(t *testing.T) {
 	}
 
 	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
-	pubKey, _ := bmcrypto.PubKeyFromString(string(data))
+	pubKey, _ := bmcrypto.PublicKeyFromString(string(data))
 
 	haddr := hash.New("test!")
 
@@ -124,6 +124,7 @@ func TestED25519(t *testing.T) {
 
 	tokenStr, err := GenerateJWTToken(hash.New("test!"), *priv)
 	assert.NoError(t, err)
+	assert.NotEmpty(t, tokenStr)
 
 	token, err := ValidateJWTToken(tokenStr, hash.New("test!"), *pub)
 	assert.NoError(t, err)
@@ -144,5 +145,10 @@ func TestECDSA(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "ES384", token.Method.Alg())
 	assert.Equal(t, "1882b91b7f49d479cf1ec2f1ecee30d0e5392e963a2109015b7149bf712ad1b6", token.Claims.(*jwt.StandardClaims).Subject)
-
 }
+
+func init() {
+	var edDSASigningMethod bmcrypto.SigningMethodEdDSA
+	jwt.RegisterSigningMethod(edDSASigningMethod.Alg(), func() jwt.SigningMethod { return &edDSASigningMethod })
+}
+

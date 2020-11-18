@@ -22,7 +22,6 @@ package bmcrypto
 import (
 	"crypto/elliptic"
 	"crypto/sha256"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -112,7 +111,7 @@ func (pk *PrivKey) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	pkCopy, err := PrivKeyFromString(s)
+	pkCopy, err := PrivateKeyFromString(s)
 	if err != nil {
 		return err
 	}
@@ -121,30 +120,25 @@ func (pk *PrivKey) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// PrivKeyFromString creates a new private key based on the string data "<type> <key>"
-func PrivKeyFromString(data string) (*PrivKey, error) {
+// PrivateKeyFromString creates a new private key based on the string data "<type> <key>"
+func PrivateKeyFromString(data string) (*PrivKey, error) {
 	if !strings.Contains(data, " ") {
 		return nil, errors.New("incorrect key format")
 	}
 
 	// <type> <data>
 	parts := strings.SplitN(data, " ", 2)
-	if len(parts) == 2 {
+	if len(parts) != 2 {
 		return nil, errors.New("incorrect key format")
 	}
 
 	pk := &PrivKey{}
 
 	// Find the correct key type
-	for _, kt := range KeyTypes {
-		if kt.String() == parts[0] {
-			pk.Type = kt
-		}
-	}
-
-	// No key type found
-	if pk.Type == nil {
-		return nil, errors.New("incorrect key type")
+	var err error
+	pk.Type, err = FindKeyType(parts[0])
+	if err != nil {
+		return nil, errors.New("unsupported key type")
 	}
 
 	// Set values
@@ -168,32 +162,21 @@ func PrivKeyFromString(data string) (*PrivKey, error) {
 	return pk, nil
 }
 
-// PrivKeyFromInterface creates a new key based on an interface{} (like rsa.PrivateKey)
-func PrivKeyFromInterface(key interface{}) (*PrivKey, error) {
-	pk := &PrivKey{}
-
-	// Find the correct key type from the interface
-	for _, kt := range KeyTypes {
-		k, err := kt.ParsePrivateKeyInterface(key)
-		if err != nil {
-			pk.Type = kt
-			pk.K = k
-			break
-		}
-	}
-
-	if pk.Type == nil {
-		return nil, errors.New("unknown key type")
-	}
-
-	buf, err := x509.MarshalPKCS8PrivateKey(key)
+// PrivateKeyFromInterface creates a new key based on an interface{} (like rsa.PrivateKey)
+func PrivateKeyFromInterface(kt KeyType, key interface{}) (*PrivKey, error) {
+	buf, err := kt.ParsePrivateKeyInterface(key)
 	if err != nil {
 		return nil, errors.New("incorrect key")
 	}
-	pk.S = base64.StdEncoding.EncodeToString(buf)
-	pk.B = []byte(pk.S)
 
-	return pk, nil
+	s := base64.StdEncoding.EncodeToString(buf)
+
+	return &PrivKey{
+		Type: kt,
+		S:    s,
+		B:    []byte(s),
+		K:    key,
+	}, nil
 }
 
 // PubKey is a structure containing a public key in multiple formats
@@ -233,7 +216,7 @@ func (pk *PubKey) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	pkCopy, err := PubKeyFromString(s)
+	pkCopy, err := PublicKeyFromString(s)
 	if err != nil {
 		return err
 	}
@@ -242,8 +225,8 @@ func (pk *PubKey) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// PubKeyFromString creates a new public key based on the string data "<type> <key> <description>"
-func PubKeyFromString(data string) (*PubKey, error) {
+// PublicKeyFromString creates a new public key based on the string data "<type> <key> <description>"
+func PublicKeyFromString(data string) (*PubKey, error) {
 	if !strings.Contains(data, " ") {
 		return nil, errors.New("incorrect key format")
 	}
@@ -253,22 +236,17 @@ func PubKeyFromString(data string) (*PubKey, error) {
 	if len(parts) == 2 {
 		parts = append(parts, "")
 	}
-	if len(parts) == 3 {
+	if len(parts) != 3 {
 		return nil, errors.New("incorrect key format")
 	}
 
 	pk := &PubKey{}
 
 	// Find the correct key type
-	for _, kt := range KeyTypes {
-		if kt.String() == parts[0] {
-			pk.Type = kt
-		}
-	}
-
-	// No key type found
-	if pk.Type == nil {
-		return nil, errors.New("incorrect key type")
+	var err error
+	pk.Type, err = FindKeyType(parts[0])
+	if err != nil {
+		return nil, errors.New("unsupported key type")
 	}
 
 	// Set values
@@ -284,8 +262,7 @@ func PubKeyFromString(data string) (*PubKey, error) {
 	}
 
 	// Parse key
-	pk.K, err = pk.Type.ParsePrivateKeyData(buf[:n])
-
+	pk.K, err = pk.Type.ParsePublicKeyData(buf[:n])
 	if err != nil {
 		return nil, errors.New("incorrect key data")
 	}
@@ -293,30 +270,20 @@ func PubKeyFromString(data string) (*PubKey, error) {
 	return pk, nil
 }
 
-// PubKeyFromInterface creates a new key based on an interface{} (like rsa.PublicKey)
-func PubKeyFromInterface(key interface{}) (*PubKey, error) {
-	pk := &PubKey{}
-
-	// Find the correct key type from the interface
-	for _, kt := range KeyTypes {
-		k, err := kt.ParsePublicKeyInterface(key)
-		if err != nil {
-			pk.Type = kt
-			pk.K = k
-			break
-		}
-	}
-
-	if pk.Type == nil {
-		return nil, errors.New("unknown key type")
-	}
-
-	buf, err := x509.MarshalPKIXPublicKey(key)
+// PublicKeyFromInterface creates a new key based on an interface{} (like rsa.PublicKey)
+func PublicKeyFromInterface(kt KeyType, key interface{}) (*PubKey, error) {
+	buf, err := kt.ParsePublicKeyInterface(key)
 	if err != nil {
 		return nil, errors.New("incorrect key")
 	}
-	pk.S = base64.StdEncoding.EncodeToString(buf)
-	pk.B = []byte(pk.S)
 
-	return pk, nil
+	s := base64.StdEncoding.EncodeToString(buf)
+
+	return &PubKey{
+		Type:        kt,
+		S:           s,
+		B:           []byte(s),
+		K:           key,
+		Description: "",
+	}, nil
 }

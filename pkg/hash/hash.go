@@ -43,9 +43,6 @@ type Hash string
 
 // New generates a regular hash. Assumes you know what you are hashing
 func New(s string) Hash {
-	/*if len(s) == 64 {
-		panic("seems like we are hashing a hash...")
-	}*/
 	sum := sha256.Sum256([]byte(s))
 
 	return Hash(hex.EncodeToString(sum[:]))

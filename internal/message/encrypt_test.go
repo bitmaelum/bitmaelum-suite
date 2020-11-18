@@ -30,10 +30,10 @@ import (
 func TestEncrypt(t *testing.T) {
 	// RSA Encryption
 	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
-	pubKey, _ := bmcrypto.PubKeyFromString(string(data))
+	pubKey, _ := bmcrypto.PublicKeyFromString(string(data))
 
 	data, _ = ioutil.ReadFile("../../testdata/privkey.rsa")
-	privKey, _ := bmcrypto.PrivKeyFromString(string(data))
+	privKey, _ := bmcrypto.PrivateKeyFromString(string(data))
 
 	cipher, _, c, err := Encrypt(*pubKey, []byte("foobar"))
 	assert.Nil(t, err)
@@ -45,11 +45,11 @@ func TestEncrypt(t *testing.T) {
 	assert.Equal(t, []byte("foobar"), plaintext)
 
 	// ED25519 Dual Key-Exchange + Encryption
-	priv25519Key, _ := bmcrypto.PrivKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
-	pub25519Key, _ := bmcrypto.PubKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
+	priv25519Key, _ := bmcrypto.PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
+	pub25519Key, _ := bmcrypto.PublicKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
 	cipher, txID, c, err := pub25519Key.Type.Encrypt(*pub25519Key, []byte("foobar"))
 	assert.Nil(t, err)
-	assert.Equal(t, "ed25519", c)
+	assert.Equal(t, "ed25519+aes", c)
 	assert.NotEqual(t, []byte("foobar"), cipher)
 
 	plaintext, err = pub25519Key.Type.Decrypt(*priv25519Key, txID, cipher)
