@@ -30,6 +30,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
+var errNoRoutingID = errors.New("cannot find routing ID for this account")
+
 // CreateAuthorizedKey creates a new authorized key
 func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) error {
 	var expiry = time.Time{}
@@ -57,7 +59,7 @@ func getAPIClient(info *vault.AccountInfo) (*api.API, error) {
 	resolver := container.Instance.GetResolveService()
 	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 	if err != nil {
-		return nil, errors.New("cannot find routing ID for this account")
+		return nil, errNoRoutingID
 	}
 
 	return api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)

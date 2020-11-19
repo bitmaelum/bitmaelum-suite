@@ -41,6 +41,11 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
+var (
+	errIncorrectPassword   = errors.New("incorrect password")
+	errNotOverwritingVault = errors.New("vault seems to have invalid data. Refusing to overwrite the current vault")
+)
+
 const (
 	pbkdfIterations = 100002
 )
@@ -154,7 +159,7 @@ func (v *Vault) WriteToDisk() error {
 	fileExists := err == nil
 
 	if fileExists && !v.sanityCheck() {
-		return errors.New("vault seems to have invalid data. Refusing to overwrite the current vault")
+		return errNotOverwritingVault
 	}
 
 	container, err := v.EncryptContainer()
@@ -198,7 +203,7 @@ func (v *Vault) DecryptContainer(container *vaultContainer) error {
 	hash := hmac.New(sha256.New, v.password)
 	hash.Write(container.Data)
 	if !bytes.Equal(hash.Sum(nil), container.Hmac) {
-		return errors.New("incorrect password")
+		return errIncorrectPassword
 	}
 
 	// Generate key based on password

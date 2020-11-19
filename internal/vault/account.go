@@ -59,6 +59,8 @@ func (v *Vault) RemoveAccount(addr address.Address) {
 	v.Store.Accounts = v.Store.Accounts[:k]
 }
 
+var errAccountNotFound = errors.New("cannot find account")
+
 // GetAccountInfo tries to find the given address and returns the account from the vault
 func (v *Vault) GetAccountInfo(addr address.Address) (*AccountInfo, error) {
 	for i := range v.Store.Accounts {
@@ -67,7 +69,7 @@ func (v *Vault) GetAccountInfo(addr address.Address) (*AccountInfo, error) {
 		}
 	}
 
-	return nil, errors.New("cannot find account")
+	return nil, errAccountNotFound
 }
 
 // HasAccount returns true when the vault has an account for the given address

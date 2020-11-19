@@ -22,7 +22,6 @@ package bmcrypto
 import (
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"io"
 	"math/big"
 )

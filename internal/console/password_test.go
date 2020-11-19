@@ -26,6 +26,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	errStubbedError    = errors.New("stubbed error")
+	errServiceNotFound = errors.New("not found")
+)
+
 type stubPasswordReader struct {
 	Passwords   []string
 	ReturnError bool
@@ -33,7 +38,7 @@ type stubPasswordReader struct {
 
 func (pr *stubPasswordReader) ReadPassword() ([]byte, error) {
 	if pr.ReturnError {
-		return nil, errors.New("stubbed error")
+		return nil, errStubbedError
 	}
 
 	s := pr.Passwords[0]
@@ -70,7 +75,7 @@ func (m *mockKeyring) Set(service, user, password string) error {
 func (m *mockKeyring) Get(service, user string) (string, error) {
 	v, ok := m.p[service+":"+user]
 	if !ok {
-		return "", errors.New("not found")
+		return "", errServiceNotFound
 	}
 
 	return v, nil

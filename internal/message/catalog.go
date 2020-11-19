@@ -36,6 +36,13 @@ import (
 	"github.com/spf13/afero"
 )
 
+var (
+	errBlockFormat              = errors.New("please specify blocks in the format '<type>,<content>' or '<type>,file:<filename>'")
+	errBlockNotFound            = errors.New("block not found")
+	errAttachmentNotExists      = func(att string) error { return fmt.Errorf("attachment does not exist: %s", att) }
+	errAttachmentCannotBeOpened = func(att string) error { return fmt.Errorf("attachment cannot be opened: %s", att) }
+)
+
 var fs = afero.NewOsFs()
 
 // BlockType represents a message block as used inside a catalog
@@ -250,7 +257,7 @@ func (c *Catalog) GetBlock(blockType string) (*BlockType, error) {
 		}
 	}
 
-	return nil, errors.New("block not found")
+	return nil, errBlockNotFound
 }
 
 // GetFirstBlock returns the first block found in the message
@@ -265,7 +272,7 @@ func GenerateBlocks(b []string) ([]Block, error) {
 	for _, block := range b {
 		split := strings.SplitN(block, ",", 2)
 		if len(split) <= 1 {
-			return nil, fmt.Errorf("please specify blocks in the format '<type>,<content>' or '<type>,file:<filename>'")
+			return nil, errBlockFormat
 		}
 
 		// By default assume content is inline
@@ -306,12 +313,12 @@ func GenerateAttachments(a []string) ([]Attachment, error) {
 	for _, attachment := range a {
 		_, err := os.Stat(attachment)
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("attachment %s does not exist", attachment)
+			return nil, errAttachmentNotExists(attachment)
 		}
 
 		reader, err := os.Open(attachment)
 		if err != nil {
-			return nil, fmt.Errorf("attachment %s cannot be opened", attachment)
+			return nil, errAttachmentCannotBeOpened(attachment)
 		}
 
 		attachments = append(attachments, Attachment{

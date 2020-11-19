@@ -35,6 +35,8 @@ import (
  *   - A message can be just uploaded by another server (or locally) and waiting inside the incoming queue
  */
 
+var errUnknownSection = errors.New("unknown section")
+
 // Section of the path we want to
 type Section int
 
@@ -57,7 +59,7 @@ func GetPath(section Section, msgID, file string) (string, error) {
 	case SectionProcessing:
 		return filepath.Join(config.Server.Paths.Processing, msgID, file), nil
 	default:
-		return "", errors.New("unknown section")
+		return "", errUnknownSection
 	}
 }
 

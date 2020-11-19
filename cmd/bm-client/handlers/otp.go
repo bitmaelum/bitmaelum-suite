@@ -23,7 +23,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"math"
 	"net"
@@ -72,7 +71,7 @@ func OtpGenerate(info *vault.AccountInfo, otpServer *string) {
 		}
 	}
 
-	logrus.Fatal(errors.New("public key not found for " + *otpServer))
+	logrus.Fatal(fmt.Errorf("public key not found for " + *otpServer))
 }
 
 func printOtpLoop(secret []byte, server string) {

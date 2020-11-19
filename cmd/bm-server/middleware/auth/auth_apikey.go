@@ -39,16 +39,11 @@ type APIKeyAuth struct {
 }
 
 var (
-	// ErrInvalidAPIKey is returned when the API key is not valid
-	ErrInvalidAPIKey = errors.New("invalid API key")
-	// ErrExpiredAPIKey is returned when a key is expired
-	ErrExpiredAPIKey = errors.New("expired API key")
-	// ErrInvalidAuthentication is returned when no or invalid authentication method is found
-	ErrInvalidAuthentication = errors.New("invalid authentication")
-	// ErrIncorrectRoute is returned when a route without a name is used (permissions are checked against named routes only)
-	ErrIncorrectRoute = errors.New("api keys need named routes")
-	// ErrInvalidPermission When a user does not have the correct permission
-	ErrInvalidPermission = errors.New("api keys need named routes")
+	errInvalidAPIKey         = errors.New("invalid API key")
+	errExpiredAPIKey         = errors.New("expired API key")
+	errInvalidAuthentication = errors.New("invalid authentication")
+	errIncorrectRoute        = errors.New("api keys need named routes")
+	errInvalidPermission     = errors.New("api keys need named routes")
 )
 
 type contextKey int
@@ -93,21 +88,21 @@ func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeNa
 	}
 
 	if k.AddressHash.String() != addrHash.String() {
-		return nil, ErrInvalidAPIKey
+		return nil, errInvalidAPIKey
 	}
 
 	if !k.Expires.IsZero() && time.Now().After(k.Expires) {
-		return nil, ErrExpiredAPIKey
+		return nil, errExpiredAPIKey
 	}
 
 	// Check permissions
 	if routeName == "" {
-		return nil, ErrIncorrectRoute
+		return nil, errIncorrectRoute
 	}
 
 	perms, ok := a.PermissionList[routeName]
 	if !ok {
-		return nil, ErrInvalidPermission
+		return nil, errInvalidPermission
 	}
 
 	for _, perm := range perms {
@@ -118,24 +113,24 @@ func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeNa
 		}
 	}
 
-	return nil, ErrInvalidPermission
+	return nil, errInvalidPermission
 }
 
 // check authorization API key
 func (*APIKeyAuth) getAPIKey(bearerToken string) (*key.APIKeyType, error) {
 	if bearerToken == "" {
-		return nil, ErrInvalidAuthentication
+		return nil, errInvalidAuthentication
 	}
 
 	if len(bearerToken) <= 6 || strings.ToUpper(bearerToken[0:7]) != "BEARER " {
-		return nil, ErrInvalidAuthentication
+		return nil, errInvalidAuthentication
 	}
 	apiKeyID := bearerToken[7:]
 
 	apiKeyRepo := container.Instance.GetAPIKeyRepo()
 	k, err := apiKeyRepo.Fetch(apiKeyID)
 	if err != nil {
-		return nil, ErrInvalidAPIKey
+		return nil, errInvalidAPIKey
 	}
 
 	return k, nil

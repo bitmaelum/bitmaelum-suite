@@ -31,6 +31,8 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+var errIncorrectTxID = errors.New("incorrect txID len (must be 64byte)")
+
 // The dual key exchange system is taken from https://steemit.com/monero/@luigi1111/understanding-monero-cryptography-privacy-part-2-stealth-addresses
 
 // TransactionID is a structure that holds the P and R value that is needed to verify the dual key signature
@@ -52,7 +54,7 @@ func TxIDFromString(s string) (*TransactionID, error) {
 	}
 
 	if len(b) != 64 {
-		return nil, errors.New("incorrect txID len (must be 64byte)")
+		return nil, errIncorrectTxID
 	}
 
 	return &TransactionID{

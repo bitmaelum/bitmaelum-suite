@@ -26,6 +26,12 @@ import (
 	"strings"
 )
 
+var (
+	errIncorrectKeyFormat    = errors.New("incorrect key format")
+	errIncorrectKeyType      = errors.New("incorrect key typ")
+	errUnknownValidationType = errors.New("unknown validation type")
+)
+
 const (
 	// TypeDNS is the validation through DNS TXT records
 	TypeDNS = "dns"
@@ -62,7 +68,7 @@ func NewValidationTypeFromString(s string) (*ValidationType, error) {
 	v := &ValidationType{}
 
 	if !strings.Contains(s, " ") {
-		return nil, errors.New("incorrect key format")
+		return nil, errIncorrectKeyFormat
 	}
 
 	// <type> <data>
@@ -77,13 +83,13 @@ func NewValidationTypeFromString(s string) (*ValidationType, error) {
 	case TypeKeyBase:
 		v.Type = TypeKeyBase
 	default:
-		return nil, errors.New("incorrect key type")
+		return nil, errIncorrectKeyType
 	}
 
 	// Set value
 	val := strings.TrimSpace(parts[1])
 	if len(val) == 0 {
-		return nil, errors.New("empty value")
+		return nil, errIncorrectKeyFormat
 	}
 	v.Value = parts[1]
 
@@ -126,6 +132,6 @@ func (v *ValidationType) Validate(o Organisation) (bool, error) {
 	case TypeDNS:
 		return validateDNS(o, v.Value)
 	default:
-		return false, errors.New("incorrect validation type")
+		return false, errUnknownValidationType
 	}
 }

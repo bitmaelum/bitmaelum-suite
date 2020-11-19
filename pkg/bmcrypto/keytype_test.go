@@ -63,11 +63,11 @@ func TestRSAPubKey(t *testing.T) {
 
 	// Without type
 	_, err = PublicKeyFromString(TestKeySet1[1])
-	assert.EqualError(t, err, "incorrect key format")
+	assert.EqualError(t, err, "incorrect key")
 
 	// Incorrect too
 	_, err = PublicKeyFromString(TestKeySet1[2])
-	assert.EqualError(t, err, "incorrect key format")
+	assert.EqualError(t, err, "incorrect key")
 
 	// right type, wrong data
 	_, err = PublicKeyFromString(TestKeySet1[3])

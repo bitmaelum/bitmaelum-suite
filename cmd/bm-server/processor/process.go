@@ -35,6 +35,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var errValidating = errors.New("error while validating")
+
 // ProcessMessage will process a message found in the processing queue.
 //   * If it's a local address, it will be moved to the local mailbox
 //   * If it's a remote address, it will be send to the remote mail server
@@ -253,7 +255,7 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 	if err != nil || !t.Valid {
 		logrus.Warnf("Ticket for message %s not valid after proof of work, moving to retry queue", msgID)
 		MoveToRetryQueue(msgID)
-		return nil, errors.New("error while validating")
+		return nil, errValidating
 	}
 
 	// TIcket is ok after we done our proof-of-work

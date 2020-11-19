@@ -28,6 +28,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
+var errOrganisationNotFound = errors.New("cannot find organisation")
+
 // OrganisationInfo represents a organisation configuration for a server
 type OrganisationInfo struct {
 	Addr        string                        `json:"addr"`          // org part from the bitmaelum address
@@ -63,7 +65,7 @@ func (v *Vault) GetOrganisationInfo(orgHash hash.Hash) (*OrganisationInfo, error
 		}
 	}
 
-	return nil, errors.New("cannot find organisation")
+	return nil, errOrganisationNotFound
 }
 
 // HasOrganisation returns true when the vault has an organisation for the given address

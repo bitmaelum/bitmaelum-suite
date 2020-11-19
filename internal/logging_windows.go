@@ -27,6 +27,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var errSyslogNotImplemented = errors.New("syslog not implemented on windows")
+
 func setupSyslogHook(proto, host string) (logrus.Hook, error) {
-	return nil, errors.New("syslog not implemented on windows")
+	return nil, errSyslogNotImplemented
 }

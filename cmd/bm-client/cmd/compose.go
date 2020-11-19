@@ -36,6 +36,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var errNoEditorFound = errors.New("cannot find editor")
+
 var composeCmd = &cobra.Command{
 	Use:     "compose",
 	Aliases: []string{"write", "send"},
@@ -127,7 +129,7 @@ func findEditorPath() (string, error) {
 		return editorPath, nil
 	}
 
-	return "", errors.New("cannot find editor")
+	return "", errNoEditorFound
 }
 
 func hasEditorConfigured() bool {

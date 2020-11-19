@@ -28,6 +28,8 @@ import (
 	"github.com/xhit/go-str2duration/v2"
 )
 
+var errUnknownPermission = func(p string) error { return errors.New("unknown permission: " + p) }
+
 // ValidDuration gets a time duration string and return the time duration. Accepts single int as days
 func ValidDuration(ds string) (time.Duration, error) {
 	if ds == "" {
@@ -59,7 +61,7 @@ func CheckManagementPermissions(perms []string) error {
 			}
 		}
 		if !found {
-			return errors.New("unknown permission: " + p)
+			return errUnknownPermission(p)
 		}
 	}
 
@@ -78,7 +80,7 @@ func CheckAccountPermissions(perms []string) error {
 			}
 		}
 		if !found {
-			return errors.New("unknown permission: " + p)
+			return errUnknownPermission(p)
 		}
 	}
 

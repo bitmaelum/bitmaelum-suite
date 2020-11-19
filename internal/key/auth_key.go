@@ -28,6 +28,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
+var errCannotSignPubKey = errors.New("cannot sing public key")
+
 // AuthKeyType represents a public key that is authorized to send email. This public key is signed by the private key of the owner and stored in the signature.
 type AuthKeyType struct {
 	Fingerprint string           `json:"fingerprint"`  // Fingerprint / ID
@@ -54,7 +56,7 @@ func (a *AuthKeyType) Sign(privkey bmcrypto.PrivKey) error {
 
 	signedKey, err := bmcrypto.Sign(privkey, h.Byte())
 	if err != nil {
-		return errors.New("cannot sing the public key")
+		return errCannotSignPubKey
 	}
 
 	a.Signature = base64.StdEncoding.EncodeToString(signedKey)

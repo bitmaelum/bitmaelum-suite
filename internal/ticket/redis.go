@@ -21,7 +21,6 @@ package ticket
 
 import (
 	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -45,7 +44,7 @@ func (r redisRepo) Fetch(ticketID string) (*Ticket, error) {
 	data, err := r.client.Get(r.client.Context(), createTicketKey(ticketID)).Result()
 	if data == "" || err != nil {
 		logrus.Trace("ticket not found in REDIS: ", data, err)
-		return nil, errors.New("ticket not found")
+		return nil, errTicketNotFound
 	}
 
 	ticket := &Ticket{}

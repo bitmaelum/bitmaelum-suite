@@ -29,6 +29,12 @@ import (
 	"github.com/vtolstov/jwt-go"
 )
 
+var (
+	errInvalidSigningMethod = errors.New("invalid signing method")
+	errTokenNotValid        = errors.New("token not valid")
+	errSubjectNotValid      = errors.New("subject not valid")
+)
+
 /*
  * @TODO
  * I don't really like this. Suppose we get access to a single JWT token. We can use the same token for every
@@ -78,14 +84,14 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	// Make sure the signature method of the JWT matches our public key
 	if !key.Type.JWTHasValidSignMethod(token) {
 		logrus.Tracef("auth: jwt: " + invalidSigningMethod)
-		return nil, errors.New(invalidSigningMethod)
+		return nil, errInvalidSigningMethod
 	}
 
 	// It should be a valid token
 	if !token.Valid {
 		logrus.Trace("auth: jwt: token not valid")
 		logrus.Tracef("auth: jwt: %#v", token)
-		return nil, errors.New("token not valid")
+		return nil, errTokenNotValid
 	}
 
 	// The standard claims should be valid
@@ -99,7 +105,7 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	res := subtle.ConstantTimeCompare([]byte(token.Claims.(*jwt.StandardClaims).Subject), []byte(addr.String()))
 	if res == 0 {
 		logrus.Tracef("auth: jwt: subject does not match")
-		return nil, errors.New("subject not valid")
+		return nil, errSubjectNotValid
 	}
 
 	logrus.Trace("auth: jwt: token is valid")

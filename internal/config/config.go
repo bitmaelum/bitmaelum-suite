@@ -32,7 +32,11 @@ import (
 
 var fs = afero.NewOsFs()
 
-var errNotFound = errors.New("cannot find config file")
+var (
+	errConfigNotFound       = errors.New("cannot find config file")
+	errClientConfigNotFound = errors.New("client config file not found")
+	errServerConfigNotFound = errors.New("server config file not found")
+)
 
 var triedPaths []string
 
@@ -84,12 +88,12 @@ func LoadClientConfigOrPass(configPath string) error {
 	for _, p := range getSearchPaths() {
 		p = filepath.Join(p, ClientConfigFile)
 		err = readConfigPath(p, "from hardcoded search path", Client.LoadConfig)
-		if err == nil || err != errNotFound {
+		if err == nil || err != errConfigNotFound {
 			return err
 		}
 	}
 
-	return errors.New("cannot find " + ClientConfigFile)
+	return errClientConfigNotFound
 }
 
 // LoadServerConfigOrPass loads client configuration, but return false if not able
@@ -110,12 +114,12 @@ func LoadServerConfigOrPass(configPath string) error {
 	for _, p := range getSearchPaths() {
 		p = filepath.Join(p, ServerConfigFile)
 		err = readConfigPath(p, "from hardcoded search path", Server.LoadConfig)
-		if err == nil || err != errNotFound {
+		if err == nil || err != errConfigNotFound {
 			return err
 		}
 	}
 
-	return errors.New("cannot find " + ServerConfigFile)
+	return errServerConfigNotFound
 }
 
 // Expands the given path and loads the configuration
@@ -126,7 +130,7 @@ func readConfigPath(p, src string, loader func(r io.Reader) error) error {
 
 	f, err := fs.Open(p)
 	if err != nil {
-		return errNotFound
+		return errConfigNotFound
 	}
 
 	return loader(f)

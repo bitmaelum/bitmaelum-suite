@@ -47,6 +47,12 @@ import (
 	"golang.org/x/crypto/acme"
 )
 
+var (
+	errCannotFindAuthChallenge = errors.New("letsencrypt: cannot find a authorization/challenge")
+	errValidationFailed        = errors.New("letsencrypt: validation has failed")
+	errNoAccount               = errors.New("account not loaded or registered yet")
+)
+
 // LetsEncrypt structure holds everything for generating certificates through the LetsEncrypt ACME provider
 type LetsEncrypt struct {
 	AcmeClient *acme.Client
@@ -218,7 +224,7 @@ func (le *LetsEncrypt) Authorize(order *acme.Order) (*acme.Order, error) {
 		}
 	}
 
-	return nil, errors.New("cannot find a authorization/challenge")
+	return nil, errCannotFindAuthChallenge
 }
 
 // acceptChallenge will accept a given challenge (http-01) for the given order and waits until LetsEncrypt has validated
@@ -238,7 +244,7 @@ func (le *LetsEncrypt) acceptChallenge(challenge *acme.Challenge, order *acme.Or
 	}
 
 	if order.Status != acme.StatusReady {
-		return nil, errors.New("validation seems to have failed")
+		return nil, errValidationFailed
 	}
 
 	return order, nil
@@ -248,7 +254,7 @@ func (le *LetsEncrypt) acceptChallenge(challenge *acme.Challenge, order *acme.Or
 // use the same account for requesting new certificates later on.
 func (le *LetsEncrypt) SaveAccount(dir string) error {
 	if le.Account == nil {
-		return errors.New("account not loaded or registered yet")
+		return errNoAccount
 	}
 
 	// Make sure directory exists before writing
