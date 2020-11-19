@@ -67,7 +67,7 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 
 // ValidateJWTToken validates a JWT token with the given public key and address
 func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (*jwt.Token, error) {
-	logrus.Tracef("validating JWT token: %s %s %s", tokenString, addr.String(), key.S)
+	logrus.Tracef("validating JWT token")
 
 	// Just return the key from the token
 	kf := func(token *jwt.Token) (interface{}, error) {
@@ -90,7 +90,6 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	// It should be a valid token
 	if !token.Valid {
 		logrus.Trace("auth: jwt: token not valid")
-		logrus.Tracef("auth: jwt: %#v", token)
 		return nil, errTokenNotValid
 	}
 

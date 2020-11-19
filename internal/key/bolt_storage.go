@@ -73,13 +73,13 @@ func (b boltRepo) Fetch(ID string, v interface{}) error {
 	err := b.client.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(b.BucketName))
 		if bucket == nil {
-			logrus.Trace("apikey not found in BOLT: ", ID, nil)
+			logrus.Trace("api key not found in storage")
 			return errKeyNotFound
 		}
 
 		data := bucket.Get([]byte(ID))
 		if data == nil {
-			logrus.Trace("apikey not found in BOLT: ", data, nil)
+			logrus.Trace("api key not found in storage")
 			return errKeyNotFound
 		}
 
