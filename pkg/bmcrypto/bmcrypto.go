@@ -22,9 +22,14 @@ package bmcrypto
 import (
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"io"
 	"math/big"
+)
+
+var (
+	errUnknownKeyType          = errors.New("unknown key type")
+	errCannotUseForKeyExchange = errors.New("key type cannot be used for key exchange")
+	errCannotUseForEncryption  = errors.New("this key type is not usable for encryption")
 )
 
 // Allows for easy mocking
@@ -42,7 +47,7 @@ func FindKeyType(typ string) (KeyType, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("unknown key type specified '%s'", typ)
+	return nil, errUnknownKeyType
 }
 
 // Sign a message based on the given key.
@@ -58,7 +63,7 @@ func Verify(key PubKey, message []byte, sig []byte) (bool, error) {
 // GenerateKeyPair generates a private/public keypair based on the given type
 func GenerateKeyPair(kt KeyType) (*PrivKey, *PubKey, error) {
 	if kt == nil {
-		return nil, nil, errors.New("need a valid keytype")
+		return nil, nil, errUnknownKeyType
 	}
 
 	return kt.GenerateKeyPair(randReader)
@@ -67,7 +72,7 @@ func GenerateKeyPair(kt KeyType) (*PrivKey, *PubKey, error) {
 // KeyExchange exchange a message given the Private and other's Public Key
 func KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 	if !privK.Type.CanKeyExchange() {
-		return nil, errors.New("key type cannot be used for key exchange")
+		return nil, errCannotUseForKeyExchange
 	}
 
 	return privK.Type.KeyExchange(privK, pubK)
@@ -76,7 +81,7 @@ func KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 // Encrypt a message with the given key
 func Encrypt(pubKey PubKey, message []byte) ([]byte, string, string, error) {
 	if !pubKey.Type.CanEncrypt() && !pubKey.Type.CanKeyExchange() {
-		return nil, "", "", errors.New("this key type is not usable for encryption")
+		return nil, "", "", errCannotUseForEncryption
 	}
 
 	return pubKey.Type.Encrypt(pubKey, message)
@@ -85,7 +90,7 @@ func Encrypt(pubKey PubKey, message []byte) ([]byte, string, string, error) {
 // Decrypt a message with the given key
 func Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
 	if !key.Type.CanEncrypt() && !key.Type.CanKeyExchange() {
-		return nil, errors.New("this key type is not usable for encryption")
+		return nil, errCannotUseForEncryption
 	}
 
 	return key.Type.Decrypt(key, txID, message)

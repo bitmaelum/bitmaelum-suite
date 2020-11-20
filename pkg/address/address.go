@@ -28,6 +28,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
+var errIncorrectAddress = func(addr string) error { return fmt.Errorf("incorrect address format specified: %s", addr) }
+
 var (
 	// This is the main regex where an address should confirm to. Much simpler than an email address
 	addressRegex = regexp.MustCompile(`^([a-z0-9][a-z0-9.\-]{1,62}[a-z0-9])(?:@([a-z0-9][a-z0-9.\-]{0,62}[a-z0-9]))?!$`)
@@ -69,7 +71,7 @@ func (a *Address) MarshalJSON() ([]byte, error) {
 // NewAddress returns a valid address structure based on the given address
 func NewAddress(address string) (*Address, error) {
 	if !addressRegex.MatchString(strings.ToLower(address)) {
-		return nil, fmt.Errorf("incorrect address format specified '%s'", address)
+		return nil, errIncorrectAddress(address)
 	}
 
 	matches := addressRegex.FindStringSubmatch(strings.ToLower(address))

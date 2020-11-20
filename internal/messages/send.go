@@ -27,16 +27,18 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var errInvalidTicket = errors.New("invalid ticket returned by server")
+
 // Send will send a message inside envelope via routing, using addr/key
 func Send(client api.API, envelope *message.Envelope) error {
 
 	// Get upload ticket
 	t, err := client.GetTicket(envelope.Header.From.Addr, envelope.Header.To.Addr, "")
 	if err != nil {
-		return errors.New("cannot get ticket from server: " + err.Error())
+		return err
 	}
 	if !t.Valid {
-		return errors.New("invalid ticket returned by server")
+		return errInvalidTicket
 	}
 
 	// parallelize uploads

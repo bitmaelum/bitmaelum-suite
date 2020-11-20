@@ -205,7 +205,7 @@ func (k *KeyRsa) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
 		}
 	}
 
-	return nil, errors.New("incorrect key")
+	return nil, errIncorrectKey
 }
 
 // ParsePublicKeyData will parse a interface and returns the key representation

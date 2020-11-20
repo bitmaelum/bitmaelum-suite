@@ -29,6 +29,11 @@ import (
 	"github.com/spf13/afero"
 )
 
+var (
+	errCantDeleteMandatoryBox = errors.New("cannot delete mandatory box")
+	errCannotDeleteBox        = errors.New("cannot remove box")
+)
+
 // Create a new mailbox in this account
 func (r *fileRepo) CreateBox(addr hash.Hash, box int) error {
 	fullPath := r.getPath(addr, getBoxAsString(box))
@@ -44,14 +49,14 @@ func (r *fileRepo) ExistsBox(addr hash.Hash, box int) bool {
 // Delete a given mailbox in the account
 func (r *fileRepo) DeleteBox(addr hash.Hash, box int) error {
 	if box <= MaxMandatoryBoxID {
-		return errors.New("cannot delete mandatory box")
+		return errCantDeleteMandatoryBox
 	}
 
 	fullPath := r.getPath(addr, getBoxAsString(box))
 
 	err := r.fs.RemoveAll(fullPath)
 	if err != nil {
-		return errors.New("cannot remove box: " + err.Error())
+		return errCannotDeleteBox
 	}
 
 	return err

@@ -36,6 +36,8 @@ import (
 	"strings"
 )
 
+var errIncorrectFormat = errors.New("incorrect proof-of-work format")
+
 // Override for testing purposes
 var randomReader = rand.Reader
 
@@ -86,7 +88,7 @@ func NewWithoutProof(bits int, data string) *ProofOfWork {
 func NewFromString(s string) (*ProofOfWork, error) {
 	parts := strings.SplitN(s, "$", 3)
 	if len(parts) != 3 {
-		return nil, errors.New("incorrect proof-of-work format")
+		return nil, errIncorrectFormat
 	}
 
 	bits, err := strconv.Atoi(parts[0])

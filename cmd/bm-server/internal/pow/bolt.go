@@ -29,6 +29,11 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
+var (
+	errChallengeNotFound = errors.New("challenge not found")
+	errChallengeExpired  = errors.New("challenge expired")
+)
+
 type boltStorage struct {
 	client *bolt.DB
 }
@@ -60,13 +65,13 @@ func (b *boltStorage) Retrieve(challenge string) (*ProofOfWork, error) {
 		bucket := tx.Bucket([]byte(BucketName))
 		if bucket == nil {
 			logrus.Trace("challenge not found in BOLT: ", challenge, nil)
-			return errors.New("challenge not found")
+			return errChallengeNotFound
 		}
 
 		data := bucket.Get([]byte(challenge))
 		if data == nil {
 			logrus.Trace("challenge not found in BOLT: ", data, nil)
-			return errors.New("challenge not found")
+			return errChallengeNotFound
 		}
 
 		err := json.Unmarshal([]byte(data), &pow)
@@ -82,7 +87,7 @@ func (b *boltStorage) Retrieve(challenge string) (*ProofOfWork, error) {
 	}
 
 	if pow.Expires.Unix() < time.Now().Unix() {
-		return nil, errors.New("expired")
+		return nil, errChallengeExpired
 	}
 
 	return pow, nil

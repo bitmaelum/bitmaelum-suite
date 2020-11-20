@@ -28,9 +28,9 @@ import (
 	"strings"
 )
 
-var (
-	hashRegex = regexp.MustCompile(`^[a-f0-9]{64}$`)
-)
+var errIncorrectHashFormat = errors.New("incorrect hash address format specified")
+
+var hashRegex = regexp.MustCompile(`^[a-f0-9]{64}$`)
 
 var (
 	// emptyOrgHash is a hash of an empty string. Used for checking against empty org hashes
@@ -51,7 +51,7 @@ func New(s string) Hash {
 // NewFromHash generates a hash address based on the given string hash
 func NewFromHash(hash string) (*Hash, error) {
 	if !hashRegex.MatchString(strings.ToLower(hash)) {
-		return nil, errors.New("incorrect hash address format specified")
+		return nil, errIncorrectHashFormat
 	}
 
 	h := Hash(hash)

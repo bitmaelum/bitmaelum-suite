@@ -52,6 +52,8 @@ func NewBoltRepository(dbpath string) Repository {
 	}
 }
 
+var errTicketNotFound = errors.New("ticket not found")
+
 // Fetch a ticket from the repository, or err
 func (b boltRepo) Fetch(ticketID string) (*Ticket, error) {
 	logrus.Trace("Trying to fetch ticket from BOLT: ", ticketID)
@@ -61,13 +63,13 @@ func (b boltRepo) Fetch(ticketID string) (*Ticket, error) {
 		bucket := tx.Bucket([]byte(BucketName))
 		if bucket == nil {
 			logrus.Trace("ticket not found in BOLT: ", ticketID, nil)
-			return errors.New("ticket not found")
+			return errTicketNotFound
 		}
 
 		data := bucket.Get([]byte(ticketID))
 		if data == nil {
 			logrus.Trace("ticket not found in BOLT: ", data, nil)
-			return errors.New("ticket not found")
+			return errTicketNotFound
 		}
 
 		err := json.Unmarshal([]byte(data), &ticket)

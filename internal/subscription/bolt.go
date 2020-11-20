@@ -28,6 +28,8 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
+var errSubscriptionNotFound = errors.New("subscription not found")
+
 type boltRepo struct {
 	client *bolt.DB
 }
@@ -58,13 +60,13 @@ func (b boltRepo) Has(sub *Subscription) bool {
 		bucket := tx.Bucket([]byte(BucketName))
 		if bucket == nil {
 			logrus.Trace("subscription not found in BOLT: ", createKey(sub), nil)
-			return errors.New("subscription not found")
+			return errSubscriptionNotFound
 		}
 
 		data := bucket.Get([]byte(createKey(sub)))
 		if data == nil {
 			logrus.Trace("subscription not found in BOLT: ", data, nil)
-			return errors.New("subscription not found")
+			return errSubscriptionNotFound
 		}
 
 		return nil
