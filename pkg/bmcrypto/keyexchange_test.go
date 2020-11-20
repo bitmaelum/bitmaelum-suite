@@ -54,37 +54,36 @@ var (
 
 func TestKeyExchange(t *testing.T) {
 	// Incorrect key type
-	privAliceK, _ := NewPrivKey(TestKeyExchangeSet1[0])
-	pubBobK, _ := NewPubKey(TestKeyExchangeSet1[1])
+	privAliceK, _ := PrivateKeyFromString(TestKeyExchangeSet1[0])
+	pubBobK, _ := PublicKeyFromString(TestKeyExchangeSet1[1])
 	_, err := KeyExchange(*privAliceK, *pubBobK)
 	assert.Error(t, err)
 
 	// ecdsa key exchange (ecdh) alice->bob
-	privAliceK, _ = NewPrivKey(TestKeyExchangeSet4[0])
-	pubBobK, _ = NewPubKey(TestKeyExchangeSet5[1])
+	privAliceK, _ = PrivateKeyFromString(TestKeyExchangeSet4[0])
+	pubBobK, _ = PublicKeyFromString(TestKeyExchangeSet5[1])
 	k, err := KeyExchange(*privAliceK, *pubBobK)
 	assert.NoError(t, err)
 	assert.Equal(t, ecdsaSharedSecret, k)
 
 	// ecdsa key exchange (ecdh) bob->alice
-	privBobK, _ := NewPrivKey(TestKeyExchangeSet5[0])
-	pubAliceK, _ := NewPubKey(TestKeyExchangeSet4[1])
+	privBobK, _ := PrivateKeyFromString(TestKeyExchangeSet5[0])
+	pubAliceK, _ := PublicKeyFromString(TestKeyExchangeSet4[1])
 	k, err = KeyExchange(*privBobK, *pubAliceK)
 	assert.NoError(t, err)
 	assert.Equal(t, ecdsaSharedSecret, k)
 
 	// ed25519 key exchange (ecdh on curve 25519) alice->bob
-	privAliceK, _ = NewPrivKey(TestKeyExchangeSet2[0])
-	pubBobK, _ = NewPubKey(TestKeyExchangeSet3[1])
+	privAliceK, _ = PrivateKeyFromString(TestKeyExchangeSet2[0])
+	pubBobK, _ = PublicKeyFromString(TestKeyExchangeSet3[1])
 	k, err = KeyExchange(*privAliceK, *pubBobK)
 	assert.NoError(t, err)
 	assert.Equal(t, ed25519SharedSecret, k)
 
 	// ed25519 key exchange (ecdh on curve 25519) bob->alice
-	privBobK, _ = NewPrivKey(TestKeyExchangeSet3[0])
-	pubAliceK, _ = NewPubKey(TestKeyExchangeSet2[1])
+	privBobK, _ = PrivateKeyFromString(TestKeyExchangeSet3[0])
+	pubAliceK, _ = PublicKeyFromString(TestKeyExchangeSet2[1])
 	k, err = KeyExchange(*privBobK, *pubAliceK)
 	assert.NoError(t, err)
 	assert.Equal(t, ed25519SharedSecret, k)
-
 }

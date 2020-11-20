@@ -26,10 +26,10 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/c2h5oh/datasize"
 	"github.com/olekukonko/tablewriter"
 )
@@ -95,12 +95,12 @@ func displayBox(client *api.API, account *vault.AccountInfo, box string, table *
 	}
 
 	for _, msg := range mb.Messages {
-		key, err := message.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+		key, err := bmcrypto.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			continue
 		}
 		catalog := &message.Catalog{}
-		err = internal.CatalogDecrypt(key, msg.Catalog, catalog)
+		err = bmcrypto.CatalogDecrypt(key, msg.Catalog, catalog)
 		if err != nil {
 			continue
 		}

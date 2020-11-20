@@ -37,7 +37,7 @@ var authCreateCmd = &cobra.Command{
 	Long: `By authorizing another users public key, you can allow it to send messages for you. This way, you can let other people or tools send messages without exposing your own private key.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		targetKey, err := bmcrypto.NewPubKey(*authPublicKey)
+		targetKey, err := bmcrypto.PublicKeyFromString(*authPublicKey)
 		if err != nil {
 			logrus.Fatal("Incorrect public key to sign")
 			os.Exit(1)

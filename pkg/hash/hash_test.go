@@ -73,3 +73,11 @@ func TestVerify(t *testing.T) {
 		"00000000000c1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 	))
 }
+
+func TestEmpty(t *testing.T) {
+	h := New("")
+	assert.True(t, h.IsEmpty())
+
+	h = New("foo")
+	assert.False(t, h.IsEmpty())
+}

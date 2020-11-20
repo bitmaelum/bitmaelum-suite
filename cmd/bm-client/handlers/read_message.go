@@ -24,11 +24,11 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 )
@@ -46,7 +46,7 @@ func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box
 		logrus.Fatal(err)
 	}
 
-	key, err := message.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+	key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box
 
 	// Decrypt the catalog
 	catalog := &message.Catalog{}
-	err = internal.CatalogDecrypt(key, msg.Catalog, catalog)
+	err = bmcrypto.CatalogDecrypt(key, msg.Catalog, catalog)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box
 		}
 		bb := bytes.NewBuffer(data)
 
-		r, err := internal.GetAesDecryptorReader(b.IV, b.Key, bb)
+		r, err := bmcrypto.GetAesDecryptorReader(b.IV, b.Key, bb)
 		if err != nil {
 			panic(err)
 		}

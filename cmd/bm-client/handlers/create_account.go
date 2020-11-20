@@ -107,7 +107,7 @@ func checkAccountInVault(vault *vault.Vault, addr address.Address) *vault.Accoun
 }
 
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
-func CreateAccount(v *vault.Vault, bmAddr, name, token string, keyType bmcrypto.KeyType) {
+func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyType) {
 	var mnemonicToShow string
 
 	fmt.Println("")
@@ -120,7 +120,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, keyType bmcrypto.
 	if info == nil {
 		fmt.Printf("* Generating your secret key to send and read mail: ")
 
-		mnemonic, privKey, pubKey, err := internal.GenerateKeypairWithMnemonic(keyType)
+		mnemonic, privKey, pubKey, err := internal.GenerateKeypairWithMnemonic(kt)
 
 		if err != nil {
 			fmt.Print(err)

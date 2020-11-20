@@ -17,53 +17,34 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package main
+package message
 
 import (
-	"fmt"
-	"os"
-	"strings"
+	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
-func main() {
-	logrus.SetLevel(logrus.TraceLevel)
+func TestCompose(t *testing.T) {
+	privKey, _, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
+	_, pubKey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-2.json")
 
-	addr, err := address.NewAddress(os.Args[1])
-	if err != nil {
-		panic(err)
-	}
+	sender, _ := address.NewAddress("from!")
+	recipient, _ := address.NewAddress("too!")
 
-	key, err := bmcrypto.PublicKeyFromString(os.Args[2])
-	if err != nil {
-		panic(err)
-	}
+	addressing := NewAddressing(
+		*sender,
+		privKey,
+		"12345678",
+		*recipient,
+		pubKey,
+	)
 
-	auth := "Bearer " + os.Args[3]
-
-	if auth == "" {
-		logrus.Trace("auth: empty auth string")
-		os.Exit(1)
-	}
-
-	if len(auth) <= 6 || strings.ToUpper(auth[0:7]) != "BEARER " {
-		logrus.Trace("auth: bearer not found")
-		os.Exit(1)
-	}
-	tokenString := auth[7:]
-
-	token, err := api.ValidateJWTToken(tokenString, addr.Hash(), *key)
-	if err == nil {
-		fmt.Printf("Token validated correctly")
-		spew.Dump(token)
-		os.Exit(0)
-	}
-
-	logrus.Trace("auth: no key found that validates the token")
-	os.Exit(1)
+	env, err := Compose(addressing, "foobar", []string{"default,foobar"}, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "358ba60da66597e9945c9d26dd6703a53c550e962a09fd50f811e7650d7c8389", env.Header.From.Addr.String())
+	assert.Len(t, env.BlockReaders, 1)
+	assert.Len(t, env.AttachmentReaders, 0)
 }

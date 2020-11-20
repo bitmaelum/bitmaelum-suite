@@ -17,32 +17,41 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package api
+package bmcrypto
 
 import (
-	"crypto/ed25519"
+	"io/ioutil"
 	"testing"
 
-	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSigningMethodEdDSAAlg(t *testing.T) {
-	m := &SigningMethodEdDSA{}
-	assert.Equal(t, "EdDSA", m.Alg())
-}
+func TestEncrypt(t *testing.T) {
+	// RSA Encryption
+	data, _ := ioutil.ReadFile("../../testdata/pubkey.rsa")
+	pubKey, _ := PublicKeyFromString(string(data))
 
-func TestSigningMethodEdDSASign(t *testing.T) {
-	m := &SigningMethodEdDSA{}
+	data, _ = ioutil.ReadFile("../../testdata/privkey.rsa")
+	privKey, _ := PrivateKeyFromString(string(data))
 
-	privKey, pubKey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
+	cipher, _, c, err := Encrypt(*pubKey, []byte("foobar"))
+	assert.Nil(t, err)
+	assert.Equal(t, "rsa", c)
+	assert.NotEqual(t, []byte("foobar"), cipher)
 
-	s, err := m.Sign("foobar", privKey.K.(ed25519.PrivateKey))
-	assert.NoError(t, err)
+	plaintext, err := Decrypt(*privKey, "", cipher)
+	assert.Nil(t, err)
+	assert.Equal(t, []byte("foobar"), plaintext)
 
-	err = m.Verify("foobar", s, pubKey.K.(ed25519.PublicKey))
-	assert.NoError(t, err)
+	// ED25519 Dual Key-Exchange + Encryption
+	priv25519Key, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
+	pub25519Key, _ := PublicKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
+	cipher, txID, c, err := pub25519Key.Type.Encrypt(*pub25519Key, []byte("foobar"))
+	assert.Nil(t, err)
+	assert.Equal(t, "ed25519+aes", c)
+	assert.NotEqual(t, []byte("foobar"), cipher)
 
-	err = m.Verify("foobarfoofofoo", s, pubKey.K.(ed25519.PublicKey))
-	assert.Error(t, err)
+	plaintext, err = pub25519Key.Type.Decrypt(*priv25519Key, txID, cipher)
+	assert.Nil(t, err)
+	assert.Equal(t, []byte("foobar"), plaintext)
 }

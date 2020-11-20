@@ -141,7 +141,7 @@ func parseFlags() {
 	}
 
 	// Check key
-	privKey, err = bmcrypto.NewPrivKey(opts.PrivateKey)
+	privKey, err = bmcrypto.PrivateKeyFromString(opts.PrivateKey)
 	if err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "Incorrect private key specified.")
 		os.Exit(1)

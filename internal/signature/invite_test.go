@@ -31,9 +31,9 @@ import (
 func TestSignature(t *testing.T) {
 	addr := hash.New("john@acme!")
 
-	privKey, err := bmcrypto.NewPrivKey("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
+	privKey, err := bmcrypto.PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
 	assert.NoError(t, err)
-	pubKey, err := bmcrypto.NewPubKey("ed25519 MCowBQYDK2VwAyEARdZSwluYtMWTGI6Rvl0Bhu40RBDn6D88wyzFL1IR3DU=")
+	pubKey, err := bmcrypto.PublicKeyFromString("ed25519 MCowBQYDK2VwAyEARdZSwluYtMWTGI6Rvl0Bhu40RBDn6D88wyzFL1IR3DU=")
 	assert.NoError(t, err)
 
 	// Assume this is the current time during tests
@@ -70,7 +70,9 @@ func TestSignature(t *testing.T) {
 	assert.False(t, ok)
 
 	// Check token with different public key
-	_, pubKey2, _ := bmcrypto.GenerateKeyPair(bmcrypto.KeyTypeRSA)
+	kt, err := bmcrypto.FindKeyType("rsa")
+	assert.NoError(t, err)
+	_, pubKey2, _ := bmcrypto.GenerateKeyPair(kt)
 	it, err = NewInviteToken(addr, "12345678", time.Date(2010, 01, 04, 12, 34, 56, 0, time.UTC), *privKey)
 	assert.NoError(t, err)
 	ok = it.Verify("12345678", *pubKey2)

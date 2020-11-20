@@ -17,53 +17,32 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package main
+package bmcrypto
 
 import (
-	"fmt"
-	"os"
-	"strings"
+	"crypto/ed25519"
+	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
-func main() {
-	logrus.SetLevel(logrus.TraceLevel)
+func TestSigningMethodEdDSAAlg(t *testing.T) {
+	m := &SigningMethodEdDSA{}
+	assert.Equal(t, "EdDSA", m.Alg())
+}
 
-	addr, err := address.NewAddress(os.Args[1])
-	if err != nil {
-		panic(err)
-	}
+func TestSigningMethodEdDSASign(t *testing.T) {
+	m := &SigningMethodEdDSA{}
 
-	key, err := bmcrypto.PublicKeyFromString(os.Args[2])
-	if err != nil {
-		panic(err)
-	}
+	privKey, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEILq+V/CUlMdbmoQC1odEgOEmtMBQu0UpIICxJbQM1vhd")
+	pubKey, _ := PublicKeyFromString("ed25519 MCowBQYDK2VwAyEARdZSwluYtMWTGI6Rvl0Bhu40RBDn6D88wyzFL1IR3DU=")
 
-	auth := "Bearer " + os.Args[3]
+	s, err := m.Sign("foobar", privKey.K.(ed25519.PrivateKey))
+	assert.NoError(t, err)
 
-	if auth == "" {
-		logrus.Trace("auth: empty auth string")
-		os.Exit(1)
-	}
+	err = m.Verify("foobar", s, pubKey.K.(ed25519.PublicKey))
+	assert.NoError(t, err)
 
-	if len(auth) <= 6 || strings.ToUpper(auth[0:7]) != "BEARER " {
-		logrus.Trace("auth: bearer not found")
-		os.Exit(1)
-	}
-	tokenString := auth[7:]
-
-	token, err := api.ValidateJWTToken(tokenString, addr.Hash(), *key)
-	if err == nil {
-		fmt.Printf("Token validated correctly")
-		spew.Dump(token)
-		os.Exit(0)
-	}
-
-	logrus.Trace("auth: no key found that validates the token")
-	os.Exit(1)
+	err = m.Verify("foobarfoofofoo", s, pubKey.K.(ed25519.PublicKey))
+	assert.Error(t, err)
 }

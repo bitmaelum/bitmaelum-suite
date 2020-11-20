@@ -23,6 +23,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +36,11 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
 
-		handlers.CreateAccount(v, *addr, *name, *token, bmcrypto.KeyType(*keytype))
+		kt, err := bmcrypto.FindKeyType(*keytype)
+		if err != nil {
+			logrus.Fatal("incorrect key type")
+		}
+		handlers.CreateAccount(v, *addr, *name, *token, kt)
 	},
 }
 

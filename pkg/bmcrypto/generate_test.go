@@ -33,11 +33,13 @@ var (
 )
 
 func TestGenerate(t *testing.T) {
-	privKey, pubKey, err := GenerateKeyPair(KeyTypeRSA)
+	kt, err := FindKeyType("rsa")
+	assert.NoError(t, err)
+	privKey, pubKey, err := GenerateKeyPair(kt)
 	assert.Nil(t, err)
 	assert.IsType(t, (*rsa.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (*rsa.PublicKey)(nil), pubKey.K)
-	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size()*8, RsaBits[0])
+	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size()*8, 2048)
 
 	// Check if we can verify with this key
 	sig, err := Sign(*privKey, message)
@@ -46,7 +48,9 @@ func TestGenerate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, b)
 
-	privKey, pubKey, err = GenerateKeyPair(KeyTypeECDSA)
+	kt, err = FindKeyType("ecdsa")
+	assert.NoError(t, err)
+	privKey, pubKey, err = GenerateKeyPair(kt)
 	assert.Nil(t, err)
 	assert.IsType(t, (*ecdsa.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (*ecdsa.PublicKey)(nil), pubKey.K)
@@ -58,7 +62,9 @@ func TestGenerate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, b)
 
-	privKey, pubKey, err = GenerateKeyPair(KeyTypeED25519)
+	kt, err = FindKeyType("ed25519")
+	assert.NoError(t, err)
+	privKey, pubKey, err = GenerateKeyPair(kt)
 	assert.Nil(t, err)
 	assert.IsType(t, (ed25519.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (ed25519.PublicKey)(nil), pubKey.K)
@@ -71,15 +77,17 @@ func TestGenerate(t *testing.T) {
 	assert.True(t, b)
 
 	// Unknown key
-	_, _, err = GenerateKeyPair("foobar")
-	assert.EqualError(t, err, "incorrect key type specified")
+	_, _, err = GenerateKeyPair(nil)
+	assert.Error(t, err)
 }
 
-func TestRSAV1(t *testing.T) {
-	privKey, pubKey, err := GenerateKeyPair(KeyTypeRSAV1)
+func TestRSA4096(t *testing.T) {
+	kt, err := FindKeyType("rsa4096")
+	assert.NoError(t, err)
+
+	privKey, pubKey, err := GenerateKeyPair(kt)
 	assert.Nil(t, err)
 	assert.IsType(t, (*rsa.PrivateKey)(nil), privKey.K)
 	assert.IsType(t, (*rsa.PublicKey)(nil), pubKey.K)
-	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size()*8, RsaBits[1])
-
+	assert.Equal(t, pubKey.K.(*rsa.PublicKey).Size()*8, 4096)
 }
