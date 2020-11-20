@@ -81,6 +81,7 @@ type KeyType interface {
 var (
 	errIncorrectKeyFormat = errors.New("incorrect key format")
 	errUnsupportedKeyType = errors.New("unsupported key type")
+	errIncorrectKey       = errors.New("incorrec key")
 )
 
 // KeyTypes is a list of all keytypes available

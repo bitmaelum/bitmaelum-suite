@@ -31,7 +31,10 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-var errIncorrectTxID = errors.New("incorrect txID len (must be 64byte)")
+var (
+	errIncorrectTxID               = errors.New("incorrect txID len (must be 64byte)")
+	errCannotuseForDualKeyExchange = errors.New("this type cannot be used for dual key exchange")
+)
 
 // The dual key exchange system is taken from https://steemit.com/monero/@luigi1111/understanding-monero-cryptography-privacy-part-2-stealth-addresses
 
@@ -68,7 +71,7 @@ func TxIDFromString(s string) (*TransactionID, error) {
 // It returns the (shared) secret, a transaction ID that needs to be send over to the other user.
 func DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
 	if !pub.Type.CanDualKeyExchange() {
-		return nil, nil, errors.New("this type cannot be used for dual key exchange")
+		return nil, nil, errCannotuseForDualKeyExchange
 	}
 
 	return pub.Type.DualKeyExchange(pub)
@@ -78,7 +81,7 @@ func DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
 // secret that has been exchanged
 func DualKeyGetSecret(priv PrivKey, txID TransactionID) ([]byte, bool, error) {
 	if !priv.Type.CanDualKeyExchange() {
-		return nil, false, errors.New("this type cannot be used for dual key exchange")
+		return nil, false, errCannotuseForDualKeyExchange
 	}
 
 	// Step 1-3: D' = aR

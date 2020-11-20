@@ -24,7 +24,6 @@ import (
 	"crypto/elliptic"
 	"crypto/x509"
 	"encoding/asn1"
-	"errors"
 	"io"
 
 	"github.com/vtolstov/jwt-go"
@@ -75,7 +74,7 @@ func (k *KeyEcdsa) ParsePrivateKeyInterface(key interface{}) ([]byte, error) {
 		return x509.MarshalPKCS8PrivateKey(key)
 	}
 
-	return nil, errors.New("incorrect key")
+	return nil, errIncorrectKey
 }
 
 // GenerateKeyPair will generate a new keypair for this keytype. io.Reader can be deterministic if needed
@@ -172,7 +171,7 @@ func (k *KeyEcdsa) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
 		return x509.MarshalPKIXPublicKey(key)
 	}
 
-	return nil, errors.New("incorrect key")
+	return nil, errIncorrectKey
 }
 
 // KeyExchange allows for a key exchange (if possible in the keytype)
@@ -187,5 +186,5 @@ func (k *KeyEcdsa) KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 
 // DualKeyExchange allows for a ECIES key exchange
 func (k *KeyEcdsa) DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
-	return nil, nil, errors.New("not supported yet")
+	return nil, nil, errCannotuseForDualKeyExchange
 }

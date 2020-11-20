@@ -33,6 +33,8 @@ import (
 	"golang.org/x/crypto/hkdf"
 )
 
+var errCannotFetchScalar = errors.New("error while getting a random scalar")
+
 // KeyEd25519 is the ed25519 keytype
 type KeyEd25519 struct {
 }
@@ -74,7 +76,7 @@ func (k *KeyEd25519) ParsePrivateKeyInterface(key interface{}) ([]byte, error) {
 		return x509.MarshalPKCS8PrivateKey(key)
 	}
 
-	return nil, errors.New("incorrect key")
+	return nil, errIncorrectKey
 }
 
 // GenerateKeyPair will generate a new keypair for this keytype. io.Reader can be deterministic if needed
@@ -168,7 +170,7 @@ func (k *KeyEd25519) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
 		return x509.MarshalPKIXPublicKey(key)
 	}
 
-	return nil, errors.New("incorrect key")
+	return nil, errIncorrectKey
 }
 
 // KeyExchange allows for a key exchange (if possible in the keytype)
@@ -233,7 +235,7 @@ func EdPubToX25519(pk ed25519.PublicKey) []byte {
 func (k *KeyEd25519) DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error) {
 	rs, err := generateRandomScalar()
 	if err != nil {
-		return nil, nil, errors.New("error while getting a random scalar")
+		return nil, nil, errCannotFetchScalar
 	}
 
 	r := ed25519.NewKeyFromSeed(rs)
