@@ -44,7 +44,7 @@ func TestCompose(t *testing.T) {
 
 	env, err := Compose(addressing, "foobar", []string{"default,foobar"}, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, "358ba60da66597e9945c9d26dd6703a53c550e962a09fd50f811e7650d7c8389", env.Header.From.Addr.String())
+	assert.Equal(t, "4f16cf359aeca741b5516b2c8609919e9f0008b66beb97209fbc694d7f272e08", env.Header.From.Addr.String())
 	assert.Len(t, env.BlockReaders, 1)
 	assert.Len(t, env.AttachmentReaders, 0)
 }
