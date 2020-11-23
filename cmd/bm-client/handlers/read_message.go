@@ -22,7 +22,9 @@ package handlers
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
@@ -34,7 +36,7 @@ import (
 )
 
 // ReadMessage will read a specific message blocks
-func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string) {
+func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string, saveAttachments bool) {
 	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
 	if err != nil {
 		logrus.Fatal(err)
@@ -80,7 +82,7 @@ func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box
 
 		data, err := client.GetMessageBlock(info.Address.Hash(), box, messageID, b.ID)
 		if err != nil {
-			panic(err)
+			continue
 		}
 		bb := bytes.NewBuffer(data)
 
@@ -94,11 +96,54 @@ func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box
 			logrus.Fatal(err)
 		}
 
-		fmt.Print(string(content))
+		fmt.Println(string(content))
 	}
 	fmt.Println("--------------------------------------------------------")
 	for idx, b := range catalog.Attachments {
 		fmt.Printf("Attachment %02d: %30s %8d %s\n", idx, b.FileName, datasize.ByteSize(b.Size), b.MimeType)
+
+		if saveAttachments {
+			ar, err := client.GetMessageAttachment(info.Address.Hash(), box, messageID, b.ID)
+
+			if err != nil {
+				fmt.Printf("cannot read attachment %s: %s\n", b.FileName, err)
+				continue
+			}
+
+			r, err := bmcrypto.GetAesDecryptorReader(b.IV, b.Key, ar)
+			if err != nil {
+				fmt.Printf("cannot create decryptor to %s: %s\n", b.FileName, err)
+				continue
+			}
+
+			_, ok := os.Stat(b.FileName)
+			if ok == nil {
+				fmt.Printf("cannot write to %s: file exists\n", b.FileName)
+				continue
+			}
+
+			f, err := os.Create(b.FileName)
+			if err != nil {
+				fmt.Printf("cannot open file %s: %s\n", b.FileName, err)
+				continue
+			}
+
+			if b.Compression == "zlib" {
+				r, err = message.ZlibDecompress(r)
+				if err != nil {
+					fmt.Printf("error while creating zlib reader %s: %s\n", b.FileName, err)
+					continue
+				}
+			}
+			n, err := io.Copy(f, r)
+			if err != nil || n != int64(b.Size) {
+				fmt.Printf("error while writing file %s: %s\n", b.FileName, err)
+				continue
+			}
+
+			_ = f.Close()
+			fmt.Printf("saved file: %s\n", b.FileName)
+		}
 	}
 	fmt.Println("--------------------------------------------------------")
 }

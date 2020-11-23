@@ -46,3 +46,7 @@ func ZlibCompress(r io.Reader) io.Reader {
 
 	return zpr
 }
+
+func ZlibDecompress(r io.Reader) (io.Reader, error) {
+	return zlib.NewReader(r)
+}

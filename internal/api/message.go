@@ -68,7 +68,7 @@ func (api *API) GetMessageBlock(addr hash.Hash, box, messageID, blockID string) 
 }
 
 // GetMessageAttachment retrieves a message attachment reader
-func (api *API) GetMessageAttachment(addr hash.Hash, box, messageID, attachmentID string) (io.Reader, error) {
+func (api *API) GetMessageAttachment(addr hash.Hash, box, messageID, attachmentID string) (io.ReadCloser, error) {
 	r, statusCode, err := api.GetReader(fmt.Sprintf("/account/%s/box/%s/message/%s/attachment/%s", addr.String(), box, messageID, attachmentID))
 	if err != nil {
 		return nil, err
