@@ -63,8 +63,8 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 func generateHeader(sender, recipient address.Address) (*Header, error) {
 	header := &Header{}
 
-	header.To.Addr = sender.Hash()
-	header.From.Addr = recipient.Hash()
+	header.From.Addr = sender.Hash()
+	header.To.Addr = recipient.Hash()
 
 	return header, nil
 }
