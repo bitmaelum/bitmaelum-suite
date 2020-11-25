@@ -51,11 +51,10 @@ func TestDecompress(t *testing.T) {
 	decompressedBytes, _ := ioutil.ReadAll(r)
 	assert.Equal(t, 0, bytes.Compare(decompressedBytes, []byte(src)))
 
-	r, err = ZlibDecompress(bytes.NewReader(dst1))
+	r, _ = ZlibDecompress(bytes.NewReader(dst1))
 	decompressedBytes, _ = ioutil.ReadAll(r)
 	assert.Equal(t, 0, bytes.Compare(decompressedBytes, []byte(src1)))
 }
-
 
 func TestEncryptAndCompress(t *testing.T) {
 	iv, key, _ := bmcrypto.GenerateIvAndKey()
@@ -66,7 +65,7 @@ func TestEncryptAndCompress(t *testing.T) {
 
 	// Compress then encrypt
 	r := ZlibCompress(f)
-	r, err = bmcrypto.GetAesEncryptorReader(iv, key, r)
+	r, _ = bmcrypto.GetAesEncryptorReader(iv, key, r)
 
 	encData, err := ioutil.ReadAll(r)
 	assert.NoError(t, err)

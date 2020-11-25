@@ -36,7 +36,6 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-
 // FetchMessages will display message information from accounts and boxes
 func FetchMessages(accounts []vault.AccountInfo) {
 	table := tablewriter.NewWriter(os.Stdout)

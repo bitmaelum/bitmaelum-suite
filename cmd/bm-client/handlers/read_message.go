@@ -21,6 +21,7 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -104,46 +105,58 @@ func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box
 
 		if saveAttachments {
 			ar, err := client.GetMessageAttachment(info.Address.Hash(), box, messageID, b.ID)
-
-			if err != nil {
-				fmt.Printf("cannot read attachment %s: %s\n", b.FileName, err)
-				continue
-			}
-
-			r, err := bmcrypto.GetAesDecryptorReader(b.IV, b.Key, ar)
-			if err != nil {
-				fmt.Printf("cannot create decryptor to %s: %s\n", b.FileName, err)
-				continue
-			}
-
-			_, ok := os.Stat(b.FileName)
-			if ok == nil {
-				fmt.Printf("cannot write to %s: file exists\n", b.FileName)
-				continue
-			}
-
-			f, err := os.Create(b.FileName)
-			if err != nil {
-				fmt.Printf("cannot open file %s: %s\n", b.FileName, err)
-				continue
-			}
-
-			if b.Compression == "zlib" {
-				r, err = message.ZlibDecompress(r)
+			if err == nil {
+				err = saveAttachment(b, ar)
 				if err != nil {
-					fmt.Printf("error while creating zlib reader %s: %s\n", b.FileName, err)
-					continue
+					fmt.Println(err)
 				}
 			}
-			n, err := io.Copy(f, r)
-			if err != nil || n != int64(b.Size) {
-				fmt.Printf("error while writing file %s: %s\n", b.FileName, err)
-				continue
-			}
-
-			_ = f.Close()
-			fmt.Printf("saved file: %s\n", b.FileName)
 		}
 	}
 	fmt.Println("--------------------------------------------------------")
+}
+
+// saveAttachment will save the given attachment to disk
+func saveAttachment(att message.AttachmentType, ar io.ReadCloser) error {
+	defer func() {
+		_ = ar.Close()
+	}()
+
+	_, ok := os.Stat(att.FileName)
+	if ok == nil {
+		fmt.Printf("cannot write to %s: file exists\n", att.FileName)
+		return errors.New("cannot write to file")
+	}
+
+	r, err := bmcrypto.GetAesDecryptorReader(att.IV, att.Key, ar)
+	if err != nil {
+		fmt.Printf("cannot create decryptor to %s: %s\n", att.FileName, err)
+		return err
+	}
+
+	f, err := os.Create(att.FileName)
+	if err != nil {
+		fmt.Printf("cannot open file %s: %s\n", att.FileName, err)
+		return err
+	}
+
+	if att.Compression == "zlib" {
+		r, err = message.ZlibDecompress(r)
+		if err != nil {
+			fmt.Printf("error while creating zlib reader %s: %s\n", att.FileName, err)
+			return err
+		}
+	}
+
+	n, err := io.Copy(f, r)
+	if err != nil || n != int64(att.Size) {
+		fmt.Printf("error while writing file %s: %s (%d/%d bytes)\n", att.FileName, err, n, att.Size)
+		return err
+	}
+
+	_ = f.Close()
+	fmt.Printf("saved file: %s\n", att.FileName)
+
+	return nil
+
 }

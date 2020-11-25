@@ -97,8 +97,8 @@ type Catalog struct {
 
 // Attachment represents an attachment and reader
 type Attachment struct {
-	Path   string    // LOCAL path of the attachment. Needed for things like os.Stat()
-	Reader io.Reader // Reader to the attachment file
+	Path   string        // LOCAL path of the attachment. Needed for things like os.Stat()
+	Reader io.ReadSeeker // Reader to the attachment file, also needs to seek, as we need to reset after a mimetype check
 }
 
 // Block represents a block and reader
@@ -196,12 +196,14 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 		return err
 	}
 
+	entry.Reader.Seek(0, io.SeekStart)
+
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return err
 	}
 
-	var reader = entry.Reader
+	var reader io.Reader = entry.Reader
 	var compression = ""
 
 	// Very arbitrary size on when we should compress output first
