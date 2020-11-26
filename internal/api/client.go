@@ -112,7 +112,7 @@ func NewClient(opts ClientOpts) (*API, error) {
 			Transport: transport,
 			Timeout:   15 * time.Second,
 		},
-		jwt: opts.JWTToken,
+		jwt:       opts.JWTToken,
 		errorFunc: opts.ErrorFunc,
 	}, nil
 }
@@ -248,6 +248,7 @@ func CanonicalHost(host string) string {
 	return host
 }
 
+// GetErrorFromResponse will return an error generated from the body
 func GetErrorFromResponse(body []byte) error {
 	type errorStatus struct {
 		Error  bool   `json:"error"`

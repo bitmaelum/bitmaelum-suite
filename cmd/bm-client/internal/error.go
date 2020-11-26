@@ -1,3 +1,22 @@
+// Copyright (c) 2020 BitMaelum Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 package internal
 
 import (
@@ -12,7 +31,7 @@ import (
 
 // JwtErrorFunc is a generic error handling function that can be attached to an API client. This will automatically
 // trigger whenever an error (https response >= 400) is found. In this case, it will only check for the token-time
-// error, which is returned when the time of the client is off. 
+// error, which is returned when the time of the client is off.
 func JwtErrorFunc(_ *http.Request, resp *http.Response) {
 	if resp.StatusCode != 401 {
 		return
@@ -26,7 +45,8 @@ func JwtErrorFunc(_ *http.Request, resp *http.Response) {
 	if err != nil && err.Error() == "token time not valid" {
 		fmt.Println("The connection to the server was unauthenticated because of timing issues. It seems that your computer time is not")
 		fmt.Println("set to the current time. This causes issues in communication with the BitMaelum server. Please update your time and")
-		fmt.Println("try again.\n")
+		fmt.Println("try again.")
+		fmt.Println("")
 		os.Exit(1)
 	}
 
