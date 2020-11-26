@@ -146,7 +146,7 @@ build: info $(APPS) $(TOOLS) ## Build default platform binaries
 
 all: test build ## Run tests and build default platform binaries
 
-docker: ## Create docker image and push to dockerhub
+docker-image: ## Create docker image and push to dockerhub
 	$(info Building BitMaelum docker image)
 	docker build -t bitmaelum/bitmaelum-suite:latest .
 	docker push bitmaelum/bitmaelum-suite:latest
