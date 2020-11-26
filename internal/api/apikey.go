@@ -55,7 +55,7 @@ func (api *API) CreateAPIKey(addrHash hash.Hash, key key.APIKeyType) error {
 	}
 
 	if isErrorResponse(body) {
-		return getErrorFromResponse(body)
+		return GetErrorFromResponse(body)
 	}
 
 	return nil
@@ -74,7 +74,7 @@ func (api *API) DeleteAPIKey(addrHash hash.Hash, ID string) error {
 	}
 
 	if isErrorResponse(body) {
-		return getErrorFromResponse(body)
+		return GetErrorFromResponse(body)
 	}
 
 	return nil
@@ -93,7 +93,7 @@ func (api *API) ListAPIKeys(addrHash hash.Hash) ([]key.APIKeyType, error) {
 	}
 
 	if isErrorResponse(body) {
-		return nil, getErrorFromResponse(body)
+		return nil, GetErrorFromResponse(body)
 	}
 
 	// Parse body for keys
@@ -119,7 +119,7 @@ func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*key.APIKeyType, error
 	}
 
 	if isErrorResponse(body) {
-		return nil, getErrorFromResponse(body)
+		return nil, GetErrorFromResponse(body)
 	}
 
 	// Parse body for key

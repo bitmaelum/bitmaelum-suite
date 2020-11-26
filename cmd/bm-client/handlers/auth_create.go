@@ -23,6 +23,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
@@ -62,5 +63,5 @@ func getAPIClient(info *vault.AccountInfo) (*api.API, error) {
 		return nil, errNoRoutingID
 	}
 
-	return api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
+	return api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 }

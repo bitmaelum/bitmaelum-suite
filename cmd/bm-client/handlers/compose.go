@@ -20,6 +20,7 @@
 package handlers
 
 import (
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
@@ -33,7 +34,7 @@ func ComposeMessage(addressing message.Addressing, subject string, b, a []string
 	}
 
 	// Setup API connection to the server
-	client, err := api.NewAuthenticated(addressing.Sender.Address, addressing.Sender.PrivKey, addressing.Sender.Host)
+	client, err := api.NewAuthenticated(addressing.Sender.Address, addressing.Sender.PrivKey, addressing.Sender.Host, internal.JwtErrorFunc)
 	if err != nil {
 		return err
 	}

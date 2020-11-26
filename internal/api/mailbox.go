@@ -69,7 +69,7 @@ func (api *API) GetMailboxList(addr hash.Hash) (*MailboxList, error) {
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return nil, getErrorFromResponse(resp)
+		return nil, GetErrorFromResponse(resp)
 	}
 
 	return in, nil
@@ -85,7 +85,7 @@ func (api *API) GetMailboxMessages(addr hash.Hash, box string) (*MailboxMessages
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return nil, getErrorFromResponse(body)
+		return nil, GetErrorFromResponse(body)
 	}
 
 	return in, nil

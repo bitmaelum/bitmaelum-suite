@@ -47,7 +47,7 @@ func (api *API) GetMessage(addr hash.Hash, box, messageID string) (*Message, err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return nil, getErrorFromResponse(resp)
+		return nil, GetErrorFromResponse(resp)
 	}
 
 	return in, nil
