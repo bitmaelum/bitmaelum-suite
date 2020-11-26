@@ -145,15 +145,17 @@ func createReq(auth string, addr string) *http.Request {
 }
 
 func checkFalse(t *testing.T, a middleware.Authenticator, req *http.Request) {
-	ctx, ok := a.Authenticate(req, "")
-	assert.False(t, ok)
+	status, ctx, err := a.Authenticate(req, "")
+	assert.Equal(t, status, middleware.AuthStatusPass)
 	assert.Nil(t, ctx)
+	assert.NoError(t, err)
 }
 
 func checkTrue(t *testing.T, a middleware.Authenticator, req *http.Request, hash string) {
-	ctx, ok := a.Authenticate(req, "")
-	assert.True(t, ok)
+	status, ctx, err := a.Authenticate(req, "")
+	assert.Equal(t, status, middleware.AuthStatusSuccess)
 	assert.Equal(t, hash, ctx.Value(AddressContext))
+	assert.NoError(t, err)
 }
 
 func checkKey(t *testing.T, a APIKeyAuth, shouldPass bool, token, addr, routeName string) {
@@ -163,10 +165,11 @@ func checkKey(t *testing.T, a APIKeyAuth, shouldPass bool, token, addr, routeNam
 		"addr": hash.New(addr).String(),
 	})
 
-	ctx, ok := a.Authenticate(req, routeName)
+	status, ctx, err := a.Authenticate(req, routeName)
 	if shouldPass {
-		assert.True(t, ok)
+		assert.Equal(t, status, middleware.AuthStatusSuccess)
 		assert.NotNil(t, ctx)
+		assert.NoError(t, err)
 		// Check token in context
 		k := ctx.Value(APIKeyContext).(*key.APIKeyType)
 		assert.Equal(t, token, k.ID)
@@ -174,6 +177,7 @@ func checkKey(t *testing.T, a APIKeyAuth, shouldPass bool, token, addr, routeNam
 		return
 	}
 
-	assert.False(t, ok)
+	assert.NoError(t, err)
+	assert.Equal(t, status, middleware.AuthStatusPass)
 	assert.Nil(t, ctx)
 }

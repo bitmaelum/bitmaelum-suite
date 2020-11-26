@@ -21,11 +21,11 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -43,47 +43,49 @@ const (
 	AddressContext
 )
 
-// ErrTokenNotValidated is returned when the token could not be validated (for any reason)
-var ErrTokenNotValidated = errors.New("token could not be validated")
-
 // Authenticate will check if an API key matches the request
-func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (context.Context, bool) {
+func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (middleware.AuthStatus, context.Context, error) {
 	// Check if the address actually exists
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		return nil, false
+		return middleware.AuthStatusPass, nil, nil
 	}
 
 	accountRepo := container.Instance.GetAccountRepo()
 	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
-		return nil, false
+		return middleware.AuthStatusPass, nil, nil
 	}
 
 	// Check token
 	token, err := checkToken(req.Header.Get("Authorization"), *haddr)
 	if err != nil {
+		if err == api.ErrTokenTimeNotValid {
+			logrus.Trace("auth: invalid time for token: ", err)
+			return middleware.AuthStatusFailure, nil, err
+		}
+
 		logrus.Trace("auth: incorrect token: ", err)
-		return nil, false
+		return middleware.AuthStatusPass, nil, nil
 	}
 
 	ctx := req.Context()
 	ctx = context.WithValue(ctx, ClaimsContext, token.Claims)
 	ctx = context.WithValue(ctx, AddressContext, token.Claims.(*jwt.StandardClaims).Subject)
 
-	return ctx, true
+	return middleware.AuthStatusSuccess, ctx, nil
 }
 
 // Check if the authorization contains a valid JWT token for the given address
 func checkToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
 	if bearerToken == "" {
 		logrus.Trace("auth: empty auth string")
-		return nil, ErrTokenNotValidated
+		return nil, api.ErrTokenNotValid
 	}
 
 	if len(bearerToken) <= 6 || strings.ToUpper(bearerToken[0:7]) != "BEARER " {
 		logrus.Trace("auth: bearer not found")
-		return nil, ErrTokenNotValidated
+		return nil, api.ErrTokenNotValid
 	}
 	tokenString := bearerToken[7:]
 
@@ -91,16 +93,25 @@ func checkToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
 	keys, err := accountRepo.FetchKeys(addr)
 	if err != nil {
 		logrus.Trace("auth: cannot fetch keys: ", err)
-		return nil, ErrTokenNotValidated
+		return nil, api.ErrTokenNotValid
 	}
 
 	for _, key := range keys {
 		token, err := api.ValidateJWTToken(tokenString, addr, key)
+
+		// If the token is not valid in time, we can fail directly
+		if err == api.ErrTokenTimeNotValid {
+			logrus.Trace("auth: no key found that validates the token")
+			return nil, api.ErrTokenTimeNotValid
+		}
+
+		// no error, we can return the token
 		if err == nil {
 			return token, nil
 		}
 	}
 
+	// No valid tokens found after matching all keys. Return generic error
 	logrus.Trace("auth: no key found that validates the token")
-	return nil, ErrTokenNotValidated
+	return nil, api.ErrTokenNotValid
 }
