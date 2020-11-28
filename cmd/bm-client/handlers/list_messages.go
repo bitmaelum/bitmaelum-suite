@@ -47,6 +47,7 @@ func ListMessages(accounts []vault.AccountInfo, since time.Time) {
 
 	msgCount := 0
 
+	fmt.Print("* Fetching remote messages...")
 	for _, info := range accounts {
 		// Fetch routing info
 		resolver := container.Instance.GetResolveService()
@@ -62,9 +63,10 @@ func ListMessages(accounts []vault.AccountInfo, since time.Time) {
 
 		msgCount += displayBoxList(client, &info, table, since)
 	}
+	fmt.Println("")
 
 	if msgCount == 0 {
-		fmt.Println("No messages in the given timespan")
+		fmt.Println("* No messages in the given timespan")
 	} else {
 		table.Render()
 	}

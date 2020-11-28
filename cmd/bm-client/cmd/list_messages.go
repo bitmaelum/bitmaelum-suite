@@ -53,7 +53,9 @@ var listMessagesCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			since = time.Now().Add(-1 * d)
-		} else {
+		}
+
+		if *lmNew {
 			since = internal.GetReadTime()
 		}
 
