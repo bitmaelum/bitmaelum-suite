@@ -21,6 +21,7 @@ package api
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -76,10 +77,16 @@ func (api *API) GetMailboxList(addr hash.Hash) (*MailboxList, error) {
 }
 
 // GetMailboxMessages returns a list of message within a specific mailbox
-func (api *API) GetMailboxMessages(addr hash.Hash, box string) (*MailboxMessages, error) {
+func (api *API) GetMailboxMessages(addr hash.Hash, box string, since time.Time) (*MailboxMessages, error) {
 	in := &MailboxMessages{}
 
-	body, statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s", addr.String(), box), in)
+	// Add since query string if needed
+	qs := ""
+	if !since.IsZero() {
+		qs = fmt.Sprintf("since=%d", since.Unix())
+	}
+
+	body, statusCode, err := api.GetJSON(fmt.Sprintf("/account/%s/box/%s?%s", addr.String(), box, qs), in)
 	if err != nil {
 		return nil, err
 	}

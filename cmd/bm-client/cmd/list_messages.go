@@ -1,0 +1,106 @@
+// Copyright (c) 2020 BitMaelum Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+package cmd
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/mitchellh/go-homedir"
+	"github.com/spf13/cobra"
+)
+
+var listMessagesCmd = &cobra.Command{
+	Use:     "list-messages",
+	Aliases: []string{"list"},
+	Short:   "Displays a list of messages from your account(s)",
+	Long:    `Retrieves and displays a list of message found on your remote server`,
+	Run: func(cmd *cobra.Command, args []string) {
+		v := vault.OpenVault()
+
+		var since time.Time
+
+		if *lmNew && *lmSince != "" {
+			fmt.Println("You can specify either --new or --since, but not both")
+			os.Exit(1)
+		}
+
+		if *lmSince != "" {
+			d, err := internal.ParseDuration(*lmSince)
+			if err != nil {
+				fmt.Println("incorrect --since format. Use the following format: 1y3w4d5h13m")
+				os.Exit(1)
+			}
+			since = time.Now().Add(-1 * d)
+		} else {
+			since = getLastReadTime()
+		}
+
+		handlers.ListMessages(v.Store.Accounts, since)
+
+		saveTime(time.Now())
+	},
+}
+
+func getLastReadTime() time.Time {
+	p, err := homedir.Expand("~/.bm-lastread")
+	if err != nil {
+		return time.Time{}
+	}
+
+	b, err := ioutil.ReadFile(p)
+	if err != nil {
+		return time.Time{}
+	}
+
+	ts, err := strconv.ParseInt(string(b), 10, 64)
+	if err != nil {
+		return time.Time{}
+	}
+
+	return time.Unix(ts, 0)
+}
+
+func saveTime(t time.Time) {
+	p, err := homedir.Expand("~/.bm-lastread")
+	if err != nil {
+		return
+	}
+
+	ts := strconv.FormatInt(t.Unix(), 10)
+	_ =  ioutil.WriteFile(p, []byte(ts), 0600)
+}
+
+var lmNew *bool
+var lmSince *string
+
+func init() {
+	rootCmd.AddCommand(listMessagesCmd)
+
+	lmNew = listMessagesCmd.Flags().BoolP("new", "n", false, "Display new messages only")
+	lmSince = listMessagesCmd.Flags().StringP("since", "s", "", "Display messages since the specific duration (accepts 1y1w1d1h)")
+}
+

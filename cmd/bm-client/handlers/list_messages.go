@@ -37,8 +37,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-// FetchMessages will display message information from accounts and boxes
-func FetchMessages(accounts []vault.AccountInfo) {
+// ListMessages will display message information from accounts and boxes
+func ListMessages(accounts []vault.AccountInfo, since time.Time) {
 	table := tablewriter.NewWriter(os.Stdout)
 	// table.SetAutoMergeCells(true)
 
@@ -58,25 +58,25 @@ func FetchMessages(accounts []vault.AccountInfo) {
 			continue
 		}
 
-		displayBoxList(client, &info, table)
+		displayBoxList(client, &info, table, since)
 	}
 
 	table.Render()
 }
 
-func displayBoxList(client *api.API, account *vault.AccountInfo, table *tablewriter.Table) {
+func displayBoxList(client *api.API, account *vault.AccountInfo, table *tablewriter.Table, since time.Time) {
 	mbl, err := client.GetMailboxList(account.Address.Hash())
 	if err != nil {
 		return
 	}
 
 	for _, mb := range mbl.Boxes {
-		displayBox(client, account, fmt.Sprintf("%d", mb.ID), table)
+		displayBox(client, account, fmt.Sprintf("%d", mb.ID), table, since)
 	}
 }
 
-func displayBox(client *api.API, account *vault.AccountInfo, box string, table *tablewriter.Table) {
-	mb, err := client.GetMailboxMessages(account.Address.Hash(), box)
+func displayBox(client *api.API, account *vault.AccountInfo, box string, table *tablewriter.Table, since time.Time) {
+	mb, err := client.GetMailboxMessages(account.Address.Hash(), box, since)
 	if err != nil {
 		return
 	}
