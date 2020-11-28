@@ -42,13 +42,13 @@ import (
 )
 
 type messageEntryType struct {
-	Box        string
-	ID         string
-	Header     message.Header
-	Catalog    message.Catalog
+	Box     string
+	ID      string
+	Header  message.Header
+	Catalog message.Catalog
 }
 
-// ReadMessage will read a specific message blocks
+// ReadMessages will read a specific message blocks
 func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string, since time.Time) {
 	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 	if err != nil {
@@ -74,7 +74,6 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 		}
 
 		displayMessage(client, info, entryList[idx])
-
 
 		for {
 
@@ -120,12 +119,12 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 	}
 }
 
-func queryMessageEntries(client *api.API, info *vault.AccountInfo, boxId, msgId string, since time.Time) []messageEntryType {
+func queryMessageEntries(client *api.API, info *vault.AccountInfo, boxID, msgID string, since time.Time) []messageEntryType {
 	ret := []messageEntryType{}
 
 	// All 4 modes (box, msgid, since and all) are squished inside one single iteration loop. A bit more complex code, but
 	// we don't need to duplicate the code 4 times over with just minor tweaks
-	mode := getQueryMode(boxId, msgId, since)
+	mode := getQueryMode(boxID, msgID, since)
 
 	// Make sure we reset since if we don't use that mode
 	if mode != "since" {
@@ -140,7 +139,7 @@ func queryMessageEntries(client *api.API, info *vault.AccountInfo, boxId, msgId 
 
 	for _, box := range mbl.Boxes {
 		// Skip if box mode and not our box id
-		if mode == "box" && strconv.Itoa(box.ID) != boxId {
+		if mode == "box" && strconv.Itoa(box.ID) != boxID {
 			continue
 		}
 
@@ -151,7 +150,7 @@ func queryMessageEntries(client *api.API, info *vault.AccountInfo, boxId, msgId 
 
 		for _, msg := range mb.Messages {
 			// skip if we only want specific msg ID's
-			if mode == "msgid" && !strings.HasPrefix(msg.ID, msgId) {
+			if mode == "msgid" && !strings.HasPrefix(msg.ID, msgID) {
 				continue
 			}
 
@@ -161,10 +160,10 @@ func queryMessageEntries(client *api.API, info *vault.AccountInfo, boxId, msgId 
 			}
 
 			ret = append(ret, messageEntryType{
-				ID:         msg.ID,
-				Box:        strconv.Itoa(box.ID),
-				Header:     msg.Header,
-				Catalog:    *catalog,
+				ID:      msg.ID,
+				Box:     strconv.Itoa(box.ID),
+				Header:  msg.Header,
+				Catalog: *catalog,
 			})
 		}
 	}
@@ -194,16 +193,16 @@ func decryptCatalog(info *vault.AccountInfo, msg api.MailboxMessagesMessage) (*m
 	return catalog, nil
 }
 
-func getQueryMode(boxId string, msgId string, since time.Time) string {
+func getQueryMode(boxID string, msgID string, since time.Time) string {
 	if !since.IsZero() {
 		return "since"
 	}
 
-	if msgId != "" {
+	if msgID != "" {
 		return "msgid"
 	}
 
-	if boxId != "" {
+	if boxID != "" {
 		return "box"
 	}
 
