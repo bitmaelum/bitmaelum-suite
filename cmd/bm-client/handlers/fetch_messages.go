@@ -22,11 +22,13 @@ package handlers
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/mailbox"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -94,6 +96,10 @@ func displayBox(client *api.API, account *vault.AccountInfo, box string, table *
 		}
 		table.Append(values)
 	}
+
+	// Sort messages first
+	msort := mailbox.NewMessageSort(&account.PrivKey, mb.Messages, mailbox.SortDate, true)
+	sort.Sort(&msort)
 
 	for _, msg := range mb.Messages {
 		key, err := bmcrypto.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)

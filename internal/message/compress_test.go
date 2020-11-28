@@ -22,8 +22,10 @@ package message
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"testing"
 
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,4 +43,41 @@ func TestCompress(t *testing.T) {
 	r = bytes.NewBufferString(src1)
 	compressedBytes, _ = ioutil.ReadAll(ZlibCompress(r))
 	assert.Equal(t, 0, bytes.Compare(compressedBytes, dst1))
+}
+
+func TestDecompress(t *testing.T) {
+	r, err := ZlibDecompress(bytes.NewReader(dst))
+	assert.NoError(t, err)
+	decompressedBytes, _ := ioutil.ReadAll(r)
+	assert.Equal(t, 0, bytes.Compare(decompressedBytes, []byte(src)))
+
+	r, _ = ZlibDecompress(bytes.NewReader(dst1))
+	decompressedBytes, _ = ioutil.ReadAll(r)
+	assert.Equal(t, 0, bytes.Compare(decompressedBytes, []byte(src1)))
+}
+
+func TestEncryptAndCompress(t *testing.T) {
+	iv, key, _ := bmcrypto.GenerateIvAndKey()
+
+	// Open our attachment PNG
+	f, err := os.Open("../../testdata/attachment.png")
+	assert.NoError(t, err)
+
+	// Compress then encrypt
+	r := ZlibCompress(f)
+	r, _ = bmcrypto.GetAesEncryptorReader(iv, key, r)
+
+	encData, err := ioutil.ReadAll(r)
+	assert.NoError(t, err)
+	assert.Equal(t, len(encData), 5407)
+
+	// Decrypt, then decompress
+	r, err = bmcrypto.GetAesDecryptorReader(iv, key, bytes.NewReader(encData))
+	assert.NoError(t, err)
+	r, err = ZlibDecompress(r)
+	assert.NoError(t, err)
+
+	data, err := ioutil.ReadAll(r)
+	assert.NoError(t, err)
+	assert.Equal(t, data[:4], []byte{0x89, 'P', 'N', 'G'})
 }

@@ -21,8 +21,11 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
@@ -35,7 +38,7 @@ import (
 )
 
 // ReadMessage will read a specific message blocks
-func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string) {
+func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string, saveAttachments bool) {
 	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 	if err != nil {
 		logrus.Fatal(err)
@@ -81,7 +84,7 @@ func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box
 
 		data, err := client.GetMessageBlock(info.Address.Hash(), box, messageID, b.ID)
 		if err != nil {
-			panic(err)
+			continue
 		}
 		bb := bytes.NewBuffer(data)
 
@@ -95,11 +98,66 @@ func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box
 			logrus.Fatal(err)
 		}
 
-		fmt.Print(string(content))
+		fmt.Println(string(content))
 	}
 	fmt.Println("--------------------------------------------------------")
 	for idx, b := range catalog.Attachments {
 		fmt.Printf("Attachment %02d: %30s %8d %s\n", idx, b.FileName, datasize.ByteSize(b.Size), b.MimeType)
+
+		if saveAttachments {
+			ar, err := client.GetMessageAttachment(info.Address.Hash(), box, messageID, b.ID)
+			if err == nil {
+				err = saveAttachment(b, ar)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
+		}
 	}
 	fmt.Println("--------------------------------------------------------")
+}
+
+// saveAttachment will save the given attachment to disk
+func saveAttachment(att message.AttachmentType, ar io.ReadCloser) error {
+	defer func() {
+		_ = ar.Close()
+	}()
+
+	_, ok := os.Stat(att.FileName)
+	if ok == nil {
+		fmt.Printf("cannot write to %s: file exists\n", att.FileName)
+		return errors.New("cannot write to file")
+	}
+
+	r, err := bmcrypto.GetAesDecryptorReader(att.IV, att.Key, ar)
+	if err != nil {
+		fmt.Printf("cannot create decryptor to %s: %s\n", att.FileName, err)
+		return err
+	}
+
+	f, err := os.Create(att.FileName)
+	if err != nil {
+		fmt.Printf("cannot open file %s: %s\n", att.FileName, err)
+		return err
+	}
+
+	if att.Compression == "zlib" {
+		r, err = message.ZlibDecompress(r)
+		if err != nil {
+			fmt.Printf("error while creating zlib reader %s: %s\n", att.FileName, err)
+			return err
+		}
+	}
+
+	n, err := io.Copy(f, r)
+	if err != nil || n != int64(att.Size) {
+		fmt.Printf("error while writing file %s: %s (%d/%d bytes)\n", att.FileName, err, n, att.Size)
+		return err
+	}
+
+	_ = f.Close()
+	fmt.Printf("saved file: %s\n", att.FileName)
+
+	return nil
+
 }
