@@ -20,8 +20,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"time"
 
@@ -53,6 +56,22 @@ var (
 	toAddr   *address.Address
 	privKey  *bmcrypto.PrivKey
 )
+
+func apiErrorFunc(_ *http.Request, resp *http.Response) {
+	// Read body
+	b, _ := ioutil.ReadAll(resp.Body)
+	_ = resp.Body.Close()
+
+	err := api.GetErrorFromResponse(b)
+	if err != nil {
+		fmt.Println("error: ", err.Error())
+		os.Exit(1)
+	}
+
+	// Whoops.. not an error. Let's pretend nothing happened and create a new buffer so we can read the body again
+	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
+}
+
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
@@ -103,7 +122,7 @@ func main() {
 	}
 
 	// Send mail
-	client, err := api.NewAuthenticated(*fromAddr, privKey, senderInfo.RoutingInfo.Routing)
+	client, err := api.NewAuthenticated(*fromAddr, privKey, senderInfo.RoutingInfo.Routing, apiErrorFunc)
 	if err != nil {
 		fmt.Println("cannot connect to api")
 		os.Exit(1)

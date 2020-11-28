@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -56,29 +57,29 @@ const (
 // @TODO make sure we can't use a key to fetch other people's info
 
 // Authenticate will check if an API key matches the request
-func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (context.Context, bool) {
+func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (middleware.AuthStatus, context.Context, error) {
 	// Check if the address actually exists
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		return nil, false
+		return middleware.AuthStatusPass, nil, nil
 	}
 
 	accountRepo := container.Instance.GetAccountRepo()
 	if !accountRepo.Exists(*haddr) {
 		logrus.Trace("auth: address not found")
-		return nil, false
+		return middleware.AuthStatusPass, nil, nil
 	}
 
 	// Check api key.
 	k, err := a.checkAPIKey(req.Header.Get("Authorization"), *haddr, route)
 	if err != nil {
-		return nil, false
+		return middleware.AuthStatusPass, nil, nil
 	}
 
 	ctx := req.Context()
 	ctx = context.WithValue(ctx, APIKeyContext, k)
 
-	return ctx, true
+	return middleware.AuthStatusSuccess, ctx, nil
 }
 
 func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeName string) (*key.APIKeyType, error) {

@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -47,7 +48,7 @@ var apiListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
+		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

@@ -23,8 +23,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
@@ -120,7 +121,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	if info == nil {
 		fmt.Printf("* Generating your secret key to send and read mail: ")
 
-		mnemonic, privKey, pubKey, err := internal.GenerateKeypairWithMnemonic(kt)
+		mnemonic, privKey, pubKey, err := bminternal.GenerateKeypairWithMnemonic(kt)
 
 		if err != nil {
 			fmt.Print(err)
@@ -164,7 +165,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	}
 
 	fmt.Printf("* Sending your account information to the server: ")
-	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
+	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		v.RemoveAccount(*addr)
@@ -213,7 +214,7 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-		fmt.Print(internal.WordWrap(mnemonicToShow, 78))
+		fmt.Print(bminternal.WordWrap(mnemonicToShow, 78))
 		fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 

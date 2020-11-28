@@ -264,5 +264,5 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 
 // getClient will return an API client pointing to the actual mail server found in the routing info
 func getClient(routingInfo resolver.RoutingInfo) (*api.API, error) {
-	return api.NewAnonymous(routingInfo.Routing)
+	return api.NewAnonymous(routingInfo.Routing, nil)
 }

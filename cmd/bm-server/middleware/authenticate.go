@@ -36,14 +36,24 @@ type Authenticate struct {
 
 type contextKey int
 
+// AuthStatus is the status that is returned by an authenticator
+type AuthStatus int
+
 const (
 	// AuthorizationContext is a context key that defines the authorization method
 	AuthorizationContext contextKey = iota
+
+	// AuthStatusPass is returned when the authenticator cannot handle or doesn't care. Next authenticator is checked
+	AuthStatusPass AuthStatus = iota
+	// AuthStatusSuccess allows the request, no other authenticators are checked
+	AuthStatusSuccess
+	// AuthStatusFailure denies the request, no other authenticators are checked
+	AuthStatusFailure
 )
 
 // Authenticator allows you to use the struct in the multi-auth middleware
 type Authenticator interface {
-	Authenticate(req *http.Request, route string) (context.Context, bool)
+	Authenticate(req *http.Request, route string) (AuthStatus, context.Context, error)
 }
 
 // Middleware JWT token authentication
@@ -55,13 +65,27 @@ func (ma *Authenticate) Middleware(next http.Handler) http.Handler {
 
 		for _, auth := range ma.Chain {
 			logrus.Tracef("authenticate: trying %T", auth)
-			ctx, ok := auth.Authenticate(req, currentRouteName)
-			if ok {
+			status, ctx, err := auth.Authenticate(req, currentRouteName)
+
+			if status == AuthStatusPass {
+				// Continue with next authenticator
+				continue
+			}
+
+			if status == AuthStatusFailure {
+				logrus.Tracef("authenticate: failure: %s", err)
+				ErrorOut(w, http.StatusUnauthorized, err.Error())
+				return
+			}
+
+			if status == AuthStatusSuccess {
 				ctx = context.WithValue(ctx, AuthorizationContext, fmt.Sprintf("%T", auth))
 				logrus.Tracef("authenticate: found ok %T", auth)
 				next.ServeHTTP(w, req.WithContext(ctx))
 				return
 			}
+
+			return
 		}
 
 		logrus.Tracef("authenticate: unauthorized")
