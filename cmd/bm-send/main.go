@@ -72,7 +72,6 @@ func apiErrorFunc(_ *http.Request, resp *http.Response) {
 	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
 }
 
-
 func main() {
 	rand.Seed(time.Now().UnixNano())
 

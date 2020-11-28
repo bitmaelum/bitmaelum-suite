@@ -91,7 +91,7 @@ func saveTime(t time.Time) {
 	}
 
 	ts := strconv.FormatInt(t.Unix(), 10)
-	_ =  ioutil.WriteFile(p, []byte(ts), 0600)
+	_ = ioutil.WriteFile(p, []byte(ts), 0600)
 }
 
 var lmNew *bool
@@ -103,4 +103,3 @@ func init() {
 	lmNew = listMessagesCmd.Flags().BoolP("new", "n", false, "Display new messages only")
 	lmSince = listMessagesCmd.Flags().StringP("since", "s", "", "Display messages since the specific duration (accepts 1y1w1d1h)")
 }
-
