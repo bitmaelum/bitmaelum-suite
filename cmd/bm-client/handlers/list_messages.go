@@ -45,6 +45,8 @@ func ListMessages(accounts []vault.AccountInfo, since time.Time) {
 	headers := []string{"Account", "Box", "ID", "Subject", "From", "Date", "# Blocks", "# Attachments"}
 	table.SetHeader(headers)
 
+	msgCount := 0
+
 	for _, info := range accounts {
 		// Fetch routing info
 		resolver := container.Instance.GetResolveService()
@@ -58,30 +60,48 @@ func ListMessages(accounts []vault.AccountInfo, since time.Time) {
 			continue
 		}
 
-		displayBoxList(client, &info, table, since)
+		msgCount += displayBoxList(client, &info, table, since)
 	}
 
-	table.Render()
+	if msgCount == 0 {
+		fmt.Println("No messages in the given timespan")
+	} else {
+		table.Render()
+	}
 }
 
-func displayBoxList(client *api.API, account *vault.AccountInfo, table *tablewriter.Table, since time.Time) {
+var firstRender bool
+
+func displayBoxList(client *api.API, account *vault.AccountInfo, table *tablewriter.Table, since time.Time) int {
 	mbl, err := client.GetMailboxList(account.Address.Hash())
 	if err != nil {
-		return
+		return 0
 	}
 
+	msgCount := 0
+	firstRender = true
 	for _, mb := range mbl.Boxes {
-		displayBox(client, account, fmt.Sprintf("%d", mb.ID), table, since)
+		msgCount += displayBox(client, account, fmt.Sprintf("%d", mb.ID), table, since)
 	}
+
+	return msgCount
 }
 
-func displayBox(client *api.API, account *vault.AccountInfo, box string, table *tablewriter.Table, since time.Time) {
+func displayBox(client *api.API, account *vault.AccountInfo, box string, table *tablewriter.Table, since time.Time) int {
 	mb, err := client.GetMailboxMessages(account.Address.Hash(), box, since)
 	if err != nil {
-		return
+		return 0
 	}
 
-	if box == "1" {
+	// No messages in this box found
+	if len(mb.Messages) == 0 {
+		return 0
+	}
+
+	// Display account info on first render
+	if firstRender {
+		firstRender = false
+
 		values := []string{
 			account.Address.String(),
 			box,
@@ -136,4 +156,6 @@ func displayBox(client *api.API, account *vault.AccountInfo, box string, table *
 
 		table.Append(values)
 	}
+
+	return len(mb.Messages)
 }
