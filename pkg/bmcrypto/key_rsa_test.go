@@ -36,7 +36,6 @@ func TestString(t *testing.T) {
 	k = NewRsaKey(2048)
 	assert.Equal(t, "RS256", k.JWTSignMethod().Alg())
 
-
 	data, err := ioutil.ReadFile("../../testdata/privkey.rsa")
 	assert.NoError(t, err)
 	privKey, err := PrivateKeyFromString(string(data))

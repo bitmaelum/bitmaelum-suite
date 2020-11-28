@@ -29,10 +29,12 @@ import (
 	"github.com/vtolstov/jwt-go"
 )
 
+// Error codes
 var (
-	errInvalidSigningMethod = errors.New("invalid signing method")
-	errTokenNotValid        = errors.New("token not valid")
-	errSubjectNotValid      = errors.New("subject not valid")
+	ErrInvalidSigningMethod = errors.New("invalid signing method")
+	ErrTokenNotValid        = errors.New("token not valid")
+	ErrTokenTimeNotValid    = errors.New("token time not valid")
+	ErrSubjectNotValid      = errors.New("subject not valid")
 )
 
 /*
@@ -77,6 +79,14 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	claims := &jwt.StandardClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, kf)
 	if err != nil {
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			// When timing is off, return a separate message, as we can pass this to the caller
+			if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
+				logrus.Trace("auth: jwt: token time is not valid")
+				return nil, ErrTokenTimeNotValid
+			}
+		}
+
 		logrus.Trace("auth: jwt: ", err)
 		return nil, err
 	}
@@ -84,13 +94,13 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	// Make sure the signature method of the JWT matches our public key
 	if !key.Type.JWTHasValidSignMethod(token) {
 		logrus.Tracef("auth: jwt: " + invalidSigningMethod)
-		return nil, errInvalidSigningMethod
+		return nil, ErrInvalidSigningMethod
 	}
 
 	// It should be a valid token
 	if !token.Valid {
 		logrus.Trace("auth: jwt: token not valid")
-		return nil, errTokenNotValid
+		return nil, ErrTokenNotValid
 	}
 
 	// The standard claims should be valid
@@ -104,7 +114,7 @@ func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (
 	res := subtle.ConstantTimeCompare([]byte(token.Claims.(*jwt.StandardClaims).Subject), []byte(addr.String()))
 	if res == 0 {
 		logrus.Tracef("auth: jwt: subject does not match")
-		return nil, errSubjectNotValid
+		return nil, ErrSubjectNotValid
 	}
 
 	logrus.Trace("auth: jwt: token is valid")

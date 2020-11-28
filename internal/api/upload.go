@@ -42,7 +42,7 @@ func (api *API) UploadHeader(t ticket.Ticket, header *message.Header) error {
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return getErrorFromResponse(resp)
+		return GetErrorFromResponse(resp)
 	}
 
 	return nil

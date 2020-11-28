@@ -17,32 +17,39 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package handlers
+package internal
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
 )
 
-// ComposeMessage composes a new message from the given account Info to the "to" with given subject, blocks and attachments
-func ComposeMessage(addressing message.Addressing, subject string, b, a []string) error {
-	envelope, err := message.Compose(addressing, subject, b, a)
-	if err != nil {
-		return err
+// JwtErrorFunc is a generic error handling function that can be attached to an API client. This will automatically
+// trigger whenever an error (https response >= 400) is found. In this case, it will only check for the token-time
+// error, which is returned when the time of the client is off.
+func JwtErrorFunc(_ *http.Request, resp *http.Response) {
+	if resp.StatusCode != 401 {
+		return
 	}
 
-	// Setup API connection to the server
-	client, err := api.NewAuthenticated(addressing.Sender.Address, addressing.Sender.PrivKey, addressing.Sender.Host, internal.JwtErrorFunc)
-	if err != nil {
-		return err
+	// Read body
+	b, _ := ioutil.ReadAll(resp.Body)
+	_ = resp.Body.Close()
+
+	err := api.GetErrorFromResponse(b)
+	if err != nil && err.Error() == "token time not valid" {
+		fmt.Println("The connection to the server was unauthenticated because of timing issues. It seems that your computer time is not")
+		fmt.Println("set to the current time. This causes issues in communication with the BitMaelum server. Please update your time and")
+		fmt.Println("try again.")
+		fmt.Println("")
+		os.Exit(1)
 	}
 
-	// and finally send
-	err = messages.Send(*client, envelope)
-	if err != nil {
-		return err
-	}
-	return nil
+	// Whoops.. not an error. Let's pretend nothing happened and create a new buffer so we can read the body again
+	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
 }

@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
@@ -35,7 +36,7 @@ import (
 
 // ReadMessage will read a specific message blocks
 func ReadMessage(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string) {
-	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing)
+	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 	if err != nil {
 		logrus.Fatal(err)
 	}

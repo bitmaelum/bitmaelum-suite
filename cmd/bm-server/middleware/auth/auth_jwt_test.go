@@ -27,6 +27,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -54,9 +55,9 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	a := JwtAuth{}
 
 	var (
-		req *http.Request
-		ctx context.Context
-		ok  bool
+		req    *http.Request
+		ctx    context.Context
+		status middleware.AuthStatus
 	)
 
 	// No address
@@ -92,7 +93,20 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	req = mux.SetURLVars(req, map[string]string{
 		"addr": hash.New("example!").String(),
 	})
-	ctx, ok = a.Authenticate(req, "")
-	assert.True(t, ok)
+
+	status, ctx, err = a.Authenticate(req, "")
+	assert.Equal(t, status, middleware.AuthStatusSuccess)
 	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", ctx.Value(AddressContext))
+	assert.NoError(t, err)
+
+	// Incorrect time should return an explicit error
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 9, 9, 12, 34, 56, 0, time.UTC)
+	}
+
+	status, ctx, err = a.Authenticate(req, "")
+	assert.Equal(t, status, middleware.AuthStatusFailure)
+	assert.Nil(t, ctx)
+	assert.EqualError(t, err, "token time not valid")
+
 }

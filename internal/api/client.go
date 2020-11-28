@@ -43,12 +43,15 @@ type jsonOut map[string]interface{}
 
 var errNoSuccess = errors.New("operation was not successful")
 
+type serverErrorFunc func(*http.Request, *http.Response)
+
 // API is a structure to connect to the server for the given account
 type API struct {
-	client *http.Client   // internal HTTP client
-	host   string         // host to the server
-	jwt    string         // optional JWT token (for client's authorized communication)
-	ticket *ticket.Ticket // optional ticket for communication
+	client    *http.Client    // internal HTTP client
+	host      string          // host to the server
+	jwt       string          // optional JWT token (for client's authorized communication)
+	ticket    *ticket.Ticket  // optional ticket for communication
+	errorFunc serverErrorFunc // optional function to call when a server call fails
 }
 
 // ClientOpts allows you to configure the API client
@@ -57,19 +60,21 @@ type ClientOpts struct {
 	AllowInsecure bool
 	Debug         bool
 	JWTToken      string
+	ErrorFunc     serverErrorFunc
 }
 
 // NewAnonymous creates a new client that connects anonymously to a BitMaelum server (normally server-to-server communications)
-func NewAnonymous(host string) (*API, error) {
+func NewAnonymous(host string, f serverErrorFunc) (*API, error) {
 	return NewClient(ClientOpts{
 		Host:          host,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
+		ErrorFunc:     f,
 	})
 }
 
 // NewAuthenticated creates a new client that connects to a BitMaelum Server with specific credentials (normally client-to-server communications)
-func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string) (*API, error) {
+func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string, f serverErrorFunc) (*API, error) {
 	// Create token based on the private key of the user
 	jwtToken, err := GenerateJWTToken(addr.Hash(), *key)
 	if err != nil {
@@ -81,6 +86,7 @@ func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string) 
 		JWTToken:      jwtToken,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
+		ErrorFunc:     f,
 	})
 }
 
@@ -106,7 +112,8 @@ func NewClient(opts ClientOpts) (*API, error) {
 			Transport: transport,
 			Timeout:   15 * time.Second,
 		},
-		jwt: opts.JWTToken,
+		jwt:       opts.JWTToken,
+		errorFunc: opts.ErrorFunc,
 	}, nil
 }
 
@@ -217,6 +224,11 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 		return nil, 0, err
 	}
 
+	// Call the error function if there was an error
+	if resp.StatusCode >= 400 && api.errorFunc != nil {
+		api.errorFunc(req, resp)
+	}
+
 	return resp.Body, resp.StatusCode, nil
 }
 
@@ -236,7 +248,8 @@ func CanonicalHost(host string) string {
 	return host
 }
 
-func getErrorFromResponse(body []byte) error {
+// GetErrorFromResponse will return an error generated from the body
+func GetErrorFromResponse(body []byte) error {
 	type errorStatus struct {
 		Error  bool   `json:"error"`
 		Status string `json:"status"`

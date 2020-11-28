@@ -57,7 +57,7 @@ func (api *API) CreateAuthKey(addrHash hash.Hash, key key.AuthKeyType) error {
 	}
 
 	if isErrorResponse(body) {
-		return getErrorFromResponse(body)
+		return GetErrorFromResponse(body)
 	}
 
 	return nil
@@ -76,7 +76,7 @@ func (api *API) DeleteAuthKey(addrHash hash.Hash, fingerprint string) error {
 	}
 
 	if isErrorResponse(body) {
-		return getErrorFromResponse(body)
+		return GetErrorFromResponse(body)
 	}
 
 	return nil
@@ -95,7 +95,7 @@ func (api *API) ListAuthKeys(addrHash hash.Hash) ([]key.AuthKeyType, error) {
 	}
 
 	if isErrorResponse(body) {
-		return nil, getErrorFromResponse(body)
+		return nil, GetErrorFromResponse(body)
 	}
 
 	// Parse body for keys
@@ -121,7 +121,7 @@ func (api *API) GetAuthKey(addrHash hash.Hash, fingerprint string) (*key.AuthKey
 	}
 
 	if isErrorResponse(body) {
-		return nil, getErrorFromResponse(body)
+		return nil, GetErrorFromResponse(body)
 	}
 
 	// Parse body for key

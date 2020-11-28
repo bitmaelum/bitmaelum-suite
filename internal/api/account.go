@@ -39,7 +39,7 @@ func (api *API) GetPublicKey(addr hash.Hash) (string, error) {
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return "", getErrorFromResponse(resp)
+		return "", GetErrorFromResponse(resp)
 	}
 
 	return output.PublicKey, nil
@@ -71,7 +71,7 @@ func (api *API) CreateAccount(info vault.AccountInfo, token string) error {
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return getErrorFromResponse(resp)
+		return GetErrorFromResponse(resp)
 	}
 
 	return nil
