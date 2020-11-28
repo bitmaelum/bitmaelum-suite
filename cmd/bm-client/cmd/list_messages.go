@@ -21,15 +21,13 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
+	pkginternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
 
@@ -49,49 +47,20 @@ var listMessagesCmd = &cobra.Command{
 		}
 
 		if *lmSince != "" {
-			d, err := internal.ParseDuration(*lmSince)
+			d, err := pkginternal.ParseDuration(*lmSince)
 			if err != nil {
 				fmt.Println("incorrect --since format. Use the following format: 1y3w4d5h13m")
 				os.Exit(1)
 			}
 			since = time.Now().Add(-1 * d)
 		} else {
-			since = getLastReadTime()
+			since = internal.GetReadTime()
 		}
 
 		handlers.ListMessages(v.Store.Accounts, since)
 
-		saveTime(time.Now())
+		internal.SaveReadTime(time.Now())
 	},
-}
-
-func getLastReadTime() time.Time {
-	p, err := homedir.Expand("~/.bm-lastread")
-	if err != nil {
-		return time.Time{}
-	}
-
-	b, err := ioutil.ReadFile(p)
-	if err != nil {
-		return time.Time{}
-	}
-
-	ts, err := strconv.ParseInt(string(b), 10, 64)
-	if err != nil {
-		return time.Time{}
-	}
-
-	return time.Unix(ts, 0)
-}
-
-func saveTime(t time.Time) {
-	p, err := homedir.Expand("~/.bm-lastread")
-	if err != nil {
-		return
-	}
-
-	ts := strconv.FormatInt(t.Unix(), 10)
-	_ = ioutil.WriteFile(p, []byte(ts), 0600)
 }
 
 var lmNew *bool
