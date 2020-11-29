@@ -17,26 +17,45 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package cmd
+package internal
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/spf13/cobra"
+	"io/ioutil"
+	"strconv"
+	"time"
+
+	"github.com/mitchellh/go-homedir"
 )
 
-var fetchMessagesCmd = &cobra.Command{
-	Use:     "fetch-messages",
-	Aliases: []string{"fetch"},
-	Short:   "Retrieves messages from your account(s)",
-	Long:    `Connects to the BitMaelum servers and fetches new emails that are not available on your local system.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+const readTimeFile = "~/.bm-lastread"
 
-		handlers.FetchMessages(v.Store.Accounts)
-	},
+// GetReadTime will return the last saved reading time or 0 when no time-file is found
+func GetReadTime() time.Time {
+	p, err := homedir.Expand(readTimeFile)
+	if err != nil {
+		return time.Time{}
+	}
+
+	b, err := ioutil.ReadFile(p)
+	if err != nil {
+		return time.Time{}
+	}
+
+	ts, err := strconv.ParseInt(string(b), 10, 64)
+	if err != nil {
+		return time.Time{}
+	}
+
+	return time.Unix(ts, 0)
 }
 
-func init() {
-	rootCmd.AddCommand(fetchMessagesCmd)
+// SaveReadTime will save the read time to disk
+func SaveReadTime(t time.Time) {
+	p, err := homedir.Expand(readTimeFile)
+	if err != nil {
+		return
+	}
+
+	ts := strconv.FormatInt(t.Unix(), 10)
+	_ = ioutil.WriteFile(p, []byte(ts), 0600)
 }

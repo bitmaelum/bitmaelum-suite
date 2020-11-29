@@ -47,6 +47,7 @@ func ZlibCompress(r io.Reader) io.Reader {
 	return zpr
 }
 
+// ZlibDecompress will return a reader that automatically decompresses the stream
 func ZlibDecompress(r io.Reader) (io.Reader, error) {
 	return zlib.NewReader(r)
 }

@@ -100,6 +100,7 @@ func AskPassword() (string, bool) {
 	fmt.Print("Please enter your vault password: ")
 	b, _ := pwdReader.ReadPassword()
 	fmt.Println("")
+	fmt.Println("")
 
 	return string(b), false
 }

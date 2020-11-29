@@ -20,10 +20,14 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	pkginternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/sirupsen/logrus"
 
@@ -33,7 +37,7 @@ import (
 var readCmd = &cobra.Command{
 	Use:     "read",
 	Aliases: []string{"read-message", "r"},
-	Short:   "Read messages for your account",
+	Short:   "Read messages from your account",
 	Long: `Read message from your account
 `,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -41,7 +45,7 @@ var readCmd = &cobra.Command{
 
 		info := vault.GetAccountOrDefault(v, *rAccount)
 		if info == nil {
-			logrus.Fatal("No account found in vault")
+			logrus.Fatal("* No account found in vault")
 			os.Exit(1)
 		}
 
@@ -49,11 +53,33 @@ var readCmd = &cobra.Command{
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
-			logrus.Fatal("Cannot find routing ID for this account")
+			logrus.Fatal("* Cannot find routing ID for this account")
 			os.Exit(1)
 		}
 
-		handlers.ReadMessage(info, routingInfo, *rBox, *rMessageID, *rSave)
+		var since time.Time
+
+		if *rNew && *rSince != "" {
+			fmt.Println("* You can specify either --new or --since, but not both")
+			os.Exit(1)
+		}
+
+		if *rSince != "" {
+			d, err := pkginternal.ParseDuration(*rSince)
+			if err != nil {
+				fmt.Println("* Incorrect --since format. Use the following format: 1y3w4d5h13m")
+				os.Exit(1)
+			}
+			since = time.Now().Add(-1 * d)
+		}
+
+		if *rNew {
+			since = internal.GetReadTime()
+		}
+
+		handlers.ReadMessages(info, routingInfo, *rBox, *rMessageID, since)
+
+		internal.SaveReadTime(time.Now())
 	},
 }
 
@@ -61,14 +87,19 @@ var (
 	rAccount   *string
 	rBox       *string
 	rMessageID *string
-	rSave      *bool
+	rSince     *string
+	rNew       *bool
 )
 
 func init() {
 	rootCmd.AddCommand(readCmd)
 
 	rAccount = readCmd.Flags().StringP("account", "a", "", "Account")
+
 	rBox = readCmd.Flags().StringP("box", "b", "", "Box to fetch")
 	rMessageID = readCmd.Flags().StringP("message", "m", "", "Message ID")
-	rSave = readCmd.Flags().BoolP("save", "s", false, "Save message attachments")
+	rNew = readCmd.Flags().BoolP("new", "n", false, "Read new messages only")
+	rSince = readCmd.Flags().StringP("since", "s", "", "Read messages since the specific duration (accepts 1y1w1d1h)")
+
+	_ = readCmd.MarkFlagRequired("account")
 }

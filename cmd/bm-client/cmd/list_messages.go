@@ -20,27 +20,57 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
+	pkginternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var listAccountsCmd = &cobra.Command{
-	Use:     "list-accounts",
-	Aliases: []string{"list-account"},
-	Short:   "List your accounts",
-	Long:    `Displays a list of all your accounts currently available`,
+var listMessagesCmd = &cobra.Command{
+	Use:     "list-messages",
+	Aliases: []string{"list"},
+	Short:   "Displays a list of messages from your account(s)",
+	Long:    `Retrieves and displays a list of message found on your remote server`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
 
-		handlers.ListAccounts(v, *displayKeys)
+		var since time.Time
+
+		if *lmNew && *lmSince != "" {
+			fmt.Println("You can specify either --new or --since, but not both")
+			os.Exit(1)
+		}
+
+		if *lmSince != "" {
+			d, err := pkginternal.ParseDuration(*lmSince)
+			if err != nil {
+				fmt.Println("incorrect --since format. Use the following format: 1y3w4d5h13m")
+				os.Exit(1)
+			}
+			since = time.Now().Add(-1 * d)
+		}
+
+		if *lmNew {
+			since = internal.GetReadTime()
+		}
+
+		handlers.ListMessages(v.Store.Accounts, since)
+
+		internal.SaveReadTime(time.Now())
 	},
 }
 
-var displayKeys *bool
+var lmNew *bool
+var lmSince *string
 
 func init() {
-	rootCmd.AddCommand(listAccountsCmd)
+	rootCmd.AddCommand(listMessagesCmd)
 
-	displayKeys = listAccountsCmd.Flags().BoolP("keys", "k", false, "Display private and public key")
+	lmNew = listMessagesCmd.Flags().BoolP("new", "n", false, "Display new messages only")
+	lmSince = listMessagesCmd.Flags().StringP("since", "s", "", "Display messages since the specific duration (accepts 1y1w1d1h)")
 }
