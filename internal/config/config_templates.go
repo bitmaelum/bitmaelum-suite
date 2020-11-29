@@ -135,6 +135,10 @@ config:
         # When enabled, allow remote management through HTTPS instead of only local bm-config
         remote_enabled: false
 
+	webhooks:
+		# When enabled, users can add webhooks to their accounts
+		enabled: false
+
     bolt:
         # BoltDB database directory path to store the databases used for internal storage
         database_path: "~/.bitmaelum/database"
