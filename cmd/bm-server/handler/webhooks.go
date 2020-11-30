@@ -108,7 +108,7 @@ func ListWebhooks(w http.ResponseWriter, req *http.Request) {
 
 // DeleteWebhook will remove a webhook
 func DeleteWebhook(w http.ResponseWriter, req *http.Request) {
-	wh, err := hasAccess(w, req)
+	wh, err := hasWebhookAccess(w, req)
 	if err != nil {
 		return
 	}
@@ -122,7 +122,7 @@ func DeleteWebhook(w http.ResponseWriter, req *http.Request) {
 
 // GetWebhookDetails will get a webhook
 func GetWebhookDetails(w http.ResponseWriter, req *http.Request) {
-	wh, err := hasAccess(w, req)
+	wh, err := hasWebhookAccess(w, req)
 	if err != nil {
 		return
 	}
@@ -142,7 +142,7 @@ func DisableWebhook(w http.ResponseWriter, req *http.Request) {
 }
 
 func endis(w http.ResponseWriter, req *http.Request, status bool) {
-	wh, err := hasAccess(w, req)
+	wh, err := hasWebhookAccess(w, req)
 	if err != nil {
 		return
 	}
@@ -161,7 +161,7 @@ func endis(w http.ResponseWriter, req *http.Request, status bool) {
 	_ = httputils.JSONOut(w, http.StatusOK, jsonOut{})
 }
 
-func hasAccess(w http.ResponseWriter, req *http.Request) (*webhook.Type, error) {
+func hasWebhookAccess(w http.ResponseWriter, req *http.Request) (*webhook.Type, error) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		httputils.ErrorOut(w, http.StatusNotFound, errAccountNotFound.Error())

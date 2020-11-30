@@ -20,6 +20,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -31,6 +32,11 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 )
+
+var (
+	errAPIKeyNotFound = errors.New("api key not found")
+)
+
 
 type inputAPIKeyType struct {
 	Permissions []string `json:"permissions"`
@@ -100,23 +106,12 @@ func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 
 // DeleteAPIKey will remove a key
 func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
-	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	k, err := hasAPIKeyAccess(w, req)
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
-	keyID := mux.Vars(req)["key"]
-
-	// Fetch key
 	repo := container.Instance.GetAPIKeyRepo()
-	k, err := repo.Fetch(keyID)
-	if err != nil || k.AddressHash.String() != h.String() {
-		// Only allow deleting of keys that we own as account
-		httputils.ErrorOut(w, http.StatusNotFound, "key not found")
-		return
-	}
-
 	_ = repo.Remove(*k)
 
 	// All is well
@@ -125,10 +120,20 @@ func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 
 // GetAPIKeyDetails will get a key
 func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
+	k, err := hasAPIKeyAccess(w, req)
+	if err != nil {
+		return
+	}
+
+	// Output key
+	_ = httputils.JSONOut(w, http.StatusOK, k)
+}
+
+func hasAPIKeyAccess(w http.ResponseWriter, req *http.Request) (*key.APIKeyType, error) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
-		return
+		httputils.ErrorOut(w, http.StatusNotFound, errAccountNotFound.Error())
+		return nil, errAccountNotFound
 	}
 
 	keyID := mux.Vars(req)["key"]
@@ -137,10 +142,9 @@ func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
 	repo := container.Instance.GetAPIKeyRepo()
 	k, err := repo.Fetch(keyID)
 	if err != nil || k.AddressHash.String() != h.String() {
-		httputils.ErrorOut(w, http.StatusNotFound, "key not found")
-		return
+		httputils.ErrorOut(w, http.StatusNotFound, errAPIKeyNotFound.Error())
+		return nil, errAPIKeyNotFound
 	}
 
-	// Output key
-	_ = httputils.JSONOut(w, http.StatusOK, k)
+	return k, nil
 }

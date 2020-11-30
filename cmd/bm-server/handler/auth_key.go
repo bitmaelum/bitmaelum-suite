@@ -20,6 +20,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -31,6 +32,11 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 )
+
+var (
+	errAuthKeyNotFound = errors.New("auth key not found")
+)
+
 
 type inputAuthKeyType struct {
 	Fingerprint string           `json:"fingerprint"`
@@ -81,11 +87,10 @@ func ListAuthKeys(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Store Auth key into persistent storage
 	repo := container.Instance.GetAuthKeyRepo()
 	keys, err := repo.FetchByHash(h.String())
 	if err != nil {
-		msg := fmt.Sprintf("error while retrieving keys: %s", err)
+		msg := fmt.Sprintf("error while retrieving authn keys: %s", err)
 		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
 		return
 	}
@@ -96,23 +101,13 @@ func ListAuthKeys(w http.ResponseWriter, req *http.Request) {
 
 // DeleteAuthKey will remove a key
 func DeleteAuthKey(w http.ResponseWriter, req *http.Request) {
-	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	k, err := hasAuthKeyAccess(w, req)
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
-	keyID := mux.Vars(req)["key"]
 
-	// Fetch key
 	repo := container.Instance.GetAuthKeyRepo()
-	k, err := repo.Fetch(keyID)
-	if err != nil || k.AddressHash.String() != h.String() {
-		// Only allow deleting of keys that we own as account
-		httputils.ErrorOut(w, http.StatusNotFound, "key not found")
-		return
-	}
-
 	_ = repo.Remove(*k)
 
 	// All is well
@@ -121,10 +116,20 @@ func DeleteAuthKey(w http.ResponseWriter, req *http.Request) {
 
 // GetAuthKeyDetails will get a key
 func GetAuthKeyDetails(w http.ResponseWriter, req *http.Request) {
+	k, err := hasAuthKeyAccess(w, req)
+	if err != nil {
+		return
+	}
+
+	// Output key
+	_ = httputils.JSONOut(w, http.StatusOK, k)
+}
+
+func hasAuthKeyAccess(w http.ResponseWriter, req *http.Request) (*key.AuthKeyType, error) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
-		return
+		httputils.ErrorOut(w, http.StatusNotFound, errAccountNotFound.Error())
+		return nil, errAccountNotFound
 	}
 
 	keyID := mux.Vars(req)["key"]
@@ -133,10 +138,9 @@ func GetAuthKeyDetails(w http.ResponseWriter, req *http.Request) {
 	repo := container.Instance.GetAuthKeyRepo()
 	k, err := repo.Fetch(keyID)
 	if err != nil || k.AddressHash.String() != h.String() {
-		httputils.ErrorOut(w, http.StatusNotFound, "key not found")
-		return
+		httputils.ErrorOut(w, http.StatusNotFound, errAuthKeyNotFound.Error())
+		return nil, errAuthKeyNotFound
 	}
 
-	// Output key
-	_ = httputils.JSONOut(w, http.StatusOK, k)
+	return k, nil
 }
