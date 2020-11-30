@@ -61,7 +61,7 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 		Catalog: catalog,
 	}
 
-	_ = JSONOut(w, output)
+	_ = JSONOut(w, http.StatusOK, output)
 }
 
 // GetMessageBlock will return a message block

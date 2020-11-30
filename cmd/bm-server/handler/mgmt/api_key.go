@@ -20,7 +20,6 @@
 package mgmt
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -83,9 +82,7 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(jsonOut{
+	_ = handler.JSONOut(w, http.StatusCreated, jsonOut{
 		"api_key": newAPIKey.ID,
 	})
 }

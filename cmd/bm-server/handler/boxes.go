@@ -62,8 +62,7 @@ func CreateBox(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	JSONOut(w, http.StatusCreated, "")
 }
 
 // DeleteBox deletes a given box with all messages (note: what about child boxes??)
@@ -87,8 +86,7 @@ func DeleteBox(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNoContent)
+	JSONOut(w, http.StatusNoContent, "")
 }
 
 // RetrieveBoxes retrieves all message boxes for the given account
@@ -115,7 +113,7 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 		"boxes": boxes,
 	}
 
-	_ = JSONOut(w, output)
+	_ = JSONOut(w, http.StatusOK, output)
 }
 
 // RetrieveMessagesFromBox retrieves info about the given mailbox
@@ -133,7 +131,7 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 			ids = append(ids, msg.ID)
 		}
 
-		_ = JSONOut(w, jsonOut{
+		_ = JSONOut(w, http.StatusOK, jsonOut{
 			"meta":        list.Meta,
 			"message_ids": ids,
 		})
@@ -141,7 +139,7 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Otherwise, return the whole list
-	_ = JSONOut(w, list)
+	_ = JSONOut(w, http.StatusOK, list)
 }
 
 func getMessageList(req *http.Request) (*account.MessageList, *httpError) {

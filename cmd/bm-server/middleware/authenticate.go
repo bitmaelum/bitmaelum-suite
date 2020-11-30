@@ -106,9 +106,8 @@ func ErrorOut(w http.ResponseWriter, code int, msg string) {
 	}
 
 	logrus.Debugf("Returning error (%d): %s", code, msg)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(&OutputResponse{
+
+	_ = handler.JSONOut(w, code, &OutputResponse{
 		Error:  true,
 		Status: msg,
 	})

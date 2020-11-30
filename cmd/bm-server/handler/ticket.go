@@ -95,9 +95,7 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Send out our validated ticket
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(ticket.NewSimpleTicket(t))
+	_ = JSONOut(w, http.StatusOK, ticket.NewSimpleTicket(t))
 }
 
 // GetServerToServerTicket will try and retrieve a (valid) ticket so we can upload messages. It is only allowed to have a
@@ -188,15 +186,14 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	outputTicket(tckt, w)
 }
 
+// Send out validated or invalidated ticket and status
 func outputTicket(tckt *ticket.Ticket, w http.ResponseWriter) {
-	// Send out validated or invalidated ticket and status
-	w.Header().Set("Content-Type", "application/json")
-	if tckt.Valid {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusPreconditionFailed)
+	status := http.StatusOK
+	if !tckt.Valid {
+		status = http.StatusPreconditionFailed
 	}
-	_ = json.NewEncoder(w).Encode(ticket.NewSimpleTicket(tckt))
+
+	_ = JSONOut(w, status, ticket.NewSimpleTicket(tckt))
 }
 
 func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
