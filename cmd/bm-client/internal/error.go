@@ -43,9 +43,10 @@ func JwtErrorFunc(_ *http.Request, resp *http.Response) {
 
 	err := api.GetErrorFromResponse(b)
 	if err != nil && err.Error() == "token time not valid" {
-		fmt.Println("The connection to the server was unauthenticated because of timing issues. It seems that your computer time is not")
-		fmt.Println("set to the current time. This causes issues in communication with the BitMaelum server. Please update your time and")
-		fmt.Println("try again.")
+		fmt.Println("")
+		fmt.Println("The connection to the server was unauthenticated because of timing issues. It seems that your " +
+			"computer time is not set to the current time. This causes issues in communication with the BitMaelum " +
+			"server. Please update your time and try again.")
 		fmt.Println("")
 		os.Exit(1)
 	}
