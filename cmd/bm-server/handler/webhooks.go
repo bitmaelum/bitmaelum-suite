@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -45,9 +46,9 @@ type inputWebhookType struct {
 // CreateWebhook is a handler that will create a new webhook
 func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 	var input inputWebhookType
-	err := DecodeBody(w, req.Body, &input)
+	err := httputils.DecodeBody(w, req.Body, &input)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
+		httputils.ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
 		return
 	}
 
@@ -55,19 +56,19 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	cfg, err := json.Marshal(input.Config)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
+		httputils.ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
 		return
 	}
 
 	wh, err := webhook.NewWebhook(*h, input.Event, input.Type, cfg)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
+		httputils.ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
 		return
 	}
 
@@ -76,19 +77,19 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 	err = repo.Store(*wh)
 	if err != nil {
 		msg := fmt.Sprintf("error while storing webhook: %s", err)
-		ErrorOut(w, http.StatusInternalServerError, msg)
+		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
 		return
 	}
 
 	// Output webhook
-	_ = JSONOut(w, http.StatusCreated, wh)
+	_ = httputils.JSONOut(w, http.StatusCreated, wh)
 }
 
 // ListWebhooks returns a list of all webhooks for the given account
 func ListWebhooks(w http.ResponseWriter, req *http.Request) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -96,19 +97,19 @@ func ListWebhooks(w http.ResponseWriter, req *http.Request) {
 	webhooks, err := repo.FetchByHash(*h)
 	if err != nil {
 		msg := fmt.Sprintf("error while retrieving webhooks: %s", err)
-		ErrorOut(w, http.StatusInternalServerError, msg)
+		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
 		return
 	}
 
 	// Output wh
-	_ = JSONOut(w, http.StatusOK, webhooks)
+	_ = httputils.JSONOut(w, http.StatusOK, webhooks)
 }
 
 // DeleteWebhook will remove a webhook
 func DeleteWebhook(w http.ResponseWriter, req *http.Request) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -119,21 +120,21 @@ func DeleteWebhook(w http.ResponseWriter, req *http.Request) {
 	wh, err := repo.Fetch(whID)
 	if err != nil || wh.Account.String() != h.String() {
 		// Only allow deleting of webhooks that we own as account
-		ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
+		httputils.ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
 		return
 	}
 
 	_ = repo.Remove(*wh)
 
 	// All is well
-	_ = JSONOut(w, http.StatusNoContent, nil)
+	_ = httputils.JSONOut(w, http.StatusNoContent, nil)
 }
 
 // GetWebhookDetails will get a webhook
 func GetWebhookDetails(w http.ResponseWriter, req *http.Request) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -143,12 +144,12 @@ func GetWebhookDetails(w http.ResponseWriter, req *http.Request) {
 	repo := container.Instance.GetWebhookRepo()
 	wh, err := repo.Fetch(whID)
 	if err != nil || wh.Account.String() != h.String() {
-		ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
+		httputils.ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
 		return
 	}
 
 	// Output webhook
-	_ = JSONOut(w, http.StatusOK, wh)
+	_ = httputils.JSONOut(w, http.StatusOK, wh)
 }
 
 // EnableWebhook will enable a webhook
@@ -164,7 +165,7 @@ func DisableWebhook(w http.ResponseWriter, req *http.Request) {
 func endis(w http.ResponseWriter, req *http.Request, status bool) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -174,7 +175,7 @@ func endis(w http.ResponseWriter, req *http.Request, status bool) {
 	repo := container.Instance.GetWebhookRepo()
 	wh, err := repo.Fetch(whID)
 	if err != nil || wh.Account.String() != h.String() {
-		ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
+		httputils.ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
 		return
 	}
 
@@ -184,9 +185,9 @@ func endis(w http.ResponseWriter, req *http.Request, status bool) {
 	// Store
 	err = repo.Store(*wh)
 	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "cannot enable")
+		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot enable")
 		return
 	}
 
-	_ = JSONOut(w, http.StatusOK, jsonOut{})
+	_ = httputils.JSONOut(w, http.StatusOK, jsonOut{})
 }
