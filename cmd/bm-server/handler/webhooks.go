@@ -35,6 +35,7 @@ import (
 var (
 	errIncorrectBody   = errors.New("incorrect body")
 	errWebhookNotFound = errors.New("webhook not found")
+	errAccountNotFound = errors.New("account not found")
 )
 
 type inputWebhookType struct {
@@ -107,23 +108,12 @@ func ListWebhooks(w http.ResponseWriter, req *http.Request) {
 
 // DeleteWebhook will remove a webhook
 func DeleteWebhook(w http.ResponseWriter, req *http.Request) {
-	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	wh, err := hasAccess(w, req)
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
-	whID := mux.Vars(req)["id"]
-
-	// Fetch webhook
 	repo := container.Instance.GetWebhookRepo()
-	wh, err := repo.Fetch(whID)
-	if err != nil || wh.Account.String() != h.String() {
-		// Only allow deleting of webhooks that we own as account
-		httputils.ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
-		return
-	}
-
 	_ = repo.Remove(*wh)
 
 	// All is well
@@ -132,19 +122,8 @@ func DeleteWebhook(w http.ResponseWriter, req *http.Request) {
 
 // GetWebhookDetails will get a webhook
 func GetWebhookDetails(w http.ResponseWriter, req *http.Request) {
-	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	wh, err := hasAccess(w, req)
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
-		return
-	}
-
-	whID := mux.Vars(req)["id"]
-
-	// Fetch webhook
-	repo := container.Instance.GetWebhookRepo()
-	wh, err := repo.Fetch(whID)
-	if err != nil || wh.Account.String() != h.String() {
-		httputils.ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
 		return
 	}
 
@@ -163,10 +142,30 @@ func DisableWebhook(w http.ResponseWriter, req *http.Request) {
 }
 
 func endis(w http.ResponseWriter, req *http.Request, status bool) {
+	wh, err := hasAccess(w, req)
+	if err != nil {
+		return
+	}
+
+	// set wh status
+	wh.Enabled = status
+
+	// Store
+	repo := container.Instance.GetWebhookRepo()
+	err = repo.Store(*wh)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot enable")
+		return
+	}
+
+	_ = httputils.JSONOut(w, http.StatusOK, jsonOut{})
+}
+
+func hasAccess(w http.ResponseWriter, req *http.Request) (*webhook.Type, error) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
-		return
+		httputils.ErrorOut(w, http.StatusNotFound, errAccountNotFound.Error())
+		return nil, errAccountNotFound
 	}
 
 	whID := mux.Vars(req)["id"]
@@ -175,19 +174,10 @@ func endis(w http.ResponseWriter, req *http.Request, status bool) {
 	repo := container.Instance.GetWebhookRepo()
 	wh, err := repo.Fetch(whID)
 	if err != nil || wh.Account.String() != h.String() {
+		// Only allow deleting of webhooks that we own as account
 		httputils.ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
-		return
+		return nil, errWebhookNotFound
 	}
 
-	// set wh status
-	wh.Enabled = status
-
-	// Store
-	err = repo.Store(*wh)
-	if err != nil {
-		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot enable")
-		return
-	}
-
-	_ = httputils.JSONOut(w, http.StatusOK, jsonOut{})
+	return wh, nil
 }
