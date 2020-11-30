@@ -64,7 +64,7 @@ func TestMockRepo(t *testing.T) {
 	err = repo.Remove(*w)
 	assert.NoError(t, err)
 
-	hooks, err = repo.FetchByHash(h)
+	hooks, err = repo.FetchByHash(exampleHash)
 	assert.NoError(t, err)
 	assert.Len(t, hooks, 1)
 }
