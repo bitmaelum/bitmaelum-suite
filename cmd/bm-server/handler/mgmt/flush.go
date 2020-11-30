@@ -23,6 +23,7 @@ import (
 	"net/http"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 )
@@ -31,7 +32,7 @@ import (
 func FlushQueues(w http.ResponseWriter, req *http.Request) {
 	k := handler.GetAPIKey(req)
 	if !k.HasPermission(internal.PermFlush, nil) {
-		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
+		httputils.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
@@ -43,5 +44,5 @@ func FlushQueues(w http.ResponseWriter, req *http.Request) {
 	go processor.ProcessStuckIncomingMessages()
 	go processor.ProcessStuckProcessingMessages()
 
-	_ = handler.JSONOut(w, http.StatusOK, handler.StatusOk("Flushing queues"))
+	_ = httputils.JSONOut(w, http.StatusOK, httputils.StatusOk("Flushing queues"))
 }

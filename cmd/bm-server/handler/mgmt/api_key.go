@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
@@ -41,9 +42,9 @@ type inputAPIKeyType struct {
 // NewAPIKey is a handler that will create a new API key (non-admin keys only)
 func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 	var input inputAPIKeyType
-	err := handler.DecodeBody(w, req.Body, &input)
+	err := httputils.DecodeBody(w, req.Body, &input)
 	if err != nil {
-		handler.ErrorOut(w, http.StatusBadRequest, "incorrect body")
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect body")
 		return
 	}
 
@@ -54,19 +55,19 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		h = &tmp
 	}
 	if h == nil {
-		handler.ErrorOut(w, http.StatusBadRequest, "incorrect hash")
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect hash")
 		return
 	}
 
 	k := handler.GetAPIKey(req)
 	if !k.HasPermission(internal.PermAPIKeys, h) {
-		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
+		httputils.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
 	err = internal.CheckManagementPermissions(input.Permissions)
 	if err != nil {
-		handler.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return
 	}
 
@@ -77,12 +78,12 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 	err = repo.Store(newAPIKey)
 	if err != nil {
 		msg := fmt.Sprintf("error while storing key: %s", err)
-		handler.ErrorOut(w, http.StatusInternalServerError, msg)
+		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
 		return
 	}
 
 	// Output key
-	_ = handler.JSONOut(w, http.StatusCreated, jsonOut{
+	_ = httputils.JSONOut(w, http.StatusCreated, jsonOut{
 		"api_key": newAPIKey.ID,
 	})
 }

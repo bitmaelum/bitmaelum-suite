@@ -25,6 +25,7 @@ import (
 	"strconv"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -39,13 +40,13 @@ const (
 func GetMessage(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, incorrectBox)
+		httputils.ErrorOut(w, http.StatusBadRequest, incorrectBox)
 		return
 	}
 
@@ -61,20 +62,20 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 		Catalog: catalog,
 	}
 
-	_ = JSONOut(w, http.StatusOK, output)
+	_ = httputils.JSONOut(w, http.StatusOK, output)
 }
 
 // GetMessageBlock will return a message block
 func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, incorrectBox)
+		httputils.ErrorOut(w, http.StatusBadRequest, incorrectBox)
 		return
 	}
 
@@ -84,7 +85,7 @@ func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 	ar := container.Instance.GetAccountRepo()
 	block, err := ar.FetchMessageBlock(*haddr, box, messageID, blockID)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, incorrectBox)
+		httputils.ErrorOut(w, http.StatusBadRequest, incorrectBox)
 		return
 	}
 
@@ -97,13 +98,13 @@ func GetMessageBlock(w http.ResponseWriter, req *http.Request) {
 func GetMessageAttachment(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, incorrectBox)
+		httputils.ErrorOut(w, http.StatusBadRequest, incorrectBox)
 		return
 	}
 
@@ -113,7 +114,7 @@ func GetMessageAttachment(w http.ResponseWriter, req *http.Request) {
 	ar := container.Instance.GetAccountRepo()
 	attachment, size, err := ar.FetchMessageAttachment(*haddr, box, messageID, attachmentID)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect attachment")
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect attachment")
 		return
 	}
 

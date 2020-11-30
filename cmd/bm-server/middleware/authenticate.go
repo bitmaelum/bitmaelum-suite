@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -107,7 +107,7 @@ func ErrorOut(w http.ResponseWriter, code int, msg string) {
 
 	logrus.Debugf("Returning error (%d): %s", code, msg)
 
-	_ = handler.JSONOut(w, code, &OutputResponse{
+	_ = httputils.JSONOut(w, code, &OutputResponse{
 		Error:  true,
 		Status: msg,
 	})
