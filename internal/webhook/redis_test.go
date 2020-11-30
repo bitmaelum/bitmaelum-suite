@@ -51,7 +51,7 @@ func TestRedis(t *testing.T) {
 	data, _ := json.Marshal(cfg)
 
 	h1 := hash.Hash("set 1")
-	w, _ := NewWebhook(h1, EventNewMessage, TypeHTTP, data)
+	w, _ := NewWebhook(h1, EventLocalDelivery, TypeHTTP, data)
 
 	m.Queue("set", "ok", nil)
 	m.Queue("sadd", int64(1), nil)

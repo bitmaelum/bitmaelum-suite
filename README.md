@@ -18,6 +18,7 @@ BitMaelum (old Anglo-Saxon for "bit-by-bit") is an attempt. Instead of trying to
 
 To build and test BitMaelum, check out [build document](docs/build.md).
 
+New to BitMaelum? Take a 5-minute tour on [what's it about](https://github.com/bitmaelum/bitmaelum-suite/wiki/BItMaelum-in-5-minutes-or-less)
 
 # Features
 
@@ -42,7 +43,7 @@ To start with BitMaelum right away, check out [Quickstart guide](https://github.
 
 # Development
 
-BitMaelum is currently highly experimental and under heavy development. Do not use it yet in any production environment. 
+BitMaelum is highly experimental and under heavy development. Do not use it yet in any production environment. 
 
 
 <hr>

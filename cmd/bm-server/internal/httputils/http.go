@@ -87,7 +87,7 @@ func DecodeBody(w http.ResponseWriter, body io.ReadCloser, v interface{}) error 
 	decoder := json.NewDecoder(body)
 	err := decoder.Decode(v)
 	if err != nil {
-		_ = JSONOut(w, http.StatusBadRequest, StatusError("Malformed JSON: " + err.Error()))
+		_ = JSONOut(w, http.StatusBadRequest, StatusError("Malformed JSON: "+err.Error()))
 		return err
 	}
 

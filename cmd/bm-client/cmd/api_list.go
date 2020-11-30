@@ -64,10 +64,16 @@ var apiListCmd = &cobra.Command{
 		table.SetHeader([]string{"ID", "Permissions", "Valid until", "Description"})
 
 		for _, key := range keys {
+			// don't display zero times
+			expiry := key.Expires.Format(time.ANSIC)
+			if key.Expires.Unix() == 0 {
+				expiry = ""
+			}
+
 			table.Append([]string{
 				key.ID,
 				strings.Join(key.Permissions, ","),
-				key.Expires.Format(time.ANSIC),
+				expiry,
 				key.Desc,
 			})
 		}

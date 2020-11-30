@@ -131,15 +131,14 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 		return nil
 	}
 
-
 	// notify any webhooks
 	payload, err := json.Marshal(map[string]string{
 		"from": header.From.Addr.String(),
-		"to": header.To.Addr.String(),
-		"id": msgID,
+		"to":   header.To.Addr.String(),
+		"id":   msgID,
 	})
 	if err == nil {
-		_ = dispatcher.Dispatch(header.To.Addr, webhook.EventNewMessage, payload)
+		_ = dispatcher.Dispatch(header.To.Addr, webhook.EventLocalDelivery, payload)
 	}
 
 	return nil
@@ -234,11 +233,11 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 	// notify any webhooks
 	payload, err := json.Marshal(map[string]string{
 		"from": header.From.Addr.String(),
-		"to": header.To.Addr.String(),
-		"id": msgID,
+		"to":   header.To.Addr.String(),
+		"id":   msgID,
 	})
 	if err == nil {
-		_ = dispatcher.Dispatch(hash.New(addrInfo.Hash), webhook.EventOutgoingMessage, payload)
+		_ = dispatcher.Dispatch(hash.New(addrInfo.Hash), webhook.EventRemoveDelivery, payload)
 	}
 
 	// Remove local message from processing queue
