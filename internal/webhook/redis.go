@@ -43,8 +43,6 @@ func (r redisRepo) FetchByHash(h hash.Hash) ([]Type, error) {
 	}
 
 	var webhooks []Type
-	{
-	}
 
 	for _, item := range items {
 		w, err := r.Fetch(item)

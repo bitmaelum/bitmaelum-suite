@@ -106,7 +106,7 @@ func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 
 // DeleteAPIKey will remove a key
 func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
-	k, err := hasAPIKeyAccess(w, req)
+	k, err := hasAPIwebKeyAccess(w, req)
 	if err != nil {
 		return
 	}
@@ -120,7 +120,7 @@ func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 
 // GetAPIKeyDetails will get a key
 func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
-	k, err := hasAPIKeyAccess(w, req)
+	k, err := hasAPIwebKeyAccess(w, req)
 	if err != nil {
 		return
 	}
@@ -129,7 +129,7 @@ func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
 	_ = httputils.JSONOut(w, http.StatusOK, k)
 }
 
-func hasAPIKeyAccess(w http.ResponseWriter, req *http.Request) (*key.APIKeyType, error) {
+func hasAPIwebKeyAccess(w http.ResponseWriter, req *http.Request) (*key.APIKeyType, error) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
 		httputils.ErrorOut(w, http.StatusNotFound, errAccountNotFound.Error())
