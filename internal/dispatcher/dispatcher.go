@@ -17,32 +17,45 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package webhook
+package dispatcher
 
 import (
-	"encoding/json"
-	"testing"
-
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/mborders/artifex"
+	"github.com/sirupsen/logrus"
 )
 
-func TestWebhook(t *testing.T) {
-	cfg := ConfigHTTP{
-		URL: "https://foo.bar/test",
+var dispatcher *artifex.Dispatcher
+
+// InitDispatcher initializes the dispatcher system with the given number of workers
+func InitDispatcher(c int) {
+	dispatcher = artifex.NewDispatcher(c, c*10)
+	dispatcher.Start()
+}
+
+// Dispatch dispatches all active webhooks for the given account and type, with the given payload
+func Dispatch(h hash.Hash, t webhook.TypeEnum, payload []byte) error {
+	repo := container.Instance.GetWebhookRepo()
+	webhooks, err := repo.FetchByHash(h)
+	if err != nil {
+		return err
 	}
-	data, _ := json.Marshal(cfg)
 
-	a, err := NewWebhook(hash.New("example!"), EventNewMessage, TypeHTTP, data)
-	assert.NoError(t, err)
+	for _, webhook := range webhooks {
+		if webhook.Type != t {
+			continue
+		}
+		if !webhook.Enabled {
+			continue
+		}
 
-	u, err := uuid.Parse(a.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, "VERSION_4", u.Version().String())
-	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", a.Account.String())
-	assert.Equal(t, TypeHTTP, a.Type)
-	assert.Equal(t, "{\"URL\":\"https://foo.bar/test\"}", string(a.Config))
-	assert.False(t, a.Enabled)
-	assert.Equal(t, EventNewMessage, a.Event)
+		_ = dispatcher.Dispatch(func() {
+			logrus.Debugf("dispatching webhook %s", webhook.ID)
+			work(webhook, payload)
+		})
+	}
+
+	return nil
 }

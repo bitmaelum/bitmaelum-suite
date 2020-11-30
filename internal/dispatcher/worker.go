@@ -17,32 +17,44 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package webhook
+package dispatcher
 
 import (
+	"bytes"
 	"encoding/json"
-	"testing"
+	"errors"
+	"net/http"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 )
 
-func TestWebhook(t *testing.T) {
-	cfg := ConfigHTTP{
-		URL: "https://foo.bar/test",
+// work is the main function that will get dispatched as a job. It will do the actual work
+func work(w webhook.Type, payload []byte) {
+	switch w.Type {
+	case webhook.TypeHTTP:
+		execHTTP(w, payload)
 	}
-	data, _ := json.Marshal(cfg)
+}
 
-	a, err := NewWebhook(hash.New("example!"), EventNewMessage, TypeHTTP, data)
-	assert.NoError(t, err)
+func execHTTP(w webhook.Type, payload []byte) error {
+	cfg := &webhook.ConfigHTTP{}
+	err := json.Unmarshal(w.Config, cfg)
+	if err != nil {
+		return err
+	}
 
-	u, err := uuid.Parse(a.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, "VERSION_4", u.Version().String())
-	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", a.Account.String())
-	assert.Equal(t, TypeHTTP, a.Type)
-	assert.Equal(t, "{\"URL\":\"https://foo.bar/test\"}", string(a.Config))
-	assert.False(t, a.Enabled)
-	assert.Equal(t, EventNewMessage, a.Event)
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	resp, err := client.Post(cfg.URL, "application/json", bytes.NewReader([]byte(payload)))
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode >= 400 {
+		return errors.New("webhook: invalid status code returned from HTTP endpoint")
+	}
+
+	return nil
 }

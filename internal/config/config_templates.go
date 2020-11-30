@@ -135,9 +135,13 @@ config:
         # When enabled, allow remote management through HTTPS instead of only local bm-config
         remote_enabled: false
 
-	webhooks:
-		# When enabled, users can add webhooks to their accounts
-		enabled: false
+    webhooks:
+        # When enabled, users can add webhooks to their accounts
+        enabled: false
+        # Set to "default" to use the default internal worker system
+        system: default
+        # workers is the amount of standby workers that will deal with webhook events
+        workers: 10
 
     bolt:
         # BoltDB database directory path to store the databases used for internal storage

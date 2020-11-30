@@ -20,11 +20,7 @@
 package webhook
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"net/http"
-	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/google/uuid"
@@ -34,88 +30,58 @@ var (
 	errWebhookNotFound = errors.New("webhook not found")
 )
 
+// TypeEnum is the type of the webhook destination
 type TypeEnum int
+
+// EventEnum is the event on which the webhook responds
 type EventEnum int
 
+// Webhook destination types.
 const (
+	// TypeHTTP
 	TypeHTTP TypeEnum = iota // Simple HTTP endpoint
 	// TypeAmqp                            // Advanced Message Queue protocol
 	// TypeSQS                             // Amazon SQS support
 	// TypeSlack                           // Slack support
-
-	EventNewMessage EventEnum = iota
 )
 
+// Webhook event types. Everything that a webhook can trigger on
+const (
+	EventNewMessage      EventEnum = iota // A new messages is received inside a account
+	EventFailedDelivery                   // A message is received but not considered correct
+	EventOutgoingMessage                  // An outgoing message has been send
+)
+
+// Type is the webhook structure
 type Type struct {
-	ID      string    // Id of the webhook
+	ID      string    // Id of the webhook (uuidv4)
 	Account hash.Hash // account to which this webhook belongs to
 	Type    TypeEnum  // type of webhook
 	Event   EventEnum // event when this webhook is triggered
-	Enabled bool      // true when the webook is enabled
-	Config  []byte    // config for the given target.
+	Enabled bool      // true when the webhook is enabled
+	Config  []byte    // config for the given target, json encoded
 }
 
+// ConfigHTTP Configuration for TypeHTTP
 type ConfigHTTP struct {
-	Url string
+	URL string
 }
 
+// ConfigSQS Configuration for TypeSQS (not yet implemented)
 type ConfigSQS struct {
 	Arn             string
 	Region          string
-	AccesKeyId      string
+	AccessKeyID     string
 	SecretAccessKey string
 }
 
+// ConfigSlack Configuration for TypeSlack (not yet implemented)
 type ConfigSlack struct {
-	WebhookUrl string
+	WebhookURL string
 }
 
-// @TODO: should we just have a queue system that will run at max 10 go routines for instance? Otherwise all go threads
-// might be depleted.
-
-// Execute will run the current webhook inside a separate go routine
-func (w *Type) Execute(payload string) {
-	go func() {
-		err := w.executeWebhook(payload)
-
-		if err != nil {
-			// @TODO: what to do when the webhook fails?
-		}
-	}()
-}
-
-func (w *Type) executeWebhook(payload string) error {
-	switch w.Type {
-	case TypeHTTP:
-		return w.execHttp(payload)
-	}
-
-	return errors.New("webhook: type not supported")
-}
-
-func (w *Type) execHttp(payload string) error {
-	cfg := &ConfigHTTP{}
-	err := json.Unmarshal(w.Config, cfg)
-	if err != nil {
-		return err
-	}
-
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-	resp, err := client.Post(cfg.Url, "application/json", bytes.NewReader([]byte(payload)))
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode >= 400 {
-		return errors.New("webhook: invalid status code returned from HTTP endpoint")
-	}
-
-	return nil
-}
-
-func NewWebhook(account hash.Hash, t TypeEnum, e EventEnum, cfg []byte) (*Type, error) {
+// NewWebhook creates a new webhook
+func NewWebhook(account hash.Hash, e EventEnum, t TypeEnum, cfg []byte) (*Type, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err

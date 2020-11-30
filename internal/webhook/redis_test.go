@@ -37,7 +37,7 @@ func TestRedis(t *testing.T) {
 		context: context.Background(),
 	}
 
-	repo := &WebhookRepository{
+	repo := &Repository{
 		storageRepo: storage,
 	}
 
@@ -46,12 +46,12 @@ func TestRedis(t *testing.T) {
 	)
 
 	cfg := ConfigHTTP{
-		Url: "https://foo.bar/test",
+		URL: "https://foo.bar/test",
 	}
 	data, _ := json.Marshal(cfg)
 
 	h1 := hash.Hash("set 1")
-	w, err := NewWebhook(h1, TypeHTTP, EventNewMessage, data)
+	w, _ := NewWebhook(h1, EventNewMessage, TypeHTTP, data)
 
 	m.Queue("set", "ok", nil)
 	m.Queue("sadd", int64(1), nil)
@@ -75,19 +75,19 @@ func TestRedis(t *testing.T) {
 	assert.Nil(t, kt2)
 
 	/*
-	m.Queue("smembers", []string{"foo", "bar"}, nil)
-	m.Queue("get", "{\"key\":\"abc\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key\"}", nil)
-	m.Queue("get", "{\"key\":\"def\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key 2\"}", nil)
-	kts, err = repo.FetchByHash("set 1")
-	assert.NoError(t, err)
-	assert.Len(t, kts, 2)
-	assert.Equal(t, "abc", kts[0].ID)
-	assert.Equal(t, "def", kts[1].ID)
+		m.Queue("smembers", []string{"foo", "bar"}, nil)
+		m.Queue("get", "{\"key\":\"abc\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key\"}", nil)
+		m.Queue("get", "{\"key\":\"def\",\"valid_until\":\"0001-01-01T00:00:00Z\",\"permissions\":[\"foobar\"],\"admin\":true,\"address_hash\":\"set 1\",\"description\":\"test key 2\"}", nil)
+		kts, err = repo.FetchByHash("set 1")
+		assert.NoError(t, err)
+		assert.Len(t, kts, 2)
+		assert.Equal(t, "abc", kts[0].ID)
+		assert.Equal(t, "def", kts[1].ID)
 
-	m.Queue("srem", int64(1), nil)
-	m.Queue("del", int64(1), nil)
-	err = repo.Remove(*kt)
-	assert.NoError(t, err)
+		m.Queue("srem", int64(1), nil)
+		m.Queue("del", int64(1), nil)
+		err = repo.Remove(*kt)
+		assert.NoError(t, err)
 	*/
 }
 

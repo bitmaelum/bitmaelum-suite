@@ -29,7 +29,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
-
+// Storage is the main interface for fetching and storing webhook data
 type Storage interface {
 	FetchByHash(h hash.Hash) ([]Type, error)
 	Fetch(ID string) (*Type, error)
@@ -37,13 +37,13 @@ type Storage interface {
 	Remove(w Type) error
 }
 
-// WebhookRepository is a repository to fetch and store webhooks
-type WebhookRepository struct {
+// Repository is a repository to fetch and store webhooks
+type Repository struct {
 	storageRepo Storage
 }
 
 // NewRedisRepository initializes a new Redis repository
-func NewRedisRepository(opts *redis.Options) *WebhookRepository {
+func NewRedisRepository(opts *redis.Options) *Repository {
 	c := redis.NewClient(opts)
 
 	// Setup generic repository
@@ -53,13 +53,13 @@ func NewRedisRepository(opts *redis.Options) *WebhookRepository {
 		KeyPrefix: "webhook",
 	}
 
-	return &WebhookRepository{
+	return &Repository{
 		storageRepo: repo,
 	}
 }
 
 // NewBoltRepository initializes a new BoltDb repository
-func NewBoltRepository(dbPath string) *WebhookRepository {
+func NewBoltRepository(dbPath string) *Repository {
 	p := filepath.Join(dbPath, BoltDBFile)
 	db, err := bolt.Open(p, 0600, nil)
 	if err != nil {
@@ -72,38 +72,38 @@ func NewBoltRepository(dbPath string) *WebhookRepository {
 		BucketName: "auth",
 	}
 
-	return &WebhookRepository{
+	return &Repository{
 		storageRepo: repo,
 	}
 }
 
 // NewMockRepository initializes a new mock repository
-func NewMockRepository() *WebhookRepository {
+func NewMockRepository() *Repository {
 	repo := &mockRepo{
 		Webhooks: make(map[string]Type),
 	}
 
-	return &WebhookRepository{
+	return &Repository{
 		storageRepo: repo,
 	}
 }
 
 // FetchByHash will fetch all api keys for the given address hash
-func (r WebhookRepository) FetchByHash(h hash.Hash) ([]Type, error) {
+func (r Repository) FetchByHash(h hash.Hash) ([]Type, error) {
 	return r.storageRepo.FetchByHash(h)
 }
 
 // Fetch will get a single API key
-func (r WebhookRepository) Fetch(ID string) (*Type, error) {
+func (r Repository) Fetch(ID string) (*Type, error) {
 	return r.storageRepo.Fetch(ID)
 }
 
 // Store will store a single webhook
-func (r WebhookRepository) Store(w Type) error {
+func (r Repository) Store(w Type) error {
 	return r.storageRepo.Store(w)
 }
 
 // Remove will remove a single webhook
-func (r WebhookRepository) Remove(w Type) error {
+func (r Repository) Remove(w Type) error {
 	return r.storageRepo.Remove(w)
 }
