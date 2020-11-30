@@ -73,7 +73,9 @@ type ServerConfig struct {
 	} `yaml:"management"`
 
 	Webhooks struct {
-		Enabled bool `yaml:"enabled"`
+		Enabled bool   `yaml:"enabled"`
+		System  string `yaml:"system"`
+		Workers int    `yaml:"workers"`
 	} `yaml:"webhooks"`
 
 	Acme struct {

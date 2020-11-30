@@ -17,32 +17,47 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package webhook
+package container
 
 import (
-	"encoding/json"
-	"testing"
+	"os"
+	"sync"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
+
+	"github.com/go-redis/redis/v8"
 )
 
-func TestWebhook(t *testing.T) {
-	cfg := ConfigHTTP{
-		URL: "https://foo.bar/test",
-	}
-	data, _ := json.Marshal(cfg)
+var (
+	webhookOnce       sync.Once
+	webhookRepository *webhook.Repository
+)
 
-	a, err := NewWebhook(hash.New("example!"), EventNewMessage, TypeHTTP, data)
-	assert.NoError(t, err)
+func setupWebhookRepo() (interface{}, error) {
+	webhookOnce.Do(func() {
+		// If redis.host is set on the config file it will use redis instead of bolt
+		if config.Server.Redis.Host != "" {
+			opts := redis.Options{
+				Addr: config.Server.Redis.Host,
+				DB:   config.Server.Redis.Db,
+			}
 
-	u, err := uuid.Parse(a.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, "VERSION_4", u.Version().String())
-	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", a.Account.String())
-	assert.Equal(t, TypeHTTP, a.Type)
-	assert.Equal(t, "{\"URL\":\"https://foo.bar/test\"}", string(a.Config))
-	assert.False(t, a.Enabled)
-	assert.Equal(t, EventNewMessage, a.Event)
+			webhookRepository = webhook.NewRedisRepository(&opts)
+			return
+		}
+
+		// If redis is not set then it will use BoltDB as default
+		if config.Server.Bolt.DatabasePath == "" {
+			config.Server.Bolt.DatabasePath = os.TempDir()
+		}
+
+		webhookRepository = webhook.NewBoltRepository(config.Server.Bolt.DatabasePath)
+	})
+
+	return webhookRepository, nil
+}
+
+func init() {
+	Instance.SetShared("webhook", setupWebhookRepo)
 }

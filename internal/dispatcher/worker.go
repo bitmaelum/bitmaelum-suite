@@ -17,40 +17,44 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package dispatcher
 
 import (
 	"bytes"
-	"fmt"
-	"io/ioutil"
+	"encoding/json"
+	"errors"
 	"net/http"
-	"os"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 )
 
-// JwtErrorFunc is a generic error handling function that can be attached to an API client. This will automatically
-// trigger whenever an error (https response >= 400) is found. In this case, it will only check for the token-time
-// error, which is returned when the time of the client is off.
-func JwtErrorFunc(_ *http.Request, resp *http.Response) {
-	if resp.StatusCode != 401 {
-		return
+// work is the main function that will get dispatched as a job. It will do the actual work
+func work(w webhook.Type, payload []byte) {
+	switch w.Type {
+	case webhook.TypeHTTP:
+		execHTTP(w, payload)
+	}
+}
+
+func execHTTP(w webhook.Type, payload []byte) error {
+	cfg := &webhook.ConfigHTTP{}
+	err := json.Unmarshal(w.Config, cfg)
+	if err != nil {
+		return err
 	}
 
-	// Read body
-	b, _ := ioutil.ReadAll(resp.Body)
-	_ = resp.Body.Close()
-
-	err := api.GetErrorFromResponse(b)
-	if err != nil && err.Error() == "token time not valid" {
-		fmt.Println("")
-		fmt.Println("The connection to the server was unauthenticated because of timing issues. It seems that your " +
-			"computer time is not set to the current time. This causes issues in communication with the BitMaelum " +
-			"server. Please update your time and try again.")
-		fmt.Println("")
-		os.Exit(1)
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	resp, err := client.Post(cfg.URL, "application/json", bytes.NewReader([]byte(payload)))
+	if err != nil {
+		return err
 	}
 
-	// Whoops.. not an error. Let's pretend nothing happened and create a new buffer so we can read the body again
-	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
+	if resp.StatusCode >= 400 {
+		return errors.New("webhook: invalid status code returned from HTTP endpoint")
+	}
+
+	return nil
 }

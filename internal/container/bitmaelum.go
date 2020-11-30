@@ -24,6 +24,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 )
 
 // Instance is the main bitmaelum service container
@@ -55,4 +56,9 @@ func (c *Type) GetSubscriptionRepo() subscription.Repository {
 // GetTicketRepo will return the current ticket repository
 func (c *Type) GetTicketRepo() ticket.Repository {
 	return c.Get("ticket").(ticket.Repository)
+}
+
+// GetWebhookRepo will return the current webhook repository
+func (c *Type) GetWebhookRepo() webhook.Repository {
+	return c.Get("webhook").(webhook.Repository)
 }

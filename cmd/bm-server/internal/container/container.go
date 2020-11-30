@@ -26,6 +26,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 )
 
 /*
@@ -114,4 +115,13 @@ func (c *MultiContainer) GetTicketRepo() ticket.Repository {
 	}
 
 	return c.general.Get("ticket").(ticket.Repository)
+}
+
+// GetWebhookRepo will return the current web hook repository
+func (c *MultiContainer) GetWebhookRepo() webhook.Repository {
+	if c.client.Has("webhook") {
+		return c.client.Get("webhook").(webhook.Repository)
+	}
+
+	return c.general.Get("webhook").(webhook.Repository)
 }

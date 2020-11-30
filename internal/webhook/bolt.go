@@ -68,7 +68,6 @@ func (b boltRepo) FetchByHash(h hash.Hash) ([]Type, error) {
 	return webhooks, nil
 }
 
-
 // Fetch a key from the repository, or err
 func (b boltRepo) Fetch(ID string) (*Type, error) {
 	w := &Type{}
