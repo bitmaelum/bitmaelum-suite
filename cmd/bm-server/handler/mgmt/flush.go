@@ -20,7 +20,6 @@
 package mgmt
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
@@ -44,7 +43,5 @@ func FlushQueues(w http.ResponseWriter, req *http.Request) {
 	go processor.ProcessStuckIncomingMessages()
 	go processor.ProcessStuckProcessingMessages()
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(handler.StatusOk("Flushing queues"))
+	_ = handler.JSONOut(w, http.StatusOK, handler.StatusOk("Flushing queues"))
 }

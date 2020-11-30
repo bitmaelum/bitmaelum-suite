@@ -36,7 +36,7 @@ type OutputResponse struct {
 }
 
 // JSONOut outputs the given data structure to JSON
-func JSONOut(w http.ResponseWriter, v interface{}) error {
+func JSONOut(w http.ResponseWriter, statusCode int, v interface{}) error {
 	var data []byte
 	var err error
 
@@ -56,7 +56,7 @@ func JSONOut(w http.ResponseWriter, v interface{}) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(statusCode)
 	_, err = w.Write(data)
 	return err
 }
@@ -89,9 +89,7 @@ func DecodeBody(w http.ResponseWriter, body io.ReadCloser, v interface{}) error 
 	decoder := json.NewDecoder(body)
 	err := decoder.Decode(v)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(StatusError("Malformed JSON: " + err.Error()))
+		_ = JSONOut(w, http.StatusBadRequest, StatusError("Malformed JSON: " + err.Error()))
 		return err
 	}
 

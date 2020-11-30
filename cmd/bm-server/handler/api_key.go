@@ -20,7 +20,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -72,9 +71,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(jsonOut{
+	_ = JSONOut(w, http.StatusCreated, jsonOut{
 		"api_key": newAPIKey.ID,
 	})
 }
@@ -97,9 +94,7 @@ func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(keys)
+	_ = JSONOut(w, http.StatusOK, keys)
 }
 
 // DeleteAPIKey will remove a key
@@ -124,8 +119,7 @@ func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 	_ = repo.Remove(*k)
 
 	// All is well
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	_ = JSONOut(w, http.StatusNoContent, "")
 }
 
 // GetAPIKeyDetails will get a key
@@ -147,7 +141,5 @@ func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(k)
+	_ = JSONOut(w, http.StatusOK, k)
 }

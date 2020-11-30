@@ -20,7 +20,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -120,9 +119,8 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(StatusOk("BitMaelum account has been successfully created."))
+
+	JSONOut(w, http.StatusCreated, StatusOk("BitMaelum account has been successfully created."))
 }
 
 // RetrieveOrganisation is the handler that will retrieve organisation settings
@@ -147,9 +145,7 @@ func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Return public keys
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(settings)
+	JSONOut(w, http.StatusOK, settings)
 }
 
 // RetrieveKeys is the handler that will retrieve public keys directly from the mail server
@@ -174,9 +170,7 @@ func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Return public keys
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(jsonOut{
+	_ = JSONOut(w, http.StatusOK, jsonOut{
 		"public_keys": keys,
 	})
 }

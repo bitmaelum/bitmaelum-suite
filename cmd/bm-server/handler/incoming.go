@@ -75,9 +75,7 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk("header saved"))
+	_ = JSONOut(w, http.StatusOK, StatusOk("saved message header"))
 }
 
 // IncomingMessageCatalog deals with uploading message catalogs
@@ -95,9 +93,7 @@ func IncomingMessageCatalog(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk("saved catalog"))
+	_ = JSONOut(w, http.StatusOK, StatusOk("saved message catalog"))
 }
 
 // IncomingMessageBlock deals with uploading message blocks
@@ -118,9 +114,7 @@ func IncomingMessageBlock(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk("saved message block"))
+	_ = JSONOut(w, http.StatusOK, StatusOk("saved message block"))
 }
 
 // IncomingMessageAttachment deals with uploading message attachments
@@ -141,9 +135,7 @@ func IncomingMessageAttachment(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk("saved message attachment"))
+	_ = JSONOut(w, http.StatusOK, StatusOk("saved message attachment"))
 }
 
 // CompleteIncoming is called whenever everything from a message has been uploaded and can be actually send
@@ -162,9 +154,7 @@ func CompleteIncoming(w http.ResponseWriter, req *http.Request) {
 	ticketRepo := container.Instance.GetTicketRepo()
 	ticketRepo.Remove(t.ID)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	_ = json.NewEncoder(w).Encode(StatusOk("message accepted"))
+	_ = JSONOut(w, http.StatusAccepted, StatusOk("message accepted"))
 }
 
 // DeleteIncoming is called whenever we want to completely remove a message by user request
@@ -191,9 +181,7 @@ func DeleteIncoming(w http.ResponseWriter, req *http.Request) {
 	ticketRepo := container.Instance.GetTicketRepo()
 	ticketRepo.Remove(t.ID)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(StatusOk("message removed"))
+	_ = JSONOut(w, http.StatusOK, StatusOk("message removed"))
 }
 
 func readHeaderFromBody(body io.ReadCloser) (*message.Header, error) {

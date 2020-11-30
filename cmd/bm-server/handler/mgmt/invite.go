@@ -20,7 +20,6 @@
 package mgmt
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -66,9 +65,7 @@ func NewInvite(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(jsonOut{
+	_ = handler.JSONOut(w, http.StatusCreated, jsonOut{
 		"hash":   addrHash.String(),
 		"token":  token.String(),
 		"expiry": validUntil.Unix(),

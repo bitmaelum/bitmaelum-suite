@@ -20,7 +20,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -68,9 +67,7 @@ func CreateAuthKey(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(jsonOut{
+	_ = JSONOut(w, http.StatusCreated, jsonOut{
 		"auth_key": newAuthKey.Fingerprint,
 	})
 }
@@ -93,9 +90,7 @@ func ListAuthKeys(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(keys)
+	_ = JSONOut(w, http.StatusOK, keys)
 }
 
 // DeleteAuthKey will remove a key
@@ -120,8 +115,7 @@ func DeleteAuthKey(w http.ResponseWriter, req *http.Request) {
 	_ = repo.Remove(*k)
 
 	// All is well
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	_ = JSONOut(w, http.StatusNoContent, "")
 }
 
 // GetAuthKeyDetails will get a key
@@ -143,7 +137,5 @@ func GetAuthKeyDetails(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(k)
+	_ = JSONOut(w, http.StatusOK, k)
 }

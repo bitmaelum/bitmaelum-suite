@@ -21,6 +21,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -75,11 +76,7 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output webhook
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(jsonOut{
-		"webhook_id": wh.ID,
-	})
+	_ = JSONOut(w, http.StatusCreated, wh)
 }
 
 // ListWebhooks returns a list of all webhooks for the given account
@@ -99,9 +96,7 @@ func ListWebhooks(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Output wh
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(webhooks)
+	_ = JSONOut(w, http.StatusOK, webhooks)
 }
 
 // DeleteWebhook will remove a webhook
@@ -119,15 +114,14 @@ func DeleteWebhook(w http.ResponseWriter, req *http.Request) {
 	wh, err := repo.Fetch(whID)
 	if err != nil || wh.Account.String() != h.String() {
 		// Only allow deleting of webhooks that we own as account
-		ErrorOut(w, http.StatusNotFound, "webhook not found")
+		ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
 		return
 	}
 
 	_ = repo.Remove(*wh)
 
 	// All is well
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	_ = JSONOut(w, http.StatusNoContent, nil)
 }
 
 // GetWebhookDetails will get a webhook
@@ -144,14 +138,12 @@ func GetWebhookDetails(w http.ResponseWriter, req *http.Request) {
 	repo := container.Instance.GetWebhookRepo()
 	wh, err := repo.Fetch(whID)
 	if err != nil || wh.Account.String() != h.String() {
-		ErrorOut(w, http.StatusNotFound, "webhook not found")
+		ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
 		return
 	}
 
 	// Output webhook
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(wh)
+	_ = JSONOut(w, http.StatusOK, wh)
 }
 
 // EnableWebhook will enable a webhook
@@ -191,6 +183,5 @@ func endis(w http.ResponseWriter, req *http.Request, status bool) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	_ = JSONOut(w, http.StatusOK, jsonOut{})
 }
