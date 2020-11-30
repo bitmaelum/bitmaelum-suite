@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	errIncorrectBody = errors.New("incorrect body")
+	errIncorrectBody   = errors.New("incorrect body")
 	errWebhookNotFound = errors.New("webhook not found")
 )
 

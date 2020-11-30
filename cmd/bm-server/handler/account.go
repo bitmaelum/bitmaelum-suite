@@ -120,7 +120,6 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-
 	httputils.JSONOut(w, http.StatusCreated, httputils.StatusOk("BitMaelum account has been successfully created."))
 }
 
