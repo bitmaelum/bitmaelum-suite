@@ -35,25 +35,30 @@ func InitDispatcher(c int) {
 	dispatcher.Start()
 }
 
-// Dispatch dispatches all active webhooks for the given account and type, with the given payload
-func Dispatch(h hash.Hash, t webhook.TypeEnum, payload []byte) error {
+// Dispatch dispatches all active webhooks for the given account and event, with the given payload
+func Dispatch(h hash.Hash, evt webhook.EventEnum, payload []byte) error {
+	// Nothing to dispatch, as we haven't enabled webhook dispatching
+	if dispatcher == nil {
+		return nil
+	}
+
 	repo := container.Instance.GetWebhookRepo()
 	webhooks, err := repo.FetchByHash(h)
 	if err != nil {
 		return err
 	}
 
-	for _, webhook := range webhooks {
-		if webhook.Type != t {
+	for _, wh := range webhooks {
+		if wh.Event != evt {
 			continue
 		}
-		if !webhook.Enabled {
+		if !wh.Enabled {
 			continue
 		}
 
 		_ = dispatcher.Dispatch(func() {
-			logrus.Debugf("dispatching webhook %s", webhook.ID)
-			work(webhook, payload)
+			logrus.Debugf("dispatching webhook %s", wh.ID)
+			work(wh, payload)
 		})
 	}
 

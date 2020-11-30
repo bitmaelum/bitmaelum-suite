@@ -21,10 +21,10 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )

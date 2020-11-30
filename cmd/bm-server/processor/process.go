@@ -20,6 +20,7 @@
 package processor
 
 import (
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -27,9 +28,11 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/dispatcher"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -125,6 +128,18 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 		// Something went wrong.. let's try and move the message back to the retry queue
 		logrus.Warnf("cannot deliver %s locally. Moving to retry queue", msgID)
 		MoveToRetryQueue(msgID)
+		return nil
+	}
+
+
+	// notify any webhooks
+	payload, err := json.Marshal(map[string]string{
+		"from": header.From.Addr.String(),
+		"to": header.To.Addr.String(),
+		"id": msgID,
+	})
+	if err == nil {
+		_ = dispatcher.Dispatch(header.To.Addr, webhook.EventNewMessage, payload)
 	}
 
 	return nil
@@ -214,6 +229,16 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 	err = c.CompleteUpload(*tckt)
 	if err != nil {
 		return err
+	}
+
+	// notify any webhooks
+	payload, err := json.Marshal(map[string]string{
+		"from": header.From.Addr.String(),
+		"to": header.To.Addr.String(),
+		"id": msgID,
+	})
+	if err == nil {
+		_ = dispatcher.Dispatch(hash.New(addrInfo.Hash), webhook.EventOutgoingMessage, payload)
 	}
 
 	// Remove local message from processing queue

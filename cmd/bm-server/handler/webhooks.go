@@ -31,6 +31,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var (
+	errIncorrectBody = errors.New("incorrect body")
+	errWebhookNotFound = errors.New("webhook not found")
+)
+
 type inputWebhookType struct {
 	Event  webhook.EventEnum `json:"event"`
 	Type   webhook.TypeEnum  `json:"type"`
@@ -42,7 +47,7 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 	var input inputWebhookType
 	err := DecodeBody(w, req.Body, &input)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect body")
+		ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
 		return
 	}
 
@@ -56,13 +61,13 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 
 	cfg, err := json.Marshal(input.Config)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect body")
+		ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
 		return
 	}
 
 	wh, err := webhook.NewWebhook(*h, input.Event, input.Type, cfg)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect body")
+		ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
 		return
 	}
 
@@ -169,7 +174,7 @@ func endis(w http.ResponseWriter, req *http.Request, status bool) {
 	repo := container.Instance.GetWebhookRepo()
 	wh, err := repo.Fetch(whID)
 	if err != nil || wh.Account.String() != h.String() {
-		ErrorOut(w, http.StatusNotFound, "webhook not found")
+		ErrorOut(w, http.StatusNotFound, errWebhookNotFound.Error())
 		return
 	}
 
