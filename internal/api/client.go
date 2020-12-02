@@ -47,17 +47,21 @@ type serverErrorFunc func(*http.Request, *http.Response)
 
 // API is a structure to connect to the server for the given account
 type API struct {
-	client    *http.Client    // internal HTTP client
-	host      string          // host to the server
-	jwt       string          // optional JWT token (for client's authorized communication)
-	ticket    *ticket.Ticket  // optional ticket for communication
-	errorFunc serverErrorFunc // optional function to call when a server call fails
+	client    *http.Client      // internal HTTP client
+	host      string            // host to the server
+	address   address.Address   // optional address of the user that generates the authenticated api
+	key       *bmcrypto.PrivKey // optional private key of the user
+	jwt       string            // optional JWT token (for client's authorized communication)
+	ticket    *ticket.Ticket    // optional ticket for communication
+	errorFunc serverErrorFunc   // optional function to call when a server call fails
 }
 
 // ClientOpts allows you to configure the API client
 type ClientOpts struct {
 	Host          string
 	AllowInsecure bool
+	Address       address.Address
+	Key           *bmcrypto.PrivKey
 	Debug         bool
 	JWTToken      string
 	ErrorFunc     serverErrorFunc
@@ -83,6 +87,8 @@ func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string, 
 
 	return NewClient(ClientOpts{
 		Host:          host,
+		Address:       addr,
+		Key:           key,
 		JWTToken:      jwtToken,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
@@ -112,9 +118,22 @@ func NewClient(opts ClientOpts) (*API, error) {
 			Transport: transport,
 			Timeout:   15 * time.Second,
 		},
+		address:   opts.Address,
+		key:       opts.Key,
 		jwt:       opts.JWTToken,
 		errorFunc: opts.ErrorFunc,
 	}, nil
+}
+
+func (api *API) refreshJWTToken() (err error) {
+	jwtToken, err := GenerateJWTToken(api.address.Hash(), *api.key)
+	if err != nil {
+		return err
+	}
+
+	api.jwt = jwtToken
+
+	return nil
 }
 
 // Get gets raw bytes from API
@@ -226,7 +245,19 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 
 	// Call the error function if there was an error
 	if resp.StatusCode >= 400 && api.errorFunc != nil {
-		api.errorFunc(req, resp)
+		// Check if the error is because JWT expired
+		b, _ := ioutil.ReadAll(resp.Body)
+		_ = resp.Body.Close()
+
+		err := GetErrorFromResponse(b)
+		if err != nil && err.Error() == "token time not valid" {
+			api.refreshJWTToken()
+			return api.do(req)
+		} else {
+			// Recreate the body and call the errorFunc
+			resp.Body = ioutil.NopCloser(bytes.NewReader(b))
+			api.errorFunc(req, resp)
+		}
 	}
 
 	return resp.Body, resp.StatusCode, nil
