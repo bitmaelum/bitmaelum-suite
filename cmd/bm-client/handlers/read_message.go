@@ -236,6 +236,14 @@ func displayMessage(client *api.API, info *vault.AccountInfo, entry messageEntry
 		if err != nil {
 			panic(err)
 		}
+		
+		if b.Compression == "zlib" {
+			r, err = message.ZlibDecompress(r)
+			if err != nil {
+				fmt.Printf("error while creating zlib reader %s\n", err)
+				panic(err)
+			}
+		}
 
 		content, err := ioutil.ReadAll(r)
 		if err != nil {
