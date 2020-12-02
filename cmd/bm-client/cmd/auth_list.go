@@ -64,9 +64,15 @@ var authListCmd = &cobra.Command{
 		table.SetHeader([]string{"Fingerprint", "Valid until", "Description"})
 
 		for _, key := range keys {
+			// don't display zero times
+			expiry := key.Expires.Format(time.ANSIC)
+			if key.Expires.Unix() == 0 {
+				expiry = ""
+			}
+
 			table.Append([]string{
 				key.Fingerprint,
-				key.Expires.Format(time.ANSIC),
+				expiry,
 				key.Description,
 			})
 		}
