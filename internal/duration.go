@@ -21,7 +21,6 @@ package internal
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -56,7 +55,6 @@ func ParseDuration(s string) (time.Duration, error) {
 	if len(matches) == 0 {
 		return time.Duration(0), errInvalidFormat
 	}
-	fmt.Println(matches)
 
 	d := 0
 	found := ""

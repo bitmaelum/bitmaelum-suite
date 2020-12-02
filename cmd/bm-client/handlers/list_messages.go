@@ -38,7 +38,7 @@ import (
 )
 
 // ListMessages will display message information from accounts and boxes
-func ListMessages(accounts []vault.AccountInfo, since time.Time) {
+func ListMessages(accounts []vault.AccountInfo, since time.Time) int {
 	table := tablewriter.NewWriter(os.Stdout)
 	// table.SetAutoMergeCells(true)
 
@@ -47,7 +47,7 @@ func ListMessages(accounts []vault.AccountInfo, since time.Time) {
 
 	msgCount := 0
 
-	fmt.Print("* Fetching remote messages...")
+	fmt.Print("* Fetching messages from remote server(s)...")
 	for _, info := range accounts {
 		// Fetch routing info
 		resolver := container.Instance.GetResolveService()
@@ -65,11 +65,11 @@ func ListMessages(accounts []vault.AccountInfo, since time.Time) {
 	}
 	fmt.Println("")
 
-	if msgCount == 0 {
-		fmt.Println("* No messages in the given timespan")
-	} else {
+	if msgCount > 0 {
 		table.Render()
 	}
+
+	return msgCount
 }
 
 var firstRender bool

@@ -56,7 +56,7 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 	}
 
 	// generate a message list of all messages we want do display
-	fmt.Print("* Fetching remote messages...")
+	fmt.Print("* Fetching messages from remote server(s)...")
 	entryList := queryMessageEntries(client, info, box, messageID, since)
 	idx := 0
 	fmt.Println("")
