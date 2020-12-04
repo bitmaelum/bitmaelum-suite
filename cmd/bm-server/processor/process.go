@@ -138,7 +138,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 		"id":   msgID,
 	})
 	if err == nil {
-		_ = dispatcher.Dispatch(header.To.Addr, webhook.EventNewMessage, payload)
+		_ = dispatcher.Dispatch(header.To.Addr, webhook.EventLocalDelivery, payload)
 	}
 
 	return nil
@@ -237,7 +237,7 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 		"id":   msgID,
 	})
 	if err == nil {
-		_ = dispatcher.Dispatch(hash.New(addrInfo.Hash), webhook.EventOutgoingMessage, payload)
+		_ = dispatcher.Dispatch(hash.New(addrInfo.Hash), webhook.EventRemoveDelivery, payload)
 	}
 
 	// Remove local message from processing queue

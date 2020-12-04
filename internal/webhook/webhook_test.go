@@ -34,7 +34,7 @@ func TestWebhook(t *testing.T) {
 	}
 	data, _ := json.Marshal(cfg)
 
-	a, err := NewWebhook(hash.New("example!"), EventNewMessage, TypeHTTP, data)
+	a, err := NewWebhook(hash.New("example!"), EventLocalDelivery, TypeHTTP, data)
 	assert.NoError(t, err)
 
 	u, err := uuid.Parse(a.ID)
@@ -44,5 +44,5 @@ func TestWebhook(t *testing.T) {
 	assert.Equal(t, TypeHTTP, a.Type)
 	assert.Equal(t, "{\"URL\":\"https://foo.bar/test\"}", string(a.Config))
 	assert.False(t, a.Enabled)
-	assert.Equal(t, EventNewMessage, a.Event)
+	assert.Equal(t, EventLocalDelivery, a.Event)
 }
