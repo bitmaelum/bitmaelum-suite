@@ -232,6 +232,7 @@ func setupRouter() *mux.Router {
 		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}/enable", handler.EnableWebhook).Methods("POST")
 		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}/disable", handler.DisableWebhook).Methods("POST")
 		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}", handler.GetWebhookDetails).Methods("GET")
+		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}", handler.UpdateWebhook).Methods("POST")
 		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}", handler.DeleteWebhook).Methods("DELETE")
 	}
 

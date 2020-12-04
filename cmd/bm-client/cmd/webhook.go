@@ -17,30 +17,25 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package webhook
+package cmd
 
 import (
-	"testing"
-
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/spf13/cobra"
 )
 
-func TestWebhook(t *testing.T) {
-	cfg := ConfigHTTP{
-		URL: "https://foo.bar/test",
-	}
+var webhookCmd = &cobra.Command{
+	Use:   "webhook",
+	Short: "Webhook management",
+}
 
-	a, err := NewWebhook(hash.New("example!"), EventLocalDelivery, TypeHTTP, cfg)
-	assert.NoError(t, err)
+var (
+	whAccount *string
+)
 
-	u, err := uuid.Parse(a.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, "VERSION_4", u.Version().String())
-	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", a.Account.String())
-	assert.Equal(t, TypeHTTP, a.Type)
-	assert.Equal(t, "{\"URL\":\"https://foo.bar/test\"}", string(a.Config))
-	assert.False(t, a.Enabled)
-	assert.Equal(t, EventLocalDelivery, a.Event)
+func init() {
+	rootCmd.AddCommand(webhookCmd)
+
+	whAccount = webhookCmd.PersistentFlags().StringP("account", "a", "", "Account")
+
+	_ = webhookCmd.MarkPersistentFlagRequired("account")
 }

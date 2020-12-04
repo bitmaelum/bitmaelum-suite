@@ -32,9 +32,9 @@ const (
 	EventLocalDelivery  EventEnum = iota + 1 // A local delivery has been made (incoming)
 	EventFailedDelivery                      // A message is received but not considered correct
 	EventRemoveDelivery                      // A message has been send to a remote server (outgoing)
-	EventApiKeyCreated                       // Api Key created
-	EventApiKeyDeleted                       // Api key deleted
-	EventApiKeyUpdated                       // Api key updated
+	EventAPIKeyCreated                       // Api Key created
+	EventAPIKeyDeleted                       // Api key deleted
+	EventAPIKeyUpdated                       // Api key updated
 	EventAuthKeyCreated                      // Auth key created
 	EventAuthKeyDeleted                      // Auth key deleted
 	EventAuthKeyUpdated                      // Auth key updated
@@ -46,14 +46,15 @@ const (
 	EventAll            EventEnum = 999      // All events
 )
 
+// EventLabels is the mapping of an event to a string or string to event
 var EventLabels = map[string]EventEnum{
 	"all":            EventAll,
 	"localdelivery":  EventLocalDelivery,
 	"faileddelivery": EventFailedDelivery,
 	"remotedelivery": EventRemoveDelivery,
-	"apikeycreated":  EventApiKeyCreated,
-	"apikeydeleted":  EventApiKeyDeleted,
-	"apikeyupdated":  EventApiKeyUpdated,
+	"apikeycreated":  EventAPIKeyCreated,
+	"apikeydeleted":  EventAPIKeyDeleted,
+	"apikeyupdated":  EventAPIKeyUpdated,
 	"authkeycreated": EventAuthKeyCreated,
 	"authkeydeleted": EventAuthKeyDeleted,
 	"authkeyupdated": EventAuthKeyUpdated,
@@ -75,6 +76,7 @@ func (e EventEnum) String() string {
 	return ""
 }
 
+// NewEventFromString will create a new event based on the string
 func NewEventFromString(s string) (EventEnum, error) {
 	for l, ev := range EventLabels {
 		if strings.ToLower(s) == l {

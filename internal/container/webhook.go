@@ -55,7 +55,7 @@ func setupWebhookRepo() (interface{}, error) {
 		webhookRepository = webhook.NewBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	return webhookRepository, nil
+	return *webhookRepository, nil
 }
 
 func init() {

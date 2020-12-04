@@ -37,7 +37,6 @@ var (
 	errAuthKeyNotFound = errors.New("auth key not found")
 )
 
-
 type inputAuthKeyType struct {
 	Fingerprint string           `json:"fingerprint"`
 	PublicKey   *bmcrypto.PubKey `json:"public_key"`
@@ -105,7 +104,6 @@ func DeleteAuthKey(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		return
 	}
-
 
 	repo := container.Instance.GetAuthKeyRepo()
 	_ = repo.Remove(*k)

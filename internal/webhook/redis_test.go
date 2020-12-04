@@ -21,7 +21,6 @@ package webhook
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
@@ -48,17 +47,16 @@ func TestRedis(t *testing.T) {
 	cfg := ConfigHTTP{
 		URL: "https://foo.bar/test",
 	}
-	data, _ := json.Marshal(cfg)
 
 	h1 := hash.Hash("set 1")
-	w, _ := NewWebhook(h1, EventLocalDelivery, TypeHTTP, data)
+	w, _ := NewWebhook(h1, EventLocalDelivery, TypeHTTP, cfg)
 
 	m.Queue("set", "ok", nil)
 	m.Queue("sadd", int64(1), nil)
 	err = repo.Store(*w)
 	assert.NoError(t, err)
 
-	m.Queue("get", "{\"ID\":\"1721c5e1-892a-4a0c-b5bf-cedcab46f3cd\",\"Account\":\"set 1\",\"Type\":0,\"Event\":1,\"Enabled\":false,\"Config\":\"eyJVcmwiOiJodHRwczovL2Zvby5iYXIvdGVzdCJ9\"}", nil)
+	m.Queue("get", "{\"ID\":\"1721c5e1-892a-4a0c-b5bf-cedcab46f3cd\",\"Account\":\"set 1\",\"Type\":0,\"Event\":1,\"Enabled\":false,\"Config\":\"foobar\"}", nil)
 	kt2, err := repo.Fetch("abc")
 	assert.NoError(t, err)
 	assert.Equal(t, "1721c5e1-892a-4a0c-b5bf-cedcab46f3cd", kt2.ID)

@@ -20,6 +20,7 @@
 package webhook
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -33,8 +34,10 @@ var (
 // TypeEnum is the type of the webhook destination
 type TypeEnum int
 
-// EventEnum is the event on which the webhook responds
-type EventEnum int
+// String convert type to string
+func (e TypeEnum) String() string {
+	return [...]string{"HTTP"}[e]
+}
 
 // Webhook destination types.
 const (
@@ -45,13 +48,6 @@ const (
 	// TypeSlack                           // Slack support
 )
 
-// Webhook event types. Everything that a webhook can trigger on
-const (
-	EventNewMessage      EventEnum = iota // A new messages is received inside a account
-	EventFailedDelivery                   // A message is received but not considered correct
-	EventOutgoingMessage                  // An outgoing message has been send
-)
-
 // Type is the webhook structure
 type Type struct {
 	ID      string    // Id of the webhook (uuidv4)
@@ -59,7 +55,7 @@ type Type struct {
 	Type    TypeEnum  // type of webhook
 	Event   EventEnum // event when this webhook is triggered
 	Enabled bool      // true when the webhook is enabled
-	Config  []byte    // config for the given target, json encoded
+	Config  string    // config for the given target, json encoded
 }
 
 // ConfigHTTP Configuration for TypeHTTP
@@ -81,8 +77,13 @@ type ConfigSlack struct {
 }
 
 // NewWebhook creates a new webhook
-func NewWebhook(account hash.Hash, e EventEnum, t TypeEnum, cfg []byte) (*Type, error) {
+func NewWebhook(account hash.Hash, e EventEnum, t TypeEnum, cfg interface{}) (*Type, error) {
 	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+
+	cfgBytes, err := json.Marshal(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +94,6 @@ func NewWebhook(account hash.Hash, e EventEnum, t TypeEnum, cfg []byte) (*Type, 
 		Type:    t,
 		Event:   e,
 		Enabled: false,
-		Config:  cfg,
+		Config:  string(cfgBytes),
 	}, nil
 }

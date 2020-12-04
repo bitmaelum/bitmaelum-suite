@@ -37,7 +37,6 @@ var (
 	errAPIKeyNotFound = errors.New("api key not found")
 )
 
-
 type inputAPIKeyType struct {
 	Permissions []string `json:"permissions"`
 	Expires     int64    `json:"expires,omitempty"`
