@@ -29,6 +29,8 @@ import (
 
 // CreateWebhook Create a new API key
 func (api *API) CreateWebhook(wh webhook.Type) error {
+	// ID is set by the server
+	wh.ID = ""
 	data, err := json.Marshal(wh)
 	if err != nil {
 		return err

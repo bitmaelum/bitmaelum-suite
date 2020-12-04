@@ -39,9 +39,10 @@ var (
 )
 
 type inputWebhookType struct {
-	Event  webhook.EventEnum `json:"event"`
-	Type   webhook.TypeEnum  `json:"type"`
-	Config map[string]string `json:"config"`
+	Type    webhook.TypeEnum  `json:"type"`
+	Event   webhook.EventEnum `json:"event"`
+	Enabled bool              `json:"enabled"`
+	Config  string            `json:"config"`
 }
 
 // CreateWebhook is a handler that will create a new webhook
