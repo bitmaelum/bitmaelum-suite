@@ -24,6 +24,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -250,18 +251,32 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 
 // CanonicalHost returns a given host in the form of http(s)://<host>:<port>
 func CanonicalHost(host string) string {
-	// If no port is present in the server, we assume port 2424
-	_, _, err := net.SplitHostPort(host)
-	if err != nil {
-		host += ":2424"
+	// Split proto and host
+	parts := strings.SplitN(host, "://", 2)
+
+	// Assume https if proto is not found
+	proto := "https"
+	hostPort := parts[0]
+	if len(parts) == 2 {
+		proto = parts[0]
+		hostPort = parts[1]
 	}
 
-	// if no protocol is given, assume https://
-	if !strings.Contains(host, "://") {
-		host = "https://" + host
+	// Split host and port
+	host, port, err := net.SplitHostPort(hostPort)
+
+	// Assume ipv6 ip address in [] when the original hostport address is also in brackets (stripped by SplitHostPort)
+	if hostPort[0] == '[' {
+		host = "[" + host + "]"
 	}
 
-	return host
+	// If no port, or error while splitting host and port, assume we only had a host
+	if port == "" || err != nil {
+		host = hostPort
+		port = "2424"
+	}
+
+	return fmt.Sprintf("%s://%s:%s", proto, host, port)
 }
 
 // GetErrorFromResponse will return an error generated from the body
