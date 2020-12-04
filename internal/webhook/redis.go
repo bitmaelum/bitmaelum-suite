@@ -39,7 +39,7 @@ func (r redisRepo) FetchByHash(h hash.Hash) ([]Type, error) {
 
 	items, err := r.client.SMembers(r.context, r.createRedisKey(h.String()))
 	if err != nil {
-		return nil, errWebhookNotFound
+		return []Type{}, errWebhookNotFound
 	}
 
 	var webhooks []Type

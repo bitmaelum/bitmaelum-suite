@@ -62,7 +62,7 @@ func (b boltRepo) FetchByHash(h hash.Hash) ([]Type, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return []Type{}, err
 	}
 
 	return webhooks, nil

@@ -287,8 +287,12 @@ func GetErrorFromResponse(body []byte) error {
 	}
 
 	s := &errorStatus{}
-	err := json.Unmarshal(body, &s)
-	if err != nil {
+	err := json.Unmarshal(body, s)
+	if err != nil || !s.Error {
+		return nil
+	}
+
+	if s.Status == "" && s.Error {
 		return errNoSuccess
 	}
 
@@ -302,7 +306,7 @@ func isErrorResponse(body []byte) bool {
 	}
 
 	s := &errorStatus{}
-	err := json.Unmarshal(body, &s)
+	err := json.Unmarshal(body, s)
 	if err != nil {
 		return false
 	}

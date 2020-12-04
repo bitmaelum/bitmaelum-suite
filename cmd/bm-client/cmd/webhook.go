@@ -17,47 +17,25 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package container
+package cmd
 
 import (
-	"os"
-	"sync"
-
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
-
-	"github.com/go-redis/redis/v8"
+	"github.com/spf13/cobra"
 )
 
-var (
-	webhookOnce       sync.Once
-	webhookRepository *webhook.Repository
-)
-
-func setupWebhookRepo() (interface{}, error) {
-	webhookOnce.Do(func() {
-		// If redis.host is set on the config file it will use redis instead of bolt
-		if config.Server.Redis.Host != "" {
-			opts := redis.Options{
-				Addr: config.Server.Redis.Host,
-				DB:   config.Server.Redis.Db,
-			}
-
-			webhookRepository = webhook.NewRedisRepository(&opts)
-			return
-		}
-
-		// If redis is not set then it will use BoltDB as default
-		if config.Server.Bolt.DatabasePath == "" {
-			config.Server.Bolt.DatabasePath = os.TempDir()
-		}
-
-		webhookRepository = webhook.NewBoltRepository(config.Server.Bolt.DatabasePath)
-	})
-
-	return *webhookRepository, nil
+var webhookCmd = &cobra.Command{
+	Use:   "webhook",
+	Short: "Webhook management",
 }
 
+var (
+	whAccount *string
+)
+
 func init() {
-	Instance.SetShared("webhook", setupWebhookRepo)
+	rootCmd.AddCommand(webhookCmd)
+
+	whAccount = webhookCmd.PersistentFlags().StringP("account", "a", "", "Account")
+
+	_ = webhookCmd.MarkPersistentFlagRequired("account")
 }
