@@ -49,6 +49,7 @@ type serverErrorFunc func(*http.Request, *http.Response)
 type API struct {
 	client    *http.Client      // internal HTTP client
 	host      string            // host to the server
+	jwt       string            // optional JWT token (for client's authorized communication)
 	address   address.Address   // optional address of the user to generate the jwt token
 	key       *bmcrypto.PrivKey // optional private key of the user to generate the jwt token
 	ticket    *ticket.Ticket    // optional ticket for communication
@@ -61,6 +62,7 @@ type ClientOpts struct {
 	AllowInsecure bool
 	Address       address.Address
 	Key           *bmcrypto.PrivKey
+	JWTToken      string
 	Debug         bool
 	ErrorFunc     serverErrorFunc
 }
@@ -77,8 +79,15 @@ func NewAnonymous(host string, f serverErrorFunc) (*API, error) {
 
 // NewAuthenticated creates a new client that connects to a BitMaelum Server with specific credentials (normally client-to-server communications)
 func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string, f serverErrorFunc) (*API, error) {
+	// Create token based on the private key of the user
+	jwtToken, err := GenerateJWTToken(addr.Hash(), *key)
+	if err != nil {
+		return nil, err
+	}
+
 	return NewClient(ClientOpts{
 		Host:          host,
+		JWTToken:      jwtToken,
 		Address:       addr,
 		Key:           key,
 		AllowInsecure: config.Client.Server.AllowInsecure,
@@ -109,6 +118,7 @@ func NewClient(opts ClientOpts) (*API, error) {
 			Transport: transport,
 			Timeout:   15 * time.Second,
 		},
+		jwt:       opts.JWTToken,
 		address:   opts.Address,
 		key:       opts.Key,
 		errorFunc: opts.ErrorFunc,
@@ -213,12 +223,16 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 	if api.ticket != nil {
 		req.Header.Set(ticket.TicketHeader, api.ticket.ID)
 	}
-	if api.key != nil {
-		jwtToken, err := GenerateJWTToken(api.address.Hash(), *api.key)
-		if err != nil {
-			return nil, 0, err
+	if api.jwt != "" {
+		if IsJWTTokenExpired(api.jwt) {
+			jwtToken, err := GenerateJWTToken(api.address.Hash(), *api.key)
+			if err != nil {
+				return nil, 0, err
+			}
+
+			api.jwt = jwtToken
 		}
-		req.Header.Set("Authorization", "Bearer "+jwtToken)
+		req.Header.Set("Authorization", "Bearer "+api.jwt)
 	}
 
 	resp, err := api.client.Do(req)
