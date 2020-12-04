@@ -69,10 +69,7 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 	done := false
 
 	// iterate list until we quit
-	for {
-		if done {
-			break
-		}
+	for !done {
 
 		displayMessage(client, info, entryList[idx])
 
@@ -93,7 +90,12 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 			}
 			cmds = append(cmds, "(Q)uit")
 
-			fmt.Printf("(%d/%d): %s > ", idx+1, len(entryList), strings.Join(cmds, ", "))
+			if len(entryList) > 1 {
+				fmt.Printf("(%d/%d): %s > ", idx+1, len(entryList), strings.Join(cmds, ", "))
+			} else {
+				done = true
+				break
+			}
 
 			// Read and parse entry
 			reader := bufio.NewReader(os.Stdin)
@@ -236,7 +238,7 @@ func displayMessage(client *api.API, info *vault.AccountInfo, entry messageEntry
 		if err != nil {
 			panic(err)
 		}
-		
+
 		if b.Compression == "zlib" {
 			r, err = message.ZlibDecompress(r)
 			if err != nil {

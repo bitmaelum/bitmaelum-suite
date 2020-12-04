@@ -76,9 +76,18 @@ func TestValidateJwtTokenExpiry(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, token)
 
-	// In next 30 second block
+	// In current 30 second block
 	jwt.TimeFunc = func() time.Time {
 		return time.Date(2020, 01, 01, 12, 34, 59, 0, time.UTC)
+	}
+	token, err = ValidateJWTToken(mockToken, haddr, *pubKey)
+	assert.Nil(t, err)
+	assert.NotNil(t, token)
+	assert.True(t, token.Valid)
+
+	// In next 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 35, 29, 0, time.UTC)
 	}
 	token, err = ValidateJWTToken(mockToken, haddr, *pubKey)
 	assert.Nil(t, err)
@@ -114,6 +123,41 @@ func TestValidateJWTToken(t *testing.T) {
 	assert.Equal(t, int64(1577882130), token.Claims.(*jwt.StandardClaims).ExpiresAt)
 	assert.Equal(t, int64(1577882040), token.Claims.(*jwt.StandardClaims).NotBefore)
 	assert.Equal(t, haddr.String(), token.Claims.(*jwt.StandardClaims).Subject)
+}
+
+func TestIsJWTTokenExpired(t *testing.T) {
+	// The current time block in our mock token is 12:34:30 - 12:36:00 (1577882040 - 1577882130)
+	// This test should only be valid if it is on current time block
+
+	// In previous 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 34, 29, 0, time.UTC)
+	}
+	assert.True(t, IsJWTTokenExpired(mockToken))
+
+	// Before previous 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 33, 59, 0, time.UTC)
+	}
+	assert.True(t, IsJWTTokenExpired(mockToken))
+
+	// In current 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 34, 59, 0, time.UTC)
+	}
+	assert.False(t, IsJWTTokenExpired(mockToken))
+
+	// In next 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 35, 29, 0, time.UTC)
+	}
+	assert.True(t, IsJWTTokenExpired(mockToken))
+
+	// After next 30 second block
+	jwt.TimeFunc = func() time.Time {
+		return time.Date(2020, 01, 01, 12, 35, 31, 0, time.UTC)
+	}
+	assert.True(t, IsJWTTokenExpired(mockToken))
 }
 
 func TestED25519(t *testing.T) {

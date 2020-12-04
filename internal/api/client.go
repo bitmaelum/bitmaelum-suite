@@ -47,19 +47,23 @@ type serverErrorFunc func(*http.Request, *http.Response)
 
 // API is a structure to connect to the server for the given account
 type API struct {
-	client    *http.Client    // internal HTTP client
-	host      string          // host to the server
-	jwt       string          // optional JWT token (for client's authorized communication)
-	ticket    *ticket.Ticket  // optional ticket for communication
-	errorFunc serverErrorFunc // optional function to call when a server call fails
+	client    *http.Client      // internal HTTP client
+	host      string            // host to the server
+	jwt       string            // optional JWT token (for client's authorized communication)
+	address   address.Address   // optional address of the user to generate the jwt token
+	key       *bmcrypto.PrivKey // optional private key of the user to generate the jwt token
+	ticket    *ticket.Ticket    // optional ticket for communication
+	errorFunc serverErrorFunc   // optional function to call when a server call fails
 }
 
 // ClientOpts allows you to configure the API client
 type ClientOpts struct {
 	Host          string
 	AllowInsecure bool
-	Debug         bool
+	Address       address.Address
+	Key           *bmcrypto.PrivKey
 	JWTToken      string
+	Debug         bool
 	ErrorFunc     serverErrorFunc
 }
 
@@ -84,6 +88,8 @@ func NewAuthenticated(addr address.Address, key *bmcrypto.PrivKey, host string, 
 	return NewClient(ClientOpts{
 		Host:          host,
 		JWTToken:      jwtToken,
+		Address:       addr,
+		Key:           key,
 		AllowInsecure: config.Client.Server.AllowInsecure,
 		Debug:         config.Client.Server.DebugHTTP,
 		ErrorFunc:     f,
@@ -113,6 +119,8 @@ func NewClient(opts ClientOpts) (*API, error) {
 			Timeout:   15 * time.Second,
 		},
 		jwt:       opts.JWTToken,
+		address:   opts.Address,
+		key:       opts.Key,
 		errorFunc: opts.ErrorFunc,
 	}, nil
 }
@@ -216,6 +224,14 @@ func (api *API) do(req *http.Request) (body io.ReadCloser, statusCode int, err e
 		req.Header.Set(ticket.TicketHeader, api.ticket.ID)
 	}
 	if api.jwt != "" {
+		if IsJWTTokenExpired(api.jwt) {
+			jwtToken, err := GenerateJWTToken(api.address.Hash(), *api.key)
+			if err != nil {
+				return nil, 0, err
+			}
+
+			api.jwt = jwtToken
+		}
 		req.Header.Set("Authorization", "Bearer "+api.jwt)
 	}
 

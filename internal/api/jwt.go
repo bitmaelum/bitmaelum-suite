@@ -67,6 +67,19 @@ func GenerateJWTToken(addr hash.Hash, key bmcrypto.PrivKey) (string, error) {
 	return token.SignedString(key.K)
 }
 
+// IsJWTTokenExpired will check if the token is already expired
+func IsJWTTokenExpired(tokenString string) bool {
+	// Get Claims from Token
+	claims := &jwt.StandardClaims{}
+	new(jwt.Parser).ParseUnverified(tokenString, claims)
+
+	// Calculate current time sliding window
+	now := jwt.TimeFunc()
+	ct := (now.Unix() / 30) * 30
+
+	return claims.IssuedAt != ct-30
+}
+
 // ValidateJWTToken validates a JWT token with the given public key and address
 func ValidateJWTToken(tokenString string, addr hash.Hash, key bmcrypto.PubKey) (*jwt.Token, error) {
 	logrus.Tracef("validating JWT token")
