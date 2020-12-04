@@ -39,8 +39,6 @@ func (e TypeEnum) String() string {
 	return [...]string{"HTTP"}[e]
 }
 
-
-
 // Webhook destination types.
 const (
 	// TypeHTTP

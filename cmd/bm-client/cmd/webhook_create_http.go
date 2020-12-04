@@ -33,7 +33,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHttpCmd = &cobra.Command{
+var webhookCreateHTTPCmd = &cobra.Command{
 	Use:   "http",
 	Short: "Display all webhooks for this account on the server",
 	Long:  ``,
@@ -66,7 +66,7 @@ var webhookCreateHttpCmd = &cobra.Command{
 		spew.Dump(routingInfo)
 
 		cfg := &webhook.ConfigHTTP{
-			URL : "https://www.example.org/foo/bar",
+			URL: "https://www.example.org/foo/bar",
 		}
 		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
 		if err != nil {
@@ -94,5 +94,5 @@ var webhookCreateHttpCmd = &cobra.Command{
 }
 
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHttpCmd)
+	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
 }

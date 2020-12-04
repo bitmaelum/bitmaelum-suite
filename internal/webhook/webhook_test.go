@@ -20,7 +20,6 @@
 package webhook
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -32,9 +31,8 @@ func TestWebhook(t *testing.T) {
 	cfg := ConfigHTTP{
 		URL: "https://foo.bar/test",
 	}
-	data, _ := json.Marshal(cfg)
 
-	a, err := NewWebhook(hash.New("example!"), EventLocalDelivery, TypeHTTP, data)
+	a, err := NewWebhook(hash.New("example!"), EventLocalDelivery, TypeHTTP, cfg)
 	assert.NoError(t, err)
 
 	u, err := uuid.Parse(a.ID)

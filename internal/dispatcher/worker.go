@@ -33,13 +33,13 @@ import (
 func work(w webhook.Type, payload []byte) {
 	switch w.Type {
 	case webhook.TypeHTTP:
-		execHTTP(w, payload)
+		_ = execHTTP(w, payload)
 	}
 }
 
 func execHTTP(w webhook.Type, payload []byte) error {
 	cfg := &webhook.ConfigHTTP{}
-	err := json.Unmarshal(w.Config, cfg)
+	err := json.Unmarshal([]byte(w.Config), cfg)
 	if err != nil {
 		return err
 	}
