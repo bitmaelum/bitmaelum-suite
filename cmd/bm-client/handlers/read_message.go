@@ -93,7 +93,12 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 			}
 			cmds = append(cmds, "(Q)uit")
 
-			fmt.Printf("(%d/%d): %s > ", idx+1, len(entryList), strings.Join(cmds, ", "))
+			if len(entryList) > 1 {
+				fmt.Printf("(%d/%d): %s > ", idx+1, len(entryList), strings.Join(cmds, ", "))
+			} else {
+				done = true
+				break
+			}
 
 			// Read and parse entry
 			reader := bufio.NewReader(os.Stdin)
