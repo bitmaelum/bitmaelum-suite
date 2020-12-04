@@ -69,10 +69,7 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 	done := false
 
 	// iterate list until we quit
-	for {
-		if done {
-			break
-		}
+	for !done {
 
 		displayMessage(client, info, entryList[idx])
 
@@ -241,7 +238,7 @@ func displayMessage(client *api.API, info *vault.AccountInfo, entry messageEntry
 		if err != nil {
 			panic(err)
 		}
-		
+
 		if b.Compression == "zlib" {
 			r, err = message.ZlibDecompress(r)
 			if err != nil {
