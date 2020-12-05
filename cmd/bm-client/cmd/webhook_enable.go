@@ -27,27 +27,16 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/sirupsen/logrus"
+
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHTTPCmd = &cobra.Command{
-	Use:   "http",
-	Short: "Display all webhooks for this account on the server",
+var webhookEnableCmd = &cobra.Command{
+	Use:   "enable",
+	Short: "Enable webhook",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Validate event
-		evt, err := webhook.NewEventFromString(*whEvent)
-		if err != nil {
-			fmt.Println("unknown event: ", *whEvent)
-			fmt.Println("")
-
-			_ = webhookCreateCmd.Help()
-			os.Exit(1)
-		}
-
 		v := vault.OpenVault()
 		info := vault.GetAccountOrDefault(v, *whAccount)
 
@@ -58,34 +47,26 @@ var webhookCreateHTTPCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		cfg := &webhook.ConfigHTTP{
-			URL: "https://www.example.org/foo/bar",
-		}
-		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
-		if err != nil {
-			logrus.Fatal("Cannot create webhook")
-			os.Exit(1)
-		}
-
 		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)
 		}
 
-		err = client.CreateWebhook(*wh)
-		fmt.Println(err)
+		err = client.EnableWebhook(info.Address.Hash(), *wheId)
+		if err != nil {
+			logrus.Fatal("cannot enable webhook: ", err)
+			os.Exit(1)
+		}
 
-		/*
-			webhooks, err := client.ListWebhooks(info.Address.Hash())
-			if err != nil {
-				logrus.Fatal("cannot fetch webhooks: ", err)
-				os.Exit(1)
-			}
-		*/
+		fmt.Println("Webhook is enabled")
 	},
 }
 
+var wheId *string
+
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
+	wheId = webhookEnableCmd.Flags().String("id", "", "webhook ID to enable")
+
+	webhookCmd.AddCommand(webhookEnableCmd)
 }

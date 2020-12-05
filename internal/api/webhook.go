@@ -98,6 +98,34 @@ func (api *API) ListWebhooks(addrHash hash.Hash) ([]webhook.Type, error) {
 	return webhooks, nil
 }
 
+// UpdateWebhook will update a webhook
+func (api *API) UpdateWebhook(addrHash hash.Hash, ID string, wh webhook.Type) error {
+	if wh.ID != ID {
+		return errNoSuccess
+	}
+
+	data, err := json.Marshal(wh)
+	if err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("/account/%s/webhook/%s", addrHash.String(), ID)
+	body, statusCode, err := api.Post(url, data)
+	if err != nil {
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return errNoSuccess
+	}
+
+	if isErrorResponse(body) {
+		return GetErrorFromResponse(body)
+	}
+
+	return nil
+}
+
 // GetWebhook gets a single webhook
 func (api *API) GetWebhook(addrHash hash.Hash, ID string) (*webhook.Type, error) {
 	url := fmt.Sprintf("/account/%s/webhook/%s", addrHash.String(), ID)
@@ -122,4 +150,40 @@ func (api *API) GetWebhook(addrHash hash.Hash, ID string) (*webhook.Type, error)
 	}
 
 	return wh, nil
+}
+
+func (api *API) EnableWebhook(addrHash hash.Hash, ID string) error {
+	url := fmt.Sprintf("/account/%s/webhook/%s/enable", addrHash.String(), ID)
+	body, statusCode, err := api.Post(url, []byte{})
+	if err != nil {
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return errNoSuccess
+	}
+
+	if isErrorResponse(body) {
+		return GetErrorFromResponse(body)
+	}
+
+	return nil
+}
+
+func (api *API) DisableWebhook(addrHash hash.Hash, ID string) error {
+	url := fmt.Sprintf("/account/%s/webhook/%s/disable", addrHash.String(), ID)
+	body, statusCode, err := api.Post(url, []byte{})
+	if err != nil {
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return errNoSuccess
+	}
+
+	if isErrorResponse(body) {
+		return GetErrorFromResponse(body)
+	}
+
+	return nil
 }

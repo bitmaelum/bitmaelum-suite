@@ -30,6 +30,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -62,11 +63,16 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	cfg, err := json.Marshal(input.Config)
+	logrus.Debug(input.Config)
+
+	var cfg interface{}
+	err = json.Unmarshal([]byte(input.Config), &cfg)
 	if err != nil {
 		httputils.ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
 		return
 	}
+
+	logrus.Debug(cfg)
 
 	wh, err := webhook.NewWebhook(*h, input.Event, input.Type, cfg)
 	if err != nil {
@@ -86,6 +92,38 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 	// Output webhook
 	_ = httputils.JSONOut(w, http.StatusCreated, wh)
 }
+
+
+// UpdateWebhook is a handler that will update a webhook
+func UpdateWebhook(w http.ResponseWriter, req *http.Request) {
+	wh, err := hasWebhookAccess(w, req)
+	if err != nil {
+		return
+	}
+
+	var input inputWebhookType
+	err = httputils.DecodeBody(w, req.Body, &input)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusBadRequest, errIncorrectBody.Error())
+		return
+	}
+
+	// Update fields with input
+	wh.Config = input.Config
+
+	// Store webhook into persistent storage
+	repo := container.Instance.GetWebhookRepo()
+	err = repo.Store(*wh)
+	if err != nil {
+		msg := fmt.Sprintf("error while storing webhook: %s", err)
+		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
+		return
+	}
+
+	// Output webhook
+	_ = httputils.JSONOut(w, http.StatusCreated, wh)
+}
+
 
 // ListWebhooks returns a list of all webhooks for the given account
 func ListWebhooks(w http.ResponseWriter, req *http.Request) {

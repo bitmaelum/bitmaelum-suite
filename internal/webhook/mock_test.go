@@ -20,7 +20,6 @@
 package webhook
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -35,9 +34,8 @@ func TestMockRepo(t *testing.T) {
 	cfg := ConfigHTTP{
 		URL: "https://foo.bar/test",
 	}
-	data, _ := json.Marshal(cfg)
 
-	w, err := NewWebhook(exampleHash, EventLocalDelivery, TypeHTTP, data)
+	w, err := NewWebhook(exampleHash, EventLocalDelivery, TypeHTTP, cfg)
 	assert.NoError(t, err)
 
 	err = repo.Store(*w)
@@ -50,7 +48,7 @@ func TestMockRepo(t *testing.T) {
 	assert.Equal(t, TypeHTTP, w2.Type)
 	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", w2.Account.String())
 
-	w, err = NewWebhook(exampleHash, EventLocalDelivery, TypeHTTP, data)
+	w, err = NewWebhook(exampleHash, EventLocalDelivery, TypeHTTP, cfg)
 	assert.NoError(t, err)
 	err = repo.Store(*w)
 	assert.NoError(t, err)

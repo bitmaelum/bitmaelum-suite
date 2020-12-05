@@ -20,11 +20,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -48,38 +44,7 @@ func main() {
 		panic(err)
 	}
 
-	tmpFile, err := ioutil.TempFile(os.TempDir(), "vd-")
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = os.Remove(tmpFile.Name())
-	}()
-
-	_, err = tmpFile.Write(v.RawData)
-	_ = tmpFile.Sync()
-	if err != nil {
-		panic(err)
-	}
-
-	editor := "/usr/bin/nano"
-	if os.Getenv("EDITOR") != "" {
-		editor = os.Getenv("EDITOR")
-	}
-
-	c := exec.Command(editor, tmpFile.Name())
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	err = c.Run()
-	if err != nil {
-		panic(err)
-	}
-	data, err := ioutil.ReadFile(tmpFile.Name())
-	if err != nil {
-		panic(err)
-	}
-
-	err = json.Unmarshal(data, &v.Store)
+	err = internal.OpenJSONFileEditor(v.RawData, v.Store)
 	if err != nil {
 		panic(err)
 	}
@@ -95,3 +60,5 @@ func main() {
 
 	fmt.Println("Vault saved to disk")
 }
+
+
