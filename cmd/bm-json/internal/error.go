@@ -21,43 +21,30 @@ package internal
 
 import (
 	"bytes"
-	"fmt"
-	"io"
-	"strings"
+	"io/ioutil"
+	"net/http"
+	"os"
 
-	"github.com/coreos/go-semver/semver"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 )
 
-const (
-	versionMajor int64 = 0
-	versionMinor int64 = 0
-	versionPatch int64 = 1
-)
+// JwtJSONErrorFunc is the generic error handler that will catch any timing issues with the clock
+func JwtJSONErrorFunc(_ *http.Request, resp *http.Response) {
+	if resp.StatusCode != 401 {
+		return
+	}
 
-var (
-	// Build date as filled in during compilation
-	BuildDate string
-	// Git commit sha as filled in during compilation
-	GitCommit string
-)
+	// Read body
+	b, _ := ioutil.ReadAll(resp.Body)
+	_ = resp.Body.Close()
 
-// Version is a structure with the current version of the software
-var Version = semver.Version{
-	Major: versionMajor,
-	Minor: versionMinor,
-	Patch: versionPatch,
-}
+	err := api.GetErrorFromResponse(b)
+	if err != nil && err.Error() == "token time not valid" {
+		output.JSONErrorStrOut("JWT token time mismatch")
+		os.Exit(1)
+	}
 
-// WriteVersionInfo writes a string with all version information
-func WriteVersionInfo(name string, w io.Writer) {
-	s := fmt.Sprintf("%s version %d.%d.%d\nBuilt: %s\nCommit: %s", name, versionMajor, versionMinor, versionPatch, BuildDate, GitCommit)
-	_, _ = w.Write([]byte(s))
-}
-
-// VersionString returns a string with all version information
-func VersionString(name string) string {
-	var b bytes.Buffer
-	WriteVersionInfo(name, &b)
-
-	return strings.Replace(b.String(), "\n", " * ", -1)
+	// Whoops.. not an error. Let's pretend nothing happened and create a new buffer so we can read the body again
+	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
 }
