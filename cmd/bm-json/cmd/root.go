@@ -17,47 +17,30 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package cmd
 
 import (
-	"bytes"
-	"fmt"
-	"io"
-	"strings"
+	"os"
 
-	"github.com/coreos/go-semver/semver"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
+	"github.com/spf13/cobra"
 )
 
-const (
-	versionMajor int64 = 0
-	versionMinor int64 = 0
-	versionPatch int64 = 1
-)
-
-var (
-	// Build date as filled in during compilation
-	BuildDate string
-	// Git commit sha as filled in during compilation
-	GitCommit string
-)
-
-// Version is a structure with the current version of the software
-var Version = semver.Version{
-	Major: versionMajor,
-	Minor: versionMinor,
-	Patch: versionPatch,
+var rootCmd = &cobra.Command{
+	Use:   "bm-json",
+	Short: "BitMaelum JSON outputter",
+	Long:  `This program will retrieve information and returns it nicely in a JSON format`,
 }
 
-// WriteVersionInfo writes a string with all version information
-func WriteVersionInfo(name string, w io.Writer) {
-	s := fmt.Sprintf("%s version %d.%d.%d\nBuilt: %s\nCommit: %s", name, versionMajor, versionMinor, versionPatch, BuildDate, GitCommit)
-	_, _ = w.Write([]byte(s))
+// Execute runs the given command
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		output.JSONErrorOut(err)
+		os.Exit(1)
+	}
 }
 
-// VersionString returns a string with all version information
-func VersionString(name string) string {
-	var b bytes.Buffer
-	WriteVersionInfo(name, &b)
-
-	return strings.Replace(b.String(), "\n", " * ", -1)
+func init() {
+	rootCmd.PersistentFlags().StringP("config", "c", "", "configuration file")
+	rootCmd.PersistentFlags().StringP("password", "p", "", "password to unlock your account vault")
 }
