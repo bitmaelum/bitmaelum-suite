@@ -93,7 +93,6 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 	_ = httputils.JSONOut(w, http.StatusCreated, wh)
 }
 
-
 // UpdateWebhook is a handler that will update a webhook
 func UpdateWebhook(w http.ResponseWriter, req *http.Request) {
 	wh, err := hasWebhookAccess(w, req)
@@ -123,7 +122,6 @@ func UpdateWebhook(w http.ResponseWriter, req *http.Request) {
 	// Output webhook
 	_ = httputils.JSONOut(w, http.StatusCreated, wh)
 }
-
 
 // ListWebhooks returns a list of all webhooks for the given account
 func ListWebhooks(w http.ResponseWriter, req *http.Request) {

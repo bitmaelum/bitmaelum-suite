@@ -53,7 +53,7 @@ var webhookDisableCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = client.DisableWebhook(info.Address.Hash(), *whdId)
+		err = client.DisableWebhook(info.Address.Hash(), *whdID)
 		if err != nil {
 			logrus.Fatal("cannot disable webhook: ", err)
 			os.Exit(1)
@@ -63,10 +63,10 @@ var webhookDisableCmd = &cobra.Command{
 	},
 }
 
-var whdId *string
+var whdID *string
 
 func init() {
-	whdId = webhookDisableCmd.Flags().String("id", "", "webhook ID to disable")
+	whdID = webhookDisableCmd.Flags().String("id", "", "webhook ID to disable")
 
 	webhookCmd.AddCommand(webhookDisableCmd)
 }

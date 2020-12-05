@@ -152,6 +152,7 @@ func (api *API) GetWebhook(addrHash hash.Hash, ID string) (*webhook.Type, error)
 	return wh, nil
 }
 
+// EnableWebhook will enable a webhook
 func (api *API) EnableWebhook(addrHash hash.Hash, ID string) error {
 	url := fmt.Sprintf("/account/%s/webhook/%s/enable", addrHash.String(), ID)
 	body, statusCode, err := api.Post(url, []byte{})
@@ -170,6 +171,7 @@ func (api *API) EnableWebhook(addrHash hash.Hash, ID string) error {
 	return nil
 }
 
+// DisableWebhook will disable a webhook
 func (api *API) DisableWebhook(addrHash hash.Hash, ID string) error {
 	url := fmt.Sprintf("/account/%s/webhook/%s/disable", addrHash.String(), ID)
 	body, statusCode, err := api.Post(url, []byte{})

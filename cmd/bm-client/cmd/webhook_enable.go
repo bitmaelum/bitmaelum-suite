@@ -53,7 +53,7 @@ var webhookEnableCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = client.EnableWebhook(info.Address.Hash(), *wheId)
+		err = client.EnableWebhook(info.Address.Hash(), *wheID)
 		if err != nil {
 			logrus.Fatal("cannot enable webhook: ", err)
 			os.Exit(1)
@@ -63,10 +63,10 @@ var webhookEnableCmd = &cobra.Command{
 	},
 }
 
-var wheId *string
+var wheID *string
 
 func init() {
-	wheId = webhookEnableCmd.Flags().String("id", "", "webhook ID to enable")
+	wheID = webhookEnableCmd.Flags().String("id", "", "webhook ID to enable")
 
 	webhookCmd.AddCommand(webhookEnableCmd)
 }

@@ -55,7 +55,7 @@ var webhookEditCmd = &cobra.Command{
 		}
 
 		// Get webhook and edit
-		src, err := client.GetWebhook(info.Address.Hash(), *wheditId)
+		src, err := client.GetWebhook(info.Address.Hash(), *wheditID)
 		if err != nil {
 			logrus.Fatal("error while editing webhook: ", err)
 			os.Exit(1)
@@ -86,7 +86,7 @@ var webhookEditCmd = &cobra.Command{
 		src.Config = string(data)
 
 		// And update webhook
-		err = client.UpdateWebhook(info.Address.Hash(), *wheditId, *src)
+		err = client.UpdateWebhook(info.Address.Hash(), *wheditID, *src)
 		if err != nil {
 			logrus.Fatal("cannot update webhook: ", err)
 			os.Exit(1)
@@ -94,10 +94,10 @@ var webhookEditCmd = &cobra.Command{
 	},
 }
 
-var wheditId *string
+var wheditID *string
 
 func init() {
-	wheditId = webhookEditCmd.Flags().String("id", "", "webhook ID to edit")
+	wheditID = webhookEditCmd.Flags().String("id", "", "webhook ID to edit")
 
 	webhookCmd.AddCommand(webhookEditCmd)
 }

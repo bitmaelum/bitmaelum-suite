@@ -60,5 +60,3 @@ func main() {
 
 	fmt.Println("Vault saved to disk")
 }
-
-
