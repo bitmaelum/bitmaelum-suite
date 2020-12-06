@@ -337,6 +337,8 @@ func GetAccount(vault *Vault, a string) (*AccountInfo, error) {
 	return vault.GetAccountInfo(*addr)
 }
 
+// OpenVaultWithPass will open the vault with the given password BUT does not ask for a password if the
+// vault could not be opened.
 func OpenVaultWithPass(pass string) (*Vault, error) {
 	return New(config.Client.Accounts.Path, []byte(pass))
 }

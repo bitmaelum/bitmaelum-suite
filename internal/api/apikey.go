@@ -88,7 +88,6 @@ func (api *API) ListAPIKeys(addrHash hash.Hash) ([]key.APIKeyType, error) {
 		return []key.APIKeyType{}, err
 	}
 
-
 	if statusCode < 200 || statusCode > 299 {
 		return []key.APIKeyType{}, errNoSuccess
 	}
