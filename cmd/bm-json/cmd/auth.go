@@ -20,8 +20,8 @@
 package cmd
 
 import (
-	"encoding/json"
 	"os"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/container"
@@ -31,13 +31,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var webhookCmd = &cobra.Command{
-	Use:   "webhook",
-	Short: "Returns webhook info",
+var authKeyCmd = &cobra.Command{
+	Use:   "auth",
+	Short: "Returns auth key info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *webhookAccount)
+		info := vault.GetAccountOrDefault(v, *authAccount)
+		if info == nil {
+			output.JSONErrorStrOut("Account not found")
+			os.Exit(1)
+		}
 
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
@@ -52,25 +56,28 @@ var webhookCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		webhooks, err := client.ListWebhooks(info.Address.Hash())
+		authKeys, err := client.ListAuthKeys(info.Address.Hash())
 		if err != nil {
 			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
 		var out []output.JSONT
-		for _, wh := range webhooks {
+		for _, ak := range authKeys {
 
-			var cfg interface{}
-			_ = json.Unmarshal([]byte(wh.Config), &cfg)
+			// don't display zero times
+			expiry := ak.Expires.Format(time.ANSIC)
+			if ak.Expires.Unix() == 0 {
+				expiry = ""
+			}
 
 			out = append(out, output.JSONT{
-				"id": wh.ID,
-				"event": wh.Event.String(),
-				"type": wh.Type.String(),
-				"account": wh.Account,
-				"enabled": wh.Enabled,
-				"config": cfg,
+				"id": ak.Fingerprint,
+				"expires": expiry,
+				"public_key": ak.PublicKey,
+				"description": ak.Description,
+				"address_hash": ak.AddressHash,
+				"signature": ak.Signature,
 			})
 		}
 
@@ -78,11 +85,11 @@ var webhookCmd = &cobra.Command{
 	},
 }
 
-var webhookAccount *string
+var authAccount *string
 
 func init() {
-	rootCmd.AddCommand(webhookCmd)
+	rootCmd.AddCommand(authKeyCmd)
 
-	webhookAccount = webhookCmd.Flags().StringP("account", "a", "", "Account")
-	_ = webhookCmd.MarkFlagRequired("account")
+	authAccount = authKeyCmd.Flags().StringP("account", "a", "", "Account")
+	_ = authKeyCmd.MarkFlagRequired("account")
 }

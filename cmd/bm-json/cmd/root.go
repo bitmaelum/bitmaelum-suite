@@ -28,7 +28,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "bm-json",
-	Short: "BitMaelum JSON outputter",
+	Short: "BitMaelum JSON outputer",
 	Long:  `This program will retrieve information and returns it nicely in a JSON format`,
 }
 

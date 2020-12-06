@@ -20,8 +20,8 @@
 package cmd
 
 import (
-	"encoding/json"
 	"os"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/container"
@@ -31,13 +31,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var webhookCmd = &cobra.Command{
-	Use:   "webhook",
-	Short: "Returns webhook info",
+var apiKeyCmd = &cobra.Command{
+	Use:   "api",
+	Short: "Returns api key info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *webhookAccount)
+		info := vault.GetAccountOrDefault(v, *apiAccount)
+		if info == nil {
+			output.JSONErrorStrOut("Account not found")
+			os.Exit(1)
+		}
 
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
@@ -52,25 +56,37 @@ var webhookCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		webhooks, err := client.ListWebhooks(info.Address.Hash())
+		apiKeys, err := client.ListAPIKeys(info.Address.Hash())
 		if err != nil {
 			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		var out []output.JSONT
-		for _, wh := range webhooks {
+		if apiKeys == nil {
 
-			var cfg interface{}
-			_ = json.Unmarshal([]byte(wh.Config), &cfg)
+		}
+
+		var out []output.JSONT
+		for _, ak := range apiKeys {
+
+			// don't display zero times
+			expiry := ak.Expires.Format(time.ANSIC)
+			if ak.Expires.Unix() == 0 {
+				expiry = ""
+			}
+
+			ah := ""
+			if ak.AddressHash != nil {
+				ah = ak.AddressHash.String()
+			}
 
 			out = append(out, output.JSONT{
-				"id": wh.ID,
-				"event": wh.Event.String(),
-				"type": wh.Type.String(),
-				"account": wh.Account,
-				"enabled": wh.Enabled,
-				"config": cfg,
+				"id": ak.ID,
+				"expires": expiry,
+				"permissions": ak.Permissions,
+				"description": ak.Desc,
+				"address_hash": ah,
+				"is_admin": ak.Admin,
 			})
 		}
 
@@ -78,11 +94,11 @@ var webhookCmd = &cobra.Command{
 	},
 }
 
-var webhookAccount *string
+var apiAccount *string
 
 func init() {
-	rootCmd.AddCommand(webhookCmd)
+	rootCmd.AddCommand(apiKeyCmd)
 
-	webhookAccount = webhookCmd.Flags().StringP("account", "a", "", "Account")
-	_ = webhookCmd.MarkFlagRequired("account")
+	apiAccount = apiKeyCmd.Flags().StringP("account", "a", "", "Account")
+	_ = apiKeyCmd.MarkFlagRequired("account")
 }
