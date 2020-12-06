@@ -76,6 +76,7 @@ func (r *fileRepo) GetBoxInfo(addr hash.Hash, box int) (*BoxInfo, error) {
 		for _, file := range files {
 			if file.IsDir() {
 				mbi.Total++
+				mbi.Messages = append(mbi.Messages, file.Name())
 			}
 		}
 	}
