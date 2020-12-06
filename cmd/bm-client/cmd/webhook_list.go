@@ -24,9 +24,6 @@ import (
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
@@ -38,17 +35,8 @@ var webhookListCmd = &cobra.Command{
 	Short: "Display all webhooks for this account on the server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *whAccount)
-
-		resolver := container.Instance.GetResolveService()
-		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
-		if err != nil {
-			logrus.Fatal("Cannot find routing ID for this account")
-			os.Exit(1)
-		}
-
-		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
+		// Get generic structs
+		_, info, client, err := internal.GetClientAndInfo(*whAccount)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

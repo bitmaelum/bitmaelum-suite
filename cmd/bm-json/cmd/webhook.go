@@ -24,10 +24,7 @@ import (
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
-	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -36,17 +33,8 @@ var webhookCmd = &cobra.Command{
 	Short: "Returns webhook info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *webhookAccount)
-
-		resolver := container.Instance.GetResolveService()
-		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
-		if err != nil {
-			output.JSONErrorStrOut("Cannot find routing ID for this account")
-			os.Exit(1)
-		}
-
-		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtJSONErrorFunc)
+		// Get generic structs
+		_, info, client, err := internal.GetClientAndInfo(*webhookAccount)
 		if err != nil {
 			output.JSONErrorOut(err)
 			os.Exit(1)
