@@ -337,6 +337,10 @@ func GetAccount(vault *Vault, a string) (*AccountInfo, error) {
 	return vault.GetAccountInfo(*addr)
 }
 
+func OpenVaultWithPass(pass string) (*Vault, error) {
+	return New(config.Client.Accounts.Path, []byte(pass))
+}
+
 // OpenVault returns an opened vault, or opens the vault, asking a password if needed
 func OpenVault() *Vault {
 	fromVault := false

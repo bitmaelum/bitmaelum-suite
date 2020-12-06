@@ -90,7 +90,7 @@ func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Store API key into persistent storage
+	// Fetch API key from persistent storage
 	repo := container.Instance.GetAPIKeyRepo()
 	keys, err := repo.FetchByHash(h.String())
 	if err != nil {

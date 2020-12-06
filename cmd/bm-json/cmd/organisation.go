@@ -20,57 +20,39 @@
 package cmd
 
 import (
-	"encoding/json"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
-	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var webhookCmd = &cobra.Command{
-	Use:   "webhook",
-	Short: "Returns webhook info",
+var organisationCmd = &cobra.Command{
+	Use:   "organisation",
+	Short: "Returns local organisation info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *webhookAccount)
-
-		resolver := container.Instance.GetResolveService()
-		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
+		v, err := vault.OpenVaultWithPass(vault.VaultPassword)
 		if err != nil {
-			output.JSONErrorStrOut("Cannot find routing ID for this account")
-			os.Exit(1)
-		}
-
-		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtJSONErrorFunc)
-		if err != nil {
-			output.JSONErrorOut(err)
-			os.Exit(1)
-		}
-
-		webhooks, err := client.ListWebhooks(info.Address.Hash())
-		if err != nil {
-			output.JSONErrorOut(err)
+			output.JSONErrorStrOut("cannot open vault")
 			os.Exit(1)
 		}
 
 		var out []output.JSONT
-		for _, wh := range webhooks {
+		for _, org := range v.Store.Organisations {
 
-			var cfg interface{}
-			_ = json.Unmarshal([]byte(wh.Config), &cfg)
+			privkey := ""
+			if *orgDisplayPrivKey {
+				privkey = org.PrivKey.String()
+			}
 
 			out = append(out, output.JSONT{
-				"id": wh.ID,
-				"event": wh.Event.String(),
-				"type": wh.Type.String(),
-				"account": wh.Account,
-				"enabled": wh.Enabled,
-				"config": cfg,
+				"address": org.Addr,
+				"full_name": org.FullName,
+				"private_key": privkey,
+				"public_key": org.PubKey.String(),
+				"proof_of_work": org.Pow.String(),
+				"validations": org.Validations,
 			})
 		}
 
@@ -78,11 +60,10 @@ var webhookCmd = &cobra.Command{
 	},
 }
 
-var webhookAccount *string
+var orgDisplayPrivKey *bool
 
 func init() {
-	rootCmd.AddCommand(webhookCmd)
+	rootCmd.AddCommand(organisationCmd)
 
-	webhookAccount = webhookCmd.Flags().StringP("account", "a", "", "Account")
-	_ = webhookCmd.MarkFlagRequired("account")
+	orgDisplayPrivKey = organisationCmd.Flags().Bool("display-private-key", false, "Should the output return the private keys as well?")
 }
