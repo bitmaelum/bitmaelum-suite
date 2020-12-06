@@ -35,9 +35,9 @@ const (
 )
 
 var (
-	// Build date as filled in during compilation
+	// BuildDate as filled in during compilation
 	BuildDate string
-	// Git commit sha as filled in during compilation
+	// GitCommit sha as filled in during compilation
 	GitCommit string
 )
 

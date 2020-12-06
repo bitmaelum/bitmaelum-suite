@@ -65,12 +65,12 @@ var webhookCmd = &cobra.Command{
 			_ = json.Unmarshal([]byte(wh.Config), &cfg)
 
 			out = append(out, output.JSONT{
-				"id": wh.ID,
-				"event": wh.Event.String(),
-				"type": wh.Type.String(),
+				"id":      wh.ID,
+				"event":   wh.Event.String(),
+				"type":    wh.Type.String(),
 				"account": wh.Account,
 				"enabled": wh.Enabled,
-				"config": cfg,
+				"config":  cfg,
 			})
 		}
 

@@ -72,12 +72,12 @@ var authKeyCmd = &cobra.Command{
 			}
 
 			out = append(out, output.JSONT{
-				"id": ak.Fingerprint,
-				"expires": expiry,
-				"public_key": ak.PublicKey,
-				"description": ak.Description,
+				"id":           ak.Fingerprint,
+				"expires":      expiry,
+				"public_key":   ak.PublicKey,
+				"description":  ak.Description,
 				"address_hash": ak.AddressHash,
-				"signature": ak.Signature,
+				"signature":    ak.Signature,
 			})
 		}
 

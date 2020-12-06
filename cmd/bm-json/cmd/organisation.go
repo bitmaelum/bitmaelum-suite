@@ -47,12 +47,12 @@ var organisationCmd = &cobra.Command{
 			}
 
 			out = append(out, output.JSONT{
-				"address": org.Addr,
-				"full_name": org.FullName,
-				"private_key": privkey,
-				"public_key": org.PubKey.String(),
+				"address":       org.Addr,
+				"full_name":     org.FullName,
+				"private_key":   privkey,
+				"public_key":    org.PubKey.String(),
 				"proof_of_work": org.Pow.String(),
-				"validations": org.Validations,
+				"validations":   org.Validations,
 			})
 		}
 

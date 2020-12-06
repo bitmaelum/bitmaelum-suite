@@ -48,18 +48,18 @@ var accountCmd = &cobra.Command{
 
 			out = append(out, output.JSONT{
 				"address": output.JSONT{
-					"hash": acc.Address.Hash().String(),
-					"address": acc.Address.String(),
+					"hash":       acc.Address.Hash().String(),
+					"address":    acc.Address.String(),
 					"local_part": acc.Address.Local,
-					"org_part": acc.Address.Org,
+					"org_part":   acc.Address.Org,
 				},
-				"name": acc.Name,
-				"routing_id": acc.RoutingID,
-				"private_key": privkey,
-				"public_key": acc.PubKey.String(),
-				"default": acc.Default,
+				"name":          acc.Name,
+				"routing_id":    acc.RoutingID,
+				"private_key":   privkey,
+				"public_key":    acc.PubKey.String(),
+				"default":       acc.Default,
 				"proof_of_work": acc.Pow.String(),
-				"settings": acc.Settings,
+				"settings":      acc.Settings,
 			})
 		}
 
@@ -70,7 +70,6 @@ var accountCmd = &cobra.Command{
 var (
 	accDisplayPrivKey *bool
 )
-
 
 func init() {
 	rootCmd.AddCommand(accountCmd)

@@ -62,10 +62,6 @@ var apiKeyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if apiKeys == nil {
-
-		}
-
 		var out []output.JSONT
 		for _, ak := range apiKeys {
 
@@ -81,12 +77,12 @@ var apiKeyCmd = &cobra.Command{
 			}
 
 			out = append(out, output.JSONT{
-				"id": ak.ID,
-				"expires": expiry,
-				"permissions": ak.Permissions,
-				"description": ak.Desc,
+				"id":           ak.ID,
+				"expires":      expiry,
+				"permissions":  ak.Permissions,
+				"description":  ak.Desc,
 				"address_hash": ah,
-				"is_admin": ak.Admin,
+				"is_admin":     ak.Admin,
 			})
 		}
 
