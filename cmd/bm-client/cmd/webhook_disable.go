@@ -20,26 +20,25 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
-	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
 
-var authListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "Display all authorized keys",
+var webhookDisableCmd = &cobra.Command{
+	Use:   "disable",
+	Short: "Disable webhook",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *authAccount)
+		info := vault.GetAccountOrDefault(v, *whAccount)
 
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
@@ -54,33 +53,20 @@ var authListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		keys, err := client.ListAuthKeys(info.Address.Hash())
+		err = client.DisableWebhook(info.Address.Hash(), *whdID)
 		if err != nil {
-			logrus.Fatal(err)
+			logrus.Fatal("cannot disable webhook: ", err)
 			os.Exit(1)
 		}
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Fingerprint", "Valid until", "Description"})
-
-		for _, key := range keys {
-			// don't display zero times
-			expiry := key.Expires.Format(time.ANSIC)
-			if key.Expires.Unix() == 0 {
-				expiry = ""
-			}
-
-			table.Append([]string{
-				key.Fingerprint,
-				expiry,
-				key.Description,
-			})
-		}
-
-		table.Render()
+		fmt.Println("Webhook is disabled")
 	},
 }
 
+var whdID *string
+
 func init() {
-	authCmd.AddCommand(authListCmd)
+	whdID = webhookDisableCmd.Flags().String("id", "", "webhook ID to disable")
+
+	webhookCmd.AddCommand(webhookDisableCmd)
 }

@@ -20,11 +20,11 @@
 package mgmt
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
@@ -42,33 +42,31 @@ type jsonOut map[string]interface{}
 func NewInvite(w http.ResponseWriter, req *http.Request) {
 	k := handler.GetAPIKey(req)
 	if !k.HasPermission(internal.PermGenerateInvites, nil) {
-		handler.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
+		httputils.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
 	var input inputInviteType
-	err := handler.DecodeBody(w, req.Body, &input)
+	err := httputils.DecodeBody(w, req.Body, &input)
 	if err != nil {
-		handler.ErrorOut(w, http.StatusBadRequest, "incorrect body")
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect body")
 		return
 	}
 
 	addrHash, err := hash.NewFromHash(input.AddrHash)
 	if err != nil {
-		handler.ErrorOut(w, http.StatusBadRequest, "incorrect address")
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect address")
 		return
 	}
 
 	validUntil := time.Now().Add(time.Duration(input.Days) * 24 * time.Hour)
 	token, err := signature.NewInviteToken(*addrHash, config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
 	if err != nil {
-		handler.ErrorOut(w, http.StatusInternalServerError, "cannot generate invite token")
+		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot generate invite token")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(jsonOut{
+	_ = httputils.JSONOut(w, http.StatusCreated, jsonOut{
 		"hash":   addrHash.String(),
 		"token":  token.String(),
 		"expiry": validUntil.Unix(),

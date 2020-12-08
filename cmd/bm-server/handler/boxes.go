@@ -26,6 +26,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 )
@@ -44,58 +45,56 @@ const (
 func CreateBox(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	var input boxIn
-	err = DecodeBody(w, req.Body, &input)
+	err = httputils.DecodeBody(w, req.Body, &input)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, err.Error())
+		httputils.ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	ar := container.Instance.GetAccountRepo()
 	err = ar.CreateBox(*haddr, input.ParentBoxID)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, err.Error())
+		httputils.ErrorOut(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	httputils.JSONOut(w, http.StatusCreated, "")
 }
 
 // DeleteBox deletes a given box with all messages (note: what about child boxes??)
 func DeleteBox(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
 	box, err := strconv.Atoi(mux.Vars(req)["box"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, "box not found")
+		httputils.ErrorOut(w, http.StatusNotFound, "box not found")
 		return
 	}
 
 	ar := container.Instance.GetAccountRepo()
 	err = ar.DeleteBox(*haddr, box)
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, err.Error())
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNoContent)
+	httputils.JSONOut(w, http.StatusNoContent, "")
 }
 
 // RetrieveBoxes retrieves all message boxes for the given account
 func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -103,7 +102,7 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 	ar := container.Instance.GetAccountRepo()
 	boxes, err := ar.GetAllBoxes(*haddr)
 	if err != nil {
-		ErrorOut(w, http.StatusInternalServerError, "cannot read boxes")
+		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot read boxes")
 		return
 	}
 
@@ -115,14 +114,14 @@ func RetrieveBoxes(w http.ResponseWriter, req *http.Request) {
 		"boxes": boxes,
 	}
 
-	_ = JSONOut(w, output)
+	_ = httputils.JSONOut(w, http.StatusOK, output)
 }
 
 // RetrieveMessagesFromBox retrieves info about the given mailbox
 func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 	list, err := getMessageList(req)
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -133,7 +132,7 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 			ids = append(ids, msg.ID)
 		}
 
-		_ = JSONOut(w, jsonOut{
+		_ = httputils.JSONOut(w, http.StatusOK, jsonOut{
 			"meta":        list.Meta,
 			"message_ids": ids,
 		})
@@ -141,7 +140,7 @@ func RetrieveMessagesFromBox(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Otherwise, return the whole list
-	_ = JSONOut(w, list)
+	_ = httputils.JSONOut(w, http.StatusOK, list)
 }
 
 func getMessageList(req *http.Request) (*account.MessageList, *httpError) {

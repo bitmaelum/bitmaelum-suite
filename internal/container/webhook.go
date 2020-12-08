@@ -17,32 +17,47 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package mgmt
+package container
 
 import (
-	"net/http"
+	"os"
+	"sync"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
+
+	"github.com/go-redis/redis/v8"
 )
 
-// FlushQueues handler will flush all the queues normally on tickers
-func FlushQueues(w http.ResponseWriter, req *http.Request) {
-	k := handler.GetAPIKey(req)
-	if !k.HasPermission(internal.PermFlush, nil) {
-		httputils.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
-		return
-	}
+var (
+	webhookOnce       sync.Once
+	webhookRepository *webhook.Repository
+)
 
-	// Reload configuration and such
-	internal.Reload()
+func setupWebhookRepo() (interface{}, error) {
+	webhookOnce.Do(func() {
+		// If redis.host is set on the config file it will use redis instead of bolt
+		if config.Server.Redis.Host != "" {
+			opts := redis.Options{
+				Addr: config.Server.Redis.Host,
+				DB:   config.Server.Redis.Db,
+			}
 
-	// Flush queues. Note that this means that multiple queue processing can run multiple times
-	go processor.ProcessRetryQueue(true)
-	go processor.ProcessStuckIncomingMessages()
-	go processor.ProcessStuckProcessingMessages()
+			webhookRepository = webhook.NewRedisRepository(&opts)
+			return
+		}
 
-	_ = httputils.JSONOut(w, http.StatusOK, httputils.StatusOk("Flushing queues"))
+		// If redis is not set then it will use BoltDB as default
+		if config.Server.Bolt.DatabasePath == "" {
+			config.Server.Bolt.DatabasePath = os.TempDir()
+		}
+
+		webhookRepository = webhook.NewBoltRepository(config.Server.Bolt.DatabasePath)
+	})
+
+	return *webhookRepository, nil
+}
+
+func init() {
+	Instance.SetShared("webhook", setupWebhookRepo)
 }

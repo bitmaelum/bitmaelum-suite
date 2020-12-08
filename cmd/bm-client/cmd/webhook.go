@@ -17,32 +17,25 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package mgmt
+package cmd
 
 import (
-	"net/http"
-
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/spf13/cobra"
 )
 
-// FlushQueues handler will flush all the queues normally on tickers
-func FlushQueues(w http.ResponseWriter, req *http.Request) {
-	k := handler.GetAPIKey(req)
-	if !k.HasPermission(internal.PermFlush, nil) {
-		httputils.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
-		return
-	}
+var webhookCmd = &cobra.Command{
+	Use:   "webhook",
+	Short: "Webhook management",
+}
 
-	// Reload configuration and such
-	internal.Reload()
+var (
+	whAccount *string
+)
 
-	// Flush queues. Note that this means that multiple queue processing can run multiple times
-	go processor.ProcessRetryQueue(true)
-	go processor.ProcessStuckIncomingMessages()
-	go processor.ProcessStuckProcessingMessages()
+func init() {
+	rootCmd.AddCommand(webhookCmd)
 
-	_ = httputils.JSONOut(w, http.StatusOK, httputils.StatusOk("Flushing queues"))
+	whAccount = webhookCmd.PersistentFlags().StringP("account", "a", "", "Account")
+
+	_ = webhookCmd.MarkPersistentFlagRequired("account")
 }

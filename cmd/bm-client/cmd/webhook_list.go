@@ -20,8 +20,8 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
-	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
@@ -33,13 +33,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var authListCmd = &cobra.Command{
+var webhookListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Display all authorized keys",
+	Short: "Display all webhooks for this account on the server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *authAccount)
+		info := vault.GetAccountOrDefault(v, *whAccount)
 
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
@@ -54,26 +54,31 @@ var authListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		keys, err := client.ListAuthKeys(info.Address.Hash())
+		webhooks, err := client.ListWebhooks(info.Address.Hash())
 		if err != nil {
-			logrus.Fatal(err)
+			logrus.Fatal("cannot fetch webhooks: ", err)
 			os.Exit(1)
 		}
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Fingerprint", "Valid until", "Description"})
+		if len(webhooks) == 0 {
+			fmt.Println("No webhooks are found for this account")
+			return
+		}
 
-		for _, key := range keys {
-			// don't display zero times
-			expiry := key.Expires.Format(time.ANSIC)
-			if key.Expires.Unix() == 0 {
-				expiry = ""
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID", "Event", "Type", "Enabled"})
+
+		for _, wh := range webhooks {
+			enabled := "-"
+			if wh.Enabled {
+				enabled = "enabled"
 			}
 
 			table.Append([]string{
-				key.Fingerprint,
-				expiry,
-				key.Description,
+				wh.ID,
+				wh.Event.String(),
+				wh.Type.String(),
+				enabled,
 			})
 		}
 
@@ -82,5 +87,5 @@ var authListCmd = &cobra.Command{
 }
 
 func init() {
-	authCmd.AddCommand(authListCmd)
+	webhookCmd.AddCommand(webhookListCmd)
 }

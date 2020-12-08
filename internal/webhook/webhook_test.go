@@ -17,32 +17,30 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package mgmt
+package webhook
 
 import (
-	"net/http"
+	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
-// FlushQueues handler will flush all the queues normally on tickers
-func FlushQueues(w http.ResponseWriter, req *http.Request) {
-	k := handler.GetAPIKey(req)
-	if !k.HasPermission(internal.PermFlush, nil) {
-		httputils.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
-		return
+func TestWebhook(t *testing.T) {
+	cfg := ConfigHTTP{
+		URL: "https://foo.bar/test",
 	}
 
-	// Reload configuration and such
-	internal.Reload()
+	a, err := NewWebhook(hash.New("example!"), EventLocalDelivery, TypeHTTP, cfg)
+	assert.NoError(t, err)
 
-	// Flush queues. Note that this means that multiple queue processing can run multiple times
-	go processor.ProcessRetryQueue(true)
-	go processor.ProcessStuckIncomingMessages()
-	go processor.ProcessStuckProcessingMessages()
-
-	_ = httputils.JSONOut(w, http.StatusOK, httputils.StatusOk("Flushing queues"))
+	u, err := uuid.Parse(a.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, "VERSION_4", u.Version().String())
+	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", a.Account.String())
+	assert.Equal(t, TypeHTTP, a.Type)
+	assert.Equal(t, "{\"URL\":\"https://foo.bar/test\"}", string(a.Config))
+	assert.False(t, a.Enabled)
+	assert.Equal(t, EventLocalDelivery, a.Event)
 }

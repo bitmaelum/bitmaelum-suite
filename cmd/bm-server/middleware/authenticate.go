@@ -21,10 +21,10 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -106,9 +106,8 @@ func ErrorOut(w http.ResponseWriter, code int, msg string) {
 	}
 
 	logrus.Debugf("Returning error (%d): %s", code, msg)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(&OutputResponse{
+
+	_ = httputils.JSONOut(w, code, &OutputResponse{
 		Error:  true,
 		Status: msg,
 	})

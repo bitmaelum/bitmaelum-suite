@@ -72,6 +72,12 @@ type ServerConfig struct {
 		Enabled bool `yaml:"remote_enabled"`
 	} `yaml:"management"`
 
+	Webhooks struct {
+		Enabled bool   `yaml:"enabled"`
+		System  string `yaml:"system"`
+		Workers int    `yaml:"workers"`
+	} `yaml:"webhooks"`
+
 	Acme struct {
 		Enabled         bool   `yaml:"enabled"`
 		Domain          string `yaml:"domain"`

@@ -20,16 +20,22 @@
 package handler
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/dispatcher"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
+)
+
+var (
+	errAPIKeyNotFound = errors.New("api key not found")
 )
 
 type inputAPIKeyType struct {
@@ -41,22 +47,22 @@ type inputAPIKeyType struct {
 // CreateAPIKey is a handler that will create a new API key (non-admin keys only)
 func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 	var input inputAPIKeyType
-	err := DecodeBody(w, req.Body, &input)
+	err := httputils.DecodeBody(w, req.Body, &input)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect body")
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect body")
 		return
 	}
 
 	//
 	err = internal.CheckAccountPermissions(input.Permissions)
 	if err != nil {
-		ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect permissions")
 		return
 	}
 
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -67,14 +73,14 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 	err = repo.Store(newAPIKey)
 	if err != nil {
 		msg := fmt.Sprintf("error while storing key: %s", err)
-		ErrorOut(w, http.StatusInternalServerError, msg)
+		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
 		return
 	}
 
+	_ = dispatcher.DispatchAPIKeyCreate(*h, newAPIKey)
+
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(jsonOut{
+	_ = httputils.JSONOut(w, http.StatusCreated, jsonOut{
 		"api_key": newAPIKey.ID,
 	})
 }
@@ -83,7 +89,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
@@ -92,48 +98,46 @@ func ListAPIKeys(w http.ResponseWriter, req *http.Request) {
 	keys, err := repo.FetchByHash(h.String())
 	if err != nil {
 		msg := fmt.Sprintf("error while retrieving keys: %s", err)
-		ErrorOut(w, http.StatusInternalServerError, msg)
+		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
 		return
 	}
 
 	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(keys)
+	_ = httputils.JSONOut(w, http.StatusOK, keys)
 }
 
 // DeleteAPIKey will remove a key
 func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
-	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	k, err := hasAPIwebKeyAccess(w, req)
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
 		return
 	}
 
-	keyID := mux.Vars(req)["key"]
-
-	// Fetch key
 	repo := container.Instance.GetAPIKeyRepo()
-	k, err := repo.Fetch(keyID)
-	if err != nil || k.AddressHash.String() != h.String() {
-		// Only allow deleting of keys that we own as account
-		ErrorOut(w, http.StatusNotFound, "key not found")
-		return
-	}
-
 	_ = repo.Remove(*k)
 
+	_ = dispatcher.DispatchAPIKeyDelete(*k.AddressHash, *k)
+
 	// All is well
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	_ = httputils.JSONOut(w, http.StatusNoContent, "")
 }
 
 // GetAPIKeyDetails will get a key
 func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
+	k, err := hasAPIwebKeyAccess(w, req)
+	if err != nil {
+		return
+	}
+
+	// Output key
+	_ = httputils.JSONOut(w, http.StatusOK, k)
+}
+
+func hasAPIwebKeyAccess(w http.ResponseWriter, req *http.Request) (*key.APIKeyType, error) {
 	h, err := hash.NewFromHash(mux.Vars(req)["addr"])
 	if err != nil {
-		ErrorOut(w, http.StatusNotFound, accountNotFound)
-		return
+		httputils.ErrorOut(w, http.StatusNotFound, errAccountNotFound.Error())
+		return nil, errAccountNotFound
 	}
 
 	keyID := mux.Vars(req)["key"]
@@ -142,12 +146,9 @@ func GetAPIKeyDetails(w http.ResponseWriter, req *http.Request) {
 	repo := container.Instance.GetAPIKeyRepo()
 	k, err := repo.Fetch(keyID)
 	if err != nil || k.AddressHash.String() != h.String() {
-		ErrorOut(w, http.StatusNotFound, "key not found")
-		return
+		httputils.ErrorOut(w, http.StatusNotFound, errAPIKeyNotFound.Error())
+		return nil, errAPIKeyNotFound
 	}
 
-	// Output key
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(k)
+	return k, nil
 }

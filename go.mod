@@ -20,6 +20,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.1
+	github.com/mborders/artifex v0.4.0
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nightlyone/lockfile v1.0.0

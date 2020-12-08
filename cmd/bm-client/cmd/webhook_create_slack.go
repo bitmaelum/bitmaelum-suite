@@ -20,31 +20,55 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
-	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/olekukonko/tablewriter"
+	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 )
 
-var authListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "Display all authorized keys",
+var webhookCreateSlackCmd = &cobra.Command{
+	Use:   "slack",
+	Short: "Creates a new slack webhook",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		// Validate event
+		evt, err := webhook.NewEventFromString(*whEvent)
+		if err != nil {
+			fmt.Println("unknown event: ", *whEvent)
+			fmt.Println("")
+
+			_ = webhookCreateCmd.Help()
+			os.Exit(1)
+		}
+
 		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *authAccount)
+		info := vault.GetAccountOrDefault(v, *whAccount)
 
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 		if err != nil {
 			logrus.Fatal("Cannot find routing ID for this account")
+			os.Exit(1)
+		}
+
+		cfg := &webhook.ConfigSlack{
+			WebhookURL: *whsURL,
+			Channel:    *whsChannel,
+			Username:   *whsUsername,
+			IconEmoji:  *whsIconEmoji,
+			IconURL:    *whsIconURL,
+			Template:   *whsTemplate,
+		}
+		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeSlack, cfg)
+		if err != nil {
+			logrus.Fatal("Cannot create webhook")
 			os.Exit(1)
 		}
 
@@ -54,33 +78,34 @@ var authListCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		keys, err := client.ListAuthKeys(info.Address.Hash())
+		wh, err = client.CreateWebhook(*wh)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)
 		}
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Fingerprint", "Valid until", "Description"})
-
-		for _, key := range keys {
-			// don't display zero times
-			expiry := key.Expires.Format(time.ANSIC)
-			if key.Expires.Unix() == 0 {
-				expiry = ""
-			}
-
-			table.Append([]string{
-				key.Fingerprint,
-				expiry,
-				key.Description,
-			})
-		}
-
-		table.Render()
+		fmt.Printf("Created webhook %s\n", wh.ID)
 	},
 }
 
+var (
+	whsURL       *string
+	whsChannel   *string
+	whsUsername  *string
+	whsIconEmoji *string
+	whsIconURL   *string
+	whsTemplate  *string
+)
+
 func init() {
-	authCmd.AddCommand(authListCmd)
+	webhookCreateCmd.AddCommand(webhookCreateSlackCmd)
+
+	whsURL = webhookCreateSlackCmd.Flags().String("url", "", "Slack webhook URL")
+	whsChannel = webhookCreateSlackCmd.Flags().String("channel", "", "Optional channel to post to")
+	whsUsername = webhookCreateSlackCmd.Flags().String("username", "", "Optional username to post from")
+	whsIconEmoji = webhookCreateSlackCmd.Flags().String("icon_emoji", "", "Optional bot icon emoji")
+	whsIconURL = webhookCreateSlackCmd.Flags().String("icon_url", "", "Optional bot icon url")
+	whsTemplate = webhookCreateSlackCmd.Flags().String("template", "", "Optional text/template")
+
+	_ = webhookCreateSlackCmd.MarkFlagRequired("url")
 }

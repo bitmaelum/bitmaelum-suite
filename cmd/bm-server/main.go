@@ -37,6 +37,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/dispatcher"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/gorilla/handlers"
@@ -81,6 +82,11 @@ func main() {
 	logrus.Tracef("Starting main loop")
 	go mainLoop(ctx)
 
+	// Start webhook dispatcher if enabled
+	if config.Server.Webhooks.Enabled {
+		initDispatcher()
+	}
+
 	// Start HTTP server
 	host := fmt.Sprintf("%s:%d", config.Server.Server.Host, config.Server.Server.Port)
 	logrus.Tracef("Starting BitMaelum HTTP service on '%s'", host)
@@ -90,6 +96,14 @@ func main() {
 	logrus.Tracef("Waiting until context tells us it's done")
 	<-ctx.Done()
 	logrus.Tracef("Context is done. Exiting")
+}
+
+func initDispatcher() {
+	logrus.Tracef("Starting webhooks")
+	if config.Server.Webhooks.System == "default" {
+		logrus.Tracef("Starting default dispatcher system")
+		dispatcher.InitDispatcher(config.Server.Webhooks.Workers)
+	}
 }
 
 func checkAndUpdateRouting() {
@@ -210,6 +224,17 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/authkey", handler.ListAuthKeys).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/authkey/{key}", handler.GetAuthKeyDetails).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/authkey/{key}", handler.DeleteAuthKey).Methods("DELETE")
+
+	// Add webhooks if enabled
+	if config.Server.Webhooks.Enabled {
+		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook", handler.CreateWebhook).Methods("POST")
+		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook", handler.ListWebhooks).Methods("GET")
+		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}/enable", handler.EnableWebhook).Methods("POST")
+		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}/disable", handler.DisableWebhook).Methods("POST")
+		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}", handler.GetWebhookDetails).Methods("GET")
+		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}", handler.UpdateWebhook).Methods("POST")
+		authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/webhook/{id}", handler.DeleteWebhook).Methods("DELETE")
+	}
 
 	//
 	// Routes that need to be authenticated through JWT or API keys

@@ -59,7 +59,14 @@ var listMessagesCmd = &cobra.Command{
 			since = internal.GetReadTime()
 		}
 
-		handlers.ListMessages(v.Store.Accounts, since)
+		msgCount := handlers.ListMessages(v.Store.Accounts, since)
+		if msgCount == 0 {
+			if *lmNew {
+				fmt.Println("* No new messages found")
+			} else {
+				fmt.Println("* No messages since ", since.Format(time.RFC822))
+			}
+		}
 
 		internal.SaveReadTime(time.Now())
 	},

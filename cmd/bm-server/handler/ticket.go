@@ -25,6 +25,7 @@ import (
 	"net/http"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -78,7 +79,7 @@ func (e *httpError) Error() string {
 func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	requestInfo, err := newFromRequest(req)
 	if err != nil {
-		ErrorOut(w, err.(*httpError).StatusCode, err.Error())
+		httputils.ErrorOut(w, err.(*httpError).StatusCode, err.Error())
 		return
 	}
 
@@ -90,14 +91,12 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	err = ticketRepo.Store(t)
 	if err != nil {
 		logrus.Trace("cannot save ticket: ", err)
-		ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
+		httputils.ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
 		return
 	}
 
 	// Send out our validated ticket
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(ticket.NewSimpleTicket(t))
+	_ = httputils.JSONOut(w, http.StatusOK, ticket.NewSimpleTicket(t))
 }
 
 // GetServerToServerTicket will try and retrieve a (valid) ticket so we can upload messages. It is only allowed to have a
@@ -106,7 +105,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	// Get ticket body from request or create a new ticket
 	requestInfo, err := newFromRequest(req)
 	if err != nil {
-		ErrorOut(w, err.(*httpError).StatusCode, err.Error())
+		httputils.ErrorOut(w, err.(*httpError).StatusCode, err.Error())
 		return
 	}
 
@@ -120,7 +119,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	// Check if the recipient address is valid
 	err = validateLocalAddress(requestInfo.To)
 	if err != nil {
-		ErrorOut(w, err.(*httpError).StatusCode, err.Error())
+		httputils.ErrorOut(w, err.(*httpError).StatusCode, err.Error())
 		return
 	}
 
@@ -128,7 +127,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	if requestInfo.SubscriptionID != "" {
 		tckt, err := handleSubscription(requestInfo)
 		if err != nil {
-			ErrorOut(w, err.(*httpError).StatusCode, err.Error())
+			httputils.ErrorOut(w, err.(*httpError).StatusCode, err.Error())
 			return
 		}
 
@@ -147,7 +146,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 		ticketRepo := container.Instance.GetTicketRepo()
 		err = ticketRepo.Store(tckt)
 		if err != nil {
-			ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
+			httputils.ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
 			return
 		}
 		logrus.Tracef("Generated invalidated ticket: %s", tckt.ID)
@@ -160,7 +159,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	ticketRepo := container.Instance.GetTicketRepo()
 	tckt, err := ticketRepo.Fetch(requestInfo.TicketID)
 	if err != nil {
-		ErrorOut(w, http.StatusPreconditionFailed, "ticket not found")
+		httputils.ErrorOut(w, http.StatusPreconditionFailed, "ticket not found")
 		return
 	}
 	logrus.Tracef("Found ticket in repository: %s", tckt.ID)
@@ -179,7 +178,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 		ticketRepo := container.Instance.GetTicketRepo()
 		err = ticketRepo.Store(tckt)
 		if err != nil {
-			ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
+			httputils.ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
 			return
 		}
 		logrus.Tracef("Ticket proof-of-work validated: %s", tckt.ID)
@@ -188,15 +187,14 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	outputTicket(tckt, w)
 }
 
+// Send out validated or invalidated ticket and status
 func outputTicket(tckt *ticket.Ticket, w http.ResponseWriter) {
-	// Send out validated or invalidated ticket and status
-	w.Header().Set("Content-Type", "application/json")
-	if tckt.Valid {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusPreconditionFailed)
+	status := http.StatusOK
+	if !tckt.Valid {
+		status = http.StatusPreconditionFailed
 	}
-	_ = json.NewEncoder(w).Encode(ticket.NewSimpleTicket(tckt))
+
+	_ = httputils.JSONOut(w, status, ticket.NewSimpleTicket(tckt))
 }
 
 func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {

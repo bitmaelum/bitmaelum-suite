@@ -17,32 +17,47 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package mgmt
+package webhook
 
 import (
-	"net/http"
-
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/handler"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
-// FlushQueues handler will flush all the queues normally on tickers
-func FlushQueues(w http.ResponseWriter, req *http.Request) {
-	k := handler.GetAPIKey(req)
-	if !k.HasPermission(internal.PermFlush, nil) {
-		httputils.ErrorOut(w, http.StatusUnauthorized, "unauthorized")
-		return
+type mockRepo struct {
+	Webhooks map[string]Type
+}
+
+// FetchByHash will retrieve all keys for the given account
+func (r mockRepo) FetchByHash(h hash.Hash) ([]Type, error) {
+	var webhooks []Type
+
+	for _, w := range r.Webhooks {
+		if w.Account.String() == h.String() {
+			webhooks = append(webhooks, w)
+		}
 	}
 
-	// Reload configuration and such
-	internal.Reload()
+	return webhooks, nil
+}
 
-	// Flush queues. Note that this means that multiple queue processing can run multiple times
-	go processor.ProcessRetryQueue(true)
-	go processor.ProcessStuckIncomingMessages()
-	go processor.ProcessStuckProcessingMessages()
+// Fetch a key from the repository, or err
+func (r mockRepo) Fetch(ID string) (*Type, error) {
+	w, ok := r.Webhooks[ID]
+	if !ok {
+		return nil, errWebhookNotFound
+	}
 
-	_ = httputils.JSONOut(w, http.StatusOK, httputils.StatusOk("Flushing queues"))
+	return &w, nil
+}
+
+// Store the given key in the repository
+func (r mockRepo) Store(w Type) error {
+	r.Webhooks[w.ID] = w
+	return nil
+}
+
+// Remove the given key from the repository
+func (r mockRepo) Remove(w Type) error {
+	delete(r.Webhooks, w.ID)
+	return nil
 }
