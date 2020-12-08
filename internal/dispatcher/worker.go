@@ -106,9 +106,6 @@ func execSlack(w webhook.Type, payload interface{}) error {
 		templateBody = cfg.Template
 	}
 
-	logrus.Trace("template: ", templateBody)
-	logrus.Trace("payload: ", payload)
-
 	tmpl, err := template.New("slack").Funcs(template.FuncMap{
 		"json": func(v interface{}) string {
 			b, err := json.MarshalIndent(v, "", "  ")
