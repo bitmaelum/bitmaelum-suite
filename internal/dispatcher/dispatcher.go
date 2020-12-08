@@ -20,8 +20,6 @@
 package dispatcher
 
 import (
-	"encoding/json"
-
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
@@ -72,15 +70,10 @@ func dispatch(h hash.Hash, evt webhook.EventEnum, payload map[string]interface{}
 			"event":   evt.String(),    // We need to use the event, otherwise we might end up with event "all"
 		}
 
-		payloadBytes, err := json.Marshal(payload)
-		if err != nil {
-			continue
-		}
-
 		wh := wh
 		_ = dispatcher.Dispatch(func() {
 			logrus.Tracef("dispatching webhook %s", wh.ID)
-			work(wh, payloadBytes)
+			Work(wh, payload)
 		})
 	}
 

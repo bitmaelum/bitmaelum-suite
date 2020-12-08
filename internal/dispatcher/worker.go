@@ -24,22 +24,42 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
+
+	"text/template"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
+	"github.com/sirupsen/logrus"
 )
 
+// default Slack Template when none is given by the webhook
+var defaultSlackTemplate = `
+Event *{{.meta.event}}* for account *{{.meta.account}}*:
+
+`+"```"+`
+{{json . -}}
+`+"```"
+
 // work is the main function that will get dispatched as a job. It will do the actual work
-func work(w webhook.Type, payload []byte) {
+func Work(w webhook.Type, payload interface{}) {
 	switch w.Type {
 	case webhook.TypeHTTP:
 		_ = execHTTP(w, payload)
+	case webhook.TypeSlack:
+		_ = execSlack(w, payload)
+
 	}
 }
 
-func execHTTP(w webhook.Type, payload []byte) error {
+func execHTTP(w webhook.Type, payload interface{}) error {
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
 	cfg := &webhook.ConfigHTTP{}
-	err := json.Unmarshal([]byte(w.Config), &cfg)
+	err = json.Unmarshal([]byte(w.Config), &cfg)
 	if err != nil {
 		return err
 	}
@@ -47,8 +67,85 @@ func execHTTP(w webhook.Type, payload []byte) error {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	resp, err := client.Post(cfg.URL, "application/json", bytes.NewReader([]byte(payload)))
+	resp, err := client.Post(cfg.URL, "application/json", bytes.NewReader(payloadBytes))
 	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode >= 400 {
+		return errors.New("webhook: invalid status code returned from HTTP endpoint")
+	}
+
+	return nil
+}
+
+func execSlack(w webhook.Type, payload interface{}) error {
+	cfg := &webhook.ConfigSlack{}
+	err := json.Unmarshal([]byte(w.Config), &cfg)
+	if err != nil {
+		return err
+	}
+
+	slackPayload := map[string]string{}
+	if cfg.Channel != "" {
+		slackPayload["channel"] = cfg.Channel
+	}
+	if cfg.Username != "" {
+		slackPayload["username"] = cfg.Username
+	}
+	if cfg.IconEmoji != "" {
+		slackPayload["icon_emoji"] = cfg.IconEmoji
+	}
+	if cfg.IconUrl != "" {
+		slackPayload["icon_url"] = cfg.IconUrl
+	}
+
+	// Create text from (default) template and webhook payload
+	templateBody := defaultSlackTemplate
+	if cfg.Template != "" {
+		templateBody = cfg.Template
+	}
+
+	logrus.Trace("template: ", templateBody)
+	logrus.Trace("payload: ", payload)
+
+	tmpl, err := template.New("slack").Funcs(template.FuncMap{
+		"json": func (v interface{}) string {
+			b, err := json.MarshalIndent(v, "", "  ")
+			if err != nil {
+				return ""
+			}
+
+			return string(b)
+		},
+	}).Parse(templateBody)
+	if err != nil {
+		logrus.Trace("error while creating template: ", err)
+		return err
+	}
+
+	var sb strings.Builder
+	err = tmpl.Execute(&sb, payload)
+	if err != nil {
+		logrus.Trace("error while executing template: ", err)
+		return err
+	}
+	slackPayload["text"] = sb.String()
+
+
+	// Post slack payload
+	slackPayloadBytes, err := json.Marshal(slackPayload)
+	if err != nil {
+		logrus.Trace("error while marshalling payload ", err)
+		return err
+	}
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	resp, err := client.Post(cfg.WebhookURL, "application/json", bytes.NewReader(slackPayloadBytes))
+	if err != nil {
+		logrus.Trace("error while posting slack webhook ", err)
 		return err
 	}
 

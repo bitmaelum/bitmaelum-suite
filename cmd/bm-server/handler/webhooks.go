@@ -198,9 +198,11 @@ func endis(w http.ResponseWriter, req *http.Request, status bool) {
 	repo := container.Instance.GetWebhookRepo()
 	err = repo.Store(*wh)
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot enable")
+		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot en/disable")
 		return
 	}
+
+	_ = dispatcher.DispatchWebhookUpdate(wh.Account, *wh)
 
 	_ = httputils.JSONOut(w, http.StatusOK, jsonOut{})
 }

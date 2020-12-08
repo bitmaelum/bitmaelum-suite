@@ -36,16 +36,15 @@ type TypeEnum int
 
 // String convert type to string
 func (e TypeEnum) String() string {
-	return [...]string{"HTTP"}[e]
+	return [...]string{"HTTP", "Slack"}[e]
 }
 
 // Webhook destination types.
 const (
-	// TypeHTTP
-	TypeHTTP TypeEnum = iota // Simple HTTP endpoint
+	TypeHTTP  TypeEnum = iota // Simple HTTP endpoint
+	TypeSlack                 // Slack support
 	// TypeAmqp                            // Advanced Message Queue protocol
 	// TypeSQS                             // Amazon SQS support
-	// TypeSlack                           // Slack support
 )
 
 // Type is the webhook structure
@@ -74,6 +73,11 @@ type ConfigSQS struct {
 // ConfigSlack Configuration for TypeSlack (not yet implemented)
 type ConfigSlack struct {
 	WebhookURL string
+	Channel    string
+	Username   string
+	IconEmoji  string
+	IconUrl    string
+	Template   string
 }
 
 // NewWebhook creates a new webhook

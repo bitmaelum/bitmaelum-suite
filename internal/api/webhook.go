@@ -28,29 +28,31 @@ import (
 )
 
 // CreateWebhook Create a new API key
-func (api *API) CreateWebhook(wh webhook.Type) error {
+func (api *API) CreateWebhook(wh webhook.Type) (*webhook.Type, error) {
 	// ID is set by the server
 	wh.ID = ""
 	data, err := json.Marshal(wh)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	url := fmt.Sprintf("/account/%s/webhook", wh.Account.String())
 	body, statusCode, err := api.Post(url, data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return errNoSuccess
+		return nil, errNoSuccess
 	}
 
 	if isErrorResponse(body) {
-		return GetErrorFromResponse(body)
+		return nil, GetErrorFromResponse(body)
 	}
 
-	return nil
+	fmt.Println(body)
+
+	return &wh, nil
 }
 
 // DeleteWebhook deletes a webhook

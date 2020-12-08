@@ -43,6 +43,7 @@ const (
 	EventWebhookUpdated                      // webhook updated
 	EventInviteCreated                       // invite created
 	EventAccountCreated                      // account created
+	EventTest           EventEnum = 998      // Test event
 	EventAll            EventEnum = 999      // All events
 )
 
@@ -63,6 +64,7 @@ var EventLabels = map[string]EventEnum{
 	"webhookupdated": EventWebhookUpdated,
 	"invitecreated":  EventInviteCreated,
 	"accountcreated": EventAccountCreated,
+	"test":           EventTest,
 }
 
 // String convert event to string

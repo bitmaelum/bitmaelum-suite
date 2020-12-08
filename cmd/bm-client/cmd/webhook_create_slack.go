@@ -32,9 +32,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHTTPCmd = &cobra.Command{
-	Use:   "http",
-	Short: "Display all webhooks for this account on the server",
+var webhookCreateSlackCmd = &cobra.Command{
+	Use:   "slack",
+	Short: "Creates a new slack webhook",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -58,10 +58,15 @@ var webhookCreateHTTPCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		cfg := &webhook.ConfigHTTP{
-			URL: *whhUrl,
+		cfg := &webhook.ConfigSlack{
+			WebhookURL: *whsUrl,
+			Channel:    *whsChannel,
+			Username:   *whsUsername,
+			IconEmoji:  *whsIconEmoji,
+			IconUrl:    *whsIconUrl,
+			Template:   *whsTemplate,
 		}
-		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
+		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeSlack, cfg)
 		if err != nil {
 			logrus.Fatal("Cannot create webhook")
 			os.Exit(1)
@@ -83,12 +88,24 @@ var webhookCreateHTTPCmd = &cobra.Command{
 	},
 }
 
-var whhUrl *string
+var (
+	whsUrl       *string
+	whsChannel   *string
+	whsUsername  *string
+	whsIconEmoji *string
+	whsIconUrl   *string
+	whsTemplate  *string
+)
 
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
+	webhookCreateCmd.AddCommand(webhookCreateSlackCmd)
 
-	whhUrl = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
+	whsUrl = webhookCreateSlackCmd.Flags().String("url", "", "Slack webhook URL")
+	whsChannel = webhookCreateSlackCmd.Flags().String("channel", "", "Optional channel to post to")
+	whsUsername = webhookCreateSlackCmd.Flags().String("username", "", "Optional username to post from")
+	whsIconEmoji = webhookCreateSlackCmd.Flags().String("icon_emoji", "", "Optional bot icon emoji")
+	whsIconUrl = webhookCreateSlackCmd.Flags().String("icon_url", "", "Optional bot icon url")
+	whsTemplate = webhookCreateSlackCmd.Flags().String("template", "", "Optional text/template")
 
-	_ = webhookCreateHTTPCmd.MarkFlagRequired("url")
+	_ = webhookCreateSlackCmd.MarkFlagRequired("url")
 }
