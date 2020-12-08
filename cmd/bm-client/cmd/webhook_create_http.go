@@ -59,7 +59,7 @@ var webhookCreateHTTPCmd = &cobra.Command{
 		}
 
 		cfg := &webhook.ConfigHTTP{
-			URL: *whhUrl,
+			URL: *whhURL,
 		}
 		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
 		if err != nil {
@@ -79,16 +79,16 @@ var webhookCreateHTTPCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("Created webhook %s", wh.ID)
+		fmt.Printf("Created webhook %s\n", wh.ID)
 	},
 }
 
-var whhUrl *string
+var whhURL *string
 
 func init() {
 	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
 
-	whhUrl = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
+	whhURL = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
 
 	_ = webhookCreateHTTPCmd.MarkFlagRequired("url")
 }

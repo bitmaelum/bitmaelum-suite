@@ -59,11 +59,11 @@ var webhookCreateSlackCmd = &cobra.Command{
 		}
 
 		cfg := &webhook.ConfigSlack{
-			WebhookURL: *whsUrl,
+			WebhookURL: *whsURL,
 			Channel:    *whsChannel,
 			Username:   *whsUsername,
 			IconEmoji:  *whsIconEmoji,
-			IconUrl:    *whsIconUrl,
+			IconURL:    *whsIconURL,
 			Template:   *whsTemplate,
 		}
 		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeSlack, cfg)
@@ -84,27 +84,27 @@ var webhookCreateSlackCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("Created webhook %s", wh.ID)
+		fmt.Printf("Created webhook %s\n", wh.ID)
 	},
 }
 
 var (
-	whsUrl       *string
+	whsURL       *string
 	whsChannel   *string
 	whsUsername  *string
 	whsIconEmoji *string
-	whsIconUrl   *string
+	whsIconURL   *string
 	whsTemplate  *string
 )
 
 func init() {
 	webhookCreateCmd.AddCommand(webhookCreateSlackCmd)
 
-	whsUrl = webhookCreateSlackCmd.Flags().String("url", "", "Slack webhook URL")
+	whsURL = webhookCreateSlackCmd.Flags().String("url", "", "Slack webhook URL")
 	whsChannel = webhookCreateSlackCmd.Flags().String("channel", "", "Optional channel to post to")
 	whsUsername = webhookCreateSlackCmd.Flags().String("username", "", "Optional username to post from")
 	whsIconEmoji = webhookCreateSlackCmd.Flags().String("icon_emoji", "", "Optional bot icon emoji")
-	whsIconUrl = webhookCreateSlackCmd.Flags().String("icon_url", "", "Optional bot icon url")
+	whsIconURL = webhookCreateSlackCmd.Flags().String("icon_url", "", "Optional bot icon url")
 	whsTemplate = webhookCreateSlackCmd.Flags().String("template", "", "Optional text/template")
 
 	_ = webhookCreateSlackCmd.MarkFlagRequired("url")

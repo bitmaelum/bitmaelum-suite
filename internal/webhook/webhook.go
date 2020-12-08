@@ -43,8 +43,8 @@ func (e TypeEnum) String() string {
 const (
 	TypeHTTP  TypeEnum = iota // Simple HTTP endpoint
 	TypeSlack                 // Slack support
-	// TypeAmqp                            // Advanced Message Queue protocol
-	// TypeSQS                             // Amazon SQS support
+	// TypeAmqp               // Advanced Message Queue protocol
+	// TypeSQS                // Amazon SQS support
 )
 
 // Type is the webhook structure
@@ -76,7 +76,7 @@ type ConfigSlack struct {
 	Channel    string
 	Username   string
 	IconEmoji  string
-	IconUrl    string
+	IconURL    string
 	Template   string
 }
 

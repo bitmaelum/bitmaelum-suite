@@ -83,7 +83,7 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_ = dispatcher.DispatchApiKeyCreate(*h, newAPIKey)
+	_ = dispatcher.DispatchAPIKeyCreate(*h, newAPIKey)
 
 	// Output key
 	_ = httputils.JSONOut(w, http.StatusCreated, jsonOut{

@@ -77,7 +77,7 @@ func CreateAPIKey(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_ = dispatcher.DispatchApiKeyCreate(*h, newAPIKey)
+	_ = dispatcher.DispatchAPIKeyCreate(*h, newAPIKey)
 
 	// Output key
 	_ = httputils.JSONOut(w, http.StatusCreated, jsonOut{
@@ -116,7 +116,7 @@ func DeleteAPIKey(w http.ResponseWriter, req *http.Request) {
 	repo := container.Instance.GetAPIKeyRepo()
 	_ = repo.Remove(*k)
 
-	_ = dispatcher.DispatchApiKeyDelete(*k.AddressHash, *k)
+	_ = dispatcher.DispatchAPIKeyDelete(*k.AddressHash, *k)
 
 	// All is well
 	_ = httputils.JSONOut(w, http.StatusNoContent, "")

@@ -37,11 +37,11 @@ import (
 var defaultSlackTemplate = `
 Event *{{.meta.event}}* for account *{{.meta.account}}*:
 
-`+"```"+`
+` + "```" + `
 {{json . -}}
-`+"```"
+` + "```"
 
-// work is the main function that will get dispatched as a job. It will do the actual work
+// Work is the main function that will get dispatched as a job. It will do the actual work of sending data
 func Work(w webhook.Type, payload interface{}) {
 	switch w.Type {
 	case webhook.TypeHTTP:
@@ -96,8 +96,8 @@ func execSlack(w webhook.Type, payload interface{}) error {
 	if cfg.IconEmoji != "" {
 		slackPayload["icon_emoji"] = cfg.IconEmoji
 	}
-	if cfg.IconUrl != "" {
-		slackPayload["icon_url"] = cfg.IconUrl
+	if cfg.IconURL != "" {
+		slackPayload["icon_url"] = cfg.IconURL
 	}
 
 	// Create text from (default) template and webhook payload
@@ -110,7 +110,7 @@ func execSlack(w webhook.Type, payload interface{}) error {
 	logrus.Trace("payload: ", payload)
 
 	tmpl, err := template.New("slack").Funcs(template.FuncMap{
-		"json": func (v interface{}) string {
+		"json": func(v interface{}) string {
 			b, err := json.MarshalIndent(v, "", "  ")
 			if err != nil {
 				return ""
@@ -131,7 +131,6 @@ func execSlack(w webhook.Type, payload interface{}) error {
 		return err
 	}
 	slackPayload["text"] = sb.String()
-
 
 	// Post slack payload
 	slackPayloadBytes, err := json.Marshal(slackPayload)

@@ -67,7 +67,7 @@ func dispatch(h hash.Hash, evt webhook.EventEnum, payload map[string]interface{}
 		payload["meta"] = map[string]string{
 			"id":      wh.ID,
 			"account": wh.Account.String(),
-			"event":   evt.String(),    // We need to use the event, otherwise we might end up with event "all"
+			"event":   evt.String(), // We need to use the event, otherwise we might end up with event "all"
 		}
 
 		wh := wh
@@ -80,31 +80,34 @@ func dispatch(h hash.Hash, evt webhook.EventEnum, payload map[string]interface{}
 	return nil
 }
 
+// DispatchRemoteDelivery dispatches event
 func DispatchRemoteDelivery(h hash.Hash, header *message.Header, msgID string) error {
 	payload := map[string]interface{}{
 		"message": map[string]string{
-			"from":       header.From.Addr.String(),
-			"to":         header.To.Addr.String(),
-			"id": msgID,
+			"from": header.From.Addr.String(),
+			"to":   header.To.Addr.String(),
+			"id":   msgID,
 		},
 	}
 
 	return dispatch(h, webhook.EventLocalDelivery, payload)
 }
 
+// DispatchLocalDelivery dispatches event
 func DispatchLocalDelivery(h hash.Hash, header *message.Header, msgID string) error {
 	payload := map[string]interface{}{
 		"message": map[string]string{
-			"from":       header.From.Addr.String(),
-			"to":         header.To.Addr.String(),
-			"id": msgID,
+			"from": header.From.Addr.String(),
+			"to":   header.To.Addr.String(),
+			"id":   msgID,
 		},
 	}
 
 	return dispatch(h, webhook.EventLocalDelivery, payload)
 }
 
-func DispatchApiKeyCreate(h hash.Hash, k key.APIKeyType) error {
+// DispatchAPIKeyCreate dispatches event
+func DispatchAPIKeyCreate(h hash.Hash, k key.APIKeyType) error {
 	payload := map[string]interface{}{
 		"key": k,
 	}
@@ -112,7 +115,8 @@ func DispatchApiKeyCreate(h hash.Hash, k key.APIKeyType) error {
 	return dispatch(h, webhook.EventAPIKeyCreated, payload)
 }
 
-func DispatchApiKeyDelete(h hash.Hash, k key.APIKeyType) error {
+// DispatchAPIKeyDelete dispatches event
+func DispatchAPIKeyDelete(h hash.Hash, k key.APIKeyType) error {
 	payload := map[string]interface{}{
 		"key": map[string]string{
 			"id": k.ID,
@@ -122,6 +126,7 @@ func DispatchApiKeyDelete(h hash.Hash, k key.APIKeyType) error {
 	return dispatch(h, webhook.EventAPIKeyDeleted, payload)
 }
 
+// DispatchAuthKeyCreate dispatches event
 func DispatchAuthKeyCreate(h hash.Hash, k key.AuthKeyType) error {
 	payload := map[string]interface{}{
 		"key": k,
@@ -130,6 +135,7 @@ func DispatchAuthKeyCreate(h hash.Hash, k key.AuthKeyType) error {
 	return dispatch(h, webhook.EventAuthKeyCreated, payload)
 }
 
+// DispatchAuthKeyDelete dispatches event
 func DispatchAuthKeyDelete(h hash.Hash, k key.AuthKeyType) error {
 	payload := map[string]interface{}{
 		"key": map[string]string{
@@ -140,6 +146,7 @@ func DispatchAuthKeyDelete(h hash.Hash, k key.AuthKeyType) error {
 	return dispatch(h, webhook.EventAuthKeyDeleted, payload)
 }
 
+// DispatchWebhookCreate dispatches event
 func DispatchWebhookCreate(h hash.Hash, wh webhook.Type) error {
 	payload := map[string]interface{}{
 		"webhook": wh,
@@ -148,6 +155,7 @@ func DispatchWebhookCreate(h hash.Hash, wh webhook.Type) error {
 	return dispatch(h, webhook.EventWebhookCreated, payload)
 }
 
+// DispatchWebhookUpdate dispatches event
 func DispatchWebhookUpdate(h hash.Hash, wh webhook.Type) error {
 	payload := map[string]interface{}{
 		"webhook": wh,
@@ -156,6 +164,7 @@ func DispatchWebhookUpdate(h hash.Hash, wh webhook.Type) error {
 	return dispatch(h, webhook.EventWebhookUpdated, payload)
 }
 
+// DispatchWebhookDelete dispatches event
 func DispatchWebhookDelete(h hash.Hash, wh webhook.Type) error {
 	payload := map[string]interface{}{
 		"webhook": map[string]string{
