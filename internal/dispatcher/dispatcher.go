@@ -20,7 +20,11 @@
 package dispatcher
 
 import (
+	"encoding/json"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/mborders/artifex"
@@ -35,8 +39,10 @@ func InitDispatcher(c int) {
 	dispatcher.Start()
 }
 
-// Dispatch dispatches all active webhooks for the given account and event, with the given payload
-func Dispatch(h hash.Hash, evt webhook.EventEnum, payload []byte) error {
+// dispatch dispatches all active webhooks for the given account and event, with the given payload
+func dispatch(h hash.Hash, evt webhook.EventEnum, payload map[string]interface{}) error {
+	logrus.Debugf("dispatching for %s (%s)", h, evt)
+
 	// Nothing to dispatch, as we haven't enabled webhook dispatching
 	if dispatcher == nil {
 		return nil
@@ -49,18 +55,120 @@ func Dispatch(h hash.Hash, evt webhook.EventEnum, payload []byte) error {
 	}
 
 	for _, wh := range webhooks {
-		if wh.Event != evt {
-			continue
-		}
+		// Enabled webhooks only
 		if !wh.Enabled {
 			continue
 		}
 
+		// Make sure we match either the event or webhook acts on "all"
+		if wh.Event != evt && wh.Event != webhook.EventAll {
+			continue
+		}
+
+		// Add meta data to payload
+		payload["meta"] = map[string]string{
+			"id":      wh.ID,
+			"account": wh.Account.String(),
+			"event":   evt.String(),    // We need to use the event, otherwise we might end up with event "all"
+		}
+
+		payloadBytes, err := json.Marshal(payload)
+		if err != nil {
+			continue
+		}
+
+		wh := wh
 		_ = dispatcher.Dispatch(func() {
-			logrus.Debugf("dispatching webhook %s", wh.ID)
-			work(wh, payload)
+			logrus.Tracef("dispatching webhook %s", wh.ID)
+			work(wh, payloadBytes)
 		})
 	}
 
 	return nil
+}
+
+func DispatchRemoteDelivery(h hash.Hash, header *message.Header, msgID string) error {
+	payload := map[string]interface{}{
+		"message": map[string]string{
+			"from":       header.From.Addr.String(),
+			"to":         header.To.Addr.String(),
+			"id": msgID,
+		},
+	}
+
+	return dispatch(h, webhook.EventLocalDelivery, payload)
+}
+
+func DispatchLocalDelivery(h hash.Hash, header *message.Header, msgID string) error {
+	payload := map[string]interface{}{
+		"message": map[string]string{
+			"from":       header.From.Addr.String(),
+			"to":         header.To.Addr.String(),
+			"id": msgID,
+		},
+	}
+
+	return dispatch(h, webhook.EventLocalDelivery, payload)
+}
+
+func DispatchApiKeyCreate(h hash.Hash, k key.APIKeyType) error {
+	payload := map[string]interface{}{
+		"key": k,
+	}
+
+	return dispatch(h, webhook.EventAPIKeyCreated, payload)
+}
+
+func DispatchApiKeyDelete(h hash.Hash, k key.APIKeyType) error {
+	payload := map[string]interface{}{
+		"key": map[string]string{
+			"id": k.ID,
+		},
+	}
+
+	return dispatch(h, webhook.EventAPIKeyDeleted, payload)
+}
+
+func DispatchAuthKeyCreate(h hash.Hash, k key.AuthKeyType) error {
+	payload := map[string]interface{}{
+		"key": k,
+	}
+
+	return dispatch(h, webhook.EventAuthKeyCreated, payload)
+}
+
+func DispatchAuthKeyDelete(h hash.Hash, k key.AuthKeyType) error {
+	payload := map[string]interface{}{
+		"key": map[string]string{
+			"id": k.Fingerprint,
+		},
+	}
+
+	return dispatch(h, webhook.EventAuthKeyDeleted, payload)
+}
+
+func DispatchWebhookCreate(h hash.Hash, wh webhook.Type) error {
+	payload := map[string]interface{}{
+		"webhook": wh,
+	}
+
+	return dispatch(h, webhook.EventWebhookCreated, payload)
+}
+
+func DispatchWebhookUpdate(h hash.Hash, wh webhook.Type) error {
+	payload := map[string]interface{}{
+		"webhook": wh,
+	}
+
+	return dispatch(h, webhook.EventWebhookUpdated, payload)
+}
+
+func DispatchWebhookDelete(h hash.Hash, wh webhook.Type) error {
+	payload := map[string]interface{}{
+		"webhook": map[string]string{
+			"id": wh.ID,
+		},
+	}
+
+	return dispatch(h, webhook.EventAuthKeyDeleted, payload)
 }

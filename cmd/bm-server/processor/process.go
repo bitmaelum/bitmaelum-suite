@@ -20,7 +20,6 @@
 package processor
 
 import (
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -32,7 +31,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -131,15 +129,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 		return nil
 	}
 
-	// notify any webhooks
-	payload, err := json.Marshal(map[string]string{
-		"from": header.From.Addr.String(),
-		"to":   header.To.Addr.String(),
-		"id":   msgID,
-	})
-	if err == nil {
-		_ = dispatcher.Dispatch(header.To.Addr, webhook.EventLocalDelivery, payload)
-	}
+	_ = dispatcher.DispatchLocalDelivery(*h, header, msgID)
 
 	return nil
 }
@@ -230,14 +220,9 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 		return err
 	}
 
-	// notify any webhooks
-	payload, err := json.Marshal(map[string]string{
-		"from": header.From.Addr.String(),
-		"to":   header.To.Addr.String(),
-		"id":   msgID,
-	})
+	h, err := hash.NewFromHash(addrInfo.Hash)
 	if err == nil {
-		_ = dispatcher.Dispatch(hash.New(addrInfo.Hash), webhook.EventRemoveDelivery, payload)
+		_ = dispatcher.DispatchRemoteDelivery(*h, header, msgID)
 	}
 
 	// Remove local message from processing queue

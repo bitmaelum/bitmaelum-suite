@@ -31,7 +31,7 @@ type EventEnum int
 const (
 	EventLocalDelivery  EventEnum = iota + 1 // A local delivery has been made (incoming)
 	EventFailedDelivery                      // A message is received but not considered correct
-	EventRemoveDelivery                      // A message has been send to a remote server (outgoing)
+	EventRemoteDelivery                      // A message has been send to a remote server (outgoing)
 	EventAPIKeyCreated                       // Api Key created
 	EventAPIKeyDeleted                       // Api key deleted
 	EventAPIKeyUpdated                       // Api key updated
@@ -51,7 +51,7 @@ var EventLabels = map[string]EventEnum{
 	"all":            EventAll,
 	"localdelivery":  EventLocalDelivery,
 	"faileddelivery": EventFailedDelivery,
-	"remotedelivery": EventRemoveDelivery,
+	"remotedelivery": EventRemoteDelivery,
 	"apikeycreated":  EventAPIKeyCreated,
 	"apikeydeleted":  EventAPIKeyDeleted,
 	"apikeyupdated":  EventAPIKeyUpdated,

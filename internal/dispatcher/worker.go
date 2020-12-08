@@ -39,7 +39,7 @@ func work(w webhook.Type, payload []byte) {
 
 func execHTTP(w webhook.Type, payload []byte) error {
 	cfg := &webhook.ConfigHTTP{}
-	err := json.Unmarshal([]byte(w.Config), cfg)
+	err := json.Unmarshal([]byte(w.Config), &cfg)
 	if err != nil {
 		return err
 	}

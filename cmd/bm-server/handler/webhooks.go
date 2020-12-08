@@ -27,6 +27,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/dispatcher"
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -89,6 +90,8 @@ func CreateWebhook(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	_ = dispatcher.DispatchWebhookCreate(wh.Account, *wh)
+
 	// Output webhook
 	_ = httputils.JSONOut(w, http.StatusCreated, wh)
 }
@@ -118,6 +121,8 @@ func UpdateWebhook(w http.ResponseWriter, req *http.Request) {
 		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
 		return
 	}
+
+	_ = dispatcher.DispatchWebhookUpdate(wh.Account, *wh)
 
 	// Output webhook
 	_ = httputils.JSONOut(w, http.StatusCreated, wh)
@@ -152,6 +157,8 @@ func DeleteWebhook(w http.ResponseWriter, req *http.Request) {
 
 	repo := container.Instance.GetWebhookRepo()
 	_ = repo.Remove(*wh)
+
+	_ = dispatcher.DispatchWebhookDelete(wh.Account, *wh)
 
 	// All is well
 	_ = httputils.JSONOut(w, http.StatusNoContent, nil)

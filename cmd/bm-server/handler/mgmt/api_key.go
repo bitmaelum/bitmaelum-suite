@@ -28,6 +28,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/dispatcher"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
@@ -81,6 +82,8 @@ func NewAPIKey(w http.ResponseWriter, req *http.Request) {
 		httputils.ErrorOut(w, http.StatusInternalServerError, msg)
 		return
 	}
+
+	_ = dispatcher.DispatchApiKeyCreate(*h, newAPIKey)
 
 	// Output key
 	_ = httputils.JSONOut(w, http.StatusCreated, jsonOut{
