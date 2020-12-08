@@ -90,7 +90,7 @@ func DispatchRemoteDelivery(h hash.Hash, header *message.Header, msgID string) e
 		},
 	}
 
-	return dispatch(h, webhook.EventLocalDelivery, payload)
+	return dispatch(h, webhook.EventRemoteDelivery, payload)
 }
 
 // DispatchLocalDelivery dispatches event
