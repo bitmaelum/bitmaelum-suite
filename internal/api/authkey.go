@@ -87,22 +87,22 @@ func (api *API) ListAuthKeys(addrHash hash.Hash) ([]key.AuthKeyType, error) {
 	url := fmt.Sprintf("/account/%s/authkey", addrHash.String())
 	body, statusCode, err := api.Get(url)
 	if err != nil {
-		return nil, err
+		return []key.AuthKeyType{}, err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return nil, errNoSuccess
+		return []key.AuthKeyType{}, errNoSuccess
 	}
 
 	if isErrorResponse(body) {
-		return nil, GetErrorFromResponse(body)
+		return []key.AuthKeyType{}, GetErrorFromResponse(body)
 	}
 
 	// Parse body for keys
 	keys := &[]key.AuthKeyType{}
 	err = json.Unmarshal(body, &keys)
 	if err != nil {
-		return nil, err
+		return []key.AuthKeyType{}, err
 	}
 
 	return *keys, nil
@@ -125,11 +125,11 @@ func (api *API) GetAuthKey(addrHash hash.Hash, fingerprint string) (*key.AuthKey
 	}
 
 	// Parse body for key
-	key := &key.AuthKeyType{}
-	err = json.Unmarshal(body, &key)
+	k := &key.AuthKeyType{}
+	err = json.Unmarshal(body, &k)
 	if err != nil {
 		return nil, err
 	}
 
-	return key, nil
+	return k, nil
 }

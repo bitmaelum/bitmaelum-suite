@@ -20,63 +20,59 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
-	"github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHTTPCmd = &cobra.Command{
-	Use:   "http",
-	Short: "Display all webhooks for this account on the server",
+var accountCmd = &cobra.Command{
+	Use:   "account",
+	Short: "Returns local account info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Validate event
-		evt, err := webhook.NewEventFromString(*whEvent)
+		v, err := vault.OpenVaultWithPass(vault.VaultPassword)
 		if err != nil {
-			fmt.Println("unknown event: ", *whEvent)
-			fmt.Println("")
-
-			_ = webhookCreateCmd.Help()
+			output.JSONErrorStrOut("cannot open vault")
 			os.Exit(1)
 		}
 
-		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
+		var out []output.JSONT
+		for _, acc := range v.Store.Accounts {
+
+			privkey := ""
+			if *accDisplayPrivKey {
+				privkey = acc.PrivKey.String()
+			}
+
+			out = append(out, output.JSONT{
+				"address": output.JSONT{
+					"hash":       acc.Address.Hash().String(),
+					"address":    acc.Address.String(),
+					"local_part": acc.Address.Local,
+					"org_part":   acc.Address.Org,
+				},
+				"name":          acc.Name,
+				"routing_id":    acc.RoutingID,
+				"private_key":   privkey,
+				"public_key":    acc.PubKey.String(),
+				"default":       acc.Default,
+				"proof_of_work": acc.Pow.String(),
+				"settings":      acc.Settings,
+			})
 		}
 
-		cfg := &webhook.ConfigHTTP{
-			URL: *whhURL,
-		}
-		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
-		if err != nil {
-			logrus.Fatal("Cannot create webhook")
-			os.Exit(1)
-		}
-
-		wh, err = client.CreateWebhook(*wh)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
-		}
-
-		fmt.Printf("Created webhook %s\n", wh.ID)
+		output.JSONOut(out)
 	},
 }
 
-var whhURL *string
+var (
+	accDisplayPrivKey *bool
+)
 
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
+	rootCmd.AddCommand(accountCmd)
 
-	whhURL = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
-
-	_ = webhookCreateHTTPCmd.MarkFlagRequired("url")
+	accDisplayPrivKey = accountCmd.Flags().Bool("display-private-key", false, "Should the output return the private keys as well?")
 }

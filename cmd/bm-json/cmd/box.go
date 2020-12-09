@@ -20,63 +20,51 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
-	"github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHTTPCmd = &cobra.Command{
-	Use:   "http",
-	Short: "Display all webhooks for this account on the server",
+var boxCmd = &cobra.Command{
+	Use:   "box",
+	Short: "Returns message details",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Validate event
-		evt, err := webhook.NewEventFromString(*whEvent)
-		if err != nil {
-			fmt.Println("unknown event: ", *whEvent)
-			fmt.Println("")
-
-			_ = webhookCreateCmd.Help()
-			os.Exit(1)
-		}
-
 		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
+		_, info, client, err := internal.GetClientAndInfo(*boxAccount)
 		if err != nil {
-			logrus.Fatal(err)
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		cfg := &webhook.ConfigHTTP{
-			URL: *whhURL,
-		}
-		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
+		mbl, err := client.GetMailboxList(info.Address.Hash())
 		if err != nil {
-			logrus.Fatal("Cannot create webhook")
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		wh, err = client.CreateWebhook(*wh)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
+		var out []output.JSONT
+		for _, mb := range mbl.Boxes {
+			out = append(out, output.JSONT{
+				"id":       mb.ID,
+				"total": mb.Total,
+				"messages": mb.Messages,
+			})
 		}
 
-		fmt.Printf("Created webhook %s\n", wh.ID)
+		output.JSONOut(out)
 	},
 }
 
-var whhURL *string
+var (
+	boxAccount *string
+)
 
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
+	rootCmd.AddCommand(boxCmd)
 
-	whhURL = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
-
-	_ = webhookCreateHTTPCmd.MarkFlagRequired("url")
+	boxAccount = boxCmd.Flags().StringP("account", "a", "", "Account")
+	_ = boxCmd.MarkFlagRequired("account")
 }

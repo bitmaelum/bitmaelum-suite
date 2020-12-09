@@ -56,8 +56,9 @@ type OrganisationSettings struct {
 
 // BoxInfo returns information about the given message box
 type BoxInfo struct {
-	ID    int `json:"id"`
-	Total int `json:"total"`
+	ID       int      `json:"id"`
+	Total    int      `json:"total"`
+	Messages []string `json:"messages"`
 }
 
 // Repository is the main repository that needs to be implemented. It's pretty big

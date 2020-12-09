@@ -29,8 +29,9 @@ import (
 
 // MailboxListBox is a structure that holds a given mailbox and the total messages inside
 type MailboxListBox struct {
-	ID    int `json:"id"`
-	Total int `json:"total"`
+	ID       int      `json:"id"`
+	Total    int      `json:"total"`
+	Messages []string `json:"messages"`
 }
 
 // MailboxList is a list of mailboxes

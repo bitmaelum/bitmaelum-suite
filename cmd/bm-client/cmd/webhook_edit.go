@@ -24,10 +24,7 @@ import (
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	pkgInternal "github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	internal2 "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -38,17 +35,8 @@ var webhookEditCmd = &cobra.Command{
 	Short: "Edit webhook",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *whAccount)
-
-		resolver := container.Instance.GetResolveService()
-		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
-		if err != nil {
-			logrus.Fatal("Cannot find routing ID for this account")
-			os.Exit(1)
-		}
-
-		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
+		// Get generic structs
+		_, info, client, err := internal.GetClientAndInfo(*whAccount)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)
@@ -71,7 +59,7 @@ var webhookEditCmd = &cobra.Command{
 
 		// Edit into dstConig
 		var dstConfig interface{}
-		err = pkgInternal.OpenJSONFileEditor(srcConfig, &dstConfig)
+		err = internal2.OpenJSONFileEditor(srcConfig, &dstConfig)
 		if err != nil {
 			logrus.Fatal("error while editing webhook: ", err)
 			os.Exit(1)

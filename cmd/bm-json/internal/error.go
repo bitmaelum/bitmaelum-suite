@@ -17,44 +17,34 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package cmd
+package internal
 
 import (
-	"fmt"
+	"bytes"
+	"io/ioutil"
+	"net/http"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/sirupsen/logrus"
-
-	"github.com/spf13/cobra"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 )
 
-var webhookDisableCmd = &cobra.Command{
-	Use:   "disable",
-	Short: "Disable webhook",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
-		}
+// JwtJSONErrorFunc is the generic error handler that will catch any timing issues with the clock
+func JwtJSONErrorFunc(_ *http.Request, resp *http.Response) {
+	if resp.StatusCode != 401 {
+		return
+	}
 
-		err = client.DisableWebhook(info.Address.Hash(), *whdID)
-		if err != nil {
-			logrus.Fatal("cannot disable webhook: ", err)
-			os.Exit(1)
-		}
+	// Read body
+	b, _ := ioutil.ReadAll(resp.Body)
+	_ = resp.Body.Close()
 
-		fmt.Println("Webhook is disabled")
-	},
-}
+	err := api.GetErrorFromResponse(b)
+	if err != nil && err.Error() == "token time not valid" {
+		output.JSONErrorStrOut("JWT token time mismatch")
+		os.Exit(1)
+	}
 
-var whdID *string
-
-func init() {
-	whdID = webhookDisableCmd.Flags().String("id", "", "webhook ID to disable")
-
-	webhookCmd.AddCommand(webhookDisableCmd)
+	// Whoops.. not an error. Let's pretend nothing happened and create a new buffer so we can read the body again
+	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
 }

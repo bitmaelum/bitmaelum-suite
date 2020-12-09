@@ -85,22 +85,22 @@ func (api *API) ListAPIKeys(addrHash hash.Hash) ([]key.APIKeyType, error) {
 	url := fmt.Sprintf("/account/%s/apikey", addrHash.String())
 	body, statusCode, err := api.Get(url)
 	if err != nil {
-		return nil, err
+		return []key.APIKeyType{}, err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return nil, errNoSuccess
+		return []key.APIKeyType{}, errNoSuccess
 	}
 
 	if isErrorResponse(body) {
-		return nil, GetErrorFromResponse(body)
+		return []key.APIKeyType{}, GetErrorFromResponse(body)
 	}
 
 	// Parse body for keys
 	keys := &[]key.APIKeyType{}
 	err = json.Unmarshal(body, &keys)
 	if err != nil {
-		return nil, err
+		return []key.APIKeyType{}, err
 	}
 
 	return *keys, nil
@@ -123,11 +123,11 @@ func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*key.APIKeyType, error
 	}
 
 	// Parse body for key
-	key := &key.APIKeyType{}
-	err = json.Unmarshal(body, &key)
+	k := &key.APIKeyType{}
+	err = json.Unmarshal(body, &k)
 	if err != nil {
 		return nil, err
 	}
 
-	return key, nil
+	return k, nil
 }

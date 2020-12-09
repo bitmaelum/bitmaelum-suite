@@ -20,63 +20,67 @@
 package cmd
 
 import (
-	"fmt"
+	"errors"
 	"os"
+	"strconv"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
-	"github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHTTPCmd = &cobra.Command{
-	Use:   "http",
-	Short: "Display all webhooks for this account on the server",
+var messageCmd = &cobra.Command{
+	Use:   "message",
+	Short: "Returns message details",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Validate event
-		evt, err := webhook.NewEventFromString(*whEvent)
-		if err != nil {
-			fmt.Println("unknown event: ", *whEvent)
-			fmt.Println("")
-
-			_ = webhookCreateCmd.Help()
-			os.Exit(1)
-		}
-
 		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
+		_, info, client, err := internal.GetClientAndInfo(*messageAccount)
 		if err != nil {
-			logrus.Fatal(err)
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		cfg := &webhook.ConfigHTTP{
-			URL: *whhURL,
-		}
-		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
+		mbl, err := client.GetMailboxList(info.Address.Hash())
 		if err != nil {
-			logrus.Fatal("Cannot create webhook")
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		wh, err = client.CreateWebhook(*wh)
+		msg, err := findMessageInBoxes(*messageId, client, info, mbl.Boxes)
 		if err != nil {
-			logrus.Fatal(err)
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		fmt.Printf("Created webhook %s\n", wh.ID)
+		output.JSONOut(msg)
 	},
 }
 
-var whhURL *string
+func findMessageInBoxes(msgId string, client *api.API, info *vault.AccountInfo, boxes []api.MailboxListBox) (*api.Message, error) {
+	for _, mb := range boxes {
+		for _, id := range mb.Messages {
+			if id == msgId {
+				return client.GetMessage(info.Address.Hash(), strconv.Itoa(mb.ID), id)
+			}
+		}
+	}
+
+	return nil, errors.New("message not found")
+}
+
+var (
+	messageAccount *string
+	messageId      *string
+)
 
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
+	rootCmd.AddCommand(messageCmd)
 
-	whhURL = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
-
-	_ = webhookCreateHTTPCmd.MarkFlagRequired("url")
+	messageAccount = messageCmd.Flags().StringP("account", "a", "", "Account")
+	messageId = messageCmd.Flags().StringP("message", "m", "", "Message ID")
+	_ = messageCmd.MarkFlagRequired("account")
+	_ = messageCmd.MarkFlagRequired("message")
 }

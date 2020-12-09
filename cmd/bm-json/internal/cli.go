@@ -17,44 +17,33 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package cmd
+package internal
 
 import (
-	"fmt"
-	"os"
+	"errors"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/sirupsen/logrus"
-
-	"github.com/spf13/cobra"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 )
 
-var webhookDisableCmd = &cobra.Command{
-	Use:   "disable",
-	Short: "Disable webhook",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
-		}
+// GetClientAndInfo is a simple wrapper that will fetch the vault, account info from the given vault and an authenticated
+// api client. Since this is used a lot, we created a separate function for this. This will take care of a lot of code
+// duplication.
+func GetClientAndInfo(acc string) (*vault.Vault, *vault.AccountInfo, *api.API, error) {
+	v := vault.OpenVault()
+	info := vault.GetAccountOrDefault(v, acc)
 
-		err = client.DisableWebhook(info.Address.Hash(), *whdID)
-		if err != nil {
-			logrus.Fatal("cannot disable webhook: ", err)
-			os.Exit(1)
-		}
+	resolver := container.Instance.GetResolveService()
+	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
+	if err != nil {
+		return nil, nil, nil, errors.New("cannot find routing ID for this account")
+	}
 
-		fmt.Println("Webhook is disabled")
-	},
-}
+	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, JwtJSONErrorFunc)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
-var whdID *string
-
-func init() {
-	whdID = webhookDisableCmd.Flags().String("id", "", "webhook ID to disable")
-
-	webhookCmd.AddCommand(webhookDisableCmd)
+	return v, info, client, nil
 }

@@ -34,7 +34,12 @@ const (
 	versionPatch int64 = 1
 )
 
-var buildDate, gitCommit string
+var (
+	// BuildDate as filled in during compilation
+	BuildDate string
+	// GitCommit sha as filled in during compilation
+	GitCommit string
+)
 
 // Version is a structure with the current version of the software
 var Version = semver.Version{
@@ -45,7 +50,7 @@ var Version = semver.Version{
 
 // WriteVersionInfo writes a string with all version information
 func WriteVersionInfo(name string, w io.Writer) {
-	s := fmt.Sprintf("%s version %d.%d.%d\nBuilt: %s\nCommit: %s", name, versionMajor, versionMinor, versionPatch, buildDate, gitCommit)
+	s := fmt.Sprintf("%s version %d.%d.%d\nBuilt: %s\nCommit: %s", name, versionMajor, versionMinor, versionPatch, BuildDate, GitCommit)
 	_, _ = w.Write([]byte(s))
 }
 

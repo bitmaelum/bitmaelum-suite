@@ -8,7 +8,7 @@ SHELL=/bin/bash -O globstar -c
 REPO="github.com/bitmaelum/bitmaelum-suite"
 
 # Our defined apps and tools
-APPS := bm-server bm-client bm-config bm-mail bm-send
+APPS := bm-server bm-client bm-config bm-mail bm-send bm-json
 TOOLS := hash-address jwt proof-of-work readmail update-resolver resolve vault-edit resolve-auth update-pow jwt-validate check-org toaster
 
 # These files are checked for license headers
@@ -26,7 +26,7 @@ BUILD_ALL_PLATFORMS := $(foreach platform,$(PLATFORMS),build-all-$(platform))
 PKG=$(shell go list ./internal)
 BUILD_DATE=$(shell date)
 COMMIT=$(shell git rev-parse HEAD)
-LD_FLAGS = -ldflags "-X '${PKG}.buildDate=${BUILD_DATE}' -X '${PKG}.gitCommit=${COMMIT}'"
+LD_FLAGS = -ldflags "-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMIT}'"
 
 # Set environment variables from GO env if not set explicitly already
 ifndef $(GOPATH)

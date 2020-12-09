@@ -20,41 +20,27 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/sirupsen/logrus"
-
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
 	"github.com/spf13/cobra"
 )
 
-var webhookDisableCmd = &cobra.Command{
-	Use:   "disable",
-	Short: "Disable webhook",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
-		}
-
-		err = client.DisableWebhook(info.Address.Hash(), *whdID)
-		if err != nil {
-			logrus.Fatal("cannot disable webhook: ", err)
-			os.Exit(1)
-		}
-
-		fmt.Println("Webhook is disabled")
-	},
+var rootCmd = &cobra.Command{
+	Use:   "bm-json",
+	Short: "BitMaelum JSON outputer",
+	Long:  `This program will retrieve information and returns it nicely in a JSON format`,
 }
 
-var whdID *string
+// Execute runs the given command
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		output.JSONErrorOut(err)
+		os.Exit(1)
+	}
+}
 
 func init() {
-	whdID = webhookDisableCmd.Flags().String("id", "", "webhook ID to disable")
-
-	webhookCmd.AddCommand(webhookDisableCmd)
+	rootCmd.PersistentFlags().StringP("config", "c", "", "configuration file")
+	rootCmd.PersistentFlags().StringP("password", "p", "", "password to unlock your account vault")
 }

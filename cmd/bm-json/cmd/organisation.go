@@ -20,63 +20,50 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
-	"github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHTTPCmd = &cobra.Command{
-	Use:   "http",
-	Short: "Display all webhooks for this account on the server",
+var organisationCmd = &cobra.Command{
+	Use:   "organisation",
+	Short: "Returns local organisation info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Validate event
-		evt, err := webhook.NewEventFromString(*whEvent)
+		v, err := vault.OpenVaultWithPass(vault.VaultPassword)
 		if err != nil {
-			fmt.Println("unknown event: ", *whEvent)
-			fmt.Println("")
-
-			_ = webhookCreateCmd.Help()
+			output.JSONErrorStrOut("cannot open vault")
 			os.Exit(1)
 		}
 
-		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
+		var out []output.JSONT
+		for _, org := range v.Store.Organisations {
+
+			privkey := ""
+			if *orgDisplayPrivKey {
+				privkey = org.PrivKey.String()
+			}
+
+			out = append(out, output.JSONT{
+				"address":       org.Addr,
+				"full_name":     org.FullName,
+				"private_key":   privkey,
+				"public_key":    org.PubKey.String(),
+				"proof_of_work": org.Pow.String(),
+				"validations":   org.Validations,
+			})
 		}
 
-		cfg := &webhook.ConfigHTTP{
-			URL: *whhURL,
-		}
-		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
-		if err != nil {
-			logrus.Fatal("Cannot create webhook")
-			os.Exit(1)
-		}
-
-		wh, err = client.CreateWebhook(*wh)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
-		}
-
-		fmt.Printf("Created webhook %s\n", wh.ID)
+		output.JSONOut(out)
 	},
 }
 
-var whhURL *string
+var orgDisplayPrivKey *bool
 
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
+	rootCmd.AddCommand(organisationCmd)
 
-	whhURL = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
-
-	_ = webhookCreateHTTPCmd.MarkFlagRequired("url")
+	orgDisplayPrivKey = organisationCmd.Flags().Bool("display-private-key", false, "Should the output return the private keys as well?")
 }

@@ -17,44 +17,37 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package cmd
+package output
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
-	"os"
-
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/sirupsen/logrus"
-
-	"github.com/spf13/cobra"
 )
 
-var webhookDisableCmd = &cobra.Command{
-	Use:   "disable",
-	Short: "Disable webhook",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
-		}
+// JSONT is a simple type for generating JSON output
+type JSONT map[string]interface{}
 
-		err = client.DisableWebhook(info.Address.Hash(), *whdID)
-		if err != nil {
-			logrus.Fatal("cannot disable webhook: ", err)
-			os.Exit(1)
-		}
+// JSONOut outputs a specific interface
+func JSONOut(v interface{}) {
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return
+	}
 
-		fmt.Println("Webhook is disabled")
-	},
+	fmt.Print(string(b))
 }
 
-var whdID *string
+// JSONErrorOut outputs an error
+func JSONErrorOut(err error) {
+	v := map[string]interface{}{
+		"error": err.Error(),
+	}
 
-func init() {
-	whdID = webhookDisableCmd.Flags().String("id", "", "webhook ID to disable")
+	JSONOut(v)
+}
 
-	webhookCmd.AddCommand(webhookDisableCmd)
+// JSONErrorStrOut outputs an error string
+func JSONErrorStrOut(s string) {
+	JSONErrorOut(errors.New(s))
 }

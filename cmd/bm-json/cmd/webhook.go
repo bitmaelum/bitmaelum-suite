@@ -20,63 +20,57 @@
 package cmd
 
 import (
-	"fmt"
+	"encoding/json"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
-	"github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHTTPCmd = &cobra.Command{
-	Use:   "http",
-	Short: "Display all webhooks for this account on the server",
+var webhookCmd = &cobra.Command{
+	Use:   "webhook",
+	Short: "Returns webhook info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Validate event
-		evt, err := webhook.NewEventFromString(*whEvent)
-		if err != nil {
-			fmt.Println("unknown event: ", *whEvent)
-			fmt.Println("")
-
-			_ = webhookCreateCmd.Help()
-			os.Exit(1)
-		}
-
 		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
+		_, info, client, err := internal.GetClientAndInfo(*webhookAccount)
 		if err != nil {
-			logrus.Fatal(err)
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		cfg := &webhook.ConfigHTTP{
-			URL: *whhURL,
-		}
-		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
+		webhooks, err := client.ListWebhooks(info.Address.Hash())
 		if err != nil {
-			logrus.Fatal("Cannot create webhook")
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		wh, err = client.CreateWebhook(*wh)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
+		var out []output.JSONT
+		for _, wh := range webhooks {
+
+			var cfg interface{}
+			_ = json.Unmarshal([]byte(wh.Config), &cfg)
+
+			out = append(out, output.JSONT{
+				"id":      wh.ID,
+				"event":   wh.Event.String(),
+				"type":    wh.Type.String(),
+				"account": wh.Account,
+				"enabled": wh.Enabled,
+				"config":  cfg,
+			})
 		}
 
-		fmt.Printf("Created webhook %s\n", wh.ID)
+		output.JSONOut(out)
 	},
 }
 
-var whhURL *string
+var webhookAccount *string
 
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
+	rootCmd.AddCommand(webhookCmd)
 
-	whhURL = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
-
-	_ = webhookCreateHTTPCmd.MarkFlagRequired("url")
+	webhookAccount = webhookCmd.Flags().StringP("account", "a", "", "Account")
+	_ = webhookCmd.MarkFlagRequired("account")
 }

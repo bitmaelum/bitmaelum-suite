@@ -20,63 +20,60 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
-	"github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
 	"github.com/spf13/cobra"
 )
 
-var webhookCreateHTTPCmd = &cobra.Command{
-	Use:   "http",
-	Short: "Display all webhooks for this account on the server",
+var authKeyCmd = &cobra.Command{
+	Use:   "auth",
+	Short: "Returns auth key info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Validate event
-		evt, err := webhook.NewEventFromString(*whEvent)
-		if err != nil {
-			fmt.Println("unknown event: ", *whEvent)
-			fmt.Println("")
-
-			_ = webhookCreateCmd.Help()
-			os.Exit(1)
-		}
-
 		// Get generic structs
-		_, info, client, err := internal.GetClientAndInfo(*whAccount)
+		_, info, client, err := internal.GetClientAndInfo(*authAccount)
 		if err != nil {
-			logrus.Fatal(err)
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		cfg := &webhook.ConfigHTTP{
-			URL: *whhURL,
-		}
-		wh, err := webhook.NewWebhook(info.Address.Hash(), evt, webhook.TypeHTTP, cfg)
+		authKeys, err := client.ListAuthKeys(info.Address.Hash())
 		if err != nil {
-			logrus.Fatal("Cannot create webhook")
+			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		wh, err = client.CreateWebhook(*wh)
-		if err != nil {
-			logrus.Fatal(err)
-			os.Exit(1)
+		var out []output.JSONT
+		for _, ak := range authKeys {
+
+			// don't display zero times
+			expiry := ak.Expires.Format(time.ANSIC)
+			if ak.Expires.Unix() == 0 {
+				expiry = ""
+			}
+
+			out = append(out, output.JSONT{
+				"id":           ak.Fingerprint,
+				"expires":      expiry,
+				"public_key":   ak.PublicKey,
+				"description":  ak.Description,
+				"address_hash": ak.AddressHash,
+				"signature":    ak.Signature,
+			})
 		}
 
-		fmt.Printf("Created webhook %s\n", wh.ID)
+		output.JSONOut(out)
 	},
 }
 
-var whhURL *string
+var authAccount *string
 
 func init() {
-	webhookCreateCmd.AddCommand(webhookCreateHTTPCmd)
+	rootCmd.AddCommand(authKeyCmd)
 
-	whhURL = webhookCreateHTTPCmd.Flags().String("url", "", "HTTP webhook URL to send POST to")
-
-	_ = webhookCreateHTTPCmd.MarkFlagRequired("url")
+	authAccount = authKeyCmd.Flags().StringP("account", "a", "", "Account")
+	_ = authKeyCmd.MarkFlagRequired("account")
 }
