@@ -102,6 +102,8 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 		if err != nil {
 			logrus.Warnf("cannot remove message %s from the process queue.", msgID)
 		}
+
+		return nil
 	}
 
 	// Check the clientSignature
@@ -112,6 +114,8 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 		if err != nil {
 			logrus.Warnf("cannot remove message %s from the process queue.", msgID)
 		}
+
+		return nil
 	}
 
 	// Deliver mail to local user's inbox
@@ -123,10 +127,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 	ar := container.Instance.GetAccountRepo()
 	err = ar.SendToBox(*h, account.BoxInbox, msgID)
 	if err != nil {
-		// Something went wrong.. let's try and move the message back to the retry queue
-		logrus.Warnf("cannot deliver %s locally. Moving to retry queue", msgID)
-		MoveToRetryQueue(msgID)
-		return nil
+		return err
 	}
 
 	_ = dispatcher.DispatchLocalDelivery(*h, header, msgID)

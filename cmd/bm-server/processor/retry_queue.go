@@ -45,11 +45,11 @@ func ProcessRetryQueue(forceRetry bool) {
 
 			// Message has been retried over 10 times. It's not gonna happen.
 			logrus.Errorf("Message %s stuck in retry queue for too long. Giving up.", info.MsgID)
-			err := message.RemoveMessage(message.SectionProcessing, info.MsgID)
+			err := message.RemoveMessage(message.SectionRetry, info.MsgID)
 			if err != nil {
 				logrus.Warnf("Cannot remove message %s from the process queue.", info.MsgID)
-				continue
 			}
+			continue
 		}
 
 		if forceRetry || canRetryNow(info) {
@@ -90,7 +90,7 @@ func MoveToRetryQueue(msgID string) {
 
 // canRetryNow returns true if we can retry the message right now
 func canRetryNow(info message.RetryInfo) bool {
-	return info.RetryAt.Unix() < time.Now().Unix()
+	return info.RetryAt.Unix() <= time.Now().Unix()
 }
 
 // calculateNextRetryTime will return the next time a message can be retried again
