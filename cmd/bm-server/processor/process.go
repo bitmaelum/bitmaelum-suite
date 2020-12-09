@@ -140,6 +140,12 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 // we upload a message from a client to a server.
 func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message.Header) error {
 	rs := container.Instance.GetResolveService()
+
+	_, err := message.GetRetryInfo(message.SectionProcessing, msgID)
+	if err == nil {
+		rs.ClearRoutingCacheEntry(addrInfo.RoutingID)
+	}
+
 	routingInfo, err := rs.ResolveRouting(addrInfo.RoutingID)
 	if err != nil {
 		logrus.Warnf("cannot find routing ID %s for %s. Retrying.", addrInfo.RoutingID, header.To.Addr)

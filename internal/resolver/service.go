@@ -95,6 +95,12 @@ func (s *Service) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 	return info, err
 }
 
+// ClearRoutingCacheEntry will disable using the routing cache.
+func (s *Service) ClearRoutingCacheEntry(routingID string) {
+	//s.disableCache = false
+	s.routingCache.Remove(routingID)
+}
+
 // ResolveRouting resolves a route.
 func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	// Fetch from cache if available
