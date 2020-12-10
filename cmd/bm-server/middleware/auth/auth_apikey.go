@@ -89,8 +89,6 @@ func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (middleware.A
 }
 
 func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash *hash.Hash, routeName string) (*key.APIKeyType, error) {
-	logrus.Trace("auth: checkApiKEY: ", bearerToken)
-
 	k, err := a.getAPIKey(bearerToken)
 	if err != nil {
 		logrus.Trace("auth: can't get api key: ", err)
