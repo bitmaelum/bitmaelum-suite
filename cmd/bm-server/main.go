@@ -159,9 +159,17 @@ func setupSignals(cancel context.CancelFunc) {
 	}()
 }
 
+// There are two sets of api keys: keys for regular account use, and keys for admin use. They both use the same
+// authenticator, but have other permission lists.
 var apikeyPermissionList = map[string][]string{
 	"ticket": {"send-mail"},
 	"boxes":  {"get-header"},
+}
+
+var apikeyAdminPermissionList = map[string][]string{
+	"admin_flush": {"flush"},
+	"admin_invite": {"invite"},
+	"admin_apikey": {"api-key"},
 }
 
 func setupRouter() *mux.Router {
@@ -243,6 +251,7 @@ func setupRouter() *mux.Router {
 	authorizer.Add(&auth.JwtAuth{})
 	authorizer.Add(&auth.APIKeyAuth{
 		PermissionList: apikeyPermissionList,
+		AdminKeys: false,
 	})
 
 	auth2Router := mainRouter.PathPrefix("/").Subrouter()
@@ -258,7 +267,8 @@ func setupRouter() *mux.Router {
 	if config.Server.Management.Enabled {
 		authorizer = &middleware.Authenticate{}
 		authorizer.Add(&auth.APIKeyAuth{
-			PermissionList: apikeyPermissionList,
+			PermissionList: apikeyAdminPermissionList,
+			AdminKeys: true,
 		})
 
 		mgmtRouter := mainRouter.PathPrefix("/admin").Subrouter()
@@ -267,9 +277,9 @@ func setupRouter() *mux.Router {
 		mgmtRouter.Use(tracer.Middleware)
 		mgmtRouter.Use(authorizer.Middleware)
 
-		mgmtRouter.HandleFunc("/flush", mgmt.FlushQueues).Methods("POST")
-		mgmtRouter.HandleFunc("/invite", mgmt.NewInvite).Methods("POST")
-		mgmtRouter.HandleFunc("/apikey", mgmt.NewAPIKey).Methods("POST")
+		mgmtRouter.HandleFunc("/flush", mgmt.FlushQueues).Methods("POST").Name("admin_flush")
+		mgmtRouter.HandleFunc("/invite", mgmt.NewInvite).Methods("POST").Name("admin_invite")
+		mgmtRouter.HandleFunc("/apikey", mgmt.NewAPIKey).Methods("POST").Name("admin_apikey")
 	}
 
 	return mainRouter

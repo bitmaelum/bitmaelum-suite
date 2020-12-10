@@ -36,7 +36,8 @@ import (
 
 // APIKeyAuth is a middleware that automatically verifies given API key
 type APIKeyAuth struct {
-	PermissionList map[string][]string
+	PermissionList map[string][]string          // Map of route -> permission mappings
+	AdminKeys bool                              // True when the authorizer checks admin keys instead of account keys
 }
 
 var (
@@ -54,53 +55,64 @@ const (
 	APIKeyContext contextKey = iota
 )
 
-// @TODO make sure we can't use a key to fetch other people's info
-
 // Authenticate will check if an API key matches the request
 func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (middleware.AuthStatus, context.Context, error) {
-	// Check if the address actually exists
-	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
-	if err != nil {
-		return middleware.AuthStatusPass, nil, nil
-	}
+	var haddr *hash.Hash = nil
+	if !a.AdminKeys {
+		// Check if the address actually exists
+		haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+		if err != nil {
+			logrus.Trace("auth: addr not found in url")
+			return middleware.AuthStatusPass, nil, nil
+		}
 
-	accountRepo := container.Instance.GetAccountRepo()
-	if !accountRepo.Exists(*haddr) {
-		logrus.Trace("auth: address not found")
-		return middleware.AuthStatusPass, nil, nil
+		accountRepo := container.Instance.GetAccountRepo()
+		if !accountRepo.Exists(*haddr) {
+			logrus.Trace("auth: address not found")
+			return middleware.AuthStatusPass, nil, nil
+		}
 	}
 
 	// Check api key.
-	k, err := a.checkAPIKey(req.Header.Get("Authorization"), *haddr, route)
+	k, err := a.checkAPIKey(req.Header.Get("Authorization"), haddr, route)
 	if err != nil {
+		logrus.Trace("auth: checkApiKey failed: ", err)
 		return middleware.AuthStatusPass, nil, nil
 	}
 
 	ctx := req.Context()
 	ctx = context.WithValue(ctx, APIKeyContext, k)
 
+	logrus.Trace("auth: checkApiKey success: ", err)
 	return middleware.AuthStatusSuccess, ctx, nil
 }
 
-func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeName string) (*key.APIKeyType, error) {
+func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash *hash.Hash, routeName string) (*key.APIKeyType, error) {
+	logrus.Trace("auth: checkApiKEY: ", bearerToken)
+
 	k, err := a.getAPIKey(bearerToken)
 	if err != nil {
+		logrus.Trace("auth: can't get api key: ", err)
 		return nil, err
 	}
 
-	if k.AddressHash.String() != addrHash.String() {
+	// Check if the address hash matches the hash of the key, but only if the hash is given
+	if !a.AdminKeys && k.AddressHash.String() != addrHash.String() {
 		return nil, errInvalidAPIKey
 	}
 
 	if !k.Expires.IsZero() && time.Now().After(k.Expires) {
+		logrus.Trace("auth: checkApiKey expired key")
 		return nil, errExpiredAPIKey
 	}
 
 	// Check permissions
 	if routeName == "" {
+		logrus.Trace("auth: checkApiKey no route found")
 		return nil, errIncorrectRoute
 	}
 
+	logrus.Tracef("checking permission of route %s", routeName)
 	perms, ok := a.PermissionList[routeName]
 	if !ok {
 		return nil, errInvalidPermission
@@ -114,6 +126,7 @@ func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash hash.Hash, routeNa
 		}
 	}
 
+	logrus.Trace("auth: checkApiKey no permission found")
 	return nil, errInvalidPermission
 }
 
