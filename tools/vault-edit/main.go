@@ -44,10 +44,13 @@ func main() {
 		panic(err)
 	}
 
-	err = internal.OpenJSONFileEditor(v.RawData, v.Store)
+	st := vault.StoreType{}
+	err = internal.JSONFileEditor(v.Store, &st)
 	if err != nil {
 		panic(err)
 	}
+
+	v.Store = st
 
 	if opts.NewPassword != "" {
 		v.ChangePassword(opts.NewPassword)

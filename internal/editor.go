@@ -28,7 +28,7 @@ import (
 )
 
 // OpenJSONFileEditor will open a text editor where you can manually edit the given src json
-func OpenJSONFileEditor(src interface{}, dst interface{}) error {
+func JSONFileEditor(src interface{}, dst interface{}) error {
 	// Create a temp file
 	tmpFile, err := ioutil.TempFile(os.TempDir(), "bmtmpedit-")
 	if err != nil {

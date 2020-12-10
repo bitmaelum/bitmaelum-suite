@@ -59,7 +59,7 @@ var webhookEditCmd = &cobra.Command{
 
 		// Edit into dstConig
 		var dstConfig interface{}
-		err = internal2.OpenJSONFileEditor(srcConfig, &dstConfig)
+		err = internal2.JSONFileEditor(srcConfig, &dstConfig)
 		if err != nil {
 			logrus.Fatal("error while editing webhook: ", err)
 			os.Exit(1)
