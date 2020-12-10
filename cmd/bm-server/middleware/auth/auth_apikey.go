@@ -36,8 +36,8 @@ import (
 
 // APIKeyAuth is a middleware that automatically verifies given API key
 type APIKeyAuth struct {
-	PermissionList map[string][]string          // Map of route -> permission mappings
-	AdminKeys bool                              // True when the authorizer checks admin keys instead of account keys
+	PermissionList map[string][]string // Map of route -> permission mappings
+	AdminKeys      bool                // True when the authorizer checks admin keys instead of account keys
 }
 
 var (
@@ -60,7 +60,8 @@ func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (middleware.A
 	var haddr *hash.Hash = nil
 	if !a.AdminKeys {
 		// Check if the address actually exists
-		haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+		var err error
+		haddr, err = hash.NewFromHash(mux.Vars(req)["addr"])
 		if err != nil {
 			logrus.Trace("auth: addr not found in url")
 			return middleware.AuthStatusPass, nil, nil

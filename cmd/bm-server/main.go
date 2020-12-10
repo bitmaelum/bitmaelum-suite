@@ -167,7 +167,7 @@ var apikeyPermissionList = map[string][]string{
 }
 
 var apikeyAdminPermissionList = map[string][]string{
-	"admin_flush": {"flush"},
+	"admin_flush":  {"flush"},
 	"admin_invite": {"invite"},
 	"admin_apikey": {"api-key"},
 }
@@ -251,7 +251,7 @@ func setupRouter() *mux.Router {
 	authorizer.Add(&auth.JwtAuth{})
 	authorizer.Add(&auth.APIKeyAuth{
 		PermissionList: apikeyPermissionList,
-		AdminKeys: false,
+		AdminKeys:      false,
 	})
 
 	auth2Router := mainRouter.PathPrefix("/").Subrouter()
@@ -268,7 +268,7 @@ func setupRouter() *mux.Router {
 		authorizer = &middleware.Authenticate{}
 		authorizer.Add(&auth.APIKeyAuth{
 			PermissionList: apikeyAdminPermissionList,
-			AdminKeys: true,
+			AdminKeys:      true,
 		})
 
 		mgmtRouter := mainRouter.PathPrefix("/admin").Subrouter()
