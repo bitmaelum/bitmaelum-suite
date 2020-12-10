@@ -30,6 +30,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
@@ -117,6 +118,23 @@ func NewCatalog(sender, recipient *address.Address, subject string) *Catalog {
 	// c.From.Name = info.Name
 	// c.From.ProofOfWork = info.Pow
 	// c.From.PublicKey = &info.PubKey
+
+	c.Subject = subject
+	c.To.Address = recipient.String()
+
+	return c
+}
+
+// NewServerCatalog initialises a new (server) catalog. This catalog has to be filled with more info, blocks and attachments
+func NewServerCatalog(sender, recipient *hash.Hash, subject string) *Catalog {
+	c := &Catalog{}
+
+	c.CreatedAt = time.Now()
+	c.From.Address = sender.String()
+	c.From.Name = "Postmaster"
+	c.From.Address = sender.String()
+	c.To.Address = recipient.String()
+	c.AddFlags("postmaster")
 
 	c.Subject = subject
 	c.To.Address = recipient.String()

@@ -20,8 +20,6 @@
 package message
 
 import (
-	"time"
-
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -34,7 +32,7 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 		return nil, err
 	}
 
-	header, err := generateHeader(addressing.Sender.Address, addressing.Recipient.Address)
+	header, err := generateHeader(addressing.Sender.Address.Hash(), addressing.Recipient.Address.Hash(), SignedByTypeOrigin)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +68,7 @@ func ServerCompose(sender, recipient hash.Hash, senderPrivKey *bmcrypto.PrivKey,
 		return nil, err
 	}
 
-	header, err := generateServerHeader(sender, recipient)
+	header, err := generateHeader(sender, recipient, SignedByTypeServer)
 	if err != nil {
 		return nil, err
 	}
@@ -100,22 +98,12 @@ func ServerCompose(sender, recipient hash.Hash, senderPrivKey *bmcrypto.PrivKey,
 }
 
 // Generate a header file based on the info provided
-func generateHeader(sender, recipient address.Address) (*Header, error) {
-	header := &Header{}
-
-	header.From.Addr = sender.Hash()
-	header.To.Addr = recipient.Hash()
-
-	return header, nil
-}
-
-// Generate a server header file based on the info provided
-func generateServerHeader(sender, recipient hash.Hash) (*Header, error) {
+func generateHeader(sender, recipient hash.Hash, origin SignedByType) (*Header, error) {
 	header := &Header{}
 
 	header.From.Addr = sender
 	header.To.Addr = recipient
-	header.From.SignedBy = SignedByTypeServer
+	header.From.SignedBy = origin
 
 	return header, nil
 }
@@ -125,44 +113,18 @@ func generateCatalog(sender, recipient address.Address, subject string, b, a []s
 	// Create a new catalog
 	cat := NewCatalog(&sender, &recipient, subject)
 
-	// Add blocks to catalog
-	blocks, err := GenerateBlocks(b)
-	if err != nil {
-		return nil, err
-	}
-	for _, block := range blocks {
-		err := cat.AddBlock(block)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Add attachments to catalog
-	attachments, err := GenerateAttachments(a)
-	if err != nil {
-		return nil, err
-	}
-	for _, attachment := range attachments {
-		err := cat.AddAttachment(attachment)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return cat, nil
+	return finishCatalog(cat, b, a)
 }
 
 // Generate a catalog filled with blocks and attachments
 func generateServerCatalog(sender, recipient hash.Hash, subject string, b, a []string) (*Catalog, error) {
 	// Create a new catalog
-	cat := &Catalog{}
-	cat.CreatedAt = time.Now()
-	cat.Subject = subject
-	cat.From.Name = "Postmaster"
-	cat.From.Address = sender.String()
-	cat.To.Address = recipient.String()
-	cat.AddFlags("postmaster")
+	cat := NewServerCatalog(&sender, &recipient, subject)
 
+	return finishCatalog(cat, b, a)
+}
+
+func finishCatalog(cat *Catalog, b, a []string) (*Catalog, error) {
 	// Add blocks to catalog
 	blocks, err := GenerateBlocks(b)
 	if err != nil {
