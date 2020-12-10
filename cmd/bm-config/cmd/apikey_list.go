@@ -30,7 +30,7 @@ var apiKeyListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all current keys",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("listing keys")
+		fmt.Println("listing keys not yet supported")
 	},
 }
 

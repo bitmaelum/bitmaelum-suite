@@ -35,7 +35,7 @@ import (
 var apiKeyCreateCmd = &cobra.Command{
 	Use:     "create",
 	Short:   "Create an (admin) management key for remote management and tooling",
-	Example: "  apikeys --perms apikeys,invite --valid 3d --desc 'My api key'",
+	Example: "  apikeys --permissions apikeys,invite --valid 3d --desc 'My api key'",
 	Long: `This command will generate an management key that can be used to administer commands through the HTTPS server. By default this is disabled, 
 but can be enabled with the server.management.enabled flag in the server configuration file.
 
