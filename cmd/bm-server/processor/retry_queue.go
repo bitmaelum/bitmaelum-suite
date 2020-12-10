@@ -22,6 +22,11 @@ package processor
 import (
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/sirupsen/logrus"
 )
@@ -42,10 +47,16 @@ func ProcessRetryQueue(forceRetry bool) {
 	for _, info := range retryQueue {
 		if info.Retries > MaxRetries {
 			// @TODO: We should send a message back to the user?
+			logrus.Trace("Send a postmaster message")
+
+			// get the message header since we need the from address
+			msgHeader, _ := message.GetMessageHeader(message.SectionRetry, info.MsgID)
+
+			sendPostmasterMail(msgHeader.From.Addr, "Unable to deliver message", "The message with ID "+info.MsgID+" destinated to "+msgHeader.To.Addr.String()+" was unable to be delivered.")
 
 			// Message has been retried over 10 times. It's not gonna happen.
 			logrus.Errorf("Message %s stuck in retry queue for too long. Giving up.", info.MsgID)
-			err := message.RemoveMessage(message.SectionRetry, info.MsgID)
+			err = message.RemoveMessage(message.SectionRetry, info.MsgID)
 			if err != nil {
 				logrus.Warnf("Cannot remove message %s from the process queue.", info.MsgID)
 			}
@@ -118,4 +129,43 @@ func getNextRetryDuration(retries int) (d time.Duration) {
 	}
 
 	return
+}
+
+func sendPostmasterMail(to hash.Hash, subject string, body string) error {
+	// generate a hash from the server routingID to use it as from address
+	fromHash, _ := hash.NewFromHash(config.Routing.RoutingID)
+
+	// Fetch public key from routing
+	rs := container.Instance.GetResolveService()
+	addr, err := rs.ResolveAddress(to)
+	if err != nil {
+		logrus.Trace("Unable to resolve address : ", err)
+		return err
+	}
+
+	var blocks *[]string
+	tBlocks := make([]string, 0)
+	blocks = &tBlocks
+
+	// create the blocks of the message
+	*blocks = append(*blocks, "default,"+body)
+
+	// create the envelope
+	envelope, err := message.ServerCompose(*fromHash, to, &config.Routing.PrivateKey, &addr.PublicKey, subject, *blocks, nil)
+	if err != nil {
+		logrus.Trace("Unable to create postmaster envelope : ", err)
+		return err
+	}
+
+	// store message locally
+	msgID, err := message.StoreLocalMessage(envelope)
+	if err != nil {
+		logrus.Trace("Unable to store local message : ", err)
+		return err
+	}
+
+	// queue the message
+	QueueIncomingMessage(msgID)
+
+	return nil
 }
