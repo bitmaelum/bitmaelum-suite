@@ -22,6 +22,7 @@ package message
 // Functions for message that are uploaded from clients
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"path/filepath"
@@ -265,24 +266,24 @@ func MoveMessage(srcSection Section, targetSection Section, msgID string) error 
 }
 
 // StoreLocalMessage will store a message locally
-func StoreLocalMessage(header *Header, catalog io.Reader, blocks map[string]*io.Reader, attachments map[string]*io.Reader) (string, error) {
+func StoreLocalMessage(envelope *Envelope) (string, error) {
 	// create a uuid
 	msgID, _ := uuid.NewRandom()
 
 	// store the header
-	err := StoreHeader(msgID.String(), header)
+	err := StoreHeader(msgID.String(), envelope.Header)
 	if err != nil {
 		return "", err
 	}
 
 	// store the catalog
-	err = StoreCatalog(msgID.String(), catalog)
+	err = StoreCatalog(msgID.String(), bytes.NewReader(envelope.EncryptedCatalog))
 	if err != nil {
 		return "", err
 	}
 
 	// store the blocks
-	for id, r := range blocks {
+	for id, r := range envelope.BlockReaders {
 		err = StoreBlock(msgID.String(), id, *r)
 		if err != nil {
 			return "", err
@@ -290,7 +291,7 @@ func StoreLocalMessage(header *Header, catalog io.Reader, blocks map[string]*io.
 	}
 
 	// store the attachments
-	for id, r := range attachments {
+	for id, r := range envelope.AttachmentReaders {
 		err = StoreAttachment(msgID.String(), id, *r)
 		if err != nil {
 			return "", err

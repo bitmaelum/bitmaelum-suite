@@ -20,7 +20,6 @@
 package processor
 
 import (
-	"bytes"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
@@ -53,37 +52,7 @@ func ProcessRetryQueue(forceRetry bool) {
 			// get the message header since we need the from address
 			msgHeader, _ := message.GetMessageHeader(message.SectionRetry, info.MsgID)
 
-			// generate a hash from the server routingID to use it as from address
-			fromHash, _ := hash.NewFromHash(config.Routing.RoutingID)
-
-			// Fetch public key from routing
-			rs := container.Instance.GetResolveService()
-			addr, err := rs.ResolveAddress(msgHeader.From.Addr)
-			if err != nil {
-				logrus.Trace("Unable to resolve address : ", err)
-			} else {
-				var blocks *[]string
-				tBlocks := make([]string, 0)
-				blocks = &tBlocks
-
-				// create the blocks of the message
-				*blocks = append(*blocks, "default,The message with ID "+info.MsgID+" destinated to "+msgHeader.To.Addr.String()+" was unable to be delivered.")
-
-				// create the envelope
-				envelope, err := message.ServerCompose(*fromHash, msgHeader.From.Addr, &config.Routing.PrivateKey, &addr.PublicKey, "Unable to deliver message", *blocks, nil)
-				if err != nil {
-					logrus.Trace("Unable to create postmaster envelope : ", err)
-				} else {
-					// store message locally
-					msgID, err := message.StoreLocalMessage(envelope.Header, bytes.NewReader(envelope.EncryptedCatalog), envelope.BlockReaders, envelope.AttachmentReaders)
-					if err != nil {
-						logrus.Trace("Unable to store local message : ", err)
-					} else {
-						// queue the message
-						QueueIncomingMessage(msgID)
-					}
-				}
-			}
+			sendPostmasterMail(msgHeader.From.Addr, "Unable to deliver message", "The message with ID "+info.MsgID+" destinated to "+msgHeader.To.Addr.String()+" was unable to be delivered.")
 
 			// Message has been retried over 10 times. It's not gonna happen.
 			logrus.Errorf("Message %s stuck in retry queue for too long. Giving up.", info.MsgID)
@@ -160,4 +129,43 @@ func getNextRetryDuration(retries int) (d time.Duration) {
 	}
 
 	return
+}
+
+func sendPostmasterMail(to hash.Hash, subject string, body string) error {
+	// generate a hash from the server routingID to use it as from address
+	fromHash, _ := hash.NewFromHash(config.Routing.RoutingID)
+
+	// Fetch public key from routing
+	rs := container.Instance.GetResolveService()
+	addr, err := rs.ResolveAddress(to)
+	if err != nil {
+		logrus.Trace("Unable to resolve address : ", err)
+		return err
+	}
+
+	var blocks *[]string
+	tBlocks := make([]string, 0)
+	blocks = &tBlocks
+
+	// create the blocks of the message
+	*blocks = append(*blocks, "default,"+body)
+
+	// create the envelope
+	envelope, err := message.ServerCompose(*fromHash, to, &config.Routing.PrivateKey, &addr.PublicKey, subject, *blocks, nil)
+	if err != nil {
+		logrus.Trace("Unable to create postmaster envelope : ", err)
+		return err
+	}
+
+	// store message locally
+	msgID, err := message.StoreLocalMessage(envelope)
+	if err != nil {
+		logrus.Trace("Unable to store local message : ", err)
+		return err
+	}
+
+	// queue the message
+	QueueIncomingMessage(msgID)
+
+	return nil
 }
