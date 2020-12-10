@@ -35,6 +35,8 @@ const (
 	SignedByTypeOrigin SignedByType = "origin"
 	// SignedByTypeAuthorized signed by an authorized private key (info stored in authorizedPublicKey)
 	SignedByTypeAuthorized SignedByType = "authorized"
+	// SignedByTypeServer signed by the server (postmaster)
+	SignedByTypeServer SignedByType = "server"
 )
 
 // Header represents a message header

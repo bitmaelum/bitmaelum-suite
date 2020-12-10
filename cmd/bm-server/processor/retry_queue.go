@@ -20,7 +20,13 @@
 package processor
 
 import (
+	"bytes"
 	"time"
+
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/sirupsen/logrus"
@@ -42,10 +48,46 @@ func ProcessRetryQueue(forceRetry bool) {
 	for _, info := range retryQueue {
 		if info.Retries > MaxRetries {
 			// @TODO: We should send a message back to the user?
+			logrus.Trace("Send a postmaster message")
+
+			// get the message header since we need the from address
+			msgHeader, _ := message.GetMessageHeader(message.SectionRetry, info.MsgID)
+
+			// generate a hash from the server routingID to use it as from address
+			fromHash, _ := hash.NewFromHash(config.Routing.RoutingID)
+
+			// Fetch public key from routing
+			rs := container.Instance.GetResolveService()
+			addr, err := rs.ResolveAddress(msgHeader.From.Addr)
+			if err != nil {
+				logrus.Trace("Unable to resolve address : ", err)
+			} else {
+				var blocks *[]string
+				tBlocks := make([]string, 0)
+				blocks = &tBlocks
+
+				// create the blocks of the message
+				*blocks = append(*blocks, "default,The message with ID "+info.MsgID+" destinated to "+msgHeader.To.Addr.String()+" was unable to be delivered.")
+
+				// create the envelope
+				envelope, err := message.ServerCompose(*fromHash, msgHeader.From.Addr, &config.Routing.PrivateKey, &addr.PublicKey, "Unable to deliver message", *blocks, nil)
+				if err != nil {
+					logrus.Trace("Unable to create postmaster envelope : ", err)
+				} else {
+					// store message locally
+					msgID, err := message.StoreLocalMessage(envelope.Header, bytes.NewReader(envelope.EncryptedCatalog), envelope.BlockReaders, envelope.AttachmentReaders)
+					if err != nil {
+						logrus.Trace("Unable to store local message : ", err)
+					} else {
+						// queue the message
+						QueueIncomingMessage(msgID)
+					}
+				}
+			}
 
 			// Message has been retried over 10 times. It's not gonna happen.
 			logrus.Errorf("Message %s stuck in retry queue for too long. Giving up.", info.MsgID)
-			err := message.RemoveMessage(message.SectionRetry, info.MsgID)
+			err = message.RemoveMessage(message.SectionProcessing, info.MsgID)
 			if err != nil {
 				logrus.Warnf("Cannot remove message %s from the process queue.", info.MsgID)
 			}

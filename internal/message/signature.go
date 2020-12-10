@@ -55,6 +55,11 @@ func SignServerHeader(header *Header) error {
 
 // VerifyServerHeader will verify a server signature from a message header. This can be used to proof the origin of the message
 func VerifyServerHeader(header Header) bool {
+	// If sent from the server there is no server signature
+	if header.From.SignedBy == SignedByTypeServer {
+		return true
+	}
+
 	// Fetch public key from routing
 	rs := container.Instance.GetResolveService()
 	addr, err := rs.ResolveAddress(header.From.Addr)
@@ -115,11 +120,25 @@ func SignClientHeader(header *Header, privKey bmcrypto.PrivKey) error {
 
 // VerifyClientHeader will verify a client signature from a message header. This can be used to proof the origin of the message
 func VerifyClientHeader(header Header) bool {
-	// Fetch public key from routing
-	rs := container.Instance.GetResolveService()
-	addr, err := rs.ResolveAddress(header.From.Addr)
-	if err != nil {
-		return false
+	var signedByPublicKey bmcrypto.PubKey
+
+	if header.From.SignedBy == SignedByTypeServer {
+		// Resolve the routing to fetch the public key since the From Addr is the routing ID
+		rs := container.Instance.GetResolveService()
+		routing, err := rs.ResolveRouting(header.From.Addr.String())
+		if err != nil {
+			return false
+		}
+
+		signedByPublicKey = routing.PublicKey
+	} else {
+		// Fetch public key from routing
+		rs := container.Instance.GetResolveService()
+		addr, err := rs.ResolveAddress(header.From.Addr)
+		if err != nil {
+			return false
+		}
+		signedByPublicKey = addr.PublicKey
 	}
 
 	// No header at all
@@ -143,25 +162,24 @@ func VerifyClientHeader(header Header) bool {
 	h := sha256.Sum256(data)
 
 	// If we have sent an authorized key key, we need to validate this first
-	pubKey := addr.PublicKey
 	if header.From.SignedBy == SignedByTypeAuthorized {
-		pubKey = *header.AuthorizedBy.PublicKey
-
 		// Verify our authorized key
 		msg := hash.New(header.AuthorizedBy.PublicKey.String())
 		sig, err := base64.StdEncoding.DecodeString(header.AuthorizedBy.Signature)
 		if err != nil {
 			return false
 		}
-		ok, err := bmcrypto.Verify(addr.PublicKey, msg.Byte(), sig)
+		ok, err := bmcrypto.Verify(signedByPublicKey, msg.Byte(), sig)
 		if err != nil || !ok {
 			// Cannot validate the authorized key
 			return false
 		}
+
+		signedByPublicKey = *header.AuthorizedBy.PublicKey
 	}
 
 	// Verify signature
-	ok, err := bmcrypto.Verify(pubKey, h[:], []byte(targetSignature))
+	ok, err := bmcrypto.Verify(signedByPublicKey, h[:], []byte(targetSignature))
 	if err != nil {
 		return false
 	}

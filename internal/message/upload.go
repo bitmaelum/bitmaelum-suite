@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/google/uuid"
 	"github.com/spf13/afero"
 )
 
@@ -261,4 +262,41 @@ func MoveMessage(srcSection Section, targetSection Section, msgID string) error 
 	}
 
 	return fs.Rename(p1, p2)
+}
+
+// StoreLocalMessage will store a message locally
+func StoreLocalMessage(header *Header, catalog io.Reader, blocks map[string]*io.Reader, attachments map[string]*io.Reader) (string, error) {
+	// create a uuid
+	msgID, _ := uuid.NewRandom()
+
+	// store the header
+	err := StoreHeader(msgID.String(), header)
+	if err != nil {
+		return "", err
+	}
+
+	// store the catalog
+	err = StoreCatalog(msgID.String(), catalog)
+	if err != nil {
+		return "", err
+	}
+
+	// store the blocks
+	for id, r := range blocks {
+		err = StoreBlock(msgID.String(), id, *r)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// store the attachments
+	for id, r := range attachments {
+		err = StoreAttachment(msgID.String(), id, *r)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// return the msgID
+	return msgID.String(), nil
 }

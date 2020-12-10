@@ -20,7 +20,11 @@
 package message
 
 import (
+	"time"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // Compose will create a new message and places it inside an envelope. This can be used for actual sending the message
@@ -59,6 +63,42 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 	return envelope, nil
 }
 
+// ServerCompose will create a new (server) message and places it inside an envelope.
+func ServerCompose(sender, recipient hash.Hash, senderPrivKey *bmcrypto.PrivKey, recipientPublicKey *bmcrypto.PubKey, subject string, b, a []string) (*Envelope, error) {
+	cat, err := generateServerCatalog(sender, recipient, subject, b, a)
+	if err != nil {
+		return nil, err
+	}
+
+	header, err := generateServerHeader(sender, recipient)
+	if err != nil {
+		return nil, err
+	}
+
+	envelope, err := NewEnvelope()
+	if err != nil {
+		return nil, err
+	}
+
+	err = envelope.AddCatalog(cat)
+	if err != nil {
+		return nil, err
+	}
+
+	err = envelope.AddHeader(header)
+	if err != nil {
+		return nil, err
+	}
+
+	// Close the envelope for sending
+	err = envelope.CloseAndEncrypt(senderPrivKey, recipientPublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return envelope, nil
+}
+
 // Generate a header file based on the info provided
 func generateHeader(sender, recipient address.Address) (*Header, error) {
 	header := &Header{}
@@ -69,10 +109,59 @@ func generateHeader(sender, recipient address.Address) (*Header, error) {
 	return header, nil
 }
 
+// Generate a server header file based on the info provided
+func generateServerHeader(sender, recipient hash.Hash) (*Header, error) {
+	header := &Header{}
+
+	header.From.Addr = sender
+	header.To.Addr = recipient
+	header.From.SignedBy = SignedByTypeServer
+
+	return header, nil
+}
+
 // Generate a catalog filled with blocks and attachments
 func generateCatalog(sender, recipient address.Address, subject string, b, a []string) (*Catalog, error) {
 	// Create a new catalog
 	cat := NewCatalog(&sender, &recipient, subject)
+
+	// Add blocks to catalog
+	blocks, err := GenerateBlocks(b)
+	if err != nil {
+		return nil, err
+	}
+	for _, block := range blocks {
+		err := cat.AddBlock(block)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Add attachments to catalog
+	attachments, err := GenerateAttachments(a)
+	if err != nil {
+		return nil, err
+	}
+	for _, attachment := range attachments {
+		err := cat.AddAttachment(attachment)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return cat, nil
+}
+
+// Generate a catalog filled with blocks and attachments
+func generateServerCatalog(sender, recipient hash.Hash, subject string, b, a []string) (*Catalog, error) {
+	// Create a new catalog
+	cat := &Catalog{}
+	cat.CreatedAt = time.Now()
+	cat.Subject = subject
+	cat.From.Name = "Postmaster"
+	cat.From.Address = sender.String()
+	cat.To.Address = recipient.String()
+	cat.AddFlags("postmaster")
 
 	// Add blocks to catalog
 	blocks, err := GenerateBlocks(b)
