@@ -21,7 +21,6 @@ package handlers
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -37,7 +36,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 )
@@ -161,8 +159,8 @@ func queryMessages(client *api.API, info *vault.AccountInfo, boxID, msgID string
 				Header:  &msg.Header,
 				Catalog: msg.Catalog,
 
-				GenerateBlockReader:      generateAPIBlockReader(client, info.Address.Hash()),
-				GenerateAttachmentReader: generateAPIAttachmentReader(client, info.Address.Hash()),
+				GenerateBlockReader:      client.GenerateAPIBlockReader(info.Address.Hash()),
+				GenerateAttachmentReader: client.GenerateAPIAttachmentReader(info.Address.Hash()),
 			}
 
 			ret = append(ret, em)
@@ -170,28 +168,6 @@ func queryMessages(client *api.API, info *vault.AccountInfo, boxID, msgID string
 	}
 
 	return ret
-}
-
-func generateAPIBlockReader(client *api.API, addr hash.Hash) func(boxID, messageID, blockID string) io.Reader {
-	return func(boxID, messageID, blockID string) io.Reader {
-		block, err := client.GetMessageBlock(addr, boxID, messageID, blockID)
-		if err != nil {
-			return bytes.NewReader([]byte{})
-		}
-
-		return bytes.NewReader(block)
-	}
-}
-
-func generateAPIAttachmentReader(client *api.API, addr hash.Hash) func(boxID, messageID, attachmentID string) io.Reader {
-	return func(boxID, messageID, attachmentID string) io.Reader {
-		r, err := client.GetMessageAttachment(addr, boxID, messageID, attachmentID)
-		if err != nil {
-			return bytes.NewReader([]byte{})
-		}
-
-		return r
-	}
 }
 
 func getQueryMode(boxID string, msgID string, since time.Time) string {

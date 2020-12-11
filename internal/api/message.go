@@ -20,6 +20,7 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
@@ -79,4 +80,26 @@ func (api *API) GetMessageAttachment(addr hash.Hash, box, messageID, attachmentI
 	}
 
 	return r, nil
+}
+
+func (api *API) GenerateAPIBlockReader(addr hash.Hash) func(boxID, messageID, blockID string) io.Reader {
+	return func(boxID, messageID, blockID string) io.Reader {
+		block, err := api.GetMessageBlock(addr, boxID, messageID, blockID)
+		if err != nil {
+			return bytes.NewReader([]byte{})
+		}
+
+		return bytes.NewReader(block)
+	}
+}
+
+func (api *API) GenerateAPIAttachmentReader(addr hash.Hash) func(boxID, messageID, attachmentID string) io.Reader {
+	return func(boxID, messageID, attachmentID string) io.Reader {
+		r, err := api.GetMessageAttachment(addr, boxID, messageID, attachmentID)
+		if err != nil {
+			return bytes.NewReader([]byte{})
+		}
+
+		return r
+	}
 }

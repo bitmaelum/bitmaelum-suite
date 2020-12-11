@@ -21,12 +21,14 @@ package cmd
 
 import (
 	"errors"
+	"io/ioutil"
 	"os"
 	"strconv"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
@@ -55,16 +57,66 @@ var messageCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		output.JSONOut(msg)
+		dMsg, err := msg.Decrypt(info.PrivKey)
+		if err != nil {
+			output.JSONErrorStrOut("cannot decrypt message")
+			os.Exit(1)
+		}
+
+
+		out := output.JSONT{
+			"header": dMsg.Header,
+			"catalog": dMsg.Catalog,
+			"blocks": []output.JSONT{},
+		}
+
+		for _, b := range dMsg.Catalog.Blocks {
+			buf, err := ioutil.ReadAll(dMsg.BlockReaders[b.ID])
+			if err != nil {
+				continue
+			}
+
+			out["blocks"] = append(out["blocks"].([]output.JSONT), output.JSONT{
+				"info": output.JSONT{
+					"id": b.ID,
+					"compression": b.Compression,
+					"checksum": b.Checksum,
+					"encoding": b.Encoding,
+					"size": b.Size,
+					"type": b.Type,
+				},
+				"content": string(buf),
+			})
+		}
+
+		output.JSONOut(out)
 	},
 }
 
-func findMessageInBoxes(msgID string, client *api.API, info *vault.AccountInfo, boxes []api.MailboxListBox) (*api.Message, error) {
+func findMessageInBoxes(msgID string, client *api.API, info *vault.AccountInfo, boxes []api.MailboxListBox) (*message.EncryptedMessage, error) {
 	for _, mb := range boxes {
 		for _, id := range mb.Messages {
-			if id == msgID {
-				return client.GetMessage(info.Address.Hash(), strconv.Itoa(mb.ID), id)
+			if id != msgID {
+				continue
 			}
+
+
+			msg, err := client.GetMessage(info.Address.Hash(), strconv.Itoa(mb.ID), id)
+			if err != nil {
+				return nil, err
+			}
+
+			em := message.EncryptedMessage{
+				BoxID:   strconv.Itoa(mb.ID),
+				ID:      msg.ID,
+				Header:  &msg.Header,
+				Catalog: msg.Catalog,
+
+				GenerateBlockReader:      client.GenerateAPIBlockReader(info.Address.Hash()),
+				GenerateAttachmentReader: client.GenerateAPIAttachmentReader(info.Address.Hash()),
+			}
+
+			return &em, nil
 		}
 	}
 
