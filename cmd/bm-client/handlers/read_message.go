@@ -37,16 +37,10 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 )
-
-type messageEntryType struct {
-	Box     string
-	ID      string
-	Header  message.Header
-	Catalog message.Catalog
-}
 
 // ReadMessages will read a specific message blocks
 func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string, since time.Time) {
@@ -57,11 +51,11 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 
 	// generate a message list of all messages we want do display
 	fmt.Print("* Fetching messages from remote server(s)...")
-	entryList := queryMessageEntries(client, info, box, messageID, since)
+	messageList := queryMessages(client, info, box, messageID, since)
 	idx := 0
 	fmt.Println("")
 
-	if len(entryList) == 0 {
+	if len(messageList) == 0 {
 		fmt.Println("*  No messages found to read.")
 		return
 	}
@@ -70,60 +64,64 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 
 	// iterate list until we quit
 	for !done {
+		decryptedMsg, err := messageList[idx].Decrypt(info.PrivKey)
+		if err != nil {
+			fmt.Println("Cannot decrypt message: ", err)
+		} else {
+			displayMessage(*decryptedMsg)
+		}
 
-		displayMessage(client, info, entryList[idx])
+		done = parseCommands(&idx, messageList, decryptedMsg)
+	}
+}
 
-		for {
+func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMsg *message.DecryptedMessage) bool {
+	for {
+		// Build command string
+		var cmds []string
 
-			// Build command string
-			cmds := []string{}
+		if *idx < len(messageList)-1 {
+			cmds = append(cmds, "View (N)ext")
+		}
+		if *idx > 0 {
+			cmds = append(cmds, "View (P)revious")
+		}
+		if decryptedMsg != nil && len(decryptedMsg.AttachmentReaders) > 0 {
+			cmds = append(cmds, "(S)ave attachments")
+		}
+		cmds = append(cmds, "(Q)uit")
 
-			// display text based on current item
-			if idx < len(entryList)-1 {
-				cmds = append(cmds, "View (N)ext")
-			}
-			if idx > 0 {
-				cmds = append(cmds, "View (P)revious")
-			}
-			if len(entryList[idx].Catalog.Attachments) > 0 {
-				cmds = append(cmds, "(S)ave attachments")
-			}
-			cmds = append(cmds, "(Q)uit")
+		if len(messageList) > 1 {
+			fmt.Printf("(%d/%d): %s > ", *idx+1, len(messageList), strings.Join(cmds, ", "))
+		} else {
+			return true
+		}
 
-			if len(entryList) > 1 {
-				fmt.Printf("(%d/%d): %s > ", idx+1, len(entryList), strings.Join(cmds, ", "))
-			} else {
-				done = true
-				break
-			}
+		// Read and parse entry
+		reader := bufio.NewReader(os.Stdin)
+		ch, _ := reader.ReadByte()
+		ch = strings.ToUpper(string(ch))[0]
 
-			// Read and parse entry
-			reader := bufio.NewReader(os.Stdin)
-
-			ch, _ := reader.ReadByte()
-			ch = strings.ToUpper(string(ch))[0]
-
-			if ch == 'P' && idx > 0 {
-				idx--
-				break
-			}
-			if ch == 'N' && idx < len(entryList)-1 {
-				idx++
-				break
-			}
-			if ch == 'S' {
-				saveAttachments(client, info, entryList[idx])
-			}
-			if ch == 'Q' {
-				done = true
-				break
-			}
+		// Process commands
+		if ch == 'P' && *idx > 0 {
+			*idx--
+			return false
+		}
+		if ch == 'N' && *idx < len(messageList)-1 {
+			*idx++
+			return false
+		}
+		if ch == 'S' && decryptedMsg != nil {
+			saveAttachments(*decryptedMsg)
+		}
+		if ch == 'Q' {
+			return true
 		}
 	}
 }
 
-func queryMessageEntries(client *api.API, info *vault.AccountInfo, boxID, msgID string, since time.Time) []messageEntryType {
-	ret := []messageEntryType{}
+func queryMessages(client *api.API, info *vault.AccountInfo, boxID, msgID string, since time.Time) []message.EncryptedMessage {
+	var ret []message.EncryptedMessage
 
 	// All 4 modes (box, msgid, since and all) are squished inside one single iteration loop. A bit more complex code, but
 	// we don't need to duplicate the code 4 times over with just minor tweaks
@@ -157,43 +155,43 @@ func queryMessageEntries(client *api.API, info *vault.AccountInfo, boxID, msgID 
 				continue
 			}
 
-			catalog, err := decryptCatalog(info, msg)
-			if err != nil {
-				continue
+			em := message.EncryptedMessage{
+				BoxID:   strconv.Itoa(box.ID),
+				ID:      msg.ID,
+				Header:  &msg.Header,
+				Catalog: msg.Catalog,
+
+				GenerateBlockReader:      generateAPIBlockReader(client, info.Address.Hash()),
+				GenerateAttachmentReader: generateAPIAttachmentReader(client, info.Address.Hash()),
 			}
 
-			ret = append(ret, messageEntryType{
-				ID:      msg.ID,
-				Box:     strconv.Itoa(box.ID),
-				Header:  msg.Header,
-				Catalog: *catalog,
-			})
+			ret = append(ret, em)
 		}
 	}
 
 	return ret
 }
 
-// decrypt
-func decryptCatalog(info *vault.AccountInfo, msg api.MailboxMessagesMessage) (*message.Catalog, error) {
-	key, err := bmcrypto.Decrypt(info.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
-	if err != nil {
-		return nil, err
-	}
+func generateAPIBlockReader(client *api.API, addr hash.Hash) func(boxID, messageID, blockID string) io.Reader {
+	return func(boxID, messageID, blockID string) io.Reader {
+		block, err := client.GetMessageBlock(addr, boxID, messageID, blockID)
+		if err != nil {
+			return bytes.NewReader([]byte{})
+		}
 
-	// Verify the clientSignature
-	if !message.VerifyClientHeader(msg.Header) {
-		return nil, errors.New("invalid client signature")
+		return bytes.NewReader(block)
 	}
+}
 
-	// Decrypt the catalog
-	catalog := &message.Catalog{}
-	err = bmcrypto.CatalogDecrypt(key, msg.Catalog, catalog)
-	if err != nil {
-		return nil, errors.New("cannot decrypt")
+func generateAPIAttachmentReader(client *api.API, addr hash.Hash) func(boxID, messageID, attachmentID string) io.Reader {
+	return func(boxID, messageID, attachmentID string) io.Reader {
+		r, err := client.GetMessageAttachment(addr, boxID, messageID, attachmentID)
+		if err != nil {
+			return bytes.NewReader([]byte{})
+		}
+
+		return r
 	}
-
-	return catalog, nil
 }
 
 func getQueryMode(boxID string, msgID string, since time.Time) string {
@@ -212,51 +210,33 @@ func getQueryMode(boxID string, msgID string, since time.Time) string {
 	return "all"
 }
 
-func displayMessage(client *api.API, info *vault.AccountInfo, entry messageEntryType) {
+func displayMessage(msg message.DecryptedMessage) {
 	fmt.Printf("--------------------------------------------------------\n")
-	fmt.Printf("From       : %s <%s>\n", entry.Catalog.From.Name, entry.Catalog.From.Address)
-	fmt.Printf("To         : %s <%s>\n", entry.Catalog.To.Name, entry.Catalog.To.Address)
-	fmt.Printf("Subject    : %s\n", entry.Catalog.Subject)
+	fmt.Printf("From       : %s <%s>\n", msg.Catalog.From.Name, msg.Catalog.From.Address)
+	fmt.Printf("To         : %s <%s>\n", msg.Catalog.To.Name, msg.Catalog.To.Address)
+	fmt.Printf("Subject    : %s\n", msg.Catalog.Subject)
 	fmt.Printf("\n")
-	fmt.Printf("Msg ID     : %s\n", entry.ID)
-	fmt.Printf("Created at : %s\n", entry.Catalog.CreatedAt)
-	fmt.Printf("ThreadID   : %s\n", entry.Catalog.ThreadID)
-	fmt.Printf("Flags      : %s\n", entry.Catalog.Flags)
-	fmt.Printf("Labels     : %s\n", entry.Catalog.Labels)
+	fmt.Printf("Msg ID     : %s\n", msg.ID)
+	fmt.Printf("Created at : %s\n", msg.Catalog.CreatedAt)
+	fmt.Printf("ThreadID   : %s\n", msg.Catalog.ThreadID)
+	fmt.Printf("Flags      : %s\n", msg.Catalog.Flags)
+	fmt.Printf("Labels     : %s\n", msg.Catalog.Labels)
 	fmt.Println("--------------------------------------------------------")
-	for idx, b := range entry.Catalog.Blocks {
+	for idx, b := range msg.Catalog.Blocks {
 		fmt.Printf("Block %02d: %-20s %8s\n", idx, b.Type, datasize.ByteSize(b.Size))
 		fmt.Printf("\n")
 
-		data, err := client.GetMessageBlock(info.Address.Hash(), entry.Box, entry.ID, b.ID)
-		if err != nil {
-			continue
-		}
-		bb := bytes.NewBuffer(data)
-
-		r, err := bmcrypto.GetAesDecryptorReader(b.IV, b.Key, bb)
-		if err != nil {
-			panic(err)
-		}
-
-		if b.Compression == "zlib" {
-			r, err = message.ZlibDecompress(r)
-			if err != nil {
-				fmt.Printf("error while creating zlib reader %s\n", err)
-				panic(err)
-			}
-		}
-
-		content, err := ioutil.ReadAll(r)
+		content, err := ioutil.ReadAll(b.Reader)
 		if err != nil {
 			logrus.Fatal(err)
 		}
 
 		fmt.Println(string(content))
 	}
-	if len(entry.Catalog.Attachments) > 0 {
+
+	if len(msg.Catalog.Attachments) > 0 {
 		fmt.Println("--------------------------------------------------------")
-		for idx, a := range entry.Catalog.Attachments {
+		for idx, a := range msg.Catalog.Attachments {
 			fmt.Printf("Attachment %02d: %30s %8d %s\n", idx, a.FileName, datasize.ByteSize(a.Size), a.MimeType)
 		}
 	}
@@ -264,14 +244,9 @@ func displayMessage(client *api.API, info *vault.AccountInfo, entry messageEntry
 }
 
 // save attachments
-func saveAttachments(client *api.API, info *vault.AccountInfo, entry messageEntryType) {
-	for _, att := range entry.Catalog.Attachments {
-		attReader, err := client.GetMessageAttachment(info.Address.Hash(), entry.Box, entry.ID, att.ID)
-		if err != nil {
-			continue
-		}
-
-		err = saveAttachment(att, attReader)
+func saveAttachments(msg message.DecryptedMessage) {
+	for _, att := range msg.Catalog.Attachments {
+		err := saveAttachment(att)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -279,9 +254,13 @@ func saveAttachments(client *api.API, info *vault.AccountInfo, entry messageEntr
 }
 
 // saveAttachment will save the given attachment to disk
-func saveAttachment(att message.AttachmentType, ar io.ReadCloser) error {
+func saveAttachment(att message.AttachmentType) error {
 	defer func() {
-		_ = ar.Close()
+		// Close stream if it's closeable
+		_, ok := att.Reader.(io.Closer)
+		if ok {
+			_ = att.Reader.(io.Closer).Close()
+		}
 	}()
 
 	_, ok := os.Stat(att.FileName)
@@ -290,7 +269,7 @@ func saveAttachment(att message.AttachmentType, ar io.ReadCloser) error {
 		return errors.New("cannot write to file")
 	}
 
-	r, err := bmcrypto.GetAesDecryptorReader(att.IV, att.Key, ar)
+	r, err := bmcrypto.GetAesDecryptorReader(att.IV, att.Key, att.Reader)
 	if err != nil {
 		fmt.Printf("cannot create decryptor to %s: %s\n", att.FileName, err)
 		return err
@@ -300,14 +279,6 @@ func saveAttachment(att message.AttachmentType, ar io.ReadCloser) error {
 	if err != nil {
 		fmt.Printf("cannot open file %s: %s\n", att.FileName, err)
 		return err
-	}
-
-	if att.Compression == "zlib" {
-		r, err = message.ZlibDecompress(r)
-		if err != nil {
-			fmt.Printf("error while creating zlib reader %s: %s\n", att.FileName, err)
-			return err
-		}
 	}
 
 	n, err := io.Copy(f, r)

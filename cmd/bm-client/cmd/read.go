@@ -97,7 +97,7 @@ func init() {
 	rAccount = readCmd.Flags().StringP("account", "a", "", "Account")
 
 	rBox = readCmd.Flags().StringP("box", "b", "", "Box to fetch")
-	rMessageID = readCmd.Flags().StringP("message", "m", "", "Message ID")
+	rMessageID = readCmd.Flags().String("id", "", "Message ID")
 	rNew = readCmd.Flags().BoolP("new", "n", false, "Read new messages only")
 	rSince = readCmd.Flags().StringP("since", "s", "", "Read messages since the specific duration (accepts 1y1w1d1h)")
 

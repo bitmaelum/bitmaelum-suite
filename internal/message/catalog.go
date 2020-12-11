@@ -214,7 +214,7 @@ func (c *Catalog) AddAttachment(entry Attachment) error {
 		return err
 	}
 
-	entry.Reader.Seek(0, io.SeekStart)
+	_, _ = entry.Reader.Seek(0, io.SeekStart)
 
 	id, err := uuid.NewRandom()
 	if err != nil {

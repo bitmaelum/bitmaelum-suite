@@ -49,7 +49,7 @@ var messageCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		msg, err := findMessageInBoxes(*messageId, client, info, mbl.Boxes)
+		msg, err := findMessageInBoxes(*messageID, client, info, mbl.Boxes)
 		if err != nil {
 			output.JSONErrorOut(err)
 			os.Exit(1)
@@ -59,10 +59,10 @@ var messageCmd = &cobra.Command{
 	},
 }
 
-func findMessageInBoxes(msgId string, client *api.API, info *vault.AccountInfo, boxes []api.MailboxListBox) (*api.Message, error) {
+func findMessageInBoxes(msgID string, client *api.API, info *vault.AccountInfo, boxes []api.MailboxListBox) (*api.Message, error) {
 	for _, mb := range boxes {
 		for _, id := range mb.Messages {
-			if id == msgId {
+			if id == msgID {
 				return client.GetMessage(info.Address.Hash(), strconv.Itoa(mb.ID), id)
 			}
 		}
@@ -73,14 +73,14 @@ func findMessageInBoxes(msgId string, client *api.API, info *vault.AccountInfo, 
 
 var (
 	messageAccount *string
-	messageId      *string
+	messageID      *string
 )
 
 func init() {
 	rootCmd.AddCommand(messageCmd)
 
 	messageAccount = messageCmd.Flags().StringP("account", "a", "", "Account")
-	messageId = messageCmd.Flags().StringP("message", "m", "", "Message ID")
+	messageID = messageCmd.Flags().String("id", "", "Message ID")
 	_ = messageCmd.MarkFlagRequired("account")
 	_ = messageCmd.MarkFlagRequired("message")
 }
