@@ -22,11 +22,13 @@ package message
 // Functions for message that are uploaded from clients
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"path/filepath"
 	"regexp"
 
+	"github.com/google/uuid"
 	"github.com/spf13/afero"
 )
 
@@ -261,4 +263,41 @@ func MoveMessage(srcSection Section, targetSection Section, msgID string) error 
 	}
 
 	return fs.Rename(p1, p2)
+}
+
+// StoreLocalMessage will store a message locally
+func StoreLocalMessage(envelope *Envelope) (string, error) {
+	// create a uuid
+	msgID, _ := uuid.NewRandom()
+
+	// store the header
+	err := StoreHeader(msgID.String(), envelope.Header)
+	if err != nil {
+		return "", err
+	}
+
+	// store the catalog
+	err = StoreCatalog(msgID.String(), bytes.NewReader(envelope.EncryptedCatalog))
+	if err != nil {
+		return "", err
+	}
+
+	// store the blocks
+	for id, r := range envelope.BlockReaders {
+		err = StoreBlock(msgID.String(), id, *r)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// store the attachments
+	for id, r := range envelope.AttachmentReaders {
+		err = StoreAttachment(msgID.String(), id, *r)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// return the msgID
+	return msgID.String(), nil
 }
