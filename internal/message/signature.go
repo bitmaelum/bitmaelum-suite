@@ -161,20 +161,22 @@ func VerifyClientHeader(header Header) bool {
 	}
 	h := sha256.Sum256(data)
 
-	// If we have sent an authorized key key, we need to validate this first
+	// If we have sent an authorized key, we need to validate this first
 	if header.From.SignedBy == SignedByTypeAuthorized {
-		// Verify our authorized key
 		msg := hash.New(header.AuthorizedBy.PublicKey.String())
 		sig, err := base64.StdEncoding.DecodeString(header.AuthorizedBy.Signature)
 		if err != nil {
 			return false
 		}
+
+		// Test if the authorized public key is actually signed by the authorizer
 		ok, err := bmcrypto.Verify(signedByPublicKey, msg.Byte(), sig)
 		if err != nil || !ok {
 			// Cannot validate the authorized key
 			return false
 		}
 
+		// The signature is correct (the key is signed by the originating authorizer). The can safely be used for verifying our client signature
 		signedByPublicKey = *header.AuthorizedBy.PublicKey
 	}
 
