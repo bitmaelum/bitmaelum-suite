@@ -69,53 +69,56 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 			displayMessage(*decryptedMsg)
 		}
 
-		done = parseCommands(&idx, messageList, decryptedMsg)
+		parseDone := false
+		for !parseDone {
+			parseDone = parseCommands(&idx, messageList, decryptedMsg)
+		}
 	}
 }
 
 func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMsg *message.DecryptedMessage) bool {
-	for {
-		// Build command string
-		var cmds []string
+	// Build command string
+	var cmds []string
 
-		if *idx < len(messageList)-1 {
-			cmds = append(cmds, "View (N)ext")
-		}
-		if *idx > 0 {
-			cmds = append(cmds, "View (P)revious")
-		}
-		if decryptedMsg != nil && len(decryptedMsg.AttachmentReaders) > 0 {
-			cmds = append(cmds, "(S)ave attachments")
-		}
-		cmds = append(cmds, "(Q)uit")
-
-		if len(messageList) > 1 {
-			fmt.Printf("(%d/%d): %s > ", *idx+1, len(messageList), strings.Join(cmds, ", "))
-		} else {
-			return true
-		}
-
-		// Read and parse entry
-		reader := bufio.NewReader(os.Stdin)
-		ch, _ := reader.ReadByte()
-		ch = strings.ToUpper(string(ch))[0]
-
-		// Process commands
-		if ch == 'P' && *idx > 0 {
-			*idx--
-			return false
-		}
-		if ch == 'N' && *idx < len(messageList)-1 {
-			*idx++
-			return false
-		}
-		if ch == 'S' && decryptedMsg != nil {
-			saveAttachments(*decryptedMsg)
-		}
-		if ch == 'Q' {
-			return true
-		}
+	if *idx < len(messageList)-1 {
+		cmds = append(cmds, "View (N)ext")
 	}
+	if *idx > 0 {
+		cmds = append(cmds, "View (P)revious")
+	}
+	if decryptedMsg != nil && len(decryptedMsg.AttachmentReaders) > 0 {
+		cmds = append(cmds, "(S)ave attachments")
+	}
+	cmds = append(cmds, "(Q)uit")
+
+	if len(messageList) > 1 {
+		fmt.Printf("(%d/%d): %s > ", *idx+1, len(messageList), strings.Join(cmds, ", "))
+	} else {
+		return true
+	}
+
+	// Read and parse entry
+	reader := bufio.NewReader(os.Stdin)
+	ch, _ := reader.ReadByte()
+	ch = strings.ToUpper(string(ch))[0]
+
+	// Process commands
+	if ch == 'P' && *idx > 0 {
+		*idx--
+		return false
+	}
+	if ch == 'N' && *idx < len(messageList)-1 {
+		*idx++
+		return false
+	}
+	if ch == 'S' && decryptedMsg != nil {
+		saveAttachments(*decryptedMsg)
+	}
+	if ch == 'Q' {
+		return true
+	}
+
+	return false
 }
 
 func queryMessages(client *api.API, info *vault.AccountInfo, boxID, msgID string, since time.Time) []message.EncryptedMessage {
