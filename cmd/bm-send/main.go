@@ -46,7 +46,8 @@ type options struct {
 	Message     string   `short:"m" long:"message" description:"Default message"`
 	Blocks      []string `short:"b" long:"block" description:"Body block"`
 	Attachments []string `short:"a" long:"attachment" description:"Attachment"`
-	Resolver    string   `short:"r" long:"resolver" description:"Resolver" env:"BITMAELUM_SEND_RESOLVER_URL" default:"resolver.bitmaelum.com"`
+	Resolver    string   `short:"r" long:"resolver" description:"Resolver" env:"BITMAELUM_SEND_RESOLVER_URL" default:"https://resolver.bitmaelum.com"`
+	Verbose     bool     `short:"v" long:"verbose" description:"Display server communication"`
 }
 
 var opts options
@@ -90,6 +91,9 @@ func main() {
 	// Set resolve settings, as we don't use a client configuration file
 	config.Client.Resolver.Remote.Enabled = true
 	config.Client.Resolver.Remote.URL = opts.Resolver
+	if opts.Verbose {
+		config.Client.Server.DebugHTTP = true
+	}
 
 	// Fetch both sender and recipient info
 	svc := container.Instance.GetResolveService()
