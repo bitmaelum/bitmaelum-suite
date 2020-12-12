@@ -63,11 +63,10 @@ var messageCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-
 		out := output.JSONT{
-			"header": dMsg.Header,
+			"header":  dMsg.Header,
 			"catalog": dMsg.Catalog,
-			"blocks": []output.JSONT{},
+			"blocks":  []output.JSONT{},
 		}
 
 		for _, b := range dMsg.Catalog.Blocks {
@@ -78,12 +77,12 @@ var messageCmd = &cobra.Command{
 
 			out["blocks"] = append(out["blocks"].([]output.JSONT), output.JSONT{
 				"info": output.JSONT{
-					"id": b.ID,
+					"id":          b.ID,
 					"compression": b.Compression,
-					"checksum": b.Checksum,
-					"encoding": b.Encoding,
-					"size": b.Size,
-					"type": b.Type,
+					"checksum":    b.Checksum,
+					"encoding":    b.Encoding,
+					"size":        b.Size,
+					"type":        b.Type,
 				},
 				"content": string(buf),
 			})
@@ -99,7 +98,6 @@ func findMessageInBoxes(msgID string, client *api.API, info *vault.AccountInfo, 
 			if id != msgID {
 				continue
 			}
-
 
 			msg, err := client.GetMessage(info.Address.Hash(), strconv.Itoa(mb.ID), id)
 			if err != nil {

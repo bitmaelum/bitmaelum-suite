@@ -109,8 +109,9 @@ func TestOnbehalfAuthJwtAuthenticate(t *testing.T) {
 	req.Header.Set("authorization", "bearer "+token4)
 	checkFalse(t, &a, req)
 
+	// Just on the same time
 	req.Header.Set("authorization", "bearer "+token5)
-	checkFalse(t, &a, req)
+	checkTrue(t, &a, req, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab")
 
 	req.Header.Set("authorization", "bearer "+token6)
 	checkTrue(t, &a, req, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab")

@@ -94,7 +94,6 @@ func TestVerifyServerHeader(t *testing.T) {
 	ok = VerifyServerHeader(*header)
 	assert.False(t, ok)
 
-
 	// Test for true if the message is server-side
 	header.From.SignedBy = SignedByTypeServer
 	header.Signatures.Server = "Zm9vYmFy"
@@ -174,7 +173,6 @@ func TestVerifyClientHeaderWithServerSignature(t *testing.T) {
 	ok := VerifyClientHeader(*header)
 	assert.True(t, ok)
 
-
 	// Correct sig, wrong routing ID
 	header.From.Addr = "44444444"
 	header.Signatures.Client = "ubDv8GYLeuXjo1PToraDvj5BSKRqahpjep+nwbHNXpo013pov9vPyd9sqxtWyT2H5x9ffkkvzAvFMnk8hOc6AA=="
@@ -206,7 +204,6 @@ func TestVerifyClientHeaderWithOnbehalfSignature(t *testing.T) {
 
 	ok := VerifyClientHeader(*header)
 	assert.True(t, ok)
-
 
 	// Incorrect authorizer signature
 	header.AuthorizedBy.Signature = "Zm9vYmFy"
@@ -247,7 +244,6 @@ func setupClient() *bmcrypto.PrivKey {
 		Hash:        "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
 	}
 	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
-
 
 	// Note: our sender uses key3
 	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-ed25519-3.json")
