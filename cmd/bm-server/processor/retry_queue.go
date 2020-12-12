@@ -20,6 +20,7 @@
 package processor
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
@@ -131,27 +132,29 @@ func getNextRetryDuration(retries int) (d time.Duration) {
 	return
 }
 
-func sendPostmasterMail(to hash.Hash, subject string, body string) error {
+func sendPostmasterMail(toHash hash.Hash, subject string, body string) error {
 	// generate a hash from the server routingID to use it as from address
 	fromHash, _ := hash.NewFromHash(config.Routing.RoutingID)
 
 	// Fetch public key from routing
 	rs := container.Instance.GetResolveService()
-	addr, err := rs.ResolveAddress(to)
+	addr, err := rs.ResolveAddress(toHash)
 	if err != nil {
 		logrus.Trace("Unable to resolve address : ", err)
 		return err
 	}
 
-	var blocks *[]string
-	tBlocks := make([]string, 0)
-	blocks = &tBlocks
+	// Setup addressing
+	senderName := fmt.Sprintf("postmaster at %s", config.Server.Server.Hostname)
 
-	// create the blocks of the message
-	*blocks = append(*blocks, "default,"+body)
+	addressing := message.NewAddressing(message.SignedByTypeServer)
+	addressing.AddSender(nil, fromHash, senderName, &config.Routing.PrivateKey, "host")
+	addressing.AddRecipient(nil, &toHash, &addr.PublicKey)
 
-	// create the envelope
-	envelope, err := message.ServerCompose(*fromHash, to, &config.Routing.PrivateKey, &addr.PublicKey, subject, *blocks, nil)
+	// Create a single block with our body
+	blocks := []string{"default," + body}
+
+	envelope, err := message.Compose(addressing, subject, blocks, nil)
 	if err != nil {
 		logrus.Trace("Unable to create postmaster envelope : ", err)
 		return err

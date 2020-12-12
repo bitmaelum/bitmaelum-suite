@@ -26,6 +26,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 var errAlreadyClosed = errors.New("envelope is already closed and encrypted")
@@ -45,36 +46,42 @@ type Envelope struct {
 // Addressing is the configuration for an envelope (@TODO: bad naming)
 type Addressing struct {
 	Sender struct {
-		Address address.Address   // Address of the sender
+		Address *address.Address  // BitMaelum Address
+		Hash    *hash.Hash        // Optional address hash if the address is unknown (for instance, server messages). If the address is set, this field is ignored
+		Name    string            // Additional name (if known)
 		PrivKey *bmcrypto.PrivKey // Private key of the sender
 		Host    string            // Host address of the sender mail server
 	}
 	Recipient struct {
-		Address address.Address  // Address of the recipient
-		PubKey  *bmcrypto.PubKey // Public key of the recipient
+		Address *address.Address // BitMaelum Address
+		Hash    *hash.Hash       // Optional address hash if the address is unknown (for instance, server messages). If the address is set, this field is ignored
+		PubKey  *bmcrypto.PubKey // Public key
+	}
+	Type SignedByType // Type of the addressing
+}
+
+// NewAddressing sets up a new addressing struct that can be used for composing and sending a message. Use the fluent builder
+// methods to populate the sender and the receiver
+func NewAddressing(signType SignedByType) Addressing {
+	return Addressing{
+		Type: signType,
 	}
 }
 
-// NewAddressing sets up a new addressing struct that can be used for composing and sending a message
-func NewAddressing(senderAddress address.Address, senderPrivKey *bmcrypto.PrivKey, host string, recipientAddress address.Address, recipientPubKey *bmcrypto.PubKey) Addressing {
-	return Addressing{
-		Sender: struct {
-			Address address.Address
-			PrivKey *bmcrypto.PrivKey
-			Host    string
-		}{
-			Address: senderAddress,
-			PrivKey: senderPrivKey,
-			Host:    host,
-		},
-		Recipient: struct {
-			Address address.Address
-			PubKey  *bmcrypto.PubKey
-		}{
-			Address: recipientAddress,
-			PubKey:  recipientPubKey,
-		},
-	}
+// AddSender will add sender information to the addressing
+func (a *Addressing) AddSender(addr *address.Address, h *hash.Hash, name string, key *bmcrypto.PrivKey, host string) {
+	a.Sender.Address = addr
+	a.Sender.Hash = h
+	a.Sender.Name = name
+	a.Sender.PrivKey = key
+	a.Sender.Host = host
+}
+
+// AddRecipient will add recipient information to the addressing
+func (a *Addressing) AddRecipient(addr *address.Address, h *hash.Hash, key *bmcrypto.PubKey) {
+	a.Recipient.Address = addr
+	a.Recipient.Hash = h
+	a.Recipient.PubKey = key
 }
 
 // NewEnvelope creates a new (open) envelope which is used for holding a complete message

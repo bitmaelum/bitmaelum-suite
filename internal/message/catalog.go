@@ -30,7 +30,6 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
@@ -84,7 +83,6 @@ type Catalog struct {
 	} `json:"from"`
 	To struct {
 		Address string `json:"address"` // Address of the recipient
-		Name    string `json:"name"`    // Name of the recipient
 	} `json:"to"`
 	CreatedAt time.Time `json:"created_at"` // Timestamp when the message was created
 	ThreadID  string    `json:"thread_id"`  // Thread ID (and parent ID) in case this message was send in a thread
@@ -110,34 +108,34 @@ type Block struct {
 }
 
 // NewCatalog initialises a new catalog. This catalog has to be filled with more info, blocks and attachments
-func NewCatalog(sender, recipient *address.Address, subject string) *Catalog {
-	c := &Catalog{}
+func NewCatalog(addr Addressing, subject string) *Catalog {
+	c := &Catalog{
+		CreatedAt: time.Now(),
+		Subject:   subject,
+	}
 
-	c.CreatedAt = time.Now()
-	c.From.Address = sender.String()
-	// c.From.Name = info.Name
-	// c.From.ProofOfWork = info.Pow
-	// c.From.PublicKey = &info.PubKey
+	// Use the address, or fall back to the given hash
+	if addr.Sender.Address != nil {
+		c.From.Address = addr.Sender.Address.String()
+	} else {
+		c.From.Address = addr.Sender.Hash.String()
+	}
+	c.From.Name = addr.Sender.Name
 
-	c.Subject = subject
-	c.To.Address = recipient.String()
+	// Use the address, or fall back to the given hash
+	if addr.Recipient.Address != nil {
+		c.To.Address = addr.Recipient.Address.String()
+	} else {
+		c.To.Address = addr.Recipient.Hash.String()
+	}
 
 	return c
 }
 
 // NewServerCatalog initialises a new (server) catalog. This catalog has to be filled with more info, blocks and attachments
-func NewServerCatalog(sender, recipient *hash.Hash, subject string) *Catalog {
-	c := &Catalog{}
-
-	c.CreatedAt = time.Now()
-	c.From.Address = sender.String()
-	c.From.Name = "Postmaster"
-	c.From.Address = sender.String()
-	c.To.Address = recipient.String()
+func NewServerCatalog(addr Addressing, subject string) *Catalog {
+	c := NewCatalog(addr, subject)
 	c.AddFlags("postmaster")
-
-	c.Subject = subject
-	c.To.Address = recipient.String()
 
 	return c
 }
@@ -153,9 +151,8 @@ func (c *Catalog) AddLabels(labels ...string) {
 }
 
 // SetToAddress sets the address of the recipient
-func (c *Catalog) SetToAddress(addr address.Address, fullName string) {
+func (c *Catalog) SetToAddress(addr address.Address) {
 	c.To.Address = addr.String()
-	c.To.Name = fullName
 }
 
 // AddBlock adds a block to a catalog

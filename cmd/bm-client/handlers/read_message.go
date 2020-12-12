@@ -192,7 +192,7 @@ func getQueryMode(boxID string, msgID string, since time.Time) string {
 func displayMessage(msg message.DecryptedMessage) {
 	fmt.Printf("--------------------------------------------------------\n")
 	fmt.Printf("From       : %s <%s>\n", msg.Catalog.From.Name, msg.Catalog.From.Address)
-	fmt.Printf("To         : %s <%s>\n", msg.Catalog.To.Name, msg.Catalog.To.Address)
+	fmt.Printf("To         : %s\n", msg.Catalog.To.Address)
 	fmt.Printf("Subject    : %s\n", msg.Catalog.Subject)
 	fmt.Printf("\n")
 	fmt.Printf("Msg ID     : %s\n", msg.ID)

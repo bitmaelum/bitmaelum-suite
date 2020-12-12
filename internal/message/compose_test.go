@@ -34,13 +34,10 @@ func TestCompose(t *testing.T) {
 	sender, _ := address.NewAddress("from!")
 	recipient, _ := address.NewAddress("too!")
 
-	addressing := NewAddressing(
-		*sender,
-		privKey,
-		"12345678",
-		*recipient,
-		pubKey,
-	)
+	// Setup addressing
+	addressing := NewAddressing(SignedByTypeOrigin)
+	addressing.AddSender(sender, nil, "", privKey, "12345678")
+	addressing.AddRecipient(recipient, nil, pubKey)
 
 	env, err := Compose(addressing, "foobar", []string{"default,foobar"}, nil)
 	assert.NoError(t, err)

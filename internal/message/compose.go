@@ -20,29 +20,54 @@
 package message
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // Compose will create a new message and places it inside an envelope. This can be used for actual sending the message
 func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, error) {
-	cat, err := generateCatalog(addressing.Sender.Address, addressing.Recipient.Address, subject, b, a)
-	if err != nil {
-		return nil, err
+	var (
+		senderPrivKey   *bmcrypto.PrivKey
+		recipientPubKey *bmcrypto.PubKey
+		cat             *Catalog
+	)
+
+	switch addressing.Type {
+	case SignedByTypeOrigin:
+		senderPrivKey = addressing.Sender.PrivKey
+		recipientPubKey = addressing.Recipient.PubKey
+		cat = NewCatalog(addressing, subject)
+
+	case SignedByTypeServer:
+		senderPrivKey = addressing.Sender.PrivKey
+		recipientPubKey = addressing.Recipient.PubKey
+		cat = NewServerCatalog(addressing, subject)
+
+	case SignedByTypeAuthorized:
+		senderPrivKey = addressing.Sender.PrivKey
+		recipientPubKey = addressing.Recipient.PubKey
+		cat = NewCatalog(addressing, subject)
 	}
 
-	header, err := generateHeader(addressing.Sender.Address.Hash(), addressing.Recipient.Address.Hash(), SignedByTypeOrigin)
-	if err != nil {
-		return nil, err
-	}
-
+	// Create envelope
 	envelope, err := NewEnvelope()
 	if err != nil {
 		return nil, err
 	}
 
+	// Add catalog
+	cat, err = finishCatalog(cat, b, a)
+	if err != nil {
+		return nil, err
+	}
+
 	err = envelope.AddCatalog(cat)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add header
+	header, err := generateHeader(addressing.Sender.Address.Hash(), addressing.Recipient.Address.Hash(), addressing.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -53,43 +78,7 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 	}
 
 	// Close the envelope for sending
-	err = envelope.CloseAndEncrypt(addressing.Sender.PrivKey, addressing.Recipient.PubKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return envelope, nil
-}
-
-// ServerCompose will create a new (server) message and places it inside an envelope.
-func ServerCompose(sender, recipient hash.Hash, senderPrivKey *bmcrypto.PrivKey, recipientPublicKey *bmcrypto.PubKey, subject string, b, a []string) (*Envelope, error) {
-	cat, err := generateServerCatalog(sender, recipient, subject, b, a)
-	if err != nil {
-		return nil, err
-	}
-
-	header, err := generateHeader(sender, recipient, SignedByTypeServer)
-	if err != nil {
-		return nil, err
-	}
-
-	envelope, err := NewEnvelope()
-	if err != nil {
-		return nil, err
-	}
-
-	err = envelope.AddCatalog(cat)
-	if err != nil {
-		return nil, err
-	}
-
-	err = envelope.AddHeader(header)
-	if err != nil {
-		return nil, err
-	}
-
-	// Close the envelope for sending
-	err = envelope.CloseAndEncrypt(senderPrivKey, recipientPublicKey)
+	err = envelope.CloseAndEncrypt(senderPrivKey, recipientPubKey)
 	if err != nil {
 		return nil, err
 	}
@@ -106,22 +95,6 @@ func generateHeader(sender, recipient hash.Hash, origin SignedByType) (*Header, 
 	header.From.SignedBy = origin
 
 	return header, nil
-}
-
-// Generate a catalog filled with blocks and attachments
-func generateCatalog(sender, recipient address.Address, subject string, b, a []string) (*Catalog, error) {
-	// Create a new catalog
-	cat := NewCatalog(&sender, &recipient, subject)
-
-	return finishCatalog(cat, b, a)
-}
-
-// Generate a catalog filled with blocks and attachments
-func generateServerCatalog(sender, recipient hash.Hash, subject string, b, a []string) (*Catalog, error) {
-	// Create a new catalog
-	cat := NewServerCatalog(&sender, &recipient, subject)
-
-	return finishCatalog(cat, b, a)
 }
 
 func finishCatalog(cat *Catalog, b, a []string) (*Catalog, error) {

@@ -109,13 +109,9 @@ func main() {
 	}
 
 	// Setup addressing
-	addressing := message.NewAddressing(
-		*fromAddr,
-		privKey,
-		senderInfo.RoutingInfo.Routing,
-		*toAddr,
-		&recipientInfo.PublicKey,
-	)
+	addressing := message.NewAddressing(message.SignedByTypeOrigin)
+	addressing.AddSender(fromAddr, nil, "", privKey, senderInfo.RoutingInfo.Routing)
+	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 
 	// Compose mail
 	envelope, err := message.Compose(addressing, opts.Subject, opts.Blocks, opts.Attachments)

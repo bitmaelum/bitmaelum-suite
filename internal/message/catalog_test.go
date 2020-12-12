@@ -28,7 +28,9 @@ import (
 	"testing"
 	"time"
 
+	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
@@ -37,8 +39,26 @@ func TestCatalogNewCatalog(t *testing.T) {
 	c := genCatalog()
 
 	assert.Equal(t, "john!", c.From.Address)
+	assert.Equal(t, "john doe", c.From.Name)
 	assert.False(t, c.CreatedAt.Before(time.Now().Add(-1*time.Second)))
 	assert.Equal(t, "subject", c.Subject)
+
+
+	// Use the hash instead of an address
+	h := hash.New("foobar")
+	addrTo, _ := address.NewAddress("jane!")
+
+	privkey, pubkey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
+	addressing := NewAddressing(SignedByTypeOrigin)
+	addressing.AddSender(nil, &h, "john doe", privkey, "host.example")
+	addressing.AddRecipient(addrTo, nil, pubkey)
+
+	c = NewCatalog(addressing, "subject")
+	assert.Equal(t, "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2", c.From.Address)
+	assert.Equal(t, "john doe", c.From.Name)
+	assert.False(t, c.CreatedAt.Before(time.Now().Add(-1*time.Second)))
+	assert.Equal(t, "subject", c.Subject)
+
 }
 
 func TestCatalogAddFlags(t *testing.T) {
@@ -76,9 +96,8 @@ func TestCatalogSetToAddress(t *testing.T) {
 
 	addr, err := address.NewAddress("joe!")
 	assert.NoError(t, err)
-	c.SetToAddress(*addr, "Joe Doe")
+	c.SetToAddress(*addr)
 	assert.Equal(t, "joe!", c.To.Address)
-	assert.Equal(t, "Joe Doe", c.To.Name)
 }
 
 func TestCatalogAddAttachment(t *testing.T) {
@@ -196,5 +215,10 @@ func genCatalog() *Catalog {
 	addrFrom, _ := address.NewAddress("john!")
 	addrTo, _ := address.NewAddress("jane!")
 
-	return NewCatalog(addrFrom, addrTo, "subject")
+	privkey, pubkey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
+	addressing := NewAddressing(SignedByTypeOrigin)
+	addressing.AddSender(addrFrom, nil, "john doe", privkey, "host.example")
+	addressing.AddRecipient(addrTo, nil, pubkey)
+
+	return NewCatalog(addressing, "subject")
 }
