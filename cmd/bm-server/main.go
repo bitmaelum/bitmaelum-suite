@@ -206,6 +206,7 @@ func setupRouter() *mux.Router {
 	//
 	authorizer := &middleware.Authenticate{}
 	authorizer.Add(&auth.JwtAuth{})
+	authorizer.Add(&auth.OnBehalfJwtAuth{})
 
 	authRouter := mainRouter.PathPrefix("/").Subrouter()
 	authRouter.Use(logger.Middleware)

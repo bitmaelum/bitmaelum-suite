@@ -97,16 +97,8 @@ func checkOnBehalfToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) 
 
 		// If the token is not valid in time, we can fail directly
 		if err == api.ErrTokenTimeNotValid {
-			logrus.Trace("auth: no key found that validates the token")
+			logrus.Trace("auth: time not valid")
 			return nil, err
-		}
-
-		// @TODO: does this code is still valid after we checked times above
-
-		// check if expired
-		now := jwt.TimeFunc()
-		if now.After(key.Expires) {
-			continue
 		}
 
 		// All is good
