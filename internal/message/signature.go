@@ -88,6 +88,8 @@ func VerifyServerHeader(header Header) bool {
 
 // SignClientHeader will add a client signature to a message header. This can be used to proof the origin of the message
 func SignClientHeader(header *Header, privKey bmcrypto.PrivKey) error {
+
+
 	// Generate client hash
 	h, err := generateClientHash(header)
 	if err != nil {

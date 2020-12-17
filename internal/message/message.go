@@ -46,11 +46,6 @@ type DecryptedMessage struct {
 	AttachmentReaders map[string]io.Reader // Readers to the (decrypted and decompressed) attachments
 }
 
-// IsClientSignatureValid will return true if the client signature in the header is valid
-func (em *EncryptedMessage) IsClientSignatureValid() bool {
-	return VerifyClientHeader(*em.Header)
-}
-
 // Decrypt will decrypt the current encrypted message with the given public key and return a decrypted copy
 func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage, error) {
 	dm := DecryptedMessage{
@@ -60,7 +55,7 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 	}
 
 	// Check signature
-	if !em.IsClientSignatureValid() {
+	if !VerifyClientHeader(*em.Header) {
 		return nil, errors.New("invalid client signature")
 	}
 

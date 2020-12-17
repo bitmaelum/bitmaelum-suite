@@ -50,7 +50,6 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 	// generate a message list of all messages we want do display
 	fmt.Print("* Fetching messages from remote server(s)...")
 	messageList := queryMessages(client, info, box, messageID, since)
-	idx := 0
 	fmt.Println("")
 
 	if len(messageList) == 0 {
@@ -58,10 +57,11 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 		return
 	}
 
-	done := false
+	readDone := false
+	idx := 0
 
 	// iterate list until we quit
-	for !done {
+	for !readDone {
 		decryptedMsg, err := messageList[idx].Decrypt(info.PrivKey)
 		if err != nil {
 			fmt.Println("Cannot decrypt message: ", err)
@@ -71,12 +71,12 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 
 		parseDone := false
 		for !parseDone {
-			parseDone = parseCommands(&idx, messageList, decryptedMsg)
+			readDone, parseDone = parseCommands(&idx, messageList, decryptedMsg)
 		}
 	}
 }
 
-func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMsg *message.DecryptedMessage) bool {
+func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMsg *message.DecryptedMessage) (bool, bool) {
 	// Build command string
 	var cmds []string
 
@@ -94,7 +94,7 @@ func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMs
 	if len(messageList) > 1 {
 		fmt.Printf("(%d/%d): %s > ", *idx+1, len(messageList), strings.Join(cmds, ", "))
 	} else {
-		return true
+		return false, true
 	}
 
 	// Read and parse entry
@@ -105,20 +105,20 @@ func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMs
 	// Process commands
 	if ch == 'P' && *idx > 0 {
 		*idx--
-		return false
+		return false, true
 	}
 	if ch == 'N' && *idx < len(messageList)-1 {
 		*idx++
-		return false
+		return false, true
 	}
 	if ch == 'S' && decryptedMsg != nil {
 		saveAttachments(*decryptedMsg)
 	}
 	if ch == 'Q' {
-		return true
+		return true, true
 	}
 
-	return false
+	return false, false
 }
 
 func queryMessages(client *api.API, info *vault.AccountInfo, boxID, msgID string, since time.Time) []message.EncryptedMessage {
