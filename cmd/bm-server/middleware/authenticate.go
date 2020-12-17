@@ -34,21 +34,26 @@ type Authenticate struct {
 	Chain []Authenticator
 }
 
-type contextKey int
+// ContextKey is the type used in context
+type ContextKeyType int
+
+// Context keys
+const (
+	AuthorizationContext ContextKeyType = iota // Defines which authorization type is used
+	APIKeyContext                              // Used API key
+	AuthKeyContext                             // Used Auth key
+	ClaimsContext                              // Context key for fetching JWT claims
+	AddressContext                             // Context key for fetching the address from the JWT
+)
 
 // AuthStatus is the status that is returned by an authenticator
 type AuthStatus int
 
+// AuthorizationContext is a context key that defines the authorization method
 const (
-	// AuthorizationContext is a context key that defines the authorization method
-	AuthorizationContext contextKey = iota
-
-	// AuthStatusPass is returned when the authenticator cannot handle or doesn't care. Next authenticator is checked
-	AuthStatusPass AuthStatus = iota
-	// AuthStatusSuccess allows the request, no other authenticators are checked
-	AuthStatusSuccess
-	// AuthStatusFailure denies the request, no other authenticators are checked
-	AuthStatusFailure
+	AuthStatusPass    AuthStatus = iota // AuthStatusPass is returned when the authenticator cannot handle or doesn't care. Next authenticator is checked
+	AuthStatusSuccess                   // AuthStatusSuccess allows the request, no other authenticators are checked
+	AuthStatusFailure                   // AuthStatusFailure denies the request, no other authenticators are checked
 )
 
 // Authenticator allows you to use the struct in the multi-auth middleware

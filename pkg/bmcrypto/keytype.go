@@ -198,6 +198,10 @@ type PubKey struct {
 
 // String converts a key to "<type> <key> <description>"
 func (pk *PubKey) String() string {
+	if pk == nil {
+		return ""
+	}
+
 	s := fmt.Sprintf("%s %s %s", pk.Type.String(), pk.S, pk.Description)
 
 	return strings.TrimSpace(s)

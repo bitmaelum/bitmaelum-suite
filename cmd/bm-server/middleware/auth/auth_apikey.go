@@ -48,14 +48,6 @@ var (
 	errInvalidPermission     = errors.New("api keys need named routes")
 )
 
-type contextKey int
-
-const (
-	// APIKeyContext is a context key with the value the API key
-	APIKeyContext contextKey = iota
-	AuthKeyContext
-)
-
 // Authenticate will check if an API key matches the request
 func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (middleware.AuthStatus, context.Context, error) {
 	var haddr *hash.Hash = nil
@@ -83,7 +75,7 @@ func (a *APIKeyAuth) Authenticate(req *http.Request, route string) (middleware.A
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, APIKeyContext, k)
+	ctx = context.WithValue(ctx, middleware.APIKeyContext, k)
 
 	logrus.Trace("auth: checkApiKey success: ", err)
 	return middleware.AuthStatusSuccess, ctx, nil

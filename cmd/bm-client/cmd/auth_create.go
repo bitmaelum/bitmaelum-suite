@@ -57,6 +57,7 @@ var authCreateCmd = &cobra.Command{
 		}
 
 		logrus.Print("Created new authorized key")
+		logrus.Print("Token: ", tok)
 	},
 }
 

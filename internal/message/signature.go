@@ -77,14 +77,19 @@ func VerifyServerHeader(header Header) bool {
 	if err != nil {
 		return false
 	}
+
+	// Clear all the things that are not used for signing.
 	header.Signatures.Server = ""
+	header.Signatures.Client = ""
+	header.AuthorizedBy.PublicKey = nil
+	header.AuthorizedBy.Signature = ""
 
 	// Generate hash
 	data, err := json.Marshal(&header)
 	if err != nil {
 		return false
 	}
-		h := sha256.Sum256(data)
+	h := sha256.Sum256(data)
 
 	// Verify signature
 	ok, err := bmcrypto.Verify(addr.RoutingInfo.PublicKey, h[:], []byte(targetSignature))
