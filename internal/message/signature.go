@@ -23,7 +23,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
@@ -33,17 +32,11 @@ import (
 
 // SignServerHeader will add a server signature to a message header. This can be used to proof the origin of the message
 func SignServerHeader(header *Header) error {
-	// Already signed? Then skip
-	if len(header.Signatures.Server) > 0 {
-		return nil
-	}
-
-	data, err := json.Marshal(header)
+	h, err := generateServerHash(header)
 	if err != nil {
 		return err
 	}
 
-	h := sha256.Sum256(data)
 	sig, err := bmcrypto.Sign(config.Routing.PrivateKey, h[:])
 	if err != nil {
 		return err
@@ -72,27 +65,20 @@ func VerifyServerHeader(header Header) bool {
 		return false
 	}
 
-	// Store signature
+	// Generate server hash
+	h, err := generateServerHash(&header)
+	if err != nil {
+		return false
+	}
+
+	// Decode signature
 	targetSignature, err := base64.StdEncoding.DecodeString(header.Signatures.Server)
 	if err != nil {
 		return false
 	}
 
-	// Clear all the things that are not used for signing.
-	header.Signatures.Server = ""
-	header.Signatures.Client = ""
-	header.AuthorizedBy.PublicKey = nil
-	header.AuthorizedBy.Signature = ""
-
-	// Generate hash
-	data, err := json.Marshal(&header)
-	if err != nil {
-		return false
-	}
-	h := sha256.Sum256(data)
-
 	// Verify signature
-	ok, err := bmcrypto.Verify(addr.RoutingInfo.PublicKey, h[:], []byte(targetSignature))
+	ok, err := bmcrypto.Verify(addr.RoutingInfo.PublicKey, h, []byte(targetSignature))
 	if err != nil {
 		return false
 	}
@@ -102,19 +88,14 @@ func VerifyServerHeader(header Header) bool {
 
 // SignClientHeader will add a client signature to a message header. This can be used to proof the origin of the message
 func SignClientHeader(header *Header, privKey bmcrypto.PrivKey) error {
-	// Already signed? Then skip
-	if len(header.Signatures.Client) > 0 {
-		fmt.Println("already signed")
+	// Generate client hash
+	h, err := generateClientHash(header)
+	if err != nil {
 		return nil
 	}
 
-	data, err := json.Marshal(header)
-	if err != nil {
-		return err
-	}
-
-	h := sha256.Sum256(data)
-	sig, err := bmcrypto.Sign(privKey, h[:])
+	// Sign
+	sig, err := bmcrypto.Sign(privKey, h)
 	if err != nil {
 		return err
 	}
@@ -127,7 +108,13 @@ func SignClientHeader(header *Header, privKey bmcrypto.PrivKey) error {
 func VerifyClientHeader(header Header) bool {
 	var signedByPublicKey bmcrypto.PubKey
 
-	if header.From.SignedBy == SignedByTypeServer {
+	// No header at all
+	if len(header.Signatures.Client) == 0 {
+		return false
+	}
+
+	switch header.From.SignedBy {
+	case SignedByTypeServer:
 		// Resolve the routing to fetch the public key since the From Addr is the routing ID
 		rs := container.Instance.GetResolveService()
 		routing, err := rs.ResolveRouting(header.From.Addr.String())
@@ -136,7 +123,32 @@ func VerifyClientHeader(header Header) bool {
 		}
 
 		signedByPublicKey = routing.PublicKey
-	} else {
+
+	case SignedByTypeAuthorized:
+		// Fetch public key from routing
+		rs := container.Instance.GetResolveService()
+		addr, err := rs.ResolveAddress(header.From.Addr)
+		if err != nil {
+			return false
+		}
+
+		msg := hash.New(header.AuthorizedBy.PublicKey.String())
+		sig, err := base64.StdEncoding.DecodeString(header.AuthorizedBy.Signature)
+		if err != nil {
+			return false
+		}
+
+		// Test if the authorized public key is actually signed by the authorizer
+		ok, err := bmcrypto.Verify(addr.PublicKey, msg.Byte(), sig)
+		if err != nil || !ok {
+			// Cannot validate the authorized key
+			return false
+		}
+
+		// The signature is correct (the key is signed by the originating authorizer). The can safely be used for verifying our client signature
+		signedByPublicKey = *header.AuthorizedBy.PublicKey
+
+	default:
 		// Fetch public key from routing
 		rs := container.Instance.GetResolveService()
 		addr, err := rs.ResolveAddress(header.From.Addr)
@@ -146,43 +158,16 @@ func VerifyClientHeader(header Header) bool {
 		signedByPublicKey = addr.PublicKey
 	}
 
-	// No header at all
-	if len(header.Signatures.Client) == 0 {
-		return false
-	}
-
 	// Store signature
 	targetSignature, err := base64.StdEncoding.DecodeString(header.Signatures.Client)
 	if err != nil {
 		return false
 	}
-	header.Signatures.Server = ""
-	header.Signatures.Client = ""
 
-	// Generate hash
-	data, err := json.Marshal(&header)
+	// Generate client hash
+	h, err := generateClientHash(&header)
 	if err != nil {
 		return false
-	}
-	h := sha256.Sum256(data)
-
-	// If we have sent an authorized key, we need to validate this first
-	if header.From.SignedBy == SignedByTypeAuthorized {
-		msg := hash.New(header.AuthorizedBy.PublicKey.String())
-		sig, err := base64.StdEncoding.DecodeString(header.AuthorizedBy.Signature)
-		if err != nil {
-			return false
-		}
-
-		// Test if the authorized public key is actually signed by the authorizer
-		ok, err := bmcrypto.Verify(signedByPublicKey, msg.Byte(), sig)
-		if err != nil || !ok {
-			// Cannot validate the authorized key
-			return false
-		}
-
-		// The signature is correct (the key is signed by the originating authorizer). The can safely be used for verifying our client signature
-		signedByPublicKey = *header.AuthorizedBy.PublicKey
 	}
 
 	// Verify signature
@@ -192,4 +177,42 @@ func VerifyClientHeader(header Header) bool {
 	}
 
 	return ok
+}
+
+
+
+func generateServerHash(header *Header) ([]byte, error) {
+	h, err := generateClientHash(header)
+	if err != nil {
+		return nil, err
+	}
+
+	hdr := map[string]interface{}{
+		"client_hash": h,
+		"server_authorized_by": header.AuthorizedBy,
+	}
+
+	data, err := json.Marshal(hdr)
+	if err != nil {
+		return nil, err
+	}
+
+	h2 := sha256.Sum256(data)
+	return h2[:], nil
+}
+
+func generateClientHash(header *Header) ([]byte, error) {
+	hdr := map[string]interface{}{
+		"client_from":    header.From,
+		"client_to":      header.To,
+		"client_catalog": header.Catalog,
+	}
+
+	data, err := json.Marshal(hdr)
+	if err != nil {
+		return nil, err
+	}
+
+	h := sha256.Sum256(data)
+	return h[:], nil
 }
