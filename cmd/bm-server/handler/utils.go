@@ -20,13 +20,10 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/sirupsen/logrus"
 )
 
 // GetAPIKey returns the api key stored in the request context. returns nil when not found
@@ -46,12 +43,6 @@ func GetAuthKey(req *http.Request) *key.AuthKeyType {
 
 // IsAuthKeyAuthenticated returns true when the given request is authenticated by a auth key
 func IsAuthKeyAuthenticated(req *http.Request) bool {
-	logrus.Trace("cTX: ", req.Context())
-	spew.Dump(req.Context())
-	s := req.Context().Value(middleware.AuthorizationContext)
-	b := s == "*auth.OnBehalfJwtAuth"
-	fmt.Println("IsAuthkeyAuthenticated: ", b)
-	return b
-	// return req.Context().Value(middleware.AuthorizationContext) == "*auth.OnBehalfJwtAuth"
+	return req.Context().Value(middleware.AuthorizationContext) == "*auth.OnBehalfJwtAuth"
 }
 

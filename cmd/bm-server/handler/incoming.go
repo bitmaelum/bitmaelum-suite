@@ -62,13 +62,6 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Add a server signature to the header, so we know this server is the origin of the message
-	err = message.SignServerHeader(header)
-	if err != nil {
-		httputils.ErrorOut(w, http.StatusInternalServerError, "error while signing incoming message")
-		return
-	}
-
 	// If we are sending on behalf of another account, we need to add additional authorization information
 	if header.From.SignedBy == message.SignedByTypeAuthorized {
 		if t.AuthKey == "" {
@@ -85,6 +78,13 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 
 		header.AuthorizedBy.PublicKey = k.PublicKey
 		header.AuthorizedBy.Signature = k.Signature
+	}
+
+	// Add a server signature to the header, so we know this server is the origin of the message
+	err = message.SignServerHeader(header)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusInternalServerError, "error while signing incoming message")
+		return
 	}
 
 	// Save request
