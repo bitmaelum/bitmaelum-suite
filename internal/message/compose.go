@@ -41,12 +41,14 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 	case SignedByTypeServer:
 		senderPrivKey = addressing.Sender.PrivKey
 		recipientPubKey = addressing.Recipient.PubKey
-		cat = NewServerCatalog(addressing, subject)
+		cat = NewCatalog(addressing, subject)
+		cat.AddFlags("postmaster")
 
 	case SignedByTypeAuthorized:
 		senderPrivKey = addressing.Sender.PrivKey
 		recipientPubKey = addressing.Recipient.PubKey
 		cat = NewCatalog(addressing, subject)
+		cat.AddFlags("onbehalf")
 	}
 
 	// Create envelope

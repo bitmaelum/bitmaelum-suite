@@ -84,7 +84,7 @@ func VerifyServerHeader(header Header) bool {
 	if err != nil {
 		return false
 	}
-	h := sha256.Sum256(data)
+		h := sha256.Sum256(data)
 
 	// Verify signature
 	ok, err := bmcrypto.Verify(addr.RoutingInfo.PublicKey, h[:], []byte(targetSignature))

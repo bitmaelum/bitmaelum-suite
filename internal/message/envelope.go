@@ -57,6 +57,10 @@ type Addressing struct {
 		Hash    *hash.Hash       // Optional address hash if the address is unknown (for instance, server messages). If the address is set, this field is ignored
 		PubKey  *bmcrypto.PubKey // Public key
 	}
+	AuthorizedBy struct {
+		PubKey    *bmcrypto.PubKey // Public key of the authorized user
+		Signature string           // signature of the signed public key by the sender.address
+	}
 	Type SignedByType // Type of the addressing
 }
 
@@ -83,6 +87,13 @@ func (a *Addressing) AddRecipient(addr *address.Address, h *hash.Hash, key *bmcr
 	a.Recipient.Hash = h
 	a.Recipient.PubKey = key
 }
+
+// AddAuthorizedBy will add authorizedby information to the addressing
+func (a *Addressing) AddAuthorizedBy(sig string, key *bmcrypto.PubKey) {
+	a.AuthorizedBy.Signature = sig
+	a.AuthorizedBy.PubKey = key
+}
+
 
 // NewEnvelope creates a new (open) envelope which is used for holding a complete message
 func NewEnvelope() (*Envelope, error) {

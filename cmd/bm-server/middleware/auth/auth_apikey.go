@@ -53,6 +53,7 @@ type contextKey int
 const (
 	// APIKeyContext is a context key with the value the API key
 	APIKeyContext contextKey = iota
+	AuthKeyContext
 )
 
 // Authenticate will check if an API key matches the request

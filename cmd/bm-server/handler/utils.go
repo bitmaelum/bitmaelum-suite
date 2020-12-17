@@ -22,6 +22,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware/auth"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 )

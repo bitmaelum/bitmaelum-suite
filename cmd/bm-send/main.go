@@ -39,7 +39,7 @@ import (
 )
 
 type options struct {
-	PrivateKey  string   `short:"p" long:"private_key" description:"Private key" required:"true" env:"BITMAELUM_SEND_PRIVATE_KEY"`
+	PrivateKey  string   `long:"private-key" description:"Private key" required:"true" env:"BITMAELUM_SEND_PRIVATE_KEY"`
 	Subject     string   `short:"s" long:"subject" description:"Subject" required:"true"`
 	From        string   `short:"f" long:"from" description:"Sender" required:"true" env:"BITMAELUM_SEND_FROM"`
 	To          string   `short:"t" long:"to" description:"Recipient" required:"true"`
@@ -85,7 +85,7 @@ func main() {
 
 	// Set default message block if a message is specified
 	if opts.Message != "" {
-		opts.Blocks = append(opts.Blocks, "default:"+opts.Message)
+		opts.Blocks = append(opts.Blocks, "default,"+opts.Message)
 	}
 
 	// Set resolve settings, as we don't use a client configuration file
@@ -109,7 +109,7 @@ func main() {
 	}
 
 	// Setup addressing
-	addressing := message.NewAddressing(message.SignedByTypeOrigin)
+	addressing := message.NewAddressing(message.SignedByTypeAuthorized)
 	addressing.AddSender(fromAddr, nil, "", privKey, senderInfo.RoutingInfo.Routing)
 	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 

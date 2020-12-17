@@ -27,10 +27,10 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/vtolstov/jwt-go"
 )
 
 // OnBehalfJwtAuth is a middleware that automatically verifies given JWT token
@@ -51,7 +51,7 @@ func (mw *OnBehalfJwtAuth) Authenticate(req *http.Request, _ string) (middleware
 	}
 
 	// Check token
-	token, err := checkOnBehalfToken(req.Header.Get("Authorization"), *haddr)
+	k, err := checkOnBehalfToken(req.Header.Get("Authorization"), *haddr)
 	if err != nil {
 		if err == api.ErrTokenTimeNotValid {
 			logrus.Trace("auth: invalid time for token: ", err)
@@ -63,14 +63,13 @@ func (mw *OnBehalfJwtAuth) Authenticate(req *http.Request, _ string) (middleware
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, ClaimsContext, token.Claims)
-	ctx = context.WithValue(ctx, AddressContext, token.Claims.(*jwt.StandardClaims).Subject)
+	ctx = context.WithValue(ctx, AuthKeyContext, k)
 
 	return middleware.AuthStatusSuccess, ctx, nil
 }
 
 // Check if the authorization contains a valid JWT token for the given address
-func checkOnBehalfToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) {
+func checkOnBehalfToken(bearerToken string, addr hash.Hash) (*key.AuthKeyType, error) {
 	if bearerToken == "" {
 		logrus.Trace("auth: empty auth string")
 		return nil, api.ErrTokenNotValid
@@ -89,8 +88,8 @@ func checkOnBehalfToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) 
 		return nil, api.ErrTokenNotValid
 	}
 
-	for _, key := range keys {
-		token, err := api.ValidateJWTToken(tokenString, addr, *key.PublicKey)
+	for _, k := range keys {
+		_, err := api.ValidateJWTToken(tokenString, addr, *k.PublicKey)
 		if err != nil {
 			continue
 		}
@@ -102,7 +101,7 @@ func checkOnBehalfToken(bearerToken string, addr hash.Hash) (*jwt.Token, error) 
 		}
 
 		// All is good
-		return token, nil
+		return &k, nil
 	}
 
 	logrus.Trace("auth: no key found that validates the token")

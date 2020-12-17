@@ -132,14 +132,6 @@ func NewCatalog(addr Addressing, subject string) *Catalog {
 	return c
 }
 
-// NewServerCatalog initialises a new (server) catalog. This catalog has to be filled with more info, blocks and attachments
-func NewServerCatalog(addr Addressing, subject string) *Catalog {
-	c := NewCatalog(addr, subject)
-	c.AddFlags("postmaster")
-
-	return c
-}
-
 // AddFlags adds extra flags to the message
 func (c *Catalog) AddFlags(flags ...string) {
 	c.Flags = append(c.Flags, flags...)

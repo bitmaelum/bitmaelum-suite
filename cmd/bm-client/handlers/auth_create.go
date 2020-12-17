@@ -34,7 +34,7 @@ import (
 var errNoRoutingID = errors.New("cannot find routing ID for this account")
 
 // CreateAuthorizedKey creates a new authorized key
-func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) error {
+func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) (string, error) {
 	var expiry = time.Time{}
 	if validUntil > 0 {
 		expiry = time.Now().Add(validUntil)
@@ -44,13 +44,13 @@ func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, va
 	k := key.NewAuthKey(info.Address.Hash(), targetKey, "", expiry, desc)
 	err := k.Sign(info.PrivKey)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Send key
 	client, err := getAPIClient(info)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	return client.CreateAuthKey(info.Address.Hash(), k)
