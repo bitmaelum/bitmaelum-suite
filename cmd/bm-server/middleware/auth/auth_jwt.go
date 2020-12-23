@@ -36,7 +36,6 @@ import (
 // JwtAuth is a middleware that automatically verifies given JWT token
 type JwtAuth struct{}
 
-
 // Authenticate will check if an API key matches the request
 func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (middleware.AuthStatus, context.Context, error) {
 	// Check if the address actually exists

@@ -154,7 +154,7 @@ func checkFalse(t *testing.T, a middleware.Authenticator, req *http.Request) {
 func checkTrue(t *testing.T, a middleware.Authenticator, req *http.Request, hash string) {
 	status, ctx, err := a.Authenticate(req, "")
 	assert.Equal(t, status, middleware.AuthStatusSuccess)
-	assert.Equal(t, hash, ctx.Value(AddressContext))
+	assert.Equal(t, hash, ctx.Value(middleware.AddressContext))
 	assert.NoError(t, err)
 }
 
@@ -171,7 +171,7 @@ func checkKey(t *testing.T, a APIKeyAuth, shouldPass bool, token, addr, routeNam
 		assert.NotNil(t, ctx)
 		assert.NoError(t, err)
 		// Check token in context
-		k := ctx.Value(APIKeyContext).(*key.APIKeyType)
+		k := ctx.Value(middleware.APIKeyContext).(*key.APIKeyType)
 		assert.Equal(t, token, k.ID)
 		assert.Equal(t, hash.New(addr).String(), k.AddressHash.String())
 		return

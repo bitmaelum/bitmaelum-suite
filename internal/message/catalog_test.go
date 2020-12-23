@@ -43,7 +43,6 @@ func TestCatalogNewCatalog(t *testing.T) {
 	assert.False(t, c.CreatedAt.Before(time.Now().Add(-1*time.Second)))
 	assert.Equal(t, "subject", c.Subject)
 
-
 	// Use the hash instead of an address
 	h := hash.New("foobar")
 	addrTo, _ := address.NewAddress("jane!")

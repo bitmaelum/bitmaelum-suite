@@ -94,7 +94,6 @@ func (a *Addressing) AddAuthorizedBy(sig string, key *bmcrypto.PubKey) {
 	a.AuthorizedBy.PubKey = key
 }
 
-
 // NewEnvelope creates a new (open) envelope which is used for holding a complete message
 func NewEnvelope() (*Envelope, error) {
 	var err error

@@ -45,4 +45,3 @@ func GetAuthKey(req *http.Request) *key.AuthKeyType {
 func IsAuthKeyAuthenticated(req *http.Request) bool {
 	return req.Context().Value(middleware.AuthorizationContext) == "*auth.OnBehalfJwtAuth"
 }
-

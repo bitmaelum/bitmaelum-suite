@@ -34,7 +34,7 @@ type Authenticate struct {
 	Chain []Authenticator
 }
 
-// ContextKey is the type used in context
+// ContextKeyType is the type used in context
 type ContextKeyType int
 
 // Context keys

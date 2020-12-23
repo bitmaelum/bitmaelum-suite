@@ -64,6 +64,7 @@ func (mw *OnBehalfJwtAuth) Authenticate(req *http.Request, _ string) (middleware
 
 	ctx := req.Context()
 	ctx = context.WithValue(ctx, middleware.AuthKeyContext, k)
+	ctx = context.WithValue(ctx, middleware.AddressContext, haddr.String())
 
 	return middleware.AuthStatusSuccess, ctx, nil
 }
