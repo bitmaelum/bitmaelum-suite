@@ -69,8 +69,8 @@ var messageCmd = &cobra.Command{
 			"blocks":  []output.JSONT{},
 		}
 
-		for _, b := range dMsg.Catalog.Blocks {
-			buf, err := ioutil.ReadAll(dMsg.BlockReaders[b.ID])
+		for idx, b := range dMsg.Catalog.Blocks {
+			buf, err := ioutil.ReadAll(dMsg.Catalog.Blocks[idx].Reader)
 			if err != nil {
 				continue
 			}

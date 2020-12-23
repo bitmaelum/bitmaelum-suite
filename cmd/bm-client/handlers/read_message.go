@@ -86,7 +86,7 @@ func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMs
 	if *idx > 0 {
 		cmds = append(cmds, "View (P)revious")
 	}
-	if decryptedMsg != nil && len(decryptedMsg.AttachmentReaders) > 0 {
+	if decryptedMsg != nil && len(decryptedMsg.Catalog.Attachments) > 0 {
 		cmds = append(cmds, "(S)ave attachments")
 	}
 	cmds = append(cmds, "(Q)uit")
@@ -205,7 +205,7 @@ func displayMessage(msg message.DecryptedMessage) {
 		fmt.Printf("Block %02d: %-20s %8s\n", idx, b.Type, datasize.ByteSize(b.Size))
 		fmt.Printf("\n")
 
-		content, err := ioutil.ReadAll(msg.BlockReaders[b.ID])
+		content, err := ioutil.ReadAll(msg.Catalog.Blocks[idx].Reader)
 		if err != nil {
 			logrus.Fatal(err)
 		}

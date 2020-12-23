@@ -39,19 +39,15 @@ type EncryptedMessage struct {
 
 // DecryptedMessage is a message that is fully decrypted and can be read
 type DecryptedMessage struct {
-	ID                string               // Optional message ID (not part of the message)
-	Header            *Header              // Message header (same as in the encrypted message)
-	Catalog           *Catalog             // Decrypted catalog
-	BlockReaders      map[string]io.Reader // Readers to the (decrypted and decompressed) blocks
-	AttachmentReaders map[string]io.Reader // Readers to the (decrypted and decompressed) attachments
+	ID      string   // Optional message ID (not part of the message)
+	Header  *Header  // Message header (same as in the encrypted message)
+	Catalog *Catalog // Decrypted catalog
 }
 
 // Decrypt will decrypt the current encrypted message with the given public key and return a decrypted copy
 func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage, error) {
 	dm := DecryptedMessage{
-		Header:            em.Header,
-		BlockReaders:      make(map[string]io.Reader),
-		AttachmentReaders: make(map[string]io.Reader),
+		Header: em.Header,
 	}
 
 	// Check signature
@@ -78,7 +74,6 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 		if err != nil {
 			continue
 		}
-		dm.BlockReaders[blk.ID] = r
 		dm.Catalog.Blocks[idx].Reader = r
 	}
 
@@ -88,7 +83,6 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 		if err != nil {
 			continue
 		}
-		dm.AttachmentReaders[att.ID] = r
 		dm.Catalog.Attachments[idx].Reader = r
 	}
 
