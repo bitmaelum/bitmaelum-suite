@@ -156,6 +156,8 @@ func queryMessages(client *api.API, info *vault.AccountInfo, boxID, msgID string
 				continue
 			}
 
+			msg := msg
+
 			em := message.EncryptedMessage{
 				BoxID:   strconv.Itoa(box.ID),
 				ID:      msg.ID,
