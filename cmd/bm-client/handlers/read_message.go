@@ -150,20 +150,17 @@ func queryMessages(client *api.API, info *vault.AccountInfo, boxID, msgID string
 			continue
 		}
 
-		for _, msg := range mb.Messages {
+		for idx := range mb.Messages {
 			// skip if we only want specific msg ID's
-			if mode == "msgid" && !strings.HasPrefix(msg.ID, msgID) {
+			if mode == "msgid" && !strings.HasPrefix(mb.Messages[idx].ID, msgID) {
 				continue
 			}
 
-			// Important, as we are actually saving message in the em variable below
-			msg := msg
-
 			em := message.EncryptedMessage{
 				BoxID:   strconv.Itoa(box.ID),
-				ID:      msg.ID,
-				Header:  &msg.Header,
-				Catalog: msg.Catalog,
+				ID:      mb.Messages[idx].ID,
+				Header:  &mb.Messages[idx].Header,
+				Catalog: mb.Messages[idx].Catalog,
 
 				GenerateBlockReader:      client.GenerateAPIBlockReader(info.Address.Hash()),
 				GenerateAttachmentReader: client.GenerateAPIAttachmentReader(info.Address.Hash()),
