@@ -156,6 +156,7 @@ func queryMessages(client *api.API, info *vault.AccountInfo, boxID, msgID string
 				continue
 			}
 
+			// Important, as we are actually saving message in the em variable below
 			msg := msg
 
 			em := message.EncryptedMessage{
