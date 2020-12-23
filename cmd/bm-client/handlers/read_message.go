@@ -94,7 +94,7 @@ func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMs
 	if len(messageList) > 1 {
 		fmt.Printf("(%d/%d): %s > ", *idx+1, len(messageList), strings.Join(cmds, ", "))
 	} else {
-		return false, true
+		return true, true
 	}
 
 	// Read and parse entry
@@ -205,7 +205,7 @@ func displayMessage(msg message.DecryptedMessage) {
 		fmt.Printf("Block %02d: %-20s %8s\n", idx, b.Type, datasize.ByteSize(b.Size))
 		fmt.Printf("\n")
 
-		content, err := ioutil.ReadAll(b.Reader)
+		content, err := ioutil.ReadAll(msg.BlockReaders[b.ID])
 		if err != nil {
 			logrus.Fatal(err)
 		}
