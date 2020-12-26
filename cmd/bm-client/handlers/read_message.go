@@ -35,7 +35,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/c2h5oh/datasize"
 	"github.com/sirupsen/logrus"
 )
@@ -248,19 +247,13 @@ func saveAttachment(att message.AttachmentType) error {
 		return errors.New("cannot write to file")
 	}
 
-	r, err := bmcrypto.GetAesDecryptorReader(att.IV, att.Key, att.Reader)
-	if err != nil {
-		fmt.Printf("cannot create decryptor to %s: %s\n", att.FileName, err)
-		return err
-	}
-
 	f, err := os.Create(att.FileName)
 	if err != nil {
 		fmt.Printf("cannot open file %s: %s\n", att.FileName, err)
 		return err
 	}
 
-	n, err := io.Copy(f, r)
+	n, err := io.Copy(f, att.Reader)
 	if err != nil || n != int64(att.Size) {
 		fmt.Printf("error while writing file %s: %s (%d/%d bytes)\n", att.FileName, err, n, att.Size)
 		return err
