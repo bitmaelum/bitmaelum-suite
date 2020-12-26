@@ -59,7 +59,16 @@ var listMessagesCmd = &cobra.Command{
 			since = internal.GetReadTime()
 		}
 
-		msgCount := handlers.ListMessages(v.Store.Accounts, since)
+		// Get account or all accounts
+		accounts := v.Store.Accounts
+		if *lmAccount != "" {
+			acc, err := vault.GetAccount(v, *lmAccount)
+			if err == nil {
+				accounts = []vault.AccountInfo{*acc}
+			}
+		}
+
+		msgCount := handlers.ListMessages(accounts, since)
 		if msgCount == 0 {
 			if *lmNew {
 				fmt.Println("* No new messages found")
@@ -72,11 +81,16 @@ var listMessagesCmd = &cobra.Command{
 	},
 }
 
-var lmNew *bool
-var lmSince *string
+var (
+	lmNew *bool
+	lmAccount *string
+	lmSince *string
+)
 
 func init() {
 	rootCmd.AddCommand(listMessagesCmd)
+
+	lmAccount = listMessagesCmd.Flags().StringP("account", "a", "", "Account")
 
 	lmNew = listMessagesCmd.Flags().BoolP("new", "n", false, "Display new messages only")
 	lmSince = listMessagesCmd.Flags().StringP("since", "s", "", "Display messages since the specific duration (accepts 1y1w1d1h)")
