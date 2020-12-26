@@ -22,6 +22,7 @@ package account
 import (
 	"errors"
 	"io"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -86,7 +87,7 @@ func (r *fileRepo) FetchListFromBox(addr hash.Hash, box int, since time.Time, of
 
 	logrus.Trace("Fetching dir: ")
 	for _, f := range files {
-		if !f.IsDir() {
+		if f.Mode()&os.ModeSymlink == 0 && !f.IsDir(){
 			logrus.Trace("not a dir: ", f.Name())
 			continue
 		}
