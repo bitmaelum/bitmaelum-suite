@@ -46,7 +46,7 @@ var apiKeyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var out []output.JSONT
+		out := []output.JSONT{}
 		for _, ak := range apiKeys {
 
 			// don't display zero times

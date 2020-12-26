@@ -46,7 +46,7 @@ var authKeyCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var out []output.JSONT
+		out := []output.JSONT{}
 		for _, ak := range authKeys {
 
 			// don't display zero times

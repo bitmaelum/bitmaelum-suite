@@ -38,7 +38,7 @@ var organisationCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var out []output.JSONT
+		out := []output.JSONT{}
 		for _, org := range v.Store.Organisations {
 
 			privkey := ""

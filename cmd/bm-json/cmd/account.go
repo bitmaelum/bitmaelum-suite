@@ -38,7 +38,7 @@ var accountCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var out []output.JSONT
+		out := []output.JSONT{}
 		for _, acc := range v.Store.Accounts {
 
 			privkey := ""

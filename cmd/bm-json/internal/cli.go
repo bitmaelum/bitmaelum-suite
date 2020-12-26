@@ -33,6 +33,9 @@ import (
 func GetClientAndInfo(acc string) (*vault.Vault, *vault.AccountInfo, *api.API, error) {
 	v := vault.OpenVault()
 	info := vault.GetAccountOrDefault(v, acc)
+	if info == nil {
+		return nil, nil, nil, errors.New("account not found")
+	}
 
 	resolver := container.Instance.GetResolveService()
 	routingInfo, err := resolver.ResolveRouting(info.RoutingID)

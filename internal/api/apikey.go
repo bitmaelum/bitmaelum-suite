@@ -99,7 +99,7 @@ func (api *API) ListAPIKeys(addrHash hash.Hash) ([]key.APIKeyType, error) {
 	// Parse body for keys
 	keys := &[]key.APIKeyType{}
 	err = json.Unmarshal(body, &keys)
-	if err != nil {
+	if err != nil || keys == nil {
 		return []key.APIKeyType{}, err
 	}
 
