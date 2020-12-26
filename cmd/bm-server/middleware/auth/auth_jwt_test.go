@@ -96,7 +96,7 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 
 	status, ctx, err = a.Authenticate(req, "")
 	assert.Equal(t, status, middleware.AuthStatusSuccess)
-	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", ctx.Value(AddressContext))
+	assert.Equal(t, "2e4551de804e27aacf20f9df5be3e8cd384ed64488b21ab079fb58e8c90068ab", ctx.Value(middleware.AddressContext))
 	assert.NoError(t, err)
 
 	// Incorrect time should return an explicit error

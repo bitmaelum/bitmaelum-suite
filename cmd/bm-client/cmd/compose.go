@@ -104,13 +104,10 @@ var composeCmd = &cobra.Command{
 		}
 
 		// Setup addressing and compose the message
-		addressing := message.NewAddressing(
-			*fromInfo.Address,
-			&fromInfo.PrivKey,
-			routingInfo.Routing,
-			*toAddr,
-			&recipientInfo.PublicKey,
-		)
+		addressing := message.NewAddressing(message.SignedByTypeOrigin)
+		addressing.AddSender(fromInfo.Address, nil, fromInfo.Name, &fromInfo.PrivKey, routingInfo.Routing)
+		addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
+
 		err = handlers.ComposeMessage(addressing, *subject, *blocks, *attachments)
 		if err != nil {
 			logrus.Fatal(err)

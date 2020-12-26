@@ -49,6 +49,7 @@ type Ticket struct {
 	From           hash.Hash        `json:"from_addr"`       // From address for this ticket
 	To             hash.Hash        `json:"to_addr"`         // To address for this ticket
 	SubscriptionID string           `json:"subscription_id"` // mailing list subscription ID (if any)
+	AuthKey        string           `json:"auth_key"`        // Optional authkey attached to the ticket
 }
 
 // MarshalBinary converts a ticket to binary format so it can be stored in Redis

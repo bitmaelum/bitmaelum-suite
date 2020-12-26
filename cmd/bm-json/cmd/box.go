@@ -49,7 +49,7 @@ var boxCmd = &cobra.Command{
 		for _, mb := range mbl.Boxes {
 			out = append(out, output.JSONT{
 				"id":       mb.ID,
-				"total": mb.Total,
+				"total":    mb.Total,
 				"messages": mb.Messages,
 			})
 		}

@@ -28,7 +28,7 @@ import (
 )
 
 // CreateAuthKey will create a new authorized key on the server
-func (api *API) CreateAuthKey(addrHash hash.Hash, key key.AuthKeyType) error {
+func (api *API) CreateAuthKey(addrHash hash.Hash, key key.AuthKeyType) (string, error) {
 	// Zero is not 1970, but year 1
 	var expires int64
 	if !key.Expires.IsZero() {
@@ -43,24 +43,24 @@ func (api *API) CreateAuthKey(addrHash hash.Hash, key key.AuthKeyType) error {
 		"description": key.Description,
 	}, "", "  ")
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	url := fmt.Sprintf("/account/%s/authkey", addrHash.String())
 	body, statusCode, err := api.Post(url, data)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
-		return errNoSuccess
+		return "", errNoSuccess
 	}
 
 	if isErrorResponse(body) {
-		return GetErrorFromResponse(body)
+		return "", GetErrorFromResponse(body)
 	}
 
-	return nil
+	return string(body), nil
 }
 
 // DeleteAuthKey deletes a new auth key

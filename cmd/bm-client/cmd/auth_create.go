@@ -50,13 +50,14 @@ var authCreateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = handlers.CreateAuthorizedKey(info, targetKey, *authValidUntil, *authDesc)
+		tok, err := handlers.CreateAuthorizedKey(info, targetKey, *authValidUntil, *authDesc)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)
 		}
 
 		logrus.Print("Created new authorized key")
+		logrus.Print("Token: ", tok)
 	},
 }
 

@@ -58,7 +58,6 @@ func (r redisRepo) Fetch(ticketID string) (*Ticket, error) {
 
 // Store the given ticket in the repository
 func (r redisRepo) Store(ticket *Ticket) error {
-	logrus.Trace("Storing ticket in REDIS: ", ticket)
 	_, err := r.client.Set(r.client.Context(), createTicketKey(ticket.ID), ticket, 30*time.Minute).Result()
 
 	return err

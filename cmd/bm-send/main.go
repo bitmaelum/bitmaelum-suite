@@ -39,14 +39,15 @@ import (
 )
 
 type options struct {
-	PrivateKey  string   `short:"p" long:"private_key" description:"Private key" required:"true" env:"BITMAELUM_SEND_PRIVATE_KEY"`
+	PrivateKey  string   `long:"private-key" description:"Private key" required:"true" env:"BITMAELUM_SEND_PRIVATE_KEY"`
 	Subject     string   `short:"s" long:"subject" description:"Subject" required:"true"`
 	From        string   `short:"f" long:"from" description:"Sender" required:"true" env:"BITMAELUM_SEND_FROM"`
 	To          string   `short:"t" long:"to" description:"Recipient" required:"true"`
 	Message     string   `short:"m" long:"message" description:"Default message"`
 	Blocks      []string `short:"b" long:"block" description:"Body block"`
 	Attachments []string `short:"a" long:"attachment" description:"Attachment"`
-	Resolver    string   `short:"r" long:"resolver" description:"Resolver" env:"BITMAELUM_SEND_RESOLVER_URL" default:"resolver.bitmaelum.com"`
+	Resolver    string   `short:"r" long:"resolver" description:"Resolver" env:"BITMAELUM_SEND_RESOLVER_URL" default:"https://resolver.bitmaelum.com"`
+	Verbose     bool     `short:"v" long:"verbose" description:"Display server communication"`
 }
 
 var opts options
@@ -84,12 +85,15 @@ func main() {
 
 	// Set default message block if a message is specified
 	if opts.Message != "" {
-		opts.Blocks = append(opts.Blocks, "default:"+opts.Message)
+		opts.Blocks = append(opts.Blocks, "default,"+opts.Message)
 	}
 
 	// Set resolve settings, as we don't use a client configuration file
 	config.Client.Resolver.Remote.Enabled = true
 	config.Client.Resolver.Remote.URL = opts.Resolver
+	if opts.Verbose {
+		config.Client.Server.DebugHTTP = true
+	}
 
 	// Fetch both sender and recipient info
 	svc := container.Instance.GetResolveService()
@@ -105,13 +109,9 @@ func main() {
 	}
 
 	// Setup addressing
-	addressing := message.NewAddressing(
-		*fromAddr,
-		privKey,
-		senderInfo.RoutingInfo.Routing,
-		*toAddr,
-		&recipientInfo.PublicKey,
-	)
+	addressing := message.NewAddressing(message.SignedByTypeAuthorized)
+	addressing.AddSender(fromAddr, nil, "", privKey, senderInfo.RoutingInfo.Routing)
+	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 
 	// Compose mail
 	envelope, err := message.Compose(addressing, opts.Subject, opts.Blocks, opts.Attachments)

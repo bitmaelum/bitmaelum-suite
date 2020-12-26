@@ -67,9 +67,9 @@ type Header struct {
 		Signature string           `json:"signature"`  // Signature signed by the origin address
 	} `json:"authorized_by,omitempty"`
 
-	// Signatures on the message header (except signatures and authorizedBy sections)
+	// Signatures on the message header
 	Signatures struct {
-		Server string `json:"server"` // Signature of the from, to and catalog structures, as signed by the private key of the server. Filled in when sending the message
-		Client string `json:"client"` // Signature of the from, to and catalog structures, as signed by the private key of the client. Filled in by the client sending the message
+		Server string `json:"server"` // Signature of the server AND client section, as signed by the private key of the server. Filled in when sending the message
+		Client string `json:"client"` // Signature of the client section, as signed by the private key of the client. Filled in by the client sending the message
 	} `json:"signatures"`
 }

@@ -36,13 +36,6 @@ import (
 // JwtAuth is a middleware that automatically verifies given JWT token
 type JwtAuth struct{}
 
-const (
-	// ClaimsContext Context key for fetching JWT claims
-	ClaimsContext contextKey = iota
-	// AddressContext Context key for fetching the address
-	AddressContext
-)
-
 // Authenticate will check if an API key matches the request
 func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (middleware.AuthStatus, context.Context, error) {
 	// Check if the address actually exists
@@ -70,8 +63,8 @@ func (mw *JwtAuth) Authenticate(req *http.Request, _ string) (middleware.AuthSta
 	}
 
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, ClaimsContext, token.Claims)
-	ctx = context.WithValue(ctx, AddressContext, token.Claims.(*jwt.StandardClaims).Subject)
+	ctx = context.WithValue(ctx, middleware.ClaimsContext, token.Claims)
+	ctx = context.WithValue(ctx, middleware.AddressContext, token.Claims.(*jwt.StandardClaims).Subject)
 
 	return middleware.AuthStatusSuccess, ctx, nil
 }

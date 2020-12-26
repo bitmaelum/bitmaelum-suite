@@ -1,8 +1,7 @@
 {
     "from": {
         "address": "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
-        "onbehalf_signature": "V/cdCpxF6Ktv7hDvvDzJm9okoJMo8ikx1lnaWyFNbkKGAWADQVexdMLtP2OeqMa8f9EVqWFimb3uznzeJ9EfHKvjg33vzfOfsYRmsRVtMyDyypb9ilFCzI2px3IevsWut8TQ78aQ7eNTUe++LCGQgKOyAwNuUR9ctQqh88KlCS2udFw0FF9P94xZrAaxiA0LSDigAyMzANQGG55BxKg+PSdPZDBh+zNLBfG2fTS4zKa4hzhycE4pVexQPqmsBgnHws9YQqQTouxDovym/7FRRAc8bqxzrWS0F0OCZcj0twS8qXSFwof/FGJTKrE1Kr4nNXNdqxHnFonWaWRwOv/uUA==",
-        "onbehalf_public_key": "ed25519 MCowBQYDK2VwAyEA4KhfZWs/+B9Xx6eU+zN+A1USGtXsCs5zJNRq8JOM9EA="
+        "signed_by": "authorized"
     },
     "to": {
         "address": "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350"
@@ -16,5 +15,13 @@
         "crypto": "rsa+aes256gcm",
         "txid": "",
         "encrypted_key": "Zm9vYmFy"
+    },
+    "authorized_by": {
+        "signature": "V/cdCpxF6Ktv7hDvvDzJm9okoJMo8ikx1lnaWyFNbkKGAWADQVexdMLtP2OeqMa8f9EVqWFimb3uznzeJ9EfHKvjg33vzfOfsYRmsRVtMyDyypb9ilFCzI2px3IevsWut8TQ78aQ7eNTUe++LCGQgKOyAwNuUR9ctQqh88KlCS2udFw0FF9P94xZrAaxiA0LSDigAyMzANQGG55BxKg+PSdPZDBh+zNLBfG2fTS4zKa4hzhycE4pVexQPqmsBgnHws9YQqQTouxDovym/7FRRAc8bqxzrWS0F0OCZcj0twS8qXSFwof/FGJTKrE1Kr4nNXNdqxHnFonWaWRwOv/uUA==",
+        "public_key": "ed25519 MCowBQYDK2VwAyEA4KhfZWs/+B9Xx6eU+zN+A1USGtXsCs5zJNRq8JOM9EA="
+    },
+    "signatures": {
+        "client": "Se4sVKA8DkVfwcIJ3HIqVIds6+ewQC86pwUWX10K4fS8860AhlWJd75XnL4AFs9ofSIwEgVr7D+OvY2eyh8ECw==",
+        "server": "yjBaPd8nWoz6wCJx8kmh7jeU0QcoT9C2oA8Qsh9cq1PRNeE0PLIpDjI4jb3ftP+3PdCRF5TWNOzk8OYbwJkpAg=="
     }
 }

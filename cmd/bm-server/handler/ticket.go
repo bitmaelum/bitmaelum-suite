@@ -87,6 +87,13 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	// @TODO: subscription ID is empty here, but we probably want to fetch this directly from the server, not from the
 	//  ticket body request (clients do not know anything about subscription ids)
 	t := ticket.NewValidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
+
+	// Add authentication key if present in the request
+	if IsAuthKeyAuthenticated(req) {
+		logrus.Trace("adding authentication key to ticket")
+		t.AuthKey = GetAuthKey(req).Fingerprint
+	}
+
 	ticketRepo := container.Instance.GetTicketRepo()
 	err = ticketRepo.Store(t)
 	if err != nil {

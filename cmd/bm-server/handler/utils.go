@@ -22,21 +22,26 @@ package handler
 import (
 	"net/http"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware/auth"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 )
 
-// GetAPIKey returns the api key stored in the request context. If not found, it will return a dummy key with no permissions
+// GetAPIKey returns the api key stored in the request context. returns nil when not found
 func GetAPIKey(req *http.Request) *key.APIKeyType {
-	val := req.Context().Value(auth.APIKeyContext)
-	if val == nil {
-		return &key.APIKeyType{}
-	}
-
-	return val.(*key.APIKeyType)
+	return req.Context().Value(middleware.APIKeyContext).(*key.APIKeyType)
 }
 
 // IsAPIKeyAuthenticated returns true when the given request is authenticated by a api key
 func IsAPIKeyAuthenticated(req *http.Request) bool {
-	return req.Context().Value("auth_method") == "*middleware.APIKey"
+	return req.Context().Value(middleware.AuthorizationContext) == "*auth.APIKeyAuth"
+}
+
+// GetAuthKey will return the auth key if any. Returns nil when not found
+func GetAuthKey(req *http.Request) *key.AuthKeyType {
+	return req.Context().Value(middleware.AuthKeyContext).(*key.AuthKeyType)
+}
+
+// IsAuthKeyAuthenticated returns true when the given request is authenticated by a auth key
+func IsAuthKeyAuthenticated(req *http.Request) bool {
+	return req.Context().Value(middleware.AuthorizationContext) == "*auth.OnBehalfJwtAuth"
 }
