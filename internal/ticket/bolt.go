@@ -89,8 +89,6 @@ func (b boltRepo) Fetch(ticketID string) (*Ticket, error) {
 
 // Store the given ticket in the repository
 func (b boltRepo) Store(ticket *Ticket) error {
-	logrus.Trace("Storing ticket in BOLT: ", ticket)
-
 	return b.client.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(BucketName))
 		if err != nil {
