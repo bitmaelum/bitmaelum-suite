@@ -1,6 +1,7 @@
 before:
   hooks:
     - go mod download
+
 builds:
   - <<: &build_defaults
       env:
