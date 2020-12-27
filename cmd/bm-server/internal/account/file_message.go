@@ -158,7 +158,21 @@ func (r *fileRepo) CreateMessage(addr hash.Hash, msgID string) error {
 // RemoveMessage Removes a message complete from the account
 func (r *fileRepo) RemoveMessage(addr hash.Hash, msgID string) error {
 	p := r.getPath(addr, filepath.Join(messageDir, msgID))
-	return r.fs.RemoveAll(p)
+	err := r.fs.RemoveAll(p)
+	if err != nil {
+		return err
+	}
+
+	// Remove any message references from boxes
+	boxes, err := r.GetAllBoxes(addr)
+	if err != nil {
+		return err
+	}
+	for _, box := range boxes {
+		_ = r.RemoveFromBox(addr, box.ID, msgID)
+	}
+
+	return nil
 }
 
 // AddToBox Symlinks the message to the box
