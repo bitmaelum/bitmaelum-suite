@@ -36,11 +36,11 @@ type Message struct {
 	Catalog []byte         `json:"c"`
 }
 
-// GetMessage retrieves a message header + catalog from a message box
-func (api *API) GetMessage(addr hash.Hash, box, messageID string) (*Message, error) {
+// GetMessage retrieves a message header + catalog from a message
+func (api *API) GetMessage(addr hash.Hash, messageID string) (*Message, error) {
 	in := &Message{}
 
-	url := fmt.Sprintf("/account/%s/box/%s/message/%s", addr.String(), box, messageID)
+	url := fmt.Sprintf("/account/%s/message/%s", addr.String(), messageID)
 	resp, statusCode, err := api.GetJSON(url, in)
 	if err != nil {
 		logrus.Trace(err)
@@ -55,8 +55,8 @@ func (api *API) GetMessage(addr hash.Hash, box, messageID string) (*Message, err
 }
 
 // GetMessageBlock retrieves a message block
-func (api *API) GetMessageBlock(addr hash.Hash, box, messageID, blockID string) ([]byte, error) {
-	body, statusCode, err := api.Get(fmt.Sprintf("/account/%s/box/%s/message/%s/block/%s", addr.String(), box, messageID, blockID))
+func (api *API) GetMessageBlock(addr hash.Hash, messageID, blockID string) ([]byte, error) {
+	body, statusCode, err := api.Get(fmt.Sprintf("/account/%s/message/%s/block/%s", addr.String(), messageID, blockID))
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +69,8 @@ func (api *API) GetMessageBlock(addr hash.Hash, box, messageID, blockID string) 
 }
 
 // GetMessageAttachment retrieves a message attachment reader
-func (api *API) GetMessageAttachment(addr hash.Hash, box, messageID, attachmentID string) (io.ReadCloser, error) {
-	r, statusCode, err := api.GetReader(fmt.Sprintf("/account/%s/box/%s/message/%s/attachment/%s", addr.String(), box, messageID, attachmentID))
+func (api *API) GetMessageAttachment(addr hash.Hash, messageID, attachmentID string) (io.ReadCloser, error) {
+	r, statusCode, err := api.GetReader(fmt.Sprintf("/account/%s/message/%s/attachment/%s", addr.String(), messageID, attachmentID))
 	if err != nil {
 		return nil, err
 	}
@@ -82,10 +82,10 @@ func (api *API) GetMessageAttachment(addr hash.Hash, box, messageID, attachmentI
 	return r, nil
 }
 
-// GenerateAPIBlockReader returns a reader function that will create a reader from the given box,message and block ID.
-func (api *API) GenerateAPIBlockReader(addr hash.Hash) func(boxID, messageID, blockID string) io.Reader {
-	return func(boxID, messageID, blockID string) io.Reader {
-		block, err := api.GetMessageBlock(addr, boxID, messageID, blockID)
+// GenerateAPIBlockReader returns a reader function that will create a reader from the given message and block ID.
+func (api *API) GenerateAPIBlockReader(addr hash.Hash) func(messageID, blockID string) io.Reader {
+	return func(messageID, blockID string) io.Reader {
+		block, err := api.GetMessageBlock(addr, messageID, blockID)
 		if err != nil {
 			return bytes.NewReader([]byte{})
 		}
@@ -94,10 +94,10 @@ func (api *API) GenerateAPIBlockReader(addr hash.Hash) func(boxID, messageID, bl
 	}
 }
 
-// GenerateAPIAttachmentReader returns a reader function that will create a reader from the given box,message and attachment ID.
-func (api *API) GenerateAPIAttachmentReader(addr hash.Hash) func(boxID, messageID, attachmentID string) io.Reader {
-	return func(boxID, messageID, attachmentID string) io.Reader {
-		r, err := api.GetMessageAttachment(addr, boxID, messageID, attachmentID)
+// GenerateAPIAttachmentReader returns a reader function that will create a reader from the given message and attachment ID.
+func (api *API) GenerateAPIAttachmentReader(addr hash.Hash) func(messageID, attachmentID string) io.Reader {
+	return func(messageID, attachmentID string) io.Reader {
+		r, err := api.GetMessageAttachment(addr, messageID, attachmentID)
 		if err != nil {
 			return bytes.NewReader([]byte{})
 		}
