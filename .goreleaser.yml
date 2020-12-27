@@ -72,6 +72,7 @@ scoop:
   bucket:
     owner: bitmaelum
     name: scoop
+    token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
 
   commit_author:
     name: goreleaserbot
