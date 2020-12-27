@@ -36,7 +36,7 @@ var (
 	BuildDate string
 	// GitCommit sha as filled in during compilation
 	GitCommit string
-	// Version is the v0.0.0 version to use
+	// VersionTag is the v0.0.0 version to use
 	VersionTag = "0.0.0"
 )
 
