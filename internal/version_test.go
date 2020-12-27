@@ -35,5 +35,5 @@ func TestVersion(t *testing.T) {
 }
 
 func TestVersionString(t *testing.T) {
-	assert.Equal(t, "foo version 0.0.1 * Built:  * Commit: ", VersionString("foo"))
+	assert.Equal(t, "foo version 0.0.0 * Built:  * Commit: ", VersionString("foo"))
 }
