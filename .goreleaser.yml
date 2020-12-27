@@ -1,0 +1,85 @@
+before:
+  hooks:
+    - go mod download
+builds:
+  - <<: &build_defaults
+      env:
+        - CGO_ENABLED=0
+        - PKG=github.com/bitmaelum/bitmaelum-suite/internal
+      ldflags:
+        - -X '{{.Env.PKG}}.BuildDate={{.Date}}' -X '{{.Env.PKG}}.GitCommit={{.FullCommit}}' -X '{{.Env.PKG}}.VersionTag={{.Tag}}'
+      goarch:
+        - amd64
+        - arm64
+      goos:
+        - linux
+        - darwin
+        - windows
+      ignore:
+        - goos: windows
+          goarch: arm64
+    main: ./cmd/bm-client/main.go
+    id: "bm-client"
+    binary: bm-client
+
+  - <<: *build_defaults
+    main: ./cmd/bm-config/main.go
+    id: "bm-config"
+    binary: bm-config
+
+
+  - <<: *build_defaults
+    main: ./cmd/bm-json/main.go
+    id: "bm-json"
+    binary: bm-json
+
+
+archives:
+  - id: nix
+    builds: [macos, linux]
+    wrap_in_directory: true
+  - replacements:
+      darwin: MacOS
+      linux: Linux
+      windows: Windows
+      amd64: x86_64
+    format: tar.gz
+    files:
+      - LICENSE
+  - id: windows
+    builds: [windows]
+    wrap_in_directory: false
+    format: zip
+    files:
+      - LICENSE
+
+
+checksum:
+  name_template: 'checksums.txt'
+
+signs:
+  - artifacts: checksum
+    args: ["-u", "C2D6C816449D7AF38853F6FEDFD61AEF353E9701", "--output", "${signature}", "--detach-sign", "${artifact}"]
+
+#snapshot:
+#  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+
+nfpms:
+  - license: MIT
+    maintainer: GitHub
+    homepage: https://bitmaelum.org
+    bindir: /usr
+    description: BitMaelum Suite
+    formats:
+      - deb
+      - rpm
+   # files:
+   #   "./share/man/man1/gh*.1": "/usr/share/man/man1"

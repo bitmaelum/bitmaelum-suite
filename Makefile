@@ -26,7 +26,9 @@ BUILD_ALL_PLATFORMS := $(foreach platform,$(PLATFORMS),build-all-$(platform))
 PKG=$(shell go list ./internal)
 BUILD_DATE=$(shell date)
 COMMIT=$(shell git rev-parse HEAD)
-LD_FLAGS = -ldflags "-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMIT}'"
+VERSIONTAG="v0.0.0"
+LD_FLAGS = -ldflags "-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMIT}' -X '${PKG}.VersionTag=${VERSIONTAG}'"
+
 
 # Set environment variables from GO env if not set explicitly already
 ifndef $(GOPATH)
