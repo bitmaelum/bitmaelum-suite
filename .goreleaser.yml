@@ -59,7 +59,7 @@ checksum:
 
 signs:
   - artifacts: checksum
-    args: ["-u", "C2D6C816449D7AF38853F6FEDFD61AEF353E9701", "--output", "${signature}", "--detach-sign", "${artifact}"]
+    args: ["-u", "C2D6C816449D7AF38853F6FEDFD61AEF353E9701", "--no-tty", "--output", "${signature}", "--detach-sign", "${artifact}"]
 
 #snapshot:
 #  name_template: "{{ .Tag }}-next"
