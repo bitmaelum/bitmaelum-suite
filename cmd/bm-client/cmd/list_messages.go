@@ -82,9 +82,9 @@ var listMessagesCmd = &cobra.Command{
 }
 
 var (
-	lmNew *bool
+	lmNew     *bool
 	lmAccount *string
-	lmSince *string
+	lmSince   *string
 )
 
 func init() {

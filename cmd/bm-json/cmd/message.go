@@ -99,7 +99,7 @@ func findMessageInBoxes(msgID string, client *api.API, info *vault.AccountInfo, 
 				continue
 			}
 
-			msg, err := client.GetMessage(info.Address.Hash(), strconv.Itoa(mb.ID), id)
+			msg, err := client.GetMessage(info.Address.Hash(), id)
 			if err != nil {
 				return nil, err
 			}
