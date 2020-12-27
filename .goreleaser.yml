@@ -28,11 +28,20 @@ builds:
     id: "bm-config"
     binary: bm-config
 
-
   - <<: *build_defaults
     main: ./cmd/bm-json/main.go
     id: "bm-json"
     binary: bm-json
+
+  - <<: *build_defaults
+    main: ./cmd/bm-send/main.go
+    id: "bm-send"
+    binary: bm-send
+
+  - <<: *build_defaults
+    main: ./cmd/bm-server/main.go
+    id: "bm-server"
+    binary: bm-server
 
 
 archives:
