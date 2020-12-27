@@ -25,7 +25,7 @@ import (
 	"os"
 
 	"github.com/zalando/go-keyring"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 const (
@@ -50,7 +50,7 @@ type StdInPasswordReader struct {
 
 // ReadPassword reads password from stdin
 func (pr *StdInPasswordReader) ReadPassword() ([]byte, error) {
-	pwd, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+	pwd, err := term.ReadPassword(int(os.Stdin.Fd()))
 	return pwd, err
 }
 
