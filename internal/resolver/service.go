@@ -162,6 +162,24 @@ func (s *Service) UploadOrganisationInfo(info vault.OrganisationInfo) error {
 	}, info.PrivKey, *info.Pow)
 }
 
+func (s *Service) GetConfig() ResolverConfig {
+	cfg, err := s.repo.GetConfig()
+	if err == nil {
+		return *cfg
+	}
+
+	// @TODO: We should not do this i think
+	return ResolverConfig{
+		ProofOfWork: struct {
+			Address      int `json:"address"`
+			Organisation int `json:"organisation"`
+		}{
+			Address:      20,
+			Organisation: 20,
+		},
+	}
+}
+
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token

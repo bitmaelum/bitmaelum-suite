@@ -27,7 +27,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -118,6 +117,9 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	it := checkToken(token, *addr)
 	info := checkAccountInVault(v, *addr)
 
+	res := container.Instance.GetResolveService()
+	resolverCfg := res.GetConfig()
+
 	if info == nil {
 		fmt.Printf("* Generating your secret key to send and read mail: ")
 
@@ -131,8 +133,8 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 		mnemonicToShow = mnemonic
 		fmt.Printf("done.\n")
 
-		fmt.Printf("* Doing some work to let people know this is not a fake account: ")
-		proof := pow.NewWithoutProof(config.Client.Accounts.ProofOfWork, addr.Hash().String())
+		fmt.Printf("* Doing some work to let people know this is not a fake account, this might take a while: ")
+		proof := pow.NewWithoutProof(resolverCfg.ProofOfWork.Address, addr.Hash().String())
 		proof.WorkMulticore()
 		fmt.Printf("done.\n")
 

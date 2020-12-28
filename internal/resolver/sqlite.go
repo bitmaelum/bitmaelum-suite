@@ -230,3 +230,15 @@ func (r *sqliteRepo) DeleteOrganisation(info *OrganisationInfo, _ bmcrypto.PrivK
 	_, err = st.Exec(info.Hash)
 	return err
 }
+
+func (r *sqliteRepo) GetConfig() (*ResolverConfig, error) {
+	return &ResolverConfig{
+		ProofOfWork: struct {
+			Address      int `json:"address"`
+			Organisation int `json:"organisation"`
+		}{
+			Address:      22,
+			Organisation: 22,
+		},
+	}, nil
+}

@@ -382,3 +382,16 @@ func (r *remoteRepo) fetchOrganisation(addr hash.Hash) (*OrganisationDownload, e
 
 	return od, nil
 }
+
+func (r *remoteRepo) GetConfig() (*ResolverConfig, error) {
+	url := r.BaseURL + "/config.json"
+
+	cfg := &ResolverConfig{}
+	err := r.resolve(url, &cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+

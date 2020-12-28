@@ -96,3 +96,15 @@ func (r *mockRepo) DeleteOrganisation(info *OrganisationInfo, _ bmcrypto.PrivKey
 	delete(r.organisation, info.Hash)
 	return nil
 }
+
+func (r *mockRepo) GetConfig() (*ResolverConfig, error) {
+	return &ResolverConfig{
+		ProofOfWork: struct {
+			Address      int `json:"address"`
+			Organisation int `json:"organisation"`
+		}{
+			Address:      22,
+			Organisation: 22,
+		},
+	}, nil
+}

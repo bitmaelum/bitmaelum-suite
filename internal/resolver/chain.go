@@ -20,15 +20,31 @@
 package resolver
 
 import (
+	"errors"
+
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
+// ErrConfigNotFound is returned when no resolver configuration could be found
+var ErrConfigNotFound = errors.New("configuration not found")
+
 // ChainRepository holds a list of multiple repositories which can all be tried to resolve addresses and keys
 type ChainRepository struct {
 	repos []Repository
+}
+
+func (r *ChainRepository) GetConfig() (*ResolverConfig, error) {
+	for idx := range r.repos {
+		cfg, err := r.repos[idx].GetConfig()
+		if err == nil {
+			return cfg, nil
+		}
+	}
+
+	return nil, ErrConfigNotFound
 }
 
 // NewChainRepository Return a new chain repository

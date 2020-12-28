@@ -48,44 +48,44 @@ func TestClientConfig(t *testing.T) {
 	assert.NoError(t, err)
 	_ = f.Close()
 
-	Client.Accounts.ProofOfWork = 0
+	Client.Resolver.Remote.URL = ""
 	err = LoadClientConfigOrPass("/etc/bitmaelum/client-config.yml")
 	assert.NoError(t, err)
-	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
+	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
 
-	Client.Accounts.ProofOfWork = 0
+	Client.Resolver.Remote.URL = ""
 	err = LoadClientConfigOrPass("/etc/bitmaelum/not-exist.yml")
 	assert.Error(t, err)
-	assert.Equal(t, 0, Client.Accounts.ProofOfWork)
+	assert.Equal(t, "", Client.Resolver.Remote.URL)
 
-	Client.Accounts.ProofOfWork = 0
+	Client.Resolver.Remote.URL = ""
 	err = LoadClientConfigOrPass("/etc/bitmaelum/client-config.yml")
 	assert.NoError(t, err)
-	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
+	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
 
 	// Read from searchpath
 	if runtime.GOOS != "windows" {
 		// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
 		// the searchpath for windows is different. HOwever, we expect a regular path like /etc/bitmaelum/*.yml
 		// for this test to succeed.
-		Client.Accounts.ProofOfWork = 0
+		Client.Resolver.Remote.URL = ""
 		err = LoadClientConfigOrPass("")
 		assert.NoError(t, err)
-		assert.Equal(t, 22, Client.Accounts.ProofOfWork)
+		assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
 	}
 
 	// Read from non-existing env
-	Client.Accounts.ProofOfWork = 0
+	Client.Resolver.Remote.URL = ""
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
 	err = LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
 	// Read from existing env
-	Client.Accounts.ProofOfWork = 0
+	Client.Resolver.Remote.URL = ""
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/client-config.yml")
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
-	assert.Equal(t, 22, Client.Accounts.ProofOfWork)
+	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
 }
 
 func TestServerConfig(t *testing.T) {

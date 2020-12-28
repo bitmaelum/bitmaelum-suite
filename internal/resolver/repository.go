@@ -36,6 +36,18 @@ type Repository interface {
 	AddressRepository
 	RoutingRepository
 	OrganisationRepository
+	ConfigRepository
+}
+
+type ResolverConfig struct {
+	ProofOfWork struct {
+		Address      int `json:"address"`
+		Organisation int `json:"organisation"`
+	} `json:"proof_of_work"`
+}
+
+type ConfigRepository interface {
+	GetConfig() (*ResolverConfig, error)
 }
 
 // AddressRepository is the interface to manage address resolving
