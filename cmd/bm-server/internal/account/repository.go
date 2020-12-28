@@ -101,15 +101,17 @@ type BoxRepository interface {
 
 // MessageRepository deals with message within boxes
 type MessageRepository interface {
-	SendToBox(addr hash.Hash, box int, msgID string) error
-	MoveToBox(addr hash.Hash, srcBox, dstBox int, msgID string) error
+	CreateMessage(addr hash.Hash, msgID string) error
+	RemoveMessage(addr hash.Hash, msgID string) error
+	AddToBox(addr hash.Hash, boxID int, msgID string) error
+	RemoveFromBox(addr hash.Hash, boxID int, msgID string) error
 
 	// Message boxes
 	FetchListFromBox(addr hash.Hash, box int, since time.Time, offset, limit int) (*MessageList, error)
 
 	// Fetch specific message contents
-	FetchMessageHeader(addr hash.Hash, box int, messageID string) (*message.Header, error)
-	FetchMessageCatalog(addr hash.Hash, box int, messageID string) ([]byte, error)
-	FetchMessageBlock(addr hash.Hash, box int, messageID, blockID string) ([]byte, error)
-	FetchMessageAttachment(addr hash.Hash, box int, messageID, attachmentID string) (r io.ReadCloser, size int64, err error)
+	FetchMessageHeader(addr hash.Hash, messageID string) (*message.Header, error)
+	FetchMessageCatalog(addr hash.Hash, messageID string) ([]byte, error)
+	FetchMessageBlock(addr hash.Hash, messageID, blockID string) ([]byte, error)
+	FetchMessageAttachment(addr hash.Hash, messageID, attachmentID string) (r io.ReadCloser, size int64, err error)
 }

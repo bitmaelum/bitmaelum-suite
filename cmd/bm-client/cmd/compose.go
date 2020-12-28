@@ -57,7 +57,17 @@ var composeCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		// If no blocks are specified, we assume reading a single block from stdin
+		if *msg != "" && len(*blocks) > 0 {
+			logrus.Fatal("Cannot specify both a messages (-m) and blocks (-b).")
+			os.Exit(1)
+		}
+
+		// Set default message if specified
+		if *msg != "" {
+			*blocks = append(*blocks, "default," + *msg)
+		}
+
+		// If no blocks are specified, and no message we assume reading a single block from stdin
 		if len(*blocks) == 0 {
 			var block string
 
@@ -173,8 +183,10 @@ func useStdinEditor() (string, error) {
 	return string(data), nil
 }
 
-var from, to, subject *string
-var blocks, attachments *[]string
+var (
+	msg, from, to, subject *string
+	blocks, attachments *[]string
+)
 
 func init() {
 	rootCmd.AddCommand(composeCmd)
@@ -184,7 +196,9 @@ func init() {
 	subject = composeCmd.Flags().StringP("subject", "s", "", "Subject of the message")
 	blocks = composeCmd.Flags().StringArrayP("blocks", "b", []string{}, "Message blocks")
 	attachments = composeCmd.Flags().StringArrayP("attachment", "a", []string{}, "Attachments")
+	msg = composeCmd.Flags().StringP("message", "m", "", "Message to send")
 
+	_ = composeCmd.MarkFlagRequired("from")
 	_ = composeCmd.MarkFlagRequired("to")
 	_ = composeCmd.MarkFlagRequired("subject")
 }

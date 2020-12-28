@@ -124,8 +124,15 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 		return err
 	}
 
+	// Add message
 	ar := container.Instance.GetAccountRepo()
-	err = ar.SendToBox(*h, account.BoxInbox, msgID)
+	err = ar.CreateMessage(*h, msgID)
+	if err != nil {
+		return err
+	}
+
+	// Move to inbox
+	err = ar.AddToBox(*h, account.BoxInbox, msgID)
 	if err != nil {
 		return err
 	}

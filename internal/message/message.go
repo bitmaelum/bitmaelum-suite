@@ -33,8 +33,8 @@ type EncryptedMessage struct {
 	Header  *Header // Message header
 	Catalog []byte  // Encrypted catalog
 
-	GenerateBlockReader      func(boxID, messageID, blockID string) io.Reader      // Generator for block readers
-	GenerateAttachmentReader func(boxID, messageID, attachmentID string) io.Reader // generator for attachment readers
+	GenerateBlockReader      func(messageID, blockID string) io.Reader      // Generator for block readers
+	GenerateAttachmentReader func(messageID, attachmentID string) io.Reader // generator for attachment readers
 }
 
 // DecryptedMessage is a message that is fully decrypted and can be read
@@ -70,7 +70,7 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 
 	// Add our block readers
 	for idx, blk := range dm.Catalog.Blocks {
-		r, err := createReader(blk.IV, blk.Key, blk.Compression, em.GenerateBlockReader(em.BoxID, em.ID, blk.ID))
+		r, err := createReader(blk.IV, blk.Key, blk.Compression, em.GenerateBlockReader(em.ID, blk.ID))
 		if err != nil {
 			continue
 		}
@@ -79,7 +79,7 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 
 	// Add our attachment readers
 	for idx, att := range dm.Catalog.Attachments {
-		r, err := createReader(att.IV, att.Key, att.Compression, em.GenerateAttachmentReader(em.BoxID, em.ID, att.ID))
+		r, err := createReader(att.IV, att.Key, att.Compression, em.GenerateAttachmentReader(em.ID, att.ID))
 		if err != nil {
 			continue
 		}

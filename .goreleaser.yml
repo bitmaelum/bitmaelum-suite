@@ -1,0 +1,95 @@
+before:
+  hooks:
+    - go mod download
+
+builds:
+  - <<: &build_defaults
+      env:
+        - CGO_ENABLED=0
+        - PKG=github.com/bitmaelum/bitmaelum-suite/internal
+      ldflags:
+        - -X '{{.Env.PKG}}.BuildDate={{.Date}}' -X '{{.Env.PKG}}.GitCommit={{.FullCommit}}' -X '{{.Env.PKG}}.VersionTag={{.Tag}}'
+      goarch:
+        - amd64
+        - arm64
+      goos:
+        - linux
+        - darwin
+        - windows
+      ignore:
+        - goos: windows
+          goarch: arm64
+    main: ./cmd/bm-client/main.go
+    id: "bm-client"
+    binary: bm-client
+
+  - <<: *build_defaults
+    main: ./cmd/bm-config/main.go
+    id: "bm-config"
+    binary: bm-config
+
+  - <<: *build_defaults
+    main: ./cmd/bm-json/main.go
+    id: "bm-json"
+    binary: bm-json
+
+  - <<: *build_defaults
+    main: ./cmd/bm-send/main.go
+    id: "bm-send"
+    binary: bm-send
+
+  - <<: *build_defaults
+    main: ./cmd/bm-server/main.go
+    id: "bm-server"
+    binary: bm-server
+
+
+archives:
+  - id: nix
+    builds: [macos, linux]
+    wrap_in_directory: true
+  - replacements:
+      amd64: x86_64
+    format: tar.gz
+    files:
+      - LICENSE
+  - id: windows
+    builds: [windows]
+    wrap_in_directory: false
+    format: zip
+    files:
+      - LICENSE
+
+
+checksum:
+  name_template: 'checksums.txt'
+
+signs:
+  - artifacts: checksum
+    args: ["-u", "C2D6C816449D7AF38853F6FEDFD61AEF353E9701", "--no-tty", "--output", "${signature}", "--detach-sign", "${artifact}"]
+
+nfpms:
+  - license: MIT
+    maintainer: GitHub
+    homepage: https://bitmaelum.org
+    bindir: /usr
+    description: BitMaelum Suite
+    formats:
+      - deb
+      - rpm
+
+scoop:
+  bucket:
+    owner: bitmaelum
+    name: scoop
+    token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
+
+  commit_author:
+    name: goreleaserbot
+    email: goreleaser@bitmaelum.com
+
+  commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
+
+  homepage: "https://bitmaelum.com/"
+  description: "An end-to-end mail system"
+  license: MIT
