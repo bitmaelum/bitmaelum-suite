@@ -39,15 +39,17 @@ type Repository interface {
 	ConfigRepository
 }
 
-type ResolverConfig struct {
+// ProofOfWorkConfig is a struct that holds the resolver configuration as fetched from a resolver
+type ProofOfWorkConfig struct {
 	ProofOfWork struct {
 		Address      int `json:"address"`
 		Organisation int `json:"organisation"`
 	} `json:"proof_of_work"`
 }
 
+// ConfigRepository is the interface to fetch resolver configurations
 type ConfigRepository interface {
-	GetConfig() (*ResolverConfig, error)
+	GetConfig() (*ProofOfWorkConfig, error)
 }
 
 // AddressRepository is the interface to manage address resolving

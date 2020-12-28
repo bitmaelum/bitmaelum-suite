@@ -36,17 +36,6 @@ type ChainRepository struct {
 	repos []Repository
 }
 
-func (r *ChainRepository) GetConfig() (*ResolverConfig, error) {
-	for idx := range r.repos {
-		cfg, err := r.repos[idx].GetConfig()
-		if err == nil {
-			return cfg, nil
-		}
-	}
-
-	return nil, ErrConfigNotFound
-}
-
 // NewChainRepository Return a new chain repository
 func NewChainRepository() *ChainRepository {
 	return &ChainRepository{
@@ -167,4 +156,16 @@ func (r *ChainRepository) DeleteOrganisation(info *OrganisationInfo, privKey bmc
 	}
 
 	return nil
+}
+
+// GetConfig will return the resolver configuration from the repos
+func (r *ChainRepository) GetConfig() (*ProofOfWorkConfig, error) {
+	for idx := range r.repos {
+		cfg, err := r.repos[idx].GetConfig()
+		if err == nil {
+			return cfg, nil
+		}
+	}
+
+	return nil, ErrConfigNotFound
 }

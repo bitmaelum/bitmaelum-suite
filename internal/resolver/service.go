@@ -162,14 +162,15 @@ func (s *Service) UploadOrganisationInfo(info vault.OrganisationInfo) error {
 	}, info.PrivKey, *info.Pow)
 }
 
-func (s *Service) GetConfig() ResolverConfig {
+// GetConfig returns the configuration from the given repo, or a default configuration on error
+func (s *Service) GetConfig() ProofOfWorkConfig {
 	cfg, err := s.repo.GetConfig()
 	if err == nil {
 		return *cfg
 	}
 
 	// @TODO: We should not do this i think
-	return ResolverConfig{
+	return ProofOfWorkConfig{
 		ProofOfWork: struct {
 			Address      int `json:"address"`
 			Organisation int `json:"organisation"`

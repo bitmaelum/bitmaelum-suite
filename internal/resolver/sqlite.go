@@ -231,8 +231,8 @@ func (r *sqliteRepo) DeleteOrganisation(info *OrganisationInfo, _ bmcrypto.PrivK
 	return err
 }
 
-func (r *sqliteRepo) GetConfig() (*ResolverConfig, error) {
-	return &ResolverConfig{
+func (r *sqliteRepo) GetConfig() (*ProofOfWorkConfig, error) {
+	return &ProofOfWorkConfig{
 		ProofOfWork: struct {
 			Address      int `json:"address"`
 			Organisation int `json:"organisation"`

@@ -383,10 +383,10 @@ func (r *remoteRepo) fetchOrganisation(addr hash.Hash) (*OrganisationDownload, e
 	return od, nil
 }
 
-func (r *remoteRepo) GetConfig() (*ResolverConfig, error) {
+func (r *remoteRepo) GetConfig() (*ProofOfWorkConfig, error) {
 	url := r.BaseURL + "/config.json"
 
-	cfg := &ResolverConfig{}
+	cfg := &ProofOfWorkConfig{}
 	err := r.resolve(url, &cfg)
 	if err != nil {
 		return nil, err
@@ -394,4 +394,3 @@ func (r *remoteRepo) GetConfig() (*ResolverConfig, error) {
 
 	return cfg, nil
 }
-
