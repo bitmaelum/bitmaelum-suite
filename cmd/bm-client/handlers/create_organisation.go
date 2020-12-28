@@ -25,7 +25,6 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -85,8 +84,10 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 		}
 		fmt.Printf("done.\n")
 
-		fmt.Printf("* Doing some work to let people know this is not a fake account: ")
-		proof := pow.NewWithoutProof(config.Client.Accounts.ProofOfWork, orgHash.String())
+		resolverCfg := ks.GetConfig()
+
+		fmt.Printf("* Doing some work to let people know this is not a fake account, this might take a while: ")
+		proof := pow.NewWithoutProof(resolverCfg.ProofOfWork.Organisation, orgHash.String())
 		proof.WorkMulticore()
 		fmt.Printf("done.\n")
 

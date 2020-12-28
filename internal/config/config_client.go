@@ -38,8 +38,7 @@ type wrappedClientConfig struct {
 // ClientConfig is the representation of the client configuration
 type ClientConfig struct {
 	Accounts struct {
-		Path        string `yaml:"path"`
-		ProofOfWork int    `yaml:"proof_of_work"`
+		Path string `yaml:"path"`
 	} `yaml:"accounts"`
 
 	Composer struct {
