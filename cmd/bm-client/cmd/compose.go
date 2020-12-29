@@ -64,7 +64,7 @@ var composeCmd = &cobra.Command{
 
 		// Set default message if specified
 		if *msg != "" {
-			*blocks = append(*blocks, "default," + *msg)
+			*blocks = append(*blocks, "default,"+*msg)
 		}
 
 		// If no blocks are specified, and no message we assume reading a single block from stdin
@@ -185,7 +185,7 @@ func useStdinEditor() (string, error) {
 
 var (
 	msg, from, to, subject *string
-	blocks, attachments *[]string
+	blocks, attachments    *[]string
 )
 
 func init() {

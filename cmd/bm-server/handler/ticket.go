@@ -42,6 +42,7 @@ var (
 	errCantSaveTicket = errors.New("can't save ticket on the server")
 )
 
+// RequestType is a request for a ticket
 type RequestType struct {
 	Sender         hash.Hash `json:"sender"`
 	Recipient      hash.Hash `json:"recipient"`
@@ -135,9 +136,9 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	logrus.Tracef("Generated invalidated ticket: %s", t.ID)
 
 	outputTicket(t, w)
-	return
 }
 
+// ValidateTicket will validate a ticket response
 func ValidateTicket(w http.ResponseWriter, req *http.Request) {
 	// Find the ticket in the repo
 	ticketRepo := container.Instance.GetTicketRepo()
@@ -192,7 +193,7 @@ func outputTicket(t *ticket.Ticket, w http.ResponseWriter) {
 		"valid":     t.Valid,
 	}
 
-	if t.Valid == false && t.Work != nil {
+	if !t.Valid && t.Work != nil {
 		data["work"] = t.Work.GetName()
 		data[t.Work.GetName()] = t.Work.GetWorkOutput()
 	}

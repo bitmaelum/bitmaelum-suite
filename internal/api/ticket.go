@@ -63,7 +63,7 @@ func (api *API) GetTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ti
 	return t, nil
 }
 
-// GetAnonymousTicket retrieves a ticket that can be used for uploading a message
+// GetAccountTicket retrieves a ticket that can be used for uploading a message
 func (api *API) GetAccountTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
 		"sender":          from.String(),

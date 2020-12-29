@@ -34,7 +34,7 @@ func TestBoltStorage(t *testing.T) {
 
 	from := hash.New("foo!")
 	to := hash.New("bar!")
-	tckt := NewUnvalidated(from, to, "foobar")
+	tckt := New(from, to, "foobar")
 
 	err := b.Store(tckt)
 	assert.Nil(t, err)
