@@ -30,9 +30,10 @@ import (
 // GetTicket retrieves a ticket that can be used for uploading a message
 func (api *API) GetTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
-		"from_addr":       from.String(),
-		"to_addr":         to.String(),
+		"sender":          from.String(),
+		"recipient":       to.String(),
 		"subscription_id": subscriptionID,
+		"preference":      []string{"pow"},
 	}, "", "  ")
 	if err != nil {
 		return nil, err
@@ -63,11 +64,12 @@ func (api *API) GetTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ti
 }
 
 // GetAnonymousTicket retrieves a ticket that can be used for uploading a message
-func (api *API) GetAnonymousTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
+func (api *API) GetAccountTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
-		"from_addr":       from.String(),
-		"to_addr":         to.String(),
+		"sender":          from.String(),
+		"recipient":       to.String(),
 		"subscription_id": subscriptionID,
+		"preference":      []string{"pow"},
 	}, "", "  ")
 	if err != nil {
 		return nil, err
@@ -96,21 +98,16 @@ func (api *API) GetAnonymousTicket(from, to hash.Hash, subscriptionID string) (*
 	return t, nil
 }
 
-// GetAnonymousTicketByProof will send proof of work for a given ticket ID. If correct, the server will
-// return the validated ticket back. From that point on we can use the ticket to send a message.
-func (api *API) GetAnonymousTicketByProof(from, to hash.Hash, subscriptionID, ticketID string, proof uint64) (*ticket.Ticket, error) {
-	data, err := json.MarshalIndent(jsonOut{
-		"from_addr":      from.String(),
-		"to_addr":        to.String(),
-		"ticket_id":      ticketID,
-		"subscriptionId": subscriptionID,
-		"proof_of_work":  proof,
-	}, "", "  ")
+// ValidateTicket will send back a ticket-result
+func (api *API) ValidateTicket(from, to hash.Hash, subscriptionID string, t *ticket.Ticket) (*ticket.Ticket, error) {
+	data, err := json.Marshal(jsonOut{
+		t.Work.GetName(): t.Work.GetWorkProofOutput(),
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	body, statusCode, err := api.Post("/ticket", data)
+	body, statusCode, err := api.Post(fmt.Sprintf("/ticket/%s", t.ID), data)
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +121,7 @@ func (api *API) GetAnonymousTicketByProof(from, to hash.Hash, subscriptionID, ti
 	}
 
 	// Parse body for ticket
-	newT := &ticket.Ticket{}
-	err = json.Unmarshal(body, &newT)
+	newT, err := ticket.NewFromBytes(body)
 	if err != nil {
 		return nil, err
 	}

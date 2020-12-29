@@ -22,55 +22,36 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
+	"github.com/bitmaelum/bitmaelum-suite/internal/work"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
-/**
-Tickets works as follows:
-
-  We POST to either /incoming or /account/<hash>/incoming. The last one will use GetRemoteTicket and since this is
-  authenticated, we always return a valid ticket. This ticket must be used to send a message through the API.
-
-  If we POST to /incoming, we use the GetLocalTicket function and works differently.
-
-    - if we post with (fromAddr, toAddr, and SubscriptionID) tuple, AND this tuple is found in the subscription list
-      on the server, we automatically get a valid ticket. This ticket can be used directly for sending a message.
-    - if we don't post a tuple, but only fromAddr and toAddr, we get a non-validated ticket in return. This ticket
-      must be posted back with proof-of-work before it is exchanged into a valid ticket.
-    - if we don't post a tuple, but a ticket ID, we check if the proof is ok. If so, we return a valid ticket.
-
-  Note that tickets are always bound to a specific fromAddr and toAddr and only available for a specific lifetime.
-*/
-
 var (
+	errExpiredTicket  = errors.New("expired ticket")
 	errInvalidTicket  = errors.New("invalid ticket")
 	errCantSaveTicket = errors.New("can't save ticket on the server")
 )
 
-type requestInfoType struct {
-	From           hash.Hash
-	To             hash.Hash
-	FromAddr       string `json:"from_addr"`
-	ToAddr         string `json:"to_addr"`
-	SubscriptionID string `json:"subscription_id"`
-	TicketID       string `json:"ticket_id"`
-	Proof          uint64 `json:"proof_of_work"`
+type RequestType struct {
+	Sender         hash.Hash `json:"sender"`
+	Recipient      hash.Hash `json:"recipient"`
+	SubscriptionID string    `json:"subscription_id"`
+	Preference     []string  `json:"preference"`
 }
 
 type httpError struct {
 	err        string
 	StatusCode int
-}
-
-func (e *httpError) Error() string {
-	return e.err
 }
 
 // GetClientToServerTicket will try and retrieves a valid ticket so we can upload messages. It is allowed to have a
@@ -84,9 +65,8 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Create new ticket, no need to validation
-	// @TODO: subscription ID is empty here, but we probably want to fetch this directly from the server, not from the
-	//  ticket body request (clients do not know anything about subscription ids)
-	t := ticket.NewValidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
+	t := ticket.New(requestInfo.Sender, requestInfo.Recipient, requestInfo.SubscriptionID)
+	t.Valid = true
 
 	// Add authentication key if present in the request
 	if IsAuthKeyAuthenticated(req) {
@@ -103,7 +83,7 @@ func GetClientToServerTicket(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Send out our validated ticket
-	_ = httputils.JSONOut(w, http.StatusOK, ticket.NewSimpleTicket(t))
+	_ = httputils.JSONOut(w, http.StatusOK, t)
 }
 
 // GetServerToServerTicket will try and retrieve a (valid) ticket so we can upload messages. It is only allowed to have a
@@ -116,15 +96,8 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// @TODO: We need to take care of From and FromAddr (and To and ToAddr).. basically we can add anything here, \
-	//  without us checking if they are actually hashes. Pretty much everything is accepted, which can cause conflict
-	//  on the server.
-	// For now: a hash SHOULD be verified
-
-	logrus.Tracef("INFO FROM REQUEST: %#v", requestInfo)
-
-	// Check if the recipient address is valid
-	err = validateLocalAddress(requestInfo.To)
+	// Check if the recipient address is known locally (we don't support proxy)
+	err = validateLocalAddress(requestInfo.Recipient)
 	if err != nil {
 		httputils.ErrorOut(w, err.(*httpError).StatusCode, err.Error())
 		return
@@ -132,83 +105,106 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 
 	// Check if we have a subscription tuple, if so, create valid ticket and return
 	if requestInfo.SubscriptionID != "" {
-		tckt, err := handleSubscription(requestInfo)
+		t, err := handleSubscription(requestInfo)
 		if err != nil {
 			httputils.ErrorOut(w, err.(*httpError).StatusCode, err.Error())
 			return
 		}
 
-		outputTicket(tckt, w)
+		outputTicket(t, w)
 		return
 	}
 
-	// Ticket ID is not set, so we need to return a new unvalidated ticket
-	if requestInfo.TicketID == "" {
-		logrus.Trace("empty tckt.ID, creating new unvalidated ticket...")
+	// Create new unvalidated ticket
+	t := ticket.New(requestInfo.Sender, requestInfo.Recipient, requestInfo.SubscriptionID)
 
-		// Create new unvalidated ticket
-		tckt := ticket.NewUnvalidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
-
-		// Store ticket
-		ticketRepo := container.Instance.GetTicketRepo()
-		err = ticketRepo.Store(tckt)
-		if err != nil {
-			httputils.ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
-			return
-		}
-		logrus.Tracef("Generated invalidated ticket: %s", tckt.ID)
-
-		outputTicket(tckt, w)
+	// Add work based on the preference
+	t.Work, err = work.GetPreferredWork(requestInfo.Preference)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot create work for ticket")
 		return
 	}
 
+	// Store ticket
+	ticketRepo := container.Instance.GetTicketRepo()
+	err = ticketRepo.Store(t)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
+		return
+	}
+	logrus.Tracef("Generated invalidated ticket: %s", t.ID)
+
+	outputTicket(t, w)
+	return
+}
+
+func ValidateTicket(w http.ResponseWriter, req *http.Request) {
 	// Find the ticket in the repo
 	ticketRepo := container.Instance.GetTicketRepo()
-	tckt, err := ticketRepo.Fetch(requestInfo.TicketID)
+	t, err := ticketRepo.Fetch(mux.Vars(req)["ticket"])
 	if err != nil {
-		httputils.ErrorOut(w, http.StatusPreconditionFailed, "ticket not found")
-		return
-	}
-	logrus.Tracef("Found ticket in repository: %s", tckt.ID)
-
-	if tckt.Valid {
-		outputTicket(tckt, w)
+		httputils.ErrorOut(w, http.StatusNotFound, "ticket not found")
 		return
 	}
 
-	// Try and validate ticket
+	if t.Valid {
+		// Ticket already valid. No need to check again
+		outputTicket(t, w)
+		return
+	}
 
-	// Set proof and check if it's valid
-	tckt.Proof.Proof = requestInfo.Proof
-	tckt.Valid = tckt.Proof.HasDoneWork() && tckt.Proof.IsValid()
-	if tckt.Valid {
-		ticketRepo := container.Instance.GetTicketRepo()
-		err = ticketRepo.Store(tckt)
+	// Check if ticket has work attached (it should)
+	if t.Work == nil {
+		httputils.ErrorOut(w, http.StatusExpectationFailed, "ticket does not contain work")
+		return
+	}
+
+	// Read (json) body
+	data, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusExpectationFailed, "missing body")
+		return
+	}
+	_ = req.Body.Close()
+
+	// Try and validate the work
+	t.Valid = t.Work.ValidateWork(data)
+	if t.Valid {
+		t.Expiry = time.Now().Add(1800 * time.Second) // @TODO: Totally arbitrary
+		t.Work = nil
+
+		err = ticketRepo.Store(t)
 		if err != nil {
 			httputils.ErrorOut(w, http.StatusInternalServerError, errCantSaveTicket.Error())
 			return
 		}
-		logrus.Tracef("Ticket proof-of-work validated: %s", tckt.ID)
+		logrus.Tracef("Ticket proof-of-work validated: %s", t.ID)
 	}
 
-	outputTicket(tckt, w)
+	outputTicket(t, w)
 }
 
-// Send out validated or invalidated ticket and status
-func outputTicket(tckt *ticket.Ticket, w http.ResponseWriter) {
-	status := http.StatusOK
-	if !tckt.Valid {
-		status = http.StatusPreconditionFailed
+// output ticket info
+func outputTicket(t *ticket.Ticket, w http.ResponseWriter) {
+	data := jsonOut{
+		"ticket_id": t.ID,
+		"expires":   t.Expiry,
+		"valid":     t.Valid,
 	}
 
-	_ = httputils.JSONOut(w, status, ticket.NewSimpleTicket(tckt))
+	if t.Valid == false && t.Work != nil {
+		data["work"] = t.Work.GetName()
+		data[t.Work.GetName()] = t.Work.GetWorkOutput()
+	}
+
+	_ = httputils.JSONOut(w, http.StatusOK, data)
 }
 
-func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
+func handleSubscription(requestInfo *RequestType) (*ticket.Ticket, error) {
 	subscriptionRepo := container.Instance.GetSubscriptionRepo()
 
 	// Check if we have the subscription stored
-	sub := subscription.New(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
+	sub := subscription.New(requestInfo.Sender, requestInfo.Recipient, requestInfo.SubscriptionID)
 	if !subscriptionRepo.Has(&sub) {
 		return nil, &httpError{
 			err:        "invalid subscription",
@@ -217,11 +213,12 @@ func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
 	}
 
 	// Subscription is valid, create a new validated ticket
-	tckt := ticket.NewValidated(requestInfo.From, requestInfo.To, requestInfo.SubscriptionID)
+	t := ticket.New(requestInfo.Sender, requestInfo.Recipient, requestInfo.SubscriptionID)
+	t.Valid = true
 
 	// Store the new validated ticket back in the repo
 	ticketRepo := container.Instance.GetTicketRepo()
-	err := ticketRepo.Store(tckt)
+	err := ticketRepo.Store(t)
 	if err != nil {
 		return nil, &httpError{
 			err:        errCantSaveTicket.Error(),
@@ -229,8 +226,8 @@ func handleSubscription(requestInfo *requestInfoType) (*ticket.Ticket, error) {
 		}
 	}
 
-	logrus.Tracef("Validated ticket by subscription: %s %s", tckt.ID, tckt.SubscriptionID)
-	return tckt, nil
+	logrus.Tracef("Validated ticket by subscription: %s %s", t.ID, t.SubscriptionID)
+	return t, nil
 }
 
 // validateLocalAddress checks if the recipient in the ticket is a local address. Returns error if not
@@ -260,15 +257,18 @@ func fetchTicketHeader(req *http.Request) (*ticket.Ticket, error) {
 	if !t.Valid {
 		return nil, errInvalidTicket
 	}
+	if t.Expired() {
+		return nil, errExpiredTicket
+	}
 
 	logrus.Tracef("Valid ticket found: %s", t.ID)
 	return t, nil
 }
 
 // newFromRequest returns a request info object based on the request body
-func newFromRequest(req *http.Request) (*requestInfoType, error) {
+func newFromRequest(req *http.Request) (*RequestType, error) {
 	// Fetch all info from request
-	requestInfo := &requestInfoType{}
+	requestInfo := &RequestType{}
 	decoder := json.NewDecoder(req.Body)
 	err := decoder.Decode(requestInfo)
 	if err != nil {
@@ -278,29 +278,10 @@ func newFromRequest(req *http.Request) (*requestInfoType, error) {
 		}
 	}
 
-	// Validate from / to address
-	h, err := hash.NewFromHash(requestInfo.FromAddr)
-	if err != nil {
-		logrus.Trace("cannot create address: ", err)
-
-		return nil, &httpError{
-			err:        "Incorrect from address specified",
-			StatusCode: http.StatusBadRequest,
-		}
-	}
-	requestInfo.From = *h
-
-	h, err = hash.NewFromHash(requestInfo.ToAddr)
-	if err != nil {
-		logrus.Trace("cannot create address: ", err)
-
-		return nil, &httpError{
-			err:        "Incorrect to address specified",
-			StatusCode: http.StatusBadRequest,
-		}
-	}
-	requestInfo.To = *h
-
 	// Return info
 	return requestInfo, nil
+}
+
+func (e *httpError) Error() string {
+	return e.err
 }

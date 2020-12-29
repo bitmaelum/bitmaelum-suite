@@ -22,34 +22,30 @@ package ticket
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/work"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
-// TicketHeader is the HTTP Header that contains our ticket ID
+// TicketHeader is the HTTP Header that contains our ticket ID when sending messages
 const TicketHeader = "x-bitmaelum-ticket"
-
-// SimpleTicket is a structure that holds id, proof of work and if it's valid or not. Used for output because normally
-// we use Ticket instead.
-type SimpleTicket struct {
-	ID    string           `json:"ticket_id"`     // ticket ID. Will be used as the message ID when uploading
-	Proof *pow.ProofOfWork `json:"proof_of_work"` // proof of work that must be completed
-	Valid bool             `json:"is_valid"`      // true if the ticket is valid
-}
 
 // Ticket is a structure that defines if a client or server is allowed to upload a message, or if additional work has to be done first
 type Ticket struct {
-	ID             string           `json:"ticket_id"`       // ticket ID. Will be used as the message ID when uploading
-	Proof          *pow.ProofOfWork `json:"proof_of_work"`   // proof of work that must be completed
-	Valid          bool             `json:"is_valid"`        // true if the ticket is valid
-	From           hash.Hash        `json:"from_addr"`       // From address for this ticket
-	To             hash.Hash        `json:"to_addr"`         // To address for this ticket
-	SubscriptionID string           `json:"subscription_id"` // mailing list subscription ID (if any)
-	AuthKey        string           `json:"auth_key"`        // Optional authkey attached to the ticket
+	ID     string          // ticket ID
+	Valid  bool            // true if the ticket is valid
+	Expiry time.Time       // Time when this ticket expires
+	Work   work.Repository // Work stored on this ticket
+
+	Sender         hash.Hash // From address for this ticket
+	Recipient      hash.Hash // To address for this ticket
+	SubscriptionID string    // mailing list subscription ID (if any)
+
+	AuthKey string // Optional authkey attached to the ticket in case its send on behalf
 }
 
 // MarshalBinary converts a ticket to binary format so it can be stored in Redis
@@ -62,9 +58,14 @@ func (t *Ticket) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, t)
 }
 
-// NewUnvalidated creates a new unvalidated ticket with proof of work
-func NewUnvalidated(from, to hash.Hash, subscriptionID string) *Ticket {
-	logrus.Trace("Generating new unvalidated ticket")
+// Expired will return true when the ticket has expired
+func (t *Ticket) Expired() bool {
+	return t.Expiry.Before(internal.TimeNow())
+}
+
+// New creates a new unvalidated ticket without work
+func New(senderHash, recipientHash hash.Hash, subscriptionID string) *Ticket {
+	logrus.Trace("Generating new ticket")
 
 	// Generate Ticket ID
 	ticketUUID, err := uuid.NewRandom()
@@ -74,39 +75,26 @@ func NewUnvalidated(from, to hash.Hash, subscriptionID string) *Ticket {
 	ticketID := ticketUUID.String()
 	logrus.Trace("TicketID: ", ticketID)
 
-	// Generate workdata for proof-of-work
-	work, err := pow.GenerateWorkData()
-	if err != nil {
-		return nil
-	}
-	proof := pow.NewWithoutProof(config.Server.Accounts.ProofOfWork, work)
-
 	// Return ticket
 	return &Ticket{
 		ID:             ticketID,
-		Proof:          proof,
+		Expiry:         internal.TimeNow().Add(1800 * time.Second),
 		Valid:          false,
-		From:           from,
-		To:             to,
+		Sender:         senderHash,
+		Recipient:      recipientHash,
 		SubscriptionID: subscriptionID,
 	}
 }
 
-// NewValidated returns a new ticket that is validated (without proof-of-work)
-func NewValidated(from, to hash.Hash, subscriptionID string) *Ticket {
-	tckt := NewUnvalidated(from, to, subscriptionID)
-	tckt.Valid = true
-
-	return tckt
-}
-
-// NewSimpleTicket converts a ticket into a simple ticket. Used for outputting when we don't need routing info
-func NewSimpleTicket(t *Ticket) SimpleTicket {
-	return SimpleTicket{
-		ID:    t.ID,
-		Proof: t.Proof,
-		Valid: t.Valid,
+// NewFromBytes will generate a ticket from the json-encoded data
+func NewFromBytes(data []byte) (*Ticket, error) {
+	t := &Ticket{}
+	err := json.Unmarshal(data, &t)
+	if err != nil {
+		return nil, err
 	}
+
+	return t, nil
 }
 
 // Repository is a ticket repository to fetch and store tickets
