@@ -93,7 +93,7 @@ scoop:
   description: "An end-to-end mail system"
   license: MIT
 
-homebrew:
+brews:
   name: bitmaelum-suite
 
   tap:
