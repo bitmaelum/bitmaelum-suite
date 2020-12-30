@@ -98,7 +98,7 @@ brews:
     tap:
       owner: bitmaelum
       name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_BUCKET_GITHUB_TOKEN }}"
     commit_author:
       name: goreleaserbot
       email: goreleaser@bitmaelum.com
