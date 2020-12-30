@@ -60,7 +60,6 @@ archives:
     files:
       - LICENSE
 
-
 checksum:
   name_template: 'checksums.txt'
 
@@ -93,3 +92,20 @@ scoop:
   homepage: "https://bitmaelum.com/"
   description: "An end-to-end mail system"
   license: MIT
+
+homebrew:
+  name: bitmaelum-suite
+
+  tap:
+    owner: bitmaelum
+    name: homebrew-tap
+    token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+
+  commit_author:
+    name: goreleaserbot
+    email: goreleaser@bitmaelum.com
+
+    homepage: "https://bitmaelum.com/"
+    description: "BitMaelum is an end-to-end email alternative"
+
+    license: "MIT"
