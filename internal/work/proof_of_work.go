@@ -44,7 +44,7 @@ func NewPow() (*PowRepo, error) {
 	}
 
 	return &PowRepo{
-		W: *proofofwork.NewWithoutProof(config.Server.Accounts.ProofOfWork, work),
+		W: *proofofwork.NewWithoutProof(config.Server.Work.Pow.Bits, work),
 	}, nil
 }
 

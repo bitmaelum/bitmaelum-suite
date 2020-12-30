@@ -99,22 +99,22 @@ func TestServerConfig(t *testing.T) {
 	_ = f.Close()
 
 	// Load direct
-	Server.Accounts.ProofOfWork = 0
+	Server.Work.Pow.Bits = 0
 	err = LoadServerConfigOrPass("/etc/bitmaelum/server-config.yml")
 	assert.NoError(t, err)
-	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
+	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
 	// Unknown file
-	Server.Accounts.ProofOfWork = 0
+	Server.Work.Pow.Bits = 0
 	err = LoadServerConfigOrPass("/etc/bitmaelum/not-exist.yml")
 	assert.Error(t, err)
-	assert.Equal(t, 0, Server.Accounts.ProofOfWork)
+	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
 	// Load direct
-	Server.Accounts.ProofOfWork = 0
+	Server.Work.Pow.Bits = 0
 	err = LoadServerConfigOrPass("/etc/bitmaelum/server-config.yml")
 	assert.NoError(t, err)
-	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
+	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
 	// // Read from predetermined paths
 	// if runtime.GOOS != "windows" {
@@ -122,24 +122,24 @@ func TestServerConfig(t *testing.T) {
 	// 	// the searchpath for windows is different. However, we expect a regular path like /etc/bitmaelum/*.yml
 	// 	// for this test to succeed.
 	//
-	// 	Server.Accounts.ProofOfWork = 0
+	// 	Server.Work.Pow.Bits = 0
 	// 	err = LoadServerConfigOrPass("")
 	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, 0, Server.Accounts.ProofOfWork)
+	// 	assert.Equal(t, 0, Server.Work.Pow.Bits)
 	// }
 
 	// Read from non-existing env
-	Server.Accounts.ProofOfWork = 0
+	Server.Work.Pow.Bits = 0
 	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/does/not/exist.yml")
 	err = LoadServerConfigOrPass("")
 	assert.Error(t, err)
 
 	// Read from existing env
-	Server.Accounts.ProofOfWork = 0
+	Server.Work.Pow.Bits = 0
 	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/server-config.yml")
 	err = LoadServerConfigOrPass("")
 	assert.NoError(t, err)
-	assert.Equal(t, 22, Server.Accounts.ProofOfWork)
+	assert.Equal(t, 25, Server.Work.Pow.Bits)
 }
 
 func TestLoadClientConfig(t *testing.T) {

@@ -29,7 +29,7 @@ import (
 )
 
 func TestTicket(t *testing.T) {
-	config.Server.Accounts.ProofOfWork = 4
+	config.Server.Work.Pow.Bits = 4
 
 	from := hash.New("foo!")
 	to := hash.New("bar!")
