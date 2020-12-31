@@ -19,6 +19,9 @@ builds:
       ignore:
         - goos: windows
           goarch: arm64
+        - goos: darwin
+          goarch: arm64
+
     main: ./cmd/bm-client/main.go
     id: "bm-client"
     binary: bm-client
@@ -46,19 +49,22 @@ builds:
 
 archives:
   - id: nix
-    builds: [macos, linux]
+#    builds: [darwin, linux]
+    <<: &archive_defaults
+      name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+      files:
+        - LICENSE
     wrap_in_directory: true
-  - replacements:
-      amd64: x86_64
     format: tar.gz
-    files:
-      - LICENSE
+    replacements:
+      amd64: x86_64
   - id: windows
-    builds: [windows]
+#    builds: [windows]
+    <<: *archive_defaults
     wrap_in_directory: false
     format: zip
-    files:
-      - LICENSE
+    replacements:
+      amd64: 64bit
 
 checksum:
   name_template: 'checksums.txt'
@@ -95,6 +101,8 @@ scoop:
 
 brews:
   - name: bitmaelum-suite
+    ids:
+      - nix
     tap:
       owner: bitmaelum
       name: homebrew-tap
