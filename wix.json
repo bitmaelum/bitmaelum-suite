@@ -1,0 +1,31 @@
+{
+  "product": "BitMaelum Software Suite",
+  "company": "BitMaelum",
+  "license": "LICENSE",
+  "upgrade-code": "b9d54351-3d27-4716-bb6b-51dd7aa30c47",
+  "files": {
+    "guid": "70ac3314-051b-49ee-83f1-bd2d077337e0",
+    "items": [
+      "bm-client.exe",
+      "bm-config.exe",
+      "bm-json.exe",
+      "bm-send.exe",
+      "bm-server.exe"
+    ]
+  },
+  "env": {
+    "guid": "afff18b3-b4a8-4f84-8954-87fb3d508491",
+    "vars": [
+      {
+        "name": "PATH",
+        "value": "[INSTALLDIR]",
+        "permanent": "yes",
+        "system": "no",
+        "action": "set",
+        "part": "last"
+      }
+    ]
+  },
+  "shortcuts": {},
+  "choco": {}
+}
