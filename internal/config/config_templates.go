@@ -74,7 +74,7 @@ config:
         pow:
             # How many bits of proof-of-work must a client/server do before a ticket will be issued
             bits: 25
-    
+
     paths:
         # Path to store messages currently being processed (transient storage)
         processing: ~/.bitmaelum/processing

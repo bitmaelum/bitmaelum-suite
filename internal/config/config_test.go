@@ -22,6 +22,7 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"runtime"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -62,16 +63,16 @@ func TestClientConfig(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
 
-	// // Read from searchpath
-	// if runtime.GOOS != "windows" {
-	// 	// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
-	// 	// the searchpath for windows is different. However, we expect a regular path like /etc/bitmaelum/*.yml
-	// 	// for this test to succeed.
-	// 	Client.Resolver.Remote.URL = ""
-	// 	err = LoadClientConfigOrPass("")
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, "", Client.Resolver.Remote.URL)
-	// }
+	// Read from searchpath
+	if runtime.GOOS != "windows" {
+		// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
+		// the searchpath for windows is different. However, we expect a regular path like /etc/bitmaelum/*.yml
+		// for this test to succeed.
+		Client.Resolver.Remote.URL = ""
+		err = LoadClientConfigOrPass("")
+		assert.NoError(t, err)
+		assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	}
 
 	// Read from non-existing env
 	Client.Resolver.Remote.URL = ""
@@ -94,7 +95,7 @@ func TestServerConfig(t *testing.T) {
 	fs = afero.NewMemMapFs()
 	f, err := fs.Create("/etc/bitmaelum/server-config.yml")
 	assert.NoError(t, err)
-	err = GenerateClientConfig(f)
+	err = GenerateServerConfig(f)
 	assert.NoError(t, err)
 	_ = f.Close()
 
@@ -108,7 +109,7 @@ func TestServerConfig(t *testing.T) {
 	Server.Work.Pow.Bits = 0
 	err = LoadServerConfigOrPass("/etc/bitmaelum/not-exist.yml")
 	assert.Error(t, err)
-	assert.Equal(t, 25, Server.Work.Pow.Bits)
+	assert.Equal(t, 0, Server.Work.Pow.Bits)
 
 	// Load direct
 	Server.Work.Pow.Bits = 0
@@ -116,17 +117,17 @@ func TestServerConfig(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
-	// // Read from predetermined paths
-	// if runtime.GOOS != "windows" {
-	// 	// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
-	// 	// the searchpath for windows is different. However, we expect a regular path like /etc/bitmaelum/*.yml
-	// 	// for this test to succeed.
-	//
-	// 	Server.Work.Pow.Bits = 0
-	// 	err = LoadServerConfigOrPass("")
-	// 	assert.NoError(t, err)
-	// 	assert.Equal(t, 0, Server.Work.Pow.Bits)
-	// }
+	// Read from predetermined paths
+	if runtime.GOOS != "windows" {
+		// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
+		// the searchpath for windows is different. However, we expect a regular path like /etc/bitmaelum/*.yml
+		// for this test to succeed.
+
+		Server.Work.Pow.Bits = 0
+		err = LoadServerConfigOrPass("")
+		assert.NoError(t, err)
+		assert.Equal(t, 25, Server.Work.Pow.Bits)
+	}
 
 	// Read from non-existing env
 	Server.Work.Pow.Bits = 0
