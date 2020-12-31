@@ -23,8 +23,8 @@ import (
 	"encoding/json"
 	"errors"
 	"path/filepath"
-	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/sirupsen/logrus"
 	bolt "go.etcd.io/bbolt"
 )
@@ -86,7 +86,7 @@ func (b *boltStorage) Retrieve(challenge string) (*ProofOfWork, error) {
 		return nil, err
 	}
 
-	if pow.Expires.Unix() < time.Now().Unix() {
+	if pow.Expires.Unix() < internal.TimeNow().Unix() {
 		return nil, errChallengeExpired
 	}
 

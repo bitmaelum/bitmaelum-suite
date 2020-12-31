@@ -25,6 +25,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	pkginternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -37,7 +38,7 @@ var errNoRoutingID = errors.New("cannot find routing ID for this account")
 func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, validUntil time.Duration, desc string) (string, error) {
 	var expiry = time.Time{}
 	if validUntil > 0 {
-		expiry = time.Now().Add(validUntil)
+		expiry = pkginternal.TimeNow().Add(validUntil)
 	}
 
 	// Create and sign key

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	pkginternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -68,7 +69,7 @@ func CreateOrganisationInvite(vault *vault.Vault, orgAddr, inviteAddr, shortRout
 		os.Exit(1)
 	}
 
-	validUntil := time.Now().Add(7 * 24 * time.Hour)
+	validUntil := pkginternal.TimeNow().Add(7 * 24 * time.Hour)
 	token, err := signature.NewInviteToken(hashAddr.Hash(), routingID, validUntil, oi.PrivKey)
 	if err != nil {
 		fmt.Println("Error while generating token: ", err)

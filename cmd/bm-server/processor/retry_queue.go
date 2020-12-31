@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -81,8 +82,8 @@ func MoveToRetryQueue(msgID string) {
 	info, err := message.GetRetryInfo(message.SectionProcessing, msgID)
 	if err == nil {
 		info.Retries++
-		info.LastRetriedAt = time.Now()
-		info.RetryAt = time.Now().Add(getNextRetryDuration(info.Retries))
+		info.LastRetriedAt = internal.TimeNow()
+		info.RetryAt = internal.TimeNow().Add(getNextRetryDuration(info.Retries))
 	} else {
 		info = message.NewRetryInfo(msgID)
 	}
@@ -102,7 +103,7 @@ func MoveToRetryQueue(msgID string) {
 
 // canRetryNow returns true if we can retry the message right now
 func canRetryNow(info message.RetryInfo) bool {
-	return info.RetryAt.Unix() <= time.Now().Unix()
+	return info.RetryAt.Unix() <= internal.TimeNow().Unix()
 }
 
 // calculateNextRetryTime will return the next time a message can be retried again

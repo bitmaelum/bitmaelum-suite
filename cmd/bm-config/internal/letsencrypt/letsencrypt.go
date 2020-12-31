@@ -130,7 +130,7 @@ func (le *LetsEncrypt) CheckRenewal(cert *x509.Certificate, days int) bool {
 	d := time.Duration(days) * 24 * time.Hour
 	renewAfter := cert.NotAfter.Add(-1 * d).Unix()
 
-	return renewAfter < time.Now().Unix()
+	return renewAfter < internal.TimeNow().Unix()
 }
 
 // LoadCertificate loads a certificate from the given path or returns nil when no certificate is found.

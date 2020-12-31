@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/spf13/afero"
 )
 
@@ -35,7 +36,7 @@ type RetryInfo struct {
 }
 
 // override for testing purposes
-var timeNow = time.Now
+var timeNow = internal.TimeNow
 
 // NewRetryInfo returns a new retry info structure
 func NewRetryInfo(msgID string) *RetryInfo {
