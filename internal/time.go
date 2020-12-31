@@ -19,39 +19,10 @@
 
 package internal
 
-import (
-	"bytes"
-	"fmt"
-	"io"
-	"strings"
+import "time"
 
-	"github.com/coreos/go-semver/semver"
-)
-
-const ()
-
-var (
-	// BuildDate as filled in during compilation
-	BuildDate string
-	// GitCommit sha as filled in during compilation
-	GitCommit string
-	// VersionTag is the v0.0.0 version to use
-	VersionTag = "0.0.0"
-)
-
-// Version is a structure with the current version of the software
-var Version = semver.New(strings.Replace(VersionTag, "v", "", 1))
-
-// WriteVersionInfo writes a string with all version information
-func WriteVersionInfo(name string, w io.Writer) {
-	s := fmt.Sprintf("%s version %d.%d.%d\nBuilt: %s\nCommit: %s", name, Version.Major, Version.Minor, Version.Patch, BuildDate, GitCommit)
-	_, _ = w.Write([]byte(s))
-}
-
-// VersionString returns a string with all version information
-func VersionString(name string) string {
-	var b bytes.Buffer
-	WriteVersionInfo(name, &b)
-
-	return strings.Replace(b.String(), "\n", " * ", -1)
+// TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
+func TimeNow() time.Time {
+	ct := time.Now().Unix()
+	return time.Unix(ct, 0).UTC()
 }

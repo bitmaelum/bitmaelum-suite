@@ -46,9 +46,11 @@ type ServerConfig struct {
 		ApacheLogPath string `yaml:"apache_log_path"`
 	} `yaml:"logging"`
 
-	Accounts struct {
-		ProofOfWork int `yaml:"proof_of_work"`
-	} `yaml:"accounts"`
+	Work struct {
+		Pow struct {
+			Bits int `yaml:"bits"`
+		} `yaml:"pow"`
+	} `yaml:"work"`
 
 	Paths struct {
 		Processing string `yaml:"processing"`

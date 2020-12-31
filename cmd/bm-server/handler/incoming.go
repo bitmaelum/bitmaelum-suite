@@ -57,7 +57,7 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Verify from/to header with the ticket info
-	if header.From.Addr.String() != t.From.String() || header.To.Addr.String() != t.To.String() {
+	if header.From.Addr.String() != t.Sender.String() || header.To.Addr.String() != t.Recipient.String() {
 		httputils.ErrorOut(w, http.StatusBadRequest, "header from/to address do not match the ticket")
 		return
 	}

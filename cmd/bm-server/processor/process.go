@@ -163,7 +163,7 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 
 	logrus.Debugf("Message %s is remote, transferring to %s", msgID, routingInfo.Routing)
 
-	tckt, err := processTicket(*routingInfo, *addrInfo, header, msgID)
+	t, err := processTicket(*routingInfo, *addrInfo, header, msgID)
 	if err != nil {
 		return err
 	}
@@ -177,8 +177,8 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 	// parallelize uploads
 	g := new(errgroup.Group)
 	g.Go(func() error {
-		logrus.Tracef("uploading header for ticket %s", tckt.ID)
-		return c.UploadHeader(*tckt, header)
+		logrus.Tracef("uploading header for ticket %s", t.ID)
+		return c.UploadHeader(*t, header)
 	})
 	g.Go(func() error {
 		catalogPath, err := message.GetPath(message.SectionProcessing, msgID, "catalog")
@@ -191,13 +191,13 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 			return err
 		}
 
-		logrus.Tracef("uploading catalog for ticket %s", tckt.ID)
-		return c.UploadCatalog(*tckt, catalogData)
+		logrus.Tracef("uploading catalog for ticket %s", t.ID)
+		return c.UploadCatalog(*t, catalogData)
 	})
 
 	messageFiles, err := message.GetFiles(message.SectionProcessing, msgID)
 	if err != nil {
-		_ = c.DeleteMessage(*tckt)
+		_ = c.DeleteMessage(*t)
 		return err
 	}
 
@@ -215,21 +215,21 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 				_ = f.Close()
 			}()
 
-			logrus.Tracef("uploading block %s for ticket %s", mf.ID, tckt.ID)
-			return c.UploadBlock(*tckt, mf.ID, f)
+			logrus.Tracef("uploading block %s for ticket %s", mf.ID, t.ID)
+			return c.UploadBlock(*t, mf.ID, f)
 		})
 	}
 
 	// Wait until all are completed
 	if err := g.Wait(); err != nil {
 		logrus.Debugf("Error while uploading message %s: %s", msgID, err)
-		_ = c.DeleteMessage(*tckt)
+		_ = c.DeleteMessage(*t)
 		return err
 	}
 
 	// All done, mark upload as completed
-	logrus.Tracef("message completed for ticket %s", tckt.ID)
-	err = c.CompleteUpload(*tckt)
+	logrus.Tracef("message completed for ticket %s", t.ID)
+	err = c.CompleteUpload(*t)
 	if err != nil {
 		return err
 	}
@@ -243,7 +243,7 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 	return message.RemoveMessage(message.SectionProcessing, msgID)
 }
 
-// processTicket will fetch a ticker from the mail server and validate it through proof-of-work
+// processTicket will fetch a ticket from the mail server and validate it through proof-of-work
 func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressInfo, header *message.Header, msgID string) (*ticket.Ticket, error) {
 	// Get upload ticket
 	h, err := hash.NewFromHash(addrInfo.Hash)
@@ -258,7 +258,7 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 		return nil, err
 	}
 
-	t, err := c.GetAnonymousTicket(header.From.Addr, *h, "")
+	t, err := c.GetAccountTicket(header.From.Addr, *h, "")
 	if err != nil {
 		return nil, err
 	}
@@ -271,10 +271,10 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 	logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
 
 	// Do proof of work. We have to wait for it. This is ok as this is just a separate thread.
-	t.Proof.WorkMulticore()
+	t.Work.Work()
 
 	logrus.Debugf("work for %s is completed", t.ID)
-	t, err = c.GetAnonymousTicketByProof(header.From.Addr, header.To.Addr, t.SubscriptionID, t.ID, t.Proof.Proof)
+	t, err = c.ValidateTicket(header.From.Addr, header.To.Addr, t.SubscriptionID, t)
 	if err != nil || !t.Valid {
 		logrus.Warnf("Ticket for message %s not valid after proof of work, moving to retry queue", msgID)
 		MoveToRetryQueue(msgID)

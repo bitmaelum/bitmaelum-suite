@@ -194,6 +194,7 @@ func setupRouter() *mux.Router {
 
 	// Server to server message upload
 	publicRouter.HandleFunc("/ticket", handler.GetServerToServerTicket).Methods("POST")
+	publicRouter.HandleFunc("/ticket/{ticket:[A-Za-z0-9-]+}", handler.ValidateTicket).Methods("POST")
 	publicRouter.HandleFunc("/incoming/header", handler.IncomingMessageHeader).Methods("POST")
 	publicRouter.HandleFunc("/incoming/catalog", handler.IncomingMessageCatalog).Methods("POST")
 	publicRouter.HandleFunc("/incoming/block/{message:[A-Za-z0-9-]+}", handler.IncomingMessageBlock).Methods("POST")

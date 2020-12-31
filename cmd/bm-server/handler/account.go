@@ -51,9 +51,13 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Get required number of bits from the resolver
+	resolver := container.Instance.GetResolveService()
+	cfg := resolver.GetConfig()
+
 	// Check proof of work first
-	if input.ProofOfWork.Bits < config.Server.Accounts.ProofOfWork {
-		httputils.ErrorOut(w, http.StatusBadRequest, fmt.Sprintf("Proof of work must be at least %d bits", config.Server.Accounts.ProofOfWork))
+	if input.ProofOfWork.Bits < cfg.ProofOfWork.Address {
+		httputils.ErrorOut(w, http.StatusBadRequest, fmt.Sprintf("Proof of work must be at least %d bits", cfg.ProofOfWork.Address))
 		return
 	}
 

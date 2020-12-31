@@ -26,8 +26,6 @@ config:
     accounts:
         # where are our accounts stored?
         path: "~/.bitmaelum/accounts.vault.json"
-        # Number of bits for proof-of-work. The higher the number, the longer it takes to generate an account
-        proof_of_work: 22
     composer:
         # Editor to use when composing messages. If not set, use the $EDITOR environment variable.
         editor: 
@@ -71,10 +69,12 @@ config:
         # Path to apache logfile
         apache_log_path: "./bitmaelum.apache.log"
 
-    accounts:
-        # How many bits of proof-of-work must an account have to be able to register here
-        proof_of_work: 22
-    
+    work:
+        # There can be multiple work-systems in the future. For now, we only accept "pow"
+        pow:
+            # How many bits of proof-of-work must a client/server do before a ticket will be issued
+            bits: 25
+
     paths:
         # Path to store messages currently being processed (transient storage)
         processing: ~/.bitmaelum/processing

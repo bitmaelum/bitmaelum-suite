@@ -17,41 +17,22 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package work
 
-import (
-	"bytes"
-	"fmt"
-	"io"
-	"strings"
-
-	"github.com/coreos/go-semver/semver"
-)
-
-const ()
-
-var (
-	// BuildDate as filled in during compilation
-	BuildDate string
-	// GitCommit sha as filled in during compilation
-	GitCommit string
-	// VersionTag is the v0.0.0 version to use
-	VersionTag = "0.0.0"
-)
-
-// Version is a structure with the current version of the software
-var Version = semver.New(strings.Replace(VersionTag, "v", "", 1))
-
-// WriteVersionInfo writes a string with all version information
-func WriteVersionInfo(name string, w io.Writer) {
-	s := fmt.Sprintf("%s version %d.%d.%d\nBuilt: %s\nCommit: %s", name, Version.Major, Version.Minor, Version.Patch, BuildDate, GitCommit)
-	_, _ = w.Write([]byte(s))
+// Repository is the main interface for work types
+type Repository interface {
+	GetName() string
+	GetWorkOutput() map[string]interface{}
+	GetWorkProofOutput() map[string]interface{}
+	ValidateWork(data []byte) bool
+	Work()
 }
 
-// VersionString returns a string with all version information
-func VersionString(name string) string {
-	var b bytes.Buffer
-	WriteVersionInfo(name, &b)
+// GetPreferredWork will fetch work by taken the preference into account
+func GetPreferredWork(preferences []string) (Repository, error) {
+	// The preference list is just that: the preference of the client. The server ultimately decides what kind of
+	// work needs to be done.
 
-	return strings.Replace(b.String(), "\n", " * ", -1)
+	// Currently, only POW is supported
+	return NewPow()
 }
