@@ -69,6 +69,7 @@ func (api *API) retrieveTicket(url string, from, to hash.Hash, subscriptionID st
 	t := &ticket.Ticket{}
 	err = json.Unmarshal(body, &t)
 	if err != nil {
+		logrus.Error("cannot unmarshal ticket")
 		return nil, err
 	}
 

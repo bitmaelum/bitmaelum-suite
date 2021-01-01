@@ -194,18 +194,18 @@ func ValidateTicket(w http.ResponseWriter, req *http.Request) {
 
 // output ticket info
 func outputTicket(t *ticket.Ticket, w http.ResponseWriter) {
-	data := jsonOut{
-		"ticket_id": t.ID,
-		"expires":   t.Expiry,
-		"valid":     t.Valid,
-	}
+	// data := jsonOut{
+	// 	"ticket_id": t.ID,
+	// 	"expires":   t.Expiry,
+	// 	"valid":     t.Valid,
+	// }
+	//
+	// if !t.Valid && t.Work != nil {
+	// 	data["work"] = t.Work.Data.GetName()
+	// 	data[t.Work.Data.GetName()] = t.Work.Data.GetWorkOutput()
+	// }
 
-	if !t.Valid && t.Work != nil {
-		data["work"] = t.Work.Data.GetName()
-		data[t.Work.Data.GetName()] = t.Work.Data.GetWorkOutput()
-	}
-
-	_ = httputils.JSONOut(w, http.StatusOK, data)
+	_ = httputils.JSONOut(w, http.StatusOK, t)
 }
 
 func handleSubscription(requestInfo *RequestType) (*ticket.Ticket, error) {
