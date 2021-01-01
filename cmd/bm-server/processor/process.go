@@ -100,6 +100,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
 		if err != nil {
+			// @TODO: we should notify somebody?
 			logrus.Warnf("cannot remove message %s from the process queue.", msgID)
 		}
 
@@ -112,13 +113,14 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
 		if err != nil {
+			// @TODO: we should notify somebody?
 			logrus.Warnf("cannot remove message %s from the process queue.", msgID)
 		}
 
 		return nil
 	}
 
-	// Deliver mail to local user's inbox
+	// Deliver mail to local user inbox
 	h, err := hash.NewFromHash(addrInfo.Hash)
 	if err != nil {
 		return err
