@@ -53,7 +53,8 @@ func ProcessRetryQueue(forceRetry bool) {
 			// get the message header since we need the from address
 			msgHeader, _ := message.GetMessageHeader(message.SectionRetry, info.MsgID)
 
-			sendPostmasterMail(msgHeader.From.Addr, "Unable to deliver message", "The message with ID "+info.MsgID+" destinated to "+msgHeader.To.Addr.String()+" was unable to be delivered.")
+			logrus.Trace(msgHeader.From.Addr)
+			_ = sendPostmasterMail(msgHeader.From.Addr, "Unable to deliver message", "The message with ID "+info.MsgID+" destinated to "+msgHeader.To.Addr.String()+" was unable to be delivered.")
 
 			// Message has been retried over 10 times. It's not gonna happen.
 			logrus.Errorf("Message %s stuck in retry queue for too long. Giving up.", info.MsgID)
@@ -134,7 +135,11 @@ func getNextRetryDuration(retries int) (d time.Duration) {
 
 func sendPostmasterMail(toHash hash.Hash, subject string, body string) error {
 	// generate a hash from the server routingID to use it as from address
-	fromHash, _ := hash.NewFromHash(config.Routing.RoutingID)
+	fromHash, err := hash.NewFromHash(config.Routing.RoutingID)
+	if err != nil {
+		logrus.Trace("postmastermail: incorrect hash: ", err)
+		return err
+	}
 
 	// Fetch public key from routing
 	rs := container.Instance.GetResolveService()
@@ -153,6 +158,8 @@ func sendPostmasterMail(toHash hash.Hash, subject string, body string) error {
 
 	// Create a single block with our body
 	blocks := []string{"default," + body}
+
+	logrus.Trace(addressing)
 
 	envelope, err := message.Compose(addressing, subject, blocks, nil)
 	if err != nil {

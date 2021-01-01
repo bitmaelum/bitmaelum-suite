@@ -69,7 +69,7 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 	}
 
 	// Add header
-	header, err := generateHeader(addressing.Sender.Address.Hash(), addressing.Recipient.Address.Hash(), addressing.Type)
+	header, err := generateHeader(*addressing.Sender.Hash, *addressing.Recipient.Hash, addressing.Type)
 	if err != nil {
 		return nil, err
 	}
