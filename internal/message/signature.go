@@ -28,6 +28,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/sirupsen/logrus"
 )
 
 // SignServerHeader will add a server signature to a message header. This can be used to proof the origin of the message
@@ -37,12 +38,13 @@ func SignServerHeader(header *Header) error {
 		return err
 	}
 
-	sig, err := bmcrypto.Sign(config.Routing.PrivateKey, h[:])
+	sig, err := bmcrypto.Sign(config.Routing.PrivateKey, h)
 	if err != nil {
 		return err
 	}
 
 	header.Signatures.Server = base64.StdEncoding.EncodeToString(sig)
+
 	return nil
 }
 
@@ -50,6 +52,7 @@ func SignServerHeader(header *Header) error {
 func VerifyServerHeader(header Header) bool {
 	// If sent from the server there is no server signature
 	if header.From.SignedBy == SignedByTypeServer {
+		logrus.Trace("verifysig: signed by server. No need for checking server sig (already done on client signature)")
 		return true
 	}
 
@@ -57,29 +60,34 @@ func VerifyServerHeader(header Header) bool {
 	rs := container.Instance.GetResolveService()
 	addr, err := rs.ResolveAddress(header.From.Addr)
 	if err != nil {
+		logrus.Trace("verifysig: cant find header from addr")
 		return false
 	}
 
 	// No header at all
 	if len(header.Signatures.Server) == 0 {
+		logrus.Trace("verifysig: no header signature found")
 		return false
 	}
 
 	// Generate server hash
 	h, err := generateServerHash(&header)
 	if err != nil {
+		logrus.Trace("verifysig: error generating server hash")
 		return false
 	}
 
 	// Decode signature
 	targetSignature, err := base64.StdEncoding.DecodeString(header.Signatures.Server)
 	if err != nil {
+		logrus.Trace("verifysig: error decoding target signature")
 		return false
 	}
 
 	// Verify signature
-	ok, err := bmcrypto.Verify(addr.RoutingInfo.PublicKey, h, []byte(targetSignature))
+	ok, err := bmcrypto.Verify(addr.RoutingInfo.PublicKey, h, targetSignature)
 	if err != nil {
+		logrus.Trace("verifysig: error verifying with bmcrypto")
 		return false
 	}
 

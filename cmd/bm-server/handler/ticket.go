@@ -119,7 +119,6 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	// Create new unvalidated ticket
 	t := ticket.New(requestInfo.Sender, requestInfo.Recipient, requestInfo.SubscriptionID)
 
-
 	// Add work based on the preference
 	pw, err := work.GetPreferredWork(requestInfo.Preference)
 	if err != nil {
@@ -127,7 +126,7 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	t.Work = &ticket.TicketWorkType{
+	t.Work = &ticket.WorkType{
 		Type: pw.GetName(),
 		Data: pw,
 	}

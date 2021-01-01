@@ -28,7 +28,7 @@ import (
 
 // PowRepo is the repository for proof of work
 type PowRepo struct {
-	W    proofofwork.ProofOfWork
+	W proofofwork.ProofOfWork
 }
 
 // PowResultType is the result that gets returned when done the work
@@ -36,7 +36,7 @@ type PowResultType struct {
 	Proof uint64
 }
 
-
+// NewPowFromString will return a new pow structure taken from a string representation
 func NewPowFromString(s string) (Repository, error) {
 	pow := &proofofwork.ProofOfWork{}
 	err := json.Unmarshal([]byte("\""+s+"\""), pow)
@@ -48,7 +48,6 @@ func NewPowFromString(s string) (Repository, error) {
 		W: *pow,
 	}, nil
 }
-
 
 // NewPow will return a new proof-of-work repository filled
 func NewPow() (Repository, error) {
@@ -62,6 +61,7 @@ func NewPow() (Repository, error) {
 	}, nil
 }
 
+// MarshalJSON will return a marshalled version of the pow repository
 func (p *PowRepo) MarshalJSON() (data []byte, err error) {
 	return json.Marshal(p.W.String())
 }

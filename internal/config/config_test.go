@@ -37,10 +37,13 @@ var (
 )
 
 func TestClientConfig(t *testing.T) {
+	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "")
+
 	fs = afero.NewMemMapFs()
 
 	err := LoadClientConfigOrPass("")
 	assert.Error(t, err)
+
 
 	f, err := fs.Create("/etc/bitmaelum/client-config.yml")
 	assert.NoError(t, err)
@@ -89,6 +92,8 @@ func TestClientConfig(t *testing.T) {
 }
 
 func TestServerConfig(t *testing.T) {
+	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "")
+
 	err := LoadServerConfigOrPass("")
 	assert.Error(t, err)
 

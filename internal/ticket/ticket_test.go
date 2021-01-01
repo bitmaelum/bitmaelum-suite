@@ -44,7 +44,7 @@ func TestTicket(t *testing.T) {
 
 	workRepo, err := work.NewPow()
 	assert.NoError(t, err)
-	tckt.Work = &TicketWorkType{
+	tckt.Work = &WorkType{
 		Type: workRepo.GetName(),
 		Data: workRepo,
 	}
@@ -83,7 +83,7 @@ func TestTicketMarshalling(t *testing.T) {
 
 	workRepo, err := work.NewPow()
 	assert.NoError(t, err)
-	tckt.Work = &TicketWorkType{
+	tckt.Work = &WorkType{
 		Type: workRepo.GetName(),
 		Data: workRepo,
 	}
