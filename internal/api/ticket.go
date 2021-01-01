@@ -25,10 +25,22 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/sirupsen/logrus"
 )
+
+// GetAccountTicket retrieves a ticket that can be used for uploading a message
+func (api *API) GetAccountTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
+	url := fmt.Sprintf("/account/%s/ticket", from.String())
+
+	return api.retrieveTicket(url, from, to, subscriptionID)
+}
 
 // GetTicket retrieves a ticket that can be used for uploading a message
 func (api *API) GetTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
+	return api.retrieveTicket("/ticket", from, to, subscriptionID)
+}
+
+func (api *API) retrieveTicket(url string, from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
 	data, err := json.MarshalIndent(jsonOut{
 		"sender":          from.String(),
 		"recipient":       to.String(),
@@ -39,49 +51,14 @@ func (api *API) GetTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ti
 		return nil, err
 	}
 
-	url := fmt.Sprintf("/account/%s/ticket", from.String())
 	body, statusCode, err := api.Post(url, data)
 	if err != nil {
 		return nil, err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
+		logrus.Trace(string(body))
 		return nil, errNoSuccess
-	}
-
-	if isErrorResponse(body) {
-		return nil, GetErrorFromResponse(body)
-	}
-
-	// Parse body for ticket
-	t := &ticket.Ticket{}
-	err = json.Unmarshal(body, &t)
-	if err != nil {
-		return nil, err
-	}
-
-	return t, nil
-}
-
-// GetAccountTicket retrieves a ticket that can be used for uploading a message
-func (api *API) GetAccountTicket(from, to hash.Hash, subscriptionID string) (*ticket.Ticket, error) {
-	data, err := json.MarshalIndent(jsonOut{
-		"sender":          from.String(),
-		"recipient":       to.String(),
-		"subscription_id": subscriptionID,
-		"preference":      []string{"pow"},
-	}, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-
-	body, statusCode, err := api.Post("/ticket", data)
-	if err != nil {
-		return nil, err
-	}
-
-	if (statusCode < 200 || statusCode > 299) && statusCode != 412 {
-		return nil, GetErrorFromResponse(body)
 	}
 
 	if isErrorResponse(body) {
@@ -113,6 +90,9 @@ func (api *API) ValidateTicket(from, to hash.Hash, subscriptionID string, t *tic
 	}
 
 	if statusCode < 200 || statusCode > 299 {
+		if isErrorResponse(body) {
+			return nil, GetErrorFromResponse(body)
+		}
 		return nil, errNoSuccess
 	}
 

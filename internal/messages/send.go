@@ -33,7 +33,7 @@ var errInvalidTicket = errors.New("invalid ticket returned by server")
 func Send(client api.API, envelope *message.Envelope) error {
 
 	// Get upload ticket
-	t, err := client.GetTicket(envelope.Header.From.Addr, envelope.Header.To.Addr, "")
+	t, err := client.GetAccountTicket(envelope.Header.From.Addr, envelope.Header.To.Addr, "")
 	if err != nil {
 		return err
 	}

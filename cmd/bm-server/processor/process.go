@@ -258,7 +258,7 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 		return nil, err
 	}
 
-	t, err := c.GetAccountTicket(header.From.Addr, *h, "")
+	t, err := c.GetTicket(header.From.Addr, *h, "")
 	if err != nil {
 		return nil, err
 	}
