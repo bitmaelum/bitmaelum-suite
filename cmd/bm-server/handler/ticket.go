@@ -119,12 +119,19 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	// Create new unvalidated ticket
 	t := ticket.New(requestInfo.Sender, requestInfo.Recipient, requestInfo.SubscriptionID)
 
+
 	// Add work based on the preference
-	t.Work, err = work.GetPreferredWork(requestInfo.Preference)
+	pw, err := work.GetPreferredWork(requestInfo.Preference)
 	if err != nil {
 		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot create work for ticket")
 		return
 	}
+
+	t.Work = &ticket.TicketWorkType{
+		Type: pw.GetName(),
+		Data: pw,
+	}
+
 
 	// Store ticket
 	ticketRepo := container.Instance.GetTicketRepo()
@@ -169,7 +176,7 @@ func ValidateTicket(w http.ResponseWriter, req *http.Request) {
 	_ = req.Body.Close()
 
 	// Try and validate the work
-	t.Valid = t.Work.ValidateWork(data)
+	t.Valid = t.Work.Data.ValidateWork(data)
 	if t.Valid {
 		t.Expiry = time.Now().Add(1800 * time.Second) // @TODO: Totally arbitrary
 		t.Work = nil
@@ -194,8 +201,8 @@ func outputTicket(t *ticket.Ticket, w http.ResponseWriter) {
 	}
 
 	if !t.Valid && t.Work != nil {
-		data["work"] = t.Work.GetName()
-		data[t.Work.GetName()] = t.Work.GetWorkOutput()
+		data["work"] = t.Work.Data.GetName()
+		data[t.Work.Data.GetName()] = t.Work.Data.GetWorkOutput()
 	}
 
 	_ = httputils.JSONOut(w, http.StatusOK, data)

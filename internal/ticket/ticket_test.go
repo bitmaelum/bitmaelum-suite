@@ -20,6 +20,7 @@
 package ticket
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -41,9 +42,14 @@ func TestTicket(t *testing.T) {
 	assert.NotEmpty(t, tckt.ID)
 	assert.False(t, tckt.Valid)
 
-	tckt.Work, _ = work.NewPow()
+	workRepo, err := work.NewPow()
+	assert.NoError(t, err)
+	tckt.Work = &TicketWorkType{
+		Type: workRepo.GetName(),
+		Data: workRepo,
+	}
 
-	out := tckt.Work.GetWorkOutput()
+	out := tckt.Work.Data.GetWorkOutput()
 	assert.Equal(t, 4, out["bits"])
 	assert.NotEmpty(t, out["data"])
 }
@@ -66,5 +72,28 @@ func TestTicketMarshalBinary(t *testing.T) {
 	assert.Equal(t, "c0e0aaaea050bcf3be26c0c23d58fa890c0dfb79c8a23016b4a86cd28ca6ea71", tckt.Sender.String())
 	assert.Equal(t, "e687b749f2cd93615923a2f705faace4033f35d57ccfca652cdc39616a94a3c2", tckt.Recipient.String())
 	assert.Equal(t, "foobar", tckt.SubscriptionID)
+}
 
+func TestTicketMarshalling(t *testing.T) {
+	config.Server.Work.Pow.Bits = 14
+
+	from := hash.New("foo!")
+	to := hash.New("bar!")
+	tckt := New(from, to, "")
+
+	workRepo, err := work.NewPow()
+	assert.NoError(t, err)
+	tckt.Work = &TicketWorkType{
+		Type: workRepo.GetName(),
+		Data: workRepo,
+	}
+
+	b, err := json.MarshalIndent(tckt, "", "  ")
+	assert.NoError(t, err)
+
+	tckt2 := &Ticket{}
+	err = json.Unmarshal(b, &tckt2)
+	assert.NoError(t, err)
+
+	assert.Equal(t, tckt.Work.Data.GetWorkOutput(), tckt2.Work.Data.GetWorkOutput())
 }

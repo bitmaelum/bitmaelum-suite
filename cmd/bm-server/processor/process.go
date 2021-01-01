@@ -271,7 +271,7 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 	logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
 
 	// Do proof of work. We have to wait for it. This is ok as this is just a separate thread.
-	t.Work.Work()
+	t.Work.Data.Work()
 
 	logrus.Debugf("work for %s is completed", t.ID)
 	t, err = c.ValidateTicket(header.From.Addr, header.To.Addr, t.SubscriptionID, t)

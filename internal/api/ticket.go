@@ -77,9 +77,7 @@ func (api *API) retrieveTicket(url string, from, to hash.Hash, subscriptionID st
 
 // ValidateTicket will send back a ticket-result
 func (api *API) ValidateTicket(from, to hash.Hash, subscriptionID string, t *ticket.Ticket) (*ticket.Ticket, error) {
-	data, err := json.Marshal(jsonOut{
-		t.Work.GetName(): t.Work.GetWorkProofOutput(),
-	})
+	data, err := json.Marshal(t.Work)
 	if err != nil {
 		return nil, err
 	}
