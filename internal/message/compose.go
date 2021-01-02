@@ -27,8 +27,8 @@ import (
 // Compose will create a new message and places it inside an envelope. This can be used for actual sending the message
 func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, error) {
 	var (
-		senderHash	hash.Hash
-		recipientHash	hash.Hash
+		senderHash      hash.Hash
+		recipientHash   hash.Hash
 		senderPrivKey   *bmcrypto.PrivKey
 		recipientPubKey *bmcrypto.PubKey
 		cat             *Catalog
@@ -70,13 +70,13 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 		return nil, err
 	}
 
-	// Add header
-	if addressing.Sender.Hash == nil {
+	// Sender address takes precedence over sender hash (which could be routing id from mailserver for instance)
+	if addressing.Sender.Address != nil {
 		senderHash = addressing.Sender.Address.Hash()
 	} else {
 		senderHash = *addressing.Sender.Hash
 	}
-	if addressing.Recipient.Hash == nil {
+	if addressing.Recipient.Address != nil {
 		recipientHash = addressing.Recipient.Address.Hash()
 	} else {
 		recipientHash = *addressing.Recipient.Hash

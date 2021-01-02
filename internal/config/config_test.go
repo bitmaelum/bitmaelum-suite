@@ -44,7 +44,6 @@ func TestClientConfig(t *testing.T) {
 	err := LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
-
 	f, err := fs.Create("/etc/bitmaelum/client-config.yml")
 	assert.NoError(t, err)
 	err = GenerateClientConfig(f)
