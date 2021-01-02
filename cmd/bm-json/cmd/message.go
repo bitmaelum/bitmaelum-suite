@@ -20,16 +20,12 @@
 package cmd
 
 import (
-	"errors"
 	"io/ioutil"
 	"os"
-	"strconv"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
-	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -45,19 +41,23 @@ var messageCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		mbl, err := client.GetMailboxList(info.Address.Hash())
+		msg, err := client.GetMessage(info.Address.Hash(), *messageID)
 		if err != nil {
 			output.JSONErrorOut(err)
 			os.Exit(1)
 		}
 
-		msg, err := findMessageInBoxes(*messageID, client, info, mbl.Boxes)
-		if err != nil {
-			output.JSONErrorOut(err)
-			os.Exit(1)
+		em := message.EncryptedMessage{
+			BoxID:   "1",
+			ID:      msg.ID,
+			Header:  &msg.Header,
+			Catalog: msg.Catalog,
+
+			GenerateBlockReader:      client.GenerateAPIBlockReader(info.Address.Hash()),
+			GenerateAttachmentReader: client.GenerateAPIAttachmentReader(info.Address.Hash()),
 		}
 
-		dMsg, err := msg.Decrypt(info.PrivKey)
+		dMsg, err := em.Decrypt(info.PrivKey)
 		if err != nil {
 			output.JSONErrorStrOut("cannot decrypt message")
 			os.Exit(1)
@@ -90,35 +90,6 @@ var messageCmd = &cobra.Command{
 
 		output.JSONOut(out)
 	},
-}
-
-func findMessageInBoxes(msgID string, client *api.API, info *vault.AccountInfo, boxes []api.MailboxListBox) (*message.EncryptedMessage, error) {
-	for _, mb := range boxes {
-		for _, id := range mb.Messages {
-			if id != msgID {
-				continue
-			}
-
-			msg, err := client.GetMessage(info.Address.Hash(), id)
-			if err != nil {
-				return nil, err
-			}
-
-			em := message.EncryptedMessage{
-				BoxID:   strconv.Itoa(mb.ID),
-				ID:      msg.ID,
-				Header:  &msg.Header,
-				Catalog: msg.Catalog,
-
-				GenerateBlockReader:      client.GenerateAPIBlockReader(info.Address.Hash()),
-				GenerateAttachmentReader: client.GenerateAPIAttachmentReader(info.Address.Hash()),
-			}
-
-			return &em, nil
-		}
-	}
-
-	return nil, errors.New("message not found")
 }
 
 var (

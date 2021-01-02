@@ -100,6 +100,7 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
 		if err != nil {
+			// @TODO: we should notify somebody?
 			logrus.Warnf("cannot remove message %s from the process queue.", msgID)
 		}
 
@@ -112,13 +113,14 @@ func deliverLocal(addrInfo *resolver.AddressInfo, msgID string, header *message.
 
 		err := message.RemoveMessage(message.SectionProcessing, msgID)
 		if err != nil {
+			// @TODO: we should notify somebody?
 			logrus.Warnf("cannot remove message %s from the process queue.", msgID)
 		}
 
 		return nil
 	}
 
-	// Deliver mail to local user's inbox
+	// Deliver mail to local user inbox
 	h, err := hash.NewFromHash(addrInfo.Hash)
 	if err != nil {
 		return err
@@ -258,7 +260,7 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 		return nil, err
 	}
 
-	t, err := c.GetAccountTicket(header.From.Addr, *h, "")
+	t, err := c.GetTicket(header.From.Addr, *h, "")
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +273,7 @@ func processTicket(routingInfo resolver.RoutingInfo, addrInfo resolver.AddressIn
 	logrus.Debugf("ticket %s not valid. Need to do proof of work", t.ID)
 
 	// Do proof of work. We have to wait for it. This is ok as this is just a separate thread.
-	t.Work.Work()
+	t.Work.Data.Work()
 
 	logrus.Debugf("work for %s is completed", t.ID)
 	t, err = c.ValidateTicket(header.From.Addr, header.To.Addr, t.SubscriptionID, t)

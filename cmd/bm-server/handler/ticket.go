@@ -120,10 +120,15 @@ func GetServerToServerTicket(w http.ResponseWriter, req *http.Request) {
 	t := ticket.New(requestInfo.Sender, requestInfo.Recipient, requestInfo.SubscriptionID)
 
 	// Add work based on the preference
-	t.Work, err = work.GetPreferredWork(requestInfo.Preference)
+	pw, err := work.GetPreferredWork(requestInfo.Preference)
 	if err != nil {
 		httputils.ErrorOut(w, http.StatusInternalServerError, "cannot create work for ticket")
 		return
+	}
+
+	t.Work = &ticket.WorkType{
+		Type: pw.GetName(),
+		Data: pw,
 	}
 
 	// Store ticket
@@ -169,7 +174,7 @@ func ValidateTicket(w http.ResponseWriter, req *http.Request) {
 	_ = req.Body.Close()
 
 	// Try and validate the work
-	t.Valid = t.Work.ValidateWork(data)
+	t.Valid = t.Work.Data.ValidateWork(data)
 	if t.Valid {
 		t.Expiry = time.Now().Add(1800 * time.Second) // @TODO: Totally arbitrary
 		t.Work = nil
@@ -187,18 +192,7 @@ func ValidateTicket(w http.ResponseWriter, req *http.Request) {
 
 // output ticket info
 func outputTicket(t *ticket.Ticket, w http.ResponseWriter) {
-	data := jsonOut{
-		"ticket_id": t.ID,
-		"expires":   t.Expiry,
-		"valid":     t.Valid,
-	}
-
-	if !t.Valid && t.Work != nil {
-		data["work"] = t.Work.GetName()
-		data[t.Work.GetName()] = t.Work.GetWorkOutput()
-	}
-
-	_ = httputils.JSONOut(w, http.StatusOK, data)
+	_ = httputils.JSONOut(w, http.StatusOK, t)
 }
 
 func handleSubscription(requestInfo *RequestType) (*ticket.Ticket, error) {

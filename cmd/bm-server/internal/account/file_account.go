@@ -41,6 +41,12 @@ func (r *fileRepo) Create(addr hash.Hash, pubKey bmcrypto.PubKey) error {
 	g.Go(func() error {
 		return r.StoreKey(addr, pubKey)
 	})
+
+	g.Go(func() error {
+		messagePath := r.getPath(addr, "messages")
+		return r.fs.MkdirAll(messagePath, 0700)
+	})
+
 	for _, box := range MandatoryBoxes {
 		boxCopy := box
 		g.Go(func() error {

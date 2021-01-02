@@ -34,12 +34,42 @@ import (
 // TicketHeader is the HTTP Header that contains our ticket ID when sending messages
 const TicketHeader = "x-bitmaelum-ticket"
 
+// WorkType is a structure that holds the type and work repository data
+type WorkType struct {
+	Type string          // Type of work
+	Data work.Repository // Work stored on this ticket
+}
+
+// UnmarshalJSON We unmarshal from the ticketWorkType, as we do not know which repository implementation we need. However, we can
+// marshal from the implementation. This is why there is no MarshalJSON present here.
+func (twt *WorkType) UnmarshalJSON(data []byte) error {
+	type tmpType struct {
+		Type string
+		Data string
+	}
+
+	tmp := &tmpType{}
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
+	}
+
+	twt.Type = tmp.Type
+
+	switch tmp.Type {
+	case "pow":
+		twt.Data, err = work.NewPowFromString(tmp.Data)
+	}
+
+	return err
+}
+
 // Ticket is a structure that defines if a client or server is allowed to upload a message, or if additional work has to be done first
 type Ticket struct {
-	ID     string          // ticket ID
-	Valid  bool            // true if the ticket is valid
-	Expiry time.Time       // Time when this ticket expires
-	Work   work.Repository // Work stored on this ticket
+	ID     string    // ticket ID
+	Valid  bool      // true if the ticket is valid
+	Expiry time.Time // Time when this ticket expires
+	Work   *WorkType // Work that needs to be done for validating the ticket
 
 	Sender         hash.Hash // From address for this ticket
 	Recipient      hash.Hash // To address for this ticket

@@ -62,8 +62,11 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// @TODO: we must find a better way to differentiate between incoming messages from client-server and server-server
+	// len(header.Signatures.Server) == 0 is not a good way i think
+
 	// If we are sending on behalf of another account, we need to add additional authorization information
-	if header.From.SignedBy == message.SignedByTypeAuthorized {
+	if header.From.SignedBy == message.SignedByTypeAuthorized && len(header.Signatures.Server) == 0 {
 		if t.AuthKey == "" {
 			httputils.ErrorOut(w, http.StatusInternalServerError, "onbehalf signing, but token is not fetched with authentication")
 			return
@@ -80,11 +83,13 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 		header.AuthorizedBy.Signature = k.Signature
 	}
 
-	// Add a server signature to the header, so we know this server is the origin of the message
-	err = message.SignServerHeader(header)
-	if err != nil {
-		httputils.ErrorOut(w, http.StatusInternalServerError, "error while signing incoming message")
-		return
+	if len(header.Signatures.Server) == 0 {
+		// Add a server signature to the header, so we know this server is the origin of the message
+		err = message.SignServerHeader(header)
+		if err != nil {
+			httputils.ErrorOut(w, http.StatusInternalServerError, "error while signing incoming message")
+			return
+		}
 	}
 
 	// Save request

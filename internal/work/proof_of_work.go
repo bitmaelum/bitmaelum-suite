@@ -36,8 +36,21 @@ type PowResultType struct {
 	Proof uint64
 }
 
+// NewPowFromString will return a new pow structure taken from a string representation
+func NewPowFromString(s string) (Repository, error) {
+	pow := &proofofwork.ProofOfWork{}
+	err := json.Unmarshal([]byte("\""+s+"\""), pow)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PowRepo{
+		W: *pow,
+	}, nil
+}
+
 // NewPow will return a new proof-of-work repository filled
-func NewPow() (*PowRepo, error) {
+func NewPow() (Repository, error) {
 	work, err := proofofwork.GenerateWorkData()
 	if err != nil {
 		return nil, err
@@ -48,9 +61,19 @@ func NewPow() (*PowRepo, error) {
 	}, nil
 }
 
+// MarshalJSON will return a marshalled version of the pow repository
+func (p *PowRepo) MarshalJSON() (data []byte, err error) {
+	return json.Marshal(p.W.String())
+}
+
 // GetName will return the name of the work type
 func (p *PowRepo) GetName() string {
 	return "pow"
+}
+
+// GetTicketOutput will return the output that is stored inside a ticket
+func (p *PowRepo) GetTicketOutput() string {
+	return p.W.String()
 }
 
 // GetWorkOutput will return a list of data that will be returned in the ticket
