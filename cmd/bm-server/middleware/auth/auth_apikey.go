@@ -24,10 +24,10 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/middleware"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
@@ -93,7 +93,7 @@ func (a *APIKeyAuth) checkAPIKey(bearerToken string, addrHash *hash.Hash, routeN
 		return nil, errInvalidAPIKey
 	}
 
-	if !k.Expires.IsZero() && time.Now().After(k.Expires) {
+	if !k.Expires.IsZero() && internal.TimeNow().After(k.Expires) {
 		logrus.Trace("auth: checkApiKey expired key")
 		return nil, errExpiredAPIKey
 	}

@@ -30,6 +30,7 @@ import (
 	"os"
 	"time"
 
+	pkginternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -55,7 +56,7 @@ self-signed certificates.`,
 // Taken mostly from https://golang.org/src/crypto/tls/generate_cert.go
 func generateCert(domain string) {
 	// Generate x509 template
-	var notBefore = time.Now()
+	var notBefore = pkginternal.TimeNow()
 	var notAfter = notBefore.Add(365 * 24 * time.Hour)
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)

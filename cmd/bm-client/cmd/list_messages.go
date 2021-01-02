@@ -52,7 +52,7 @@ var listMessagesCmd = &cobra.Command{
 				fmt.Println("incorrect --since format. Use the following format: 1y3w4d5h13m")
 				os.Exit(1)
 			}
-			since = time.Now().Add(-1 * d)
+			since = pkginternal.TimeNow().Add(-1 * d)
 		}
 
 		if *lmNew {
@@ -77,7 +77,7 @@ var listMessagesCmd = &cobra.Command{
 			}
 		}
 
-		internal.SaveReadTime(time.Now())
+		internal.SaveReadTime(pkginternal.TimeNow())
 	},
 }
 

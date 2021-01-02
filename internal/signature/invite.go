@@ -26,12 +26,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 )
 
 // override for testing purposes
-var timeNow = time.Now
+var timeNow = internal.TimeNow
 
 // Token holds all info for an invitation
 type Token struct {

@@ -22,7 +22,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -56,7 +55,7 @@ server. Only the specified address can register the account`,
 			return
 		}
 
-		validUntil := time.Now().Add(duration)
+		validUntil := internal.TimeNow().Add(duration)
 		token, err := signature.NewInviteToken(addr.Hash(), config.Routing.RoutingID, validUntil, config.Routing.PrivateKey)
 		if err != nil {
 			msg := fmt.Sprintf("error while inviting address: %s", err)
@@ -73,7 +72,7 @@ server. Only the specified address can register the account`,
 			out, _ := json.Marshal(output)
 			fmt.Printf("%s", out)
 		} else {
-			fmt.Printf("'%s' is allowed to register on our server until %s.\n", addr.String(), time.Now().Add(duration).Format(time.RFC822))
+			fmt.Printf("'%s' is allowed to register on our server until %s.\n", addr.String(), internal.TimeNow().Add(duration))
 			fmt.Printf("The invitation token is: %s\n", token)
 		}
 	},
