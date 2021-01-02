@@ -3,8 +3,6 @@ module github.com/bitmaelum/bitmaelum-suite
 go 1.13
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.3.3 // indirect
-	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20200825124411-48ed595a09d2
 	github.com/cloudflare/gokey v0.1.0
 	github.com/coreos/go-semver v0.3.0
@@ -13,7 +11,7 @@ require (
 	github.com/ernesto-jimenez/httplogger v0.0.0-20150224132909-86cc44f6150a
 	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/gdamore/tcell v1.4.0
-	github.com/gdamore/tcell/v2 v2.1.0 // indirect
+	github.com/gdamore/tcell/v2 v2.1.0
 	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
 	github.com/go-redis/redis/v8 v8.4.4
 	github.com/google/uuid v1.1.3
@@ -36,11 +34,9 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
 	github.com/tyler-smith/go-bip39 v1.1.0
-	github.com/ugorji/go v1.1.4 // indirect
 	github.com/vtolstov/jwt-go v3.2.0+incompatible
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xhit/go-str2duration/v2 v2.0.0
-	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
 	github.com/zalando/go-keyring v0.1.0
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad

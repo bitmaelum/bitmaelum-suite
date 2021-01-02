@@ -25,7 +25,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/app"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/components"
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
