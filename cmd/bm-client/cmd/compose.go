@@ -32,7 +32,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -48,17 +47,18 @@ var composeCmd = &cobra.Command{
 
 		fromInfo := vault.GetAccountOrDefault(v, *from)
 		if fromInfo == nil {
-			logrus.Fatal("No account found in vault")
+			fmt.Println("Error: account not found in your vault")
 			os.Exit(1)
 		}
 
 		toAddr, err := address.NewAddress(*to)
 		if err != nil {
-			logrus.Fatal(err)
+			fmt.Println("Error: ", err)
+			os.Exit(1)
 		}
 
 		if *msg != "" && len(*blocks) > 0 {
-			logrus.Fatal("Cannot specify both a messages (-m) and blocks (-b).")
+			fmt.Println("Error: cannot specify both a messages (-m) and blocks (-b).")
 			os.Exit(1)
 		}
 
@@ -79,7 +79,8 @@ var composeCmd = &cobra.Command{
 				block, err = useStdinEditor()
 			}
 			if err != nil {
-				logrus.Fatal(err)
+				fmt.Println("Error: ", err)
+				os.Exit(1)
 			}
 			if len(block) == 0 {
 				fmt.Println("Warning: empty message body")
@@ -88,28 +89,28 @@ var composeCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("Composing message:\n")
-		fmt.Printf("  From:    %s (%s)\n", fromInfo.Name, fromInfo.Address)
-		fmt.Printf("  To:      %s\n", *to)
-		fmt.Printf("  Subject: %s\n", *subject)
-		for i, block := range *blocks {
-			fmt.Printf("  Block  #%d %s\n", i, block)
-		}
-		for i, attachment := range *attachments {
-			fmt.Printf("  Att.   #%d %s\n", i, attachment)
-		}
+		// fmt.Printf("Composing message:\n")
+		// fmt.Printf("  From:    %s (%s)\n", fromInfo.Name, fromInfo.Address)
+		// fmt.Printf("  To:      %s\n", *to)
+		// fmt.Printf("  Subject: %s\n", *subject)
+		// for i, block := range *blocks {
+		// 	fmt.Printf("  Block  #%d %s\n", i, block)
+		// }
+		// for i, attachment := range *attachments {
+		// 	fmt.Printf("  Att.   #%d %s\n", i, attachment)
+		// }
 
 		// Resolve all stuff
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(fromInfo.RoutingID)
 		if err != nil {
-			logrus.Fatal("Cannot find routing ID for this account")
+			fmt.Println("Error: cannot find routing ID for this account")
 			os.Exit(1)
 		}
 
 		recipientInfo, err := resolver.ResolveAddress(toAddr.Hash())
 		if err != nil {
-			logrus.Fatal("Cannot resolve recipient")
+			fmt.Println("Error: cannot resolve recipient. Are you sure you used the correct mail address?")
 			os.Exit(1)
 		}
 
@@ -120,8 +121,11 @@ var composeCmd = &cobra.Command{
 
 		err = handlers.ComposeMessage(addressing, *subject, *blocks, *attachments)
 		if err != nil {
-			logrus.Fatal(err)
+			fmt.Println("Error: ", err)
+			os.Exit(1)
 		}
+
+		fmt.Println("Message send successfully")
 	},
 }
 
