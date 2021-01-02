@@ -72,7 +72,7 @@ test: test_goimports test_license test_vet test_golint test_staticcheck test_ine
 test_license:
 	echo "Check licenses"
 	shopt -s globstar
-	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2020 -check $(LICENSE_CHECK_DIRS)
+	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2021 -check $(LICENSE_CHECK_DIRS)
 
 test_goimports:
 	echo "Check goimports"
@@ -140,7 +140,7 @@ cross-info:
 	$(info Cross building BitMaelum apps and tools)
 
 fix-licenses: ## Adds / updates license information in source files
-	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2020 -v $(LICENSE_CHECK_DIRS)
+	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2021 -v $(LICENSE_CHECK_DIRS)
 
 build-all: cross-info $(PLATFORMS) ## Build all cross-platform binaries
 
