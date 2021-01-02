@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,7 +33,7 @@ type Logger struct{}
 // Middleware Logs the request time
 func (*Logger) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		t := time.Now()
+		t := internal.TimeNow()
 		next.ServeHTTP(w, req)
 		logrus.Tracef("execution time: %s", time.Since(t).String())
 	})

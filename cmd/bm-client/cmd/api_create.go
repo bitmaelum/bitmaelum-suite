@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
+	internal2 "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -45,7 +46,7 @@ var apiCreateCmd = &cobra.Command{
 		var expiry = time.Time{}
 		fmt.Printf("EXPIRY: %#v\n", expiry)
 		if *acValidUntil > 0 {
-			expiry = time.Now().Add(*acValidUntil)
+			expiry = internal2.TimeNow().Add(*acValidUntil)
 			fmt.Printf("UNTIL EXPIRY: %#v\n", expiry)
 		}
 

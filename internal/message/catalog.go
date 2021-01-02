@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
@@ -110,7 +111,7 @@ type Block struct {
 // NewCatalog initialises a new catalog. This catalog has to be filled with more info, blocks and attachments
 func NewCatalog(addr Addressing, subject string) *Catalog {
 	c := &Catalog{
-		CreatedAt: time.Now(),
+		CreatedAt: internal.TimeNow(),
 		Subject:   subject,
 	}
 

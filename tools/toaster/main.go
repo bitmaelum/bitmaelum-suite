@@ -61,7 +61,7 @@ func main() {
 	host := api.CanonicalHost(info.RoutingInfo.Routing)
 	url := fmt.Sprintf("%s/account/%s/box/1", host, addr.Hash().String())
 
-	lastChecked := time.Now()
+	lastChecked := internal.TimeNow()
 
 	msgTicker := time.NewTicker(opts.Interval)
 	for {
@@ -70,7 +70,7 @@ func main() {
 
 		// Poll messages
 		n := poll(url, opts.Key, lastChecked)
-		lastChecked = time.Now()
+		lastChecked = internal.TimeNow()
 		if n > 0 {
 			// send notification if new messages found
 			msg := fmt.Sprintf("%d new message(s) received for '%s'", n, addr.String())

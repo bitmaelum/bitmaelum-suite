@@ -70,7 +70,7 @@ var readCmd = &cobra.Command{
 				fmt.Println("* Incorrect --since format. Use the following format: 1y3w4d5h13m")
 				os.Exit(1)
 			}
-			since = time.Now().Add(-1 * d)
+			since = pkginternal.TimeNow().Add(-1 * d)
 		}
 
 		if *rNew {
@@ -79,7 +79,7 @@ var readCmd = &cobra.Command{
 
 		handlers.ReadMessages(info, routingInfo, *rBox, *rMessageID, since)
 
-		internal.SaveReadTime(time.Now())
+		internal.SaveReadTime(pkginternal.TimeNow())
 	},
 }
 

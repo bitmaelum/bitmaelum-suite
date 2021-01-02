@@ -28,6 +28,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -40,7 +41,7 @@ func TestCatalogNewCatalog(t *testing.T) {
 
 	assert.Equal(t, "john!", c.From.Address)
 	assert.Equal(t, "john doe", c.From.Name)
-	assert.False(t, c.CreatedAt.Before(time.Now().Add(-1*time.Second)))
+	assert.False(t, c.CreatedAt.Before(internal.TimeNow().Add(-1*time.Second)))
 	assert.Equal(t, "subject", c.Subject)
 
 	// Use the hash instead of an address
@@ -55,7 +56,7 @@ func TestCatalogNewCatalog(t *testing.T) {
 	c = NewCatalog(addressing, "subject")
 	assert.Equal(t, "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2", c.From.Address)
 	assert.Equal(t, "john doe", c.From.Name)
-	assert.False(t, c.CreatedAt.Before(time.Now().Add(-1*time.Second)))
+	assert.False(t, c.CreatedAt.Before(internal.TimeNow().Add(-1*time.Second)))
 	assert.Equal(t, "subject", c.Subject)
 
 }
