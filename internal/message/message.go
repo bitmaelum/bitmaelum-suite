@@ -28,7 +28,6 @@ import (
 
 // EncryptedMessage is an encrypted message.
 type EncryptedMessage struct {
-	BoxID   string  // Optional block ID where this message resied (not part of the message)
 	ID      string  // Optional message ID (not part of the message)
 	Header  *Header // Message header
 	Catalog []byte  // Encrypted catalog

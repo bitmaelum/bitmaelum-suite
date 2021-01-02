@@ -48,7 +48,6 @@ var messageCmd = &cobra.Command{
 		}
 
 		em := message.EncryptedMessage{
-			BoxID:   "1",
 			ID:      msg.ID,
 			Header:  &msg.Header,
 			Catalog: msg.Catalog,
