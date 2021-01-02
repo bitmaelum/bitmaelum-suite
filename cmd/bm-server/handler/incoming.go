@@ -27,8 +27,10 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/httputils"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/processor"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/gorilla/mux"
 )
 
@@ -62,11 +64,8 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// @TODO: we must find a better way to differentiate between incoming messages from client-server and server-server
-	// len(header.Signatures.Server) == 0 is not a good way i think
-
-	// If we are sending on behalf of another account, we need to add additional authorization information
-	if header.From.SignedBy == message.SignedByTypeAuthorized && len(header.Signatures.Server) == 0 {
+	// If we are sending on behalf of another account, we need to add additional authorization information if we are originating
+	if header.From.SignedBy == message.SignedByTypeAuthorized && IsOriginServer(header.From.Addr) {
 		if t.AuthKey == "" {
 			httputils.ErrorOut(w, http.StatusInternalServerError, "onbehalf signing, but token is not fetched with authentication")
 			return
@@ -83,7 +82,8 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 		header.AuthorizedBy.Signature = k.Signature
 	}
 
-	if len(header.Signatures.Server) == 0 {
+	// Add server signature if we are the originating server
+	if IsOriginServer(header.From.Addr) {
 		// Add a server signature to the header, so we know this server is the origin of the message
 		err = message.SignServerHeader(header)
 		if err != nil {
@@ -100,6 +100,17 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 	}
 
 	_ = httputils.JSONOut(w, http.StatusOK, httputils.StatusOk("saved message header"))
+}
+
+// IsOriginServer will return true when the sender of the header originates from this server. False otherwise
+func IsOriginServer(addr hash.Hash) bool {
+	rs := container.Instance.GetResolveService()
+	info, err := rs.ResolveAddress(addr)
+	if err != nil {
+		return false
+	}
+
+	return info.RoutingID == config.Routing.RoutingID
 }
 
 // IncomingMessageCatalog deals with uploading message catalogs
