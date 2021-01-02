@@ -20,6 +20,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -43,10 +44,12 @@ var authCreateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *authAccount)
-		if info == nil {
-			logrus.Fatal("No account found in vault")
+		v := vault.OpenDefaultVault()
+
+
+		info, err := vault.GetAccount(v, *asAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
 			os.Exit(1)
 		}
 

@@ -31,13 +31,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listMessagesCmd = &cobra.Command{
-	Use:     "list-messages",
-	Aliases: []string{"list"},
+var messageListCmd = &cobra.Command{
+	Use:     "list",
 	Short:   "Displays a list of messages from your account(s)",
 	Long:    `Retrieves and displays a list of message found on your remote server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+		v := vault.OpenDefaultVault()
 
 		var since time.Time
 
@@ -88,10 +87,10 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(listMessagesCmd)
+	messageCmd.AddCommand(messageListCmd)
 
-	lmAccount = listMessagesCmd.Flags().StringP("account", "a", "", "Account")
+	lmAccount = messageListCmd.Flags().StringP("account", "a", "", "Account")
 
-	lmNew = listMessagesCmd.Flags().BoolP("new", "n", false, "Display new messages only")
-	lmSince = listMessagesCmd.Flags().StringP("since", "s", "", "Display messages since the specific duration (accepts 1y1w1d1h)")
+	lmNew = messageListCmd.Flags().BoolP("new", "n", false, "Display new messages only")
+	lmSince = messageListCmd.Flags().StringP("since", "s", "", "Display messages since the specific duration (accepts 1y1w1d1h)")
 }

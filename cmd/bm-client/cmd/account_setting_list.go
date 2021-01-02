@@ -20,26 +20,41 @@
 package cmd
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"fmt"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
-var listOrganisationsCmd = &cobra.Command{
-	Use:     "list-organisations",
-	Aliases: []string{"list-org", "lo"},
-	Short:   "List your organisations",
-	Long:    `Displays a list of all your organisations currently available`,
+var accountSettingsListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "Display settings",
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-		handlers.ListOrganisations(v, *orgDisplayKeys)
+		v := vault.OpenDefaultVault()
+
+		info, err := vault.GetAccount(v, *asAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
+			os.Exit(1)
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Key", "Value"})
+
+		table.Append([]string{"Name", info.Name})
+
+		if info.Settings != nil {
+			for k, v := range info.Settings {
+				table.Append([]string{k, v})
+			}
+		}
+
+		table.Render()
 	},
 }
 
-var orgDisplayKeys *bool
-
 func init() {
-	rootCmd.AddCommand(listOrganisationsCmd)
-
-	orgDisplayKeys = listOrganisationsCmd.Flags().BoolP("keys", "k", false, "Display private and public key")
+	accountSettingsCmd.AddCommand(accountSettingsListCmd)
 }

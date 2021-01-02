@@ -20,11 +20,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -33,15 +33,15 @@ var otpCmd = &cobra.Command{
 	Short: "Generate a OTP to authenticate to a server",
 	Long:  `It will generate a OTP code that can be used to authenticate to a third party server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+		v := vault.OpenDefaultVault()
 
-		accountToUse := vault.GetAccountOrDefault(v, *otpAccount)
-		if accountToUse == nil {
-			logrus.Fatal("No account found in vault")
+		info, err := vault.GetAccount(v, *otpAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
 			os.Exit(1)
 		}
 
-		handlers.OtpGenerate(accountToUse, otpServer)
+		handlers.OtpGenerate(info, otpServer)
 
 	},
 }

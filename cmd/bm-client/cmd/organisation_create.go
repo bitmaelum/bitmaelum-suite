@@ -20,63 +20,45 @@
 package cmd
 
 import (
-	"fmt"
-	"strings"
-
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var setCmd = &cobra.Command{
-	Use:   "set",
-	Short: "Create or update a specific setting in your vault",
-	Long:  `Your vault accounts can have additional settings. With this command you can easily manage these.`,
+var organisationCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Creates a new organisation",
+	Long: `Creates a new organisation locally and upload it to the keyserver.
+
+This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *sAddress)
+		v := vault.OpenDefaultVault()
 
-		var msg string
-
-		k := strings.ToLower(*sKey)
-		switch k {
-		case "name":
-			info.Name = *sValue
-			msg = fmt.Sprintf("Updated setting %s to %s", "name", *sValue)
-		default:
-			if *sValue == "" {
-				if info.Settings != nil {
-					delete(info.Settings, k)
-				}
-				msg = fmt.Sprintf("Removed setting %s", k)
-			} else {
-				if info.Settings == nil {
-					info.Settings = make(map[string]string)
-				}
-				info.Settings[k] = *sValue
-				msg = fmt.Sprintf("Updated setting %s to %s", k, *sValue)
-			}
-		}
-
-		err := v.WriteToDisk()
+		kt, err := bmcrypto.FindKeyType(*orgKeytype)
 		if err != nil {
-			logrus.Fatalf("error while saving vault: %s\n", err)
+			logrus.Fatal("incorrect key type")
 		}
 
-		logrus.Printf("%s\n", msg)
+		handlers.CreateOrganisation(v, *orgAddr, *orgFullName, *orgValidations, kt)
 	},
 }
 
 var (
-	sAddress *string
-	sKey     *string
-	sValue   *string
+	orgAddr        *string
+	orgFullName    *string
+	orgValidations *[]string
+	orgKeytype     *string
 )
 
 func init() {
-	rootCmd.AddCommand(setCmd)
+	organisationCmd.AddCommand(organisationCreateCmd)
 
-	sAddress = setCmd.Flags().String("address", "", "Default address to set")
-	sKey = setCmd.Flags().String("key", "", "Key to set")
-	sValue = setCmd.Flags().String("value", "", "Value to set")
+	orgAddr = organisationCreateCmd.Flags().StringP("org", "o", "", "Organisation address (...@<name>! part)")
+	orgFullName = organisationCreateCmd.Flags().StringP("name", "n", "", "Actual name (Acme Inc.)")
+	orgValidations = organisationCreateCmd.Flags().StringArray("val", nil, "validations for the organisation")
+	orgKeytype = organisationCreateCmd.Flags().StringP("keytype", "k", "ed25519", "Key type to use (defaults to ED25519)")
+
+	_ = organisationCreateCmd.MarkFlagRequired("org")
 }

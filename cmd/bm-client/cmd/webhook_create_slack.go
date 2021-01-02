@@ -48,8 +48,13 @@ var webhookCreateSlackCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *whAccount)
+		v := vault.OpenDefaultVault()
+
+		info, err := vault.GetAccount(v, *otpAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
+			os.Exit(1)
+		}
 
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(info.RoutingID)

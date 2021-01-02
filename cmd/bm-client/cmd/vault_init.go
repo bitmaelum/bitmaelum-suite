@@ -20,41 +20,56 @@
 package cmd
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"fmt"
+	"os"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var createAccountCmd = &cobra.Command{
-	Use:   "create-account",
-	Short: "Create a new account",
-	Long: `Create a new account locally and upload it to a BitMaelum server.
-
-This assumes you have a BitMaelum invitation token for the specific server.`,
+var vaultInitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Creates a new vault with a password",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
 
-		kt, err := bmcrypto.FindKeyType(*keytype)
-		if err != nil {
-			logrus.Fatal("incorrect key type")
+		// Get either given path, or the default configuration vault path
+		vaultPath := *vpath
+		if vaultPath == "" {
+			vaultPath = config.Client.Accounts.Path
 		}
-		handlers.CreateAccount(v, *addr, *name, *token, kt)
+
+		// Check if vault/path exists
+		if vault.Exists(vaultPath) {
+			// Vault already exists. Not creating a new vault
+			fmt.Println("Vault already exists. Use --path to create a new vault on a specific path.")
+			os.Exit(1)
+		}
+
+		// Check if password is given. If not, ask for password
+		if vault.VaultPassword == "" {
+			vault.VaultPassword, _ = console.AskDoublePassword()
+		}
+
+		// Create a new vault
+		_, err := vault.CreateVault(vaultPath, vault.VaultPassword)
+		if err != nil {
+			fmt.Println("error: cannot create vault: ", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("successfully created a new vault at ", vaultPath)
 	},
 }
 
-var addr, name, token, keytype *string
+var (
+	vpath *string
+)
 
 func init() {
-	rootCmd.AddCommand(createAccountCmd)
+	vaultCmd.AddCommand(vaultInitCmd)
 
-	addr = createAccountCmd.Flags().String("address", "", "Address to create")
-	name = createAccountCmd.Flags().String("name", "", "Your full name")
-	token = createAccountCmd.Flags().String("token", "", "Invitation token from server")
-	keytype = createAccountCmd.Flags().String("keytype", "ed25519", "Type of key you want to generate (defaults to ed25519)")
-
-	_ = createAccountCmd.MarkFlagRequired("address")
-	_ = createAccountCmd.MarkFlagRequired("name")
-	_ = createAccountCmd.MarkFlagRequired("token")
+	vpath = vaultInitCmd.Flags().String("path", "", "Path to vault")
 }

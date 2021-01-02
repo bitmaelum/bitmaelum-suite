@@ -64,27 +64,27 @@ func StorePassword(pwd string) error {
 }
 
 // AskDoublePassword will ask for a password (and confirmation) on the commandline
-func AskDoublePassword() ([]byte, error) {
+func AskDoublePassword() (string, error) {
 	for {
-		fmt.Print("Please enter your vault password: ")
+		fmt.Print("Please enter your new vault password: ")
 		p1, err := pwdReader.ReadPassword()
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		fmt.Println("")
 
-		fmt.Print("Please retype your vault password: ")
+		fmt.Print("Please retype your new vault password: ")
 		p2, err := pwdReader.ReadPassword()
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		fmt.Println("")
 
 		if bytes.Equal(p1, p2) {
-			return p1, nil
+			return string(p1), nil
 		}
 
-		fmt.Println("Passwords do not match. Please type again.")
+		fmt.Println("Passwords do not match. Please try again.")
 	}
 }
 

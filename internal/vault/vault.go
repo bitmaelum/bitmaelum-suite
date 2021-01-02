@@ -59,8 +59,12 @@ const (
 // Override for testing purposes
 var fs = afero.NewOsFs()
 
-// VaultPassword is the given password through the commandline for opening the vault
-var VaultPassword string
+var (
+	// VaultPassword is the given password through the commandline for opening the vault
+	VaultPassword string
+	// VaultPath is the default vault path
+	VaultPath string
+)
 
 // StoreType hold the actual data that is encrypted inside the vault
 type StoreType struct {
@@ -127,10 +131,6 @@ func New(p string, pwd []byte) (*Vault, error) {
 // sanityCheck checks if the vault contains correct data. It might be the accounts are in some kind of invalid state,
 // so we should not save any data once we detected this.
 func (v *Vault) sanityCheck() bool {
-	if len(v.Store.Accounts) == 0 {
-		return false
-	}
-
 	for _, acc := range v.Store.Accounts {
 		if acc.PrivKey.S == "" {
 			return false
@@ -316,17 +316,6 @@ func (v *Vault) FindShortRoutingID(id string) string {
 	return found
 }
 
-// GetAccountOrDefault find the address from the vault. If address is empty, it will fetch the default address, or the
-// first address in the vault if no default address is present.
-func GetAccountOrDefault(vault *Vault, a string) *AccountInfo {
-	if a == "" {
-		return vault.GetDefaultAccount()
-	}
-
-	acc, _ := GetAccount(vault, a)
-	return acc
-}
-
 // GetAccount returns the given account, or nil when not found
 func GetAccount(vault *Vault, a string) (*AccountInfo, error) {
 	addr, err := address.NewAddress(a)
@@ -343,45 +332,58 @@ func OpenVaultWithPass(pass string) (*Vault, error) {
 	return New(config.Client.Accounts.Path, []byte(pass))
 }
 
-// OpenVault returns an opened vault, or opens the vault, asking a password if needed
-func OpenVault() *Vault {
-	fromVault := false
-
-	// Check if vault exists
-	if vaultExists(config.Client.Accounts.Path) {
-		if VaultPassword == "" {
-			VaultPassword, fromVault = console.AskPassword()
-		}
-	} else {
-		if VaultPassword == "" {
-			fmt.Printf("A vault could not be found. Creating a new vault at '%s'.\n", config.Client.Accounts.Path)
-			b, err := console.AskDoublePassword()
-			VaultPassword = string(b)
-			if err != nil {
-				fmt.Printf("Error while creating vault: %s", err)
-				fmt.Println("")
-				os.Exit(1)
-			}
-		}
+// CreateVault will create a new vault on the given path
+func CreateVault(p, pass string) (*Vault, error) {
+	v, err := New(p, []byte(pass))
+	if err != nil {
+		return nil, err
 	}
 
+	return v, nil
+}
+
+// OpenDefaultVault returns an opened vault on vault.VaultPath and with password vault.VaultPath
+func OpenDefaultVault() *Vault {
+	if !Exists(VaultPath) {
+		fmt.Printf("Cannot open vault at '%s'. You might want to initialize a new vault with by issuing \n\n   $ bm-client vault init\n", VaultPath)
+		fmt.Println("")
+		os.Exit(1)
+	}
+
+	var retrievedFromKeyStore = false
+
+	// Ask password when none is found
+	if VaultPassword == "" {
+		VaultPassword, retrievedFromKeyStore = console.AskPassword()
+	}
+
+	// If the password was correct and not already read from the vault, store it in the vault
+	if !retrievedFromKeyStore {
+		_ = console.StorePassword(VaultPassword)
+	}
+
+	return OpenVault(VaultPath, VaultPassword)
+}
+
+func OpenVault(vp, pass string) *Vault {
 	// Unlock vault
-	v, err := New(config.Client.Accounts.Path, []byte(VaultPassword))
+	v, err := New(vp, []byte(pass))
 	if err != nil {
 		fmt.Printf("Error while opening vault: %s", err)
 		fmt.Println("")
 		os.Exit(1)
 	}
 
-	// If the password was correct and not already read from the vault, store it in the vault
-	if !fromVault {
-		_ = console.StorePassword(VaultPassword)
-	}
-
 	return v
 }
 
-func vaultExists(p string) bool {
-	_, err := os.Stat(config.Client.Accounts.Path)
-	return err == nil
+// Exists will return true if the vault exists
+func Exists(p string) bool {
+	info, err := os.Stat(p)
+
+	if err != nil {
+		return false
+	}
+
+	return info.IsDir() == false
 }

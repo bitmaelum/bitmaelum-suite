@@ -20,58 +20,46 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var accountCmd = &cobra.Command{
-	Use:   "account",
-	Short: "Returns local account info",
-	Long:  ``,
+var accountSettingDeleteCmd = &cobra.Command{
+	Use:   "setting",
+	Short: "Delete setting",
 	Run: func(cmd *cobra.Command, args []string) {
-		v, err := vault.OpenVaultWithPass(vault.VaultPassword)
+		v := vault.OpenDefaultVault()
+
+		info, err := vault.GetAccount(v, *asAccount)
 		if err != nil {
-			output.JSONErrorStrOut("cannot open vault")
+			fmt.Println("cannot find account in vault")
 			os.Exit(1)
 		}
 
-		out := []output.JSONT{}
-		for _, acc := range v.Store.Accounts {
+		k := strings.ToLower(*asdKey)
+		delete(info.Settings, k)
 
-			privkey := ""
-			if *accDisplayPrivKey {
-				privkey = acc.PrivKey.String()
-			}
-
-			out = append(out, output.JSONT{
-				"address": output.JSONT{
-					"hash":       acc.Address.Hash().String(),
-					"address":    acc.Address.String(),
-					"local_part": acc.Address.Local,
-					"org_part":   acc.Address.Org,
-				},
-				"name":          acc.Name,
-				"routing_id":    acc.RoutingID,
-				"private_key":   privkey,
-				"public_key":    acc.PubKey.String(),
-				"proof_of_work": acc.Pow.String(),
-				"settings":      acc.Settings,
-			})
+		err = v.WriteToDisk()
+		if err != nil {
+			fmt.Printf("Error while saving vault: %s\n", err)
+			os.Exit(1)
 		}
 
-		output.JSONOut(out)
+		fmt.Printf("Removed setting %s\n", k)
 	},
 }
 
 var (
-	accDisplayPrivKey *bool
+	asdKey *string
 )
 
 func init() {
-	rootCmd.AddCommand(accountCmd)
+	accountSettingsCmd.AddCommand(accountSettingDeleteCmd)
 
-	accDisplayPrivKey = accountCmd.Flags().Bool("display-private-key", false, "Should the output return the private keys as well?")
+	asdKey = accountSettingDeleteCmd.PersistentFlags().String("key", "", "Key to remove")
+	_ = accountSettingDeleteCmd.MarkPersistentFlagRequired("key")
 }

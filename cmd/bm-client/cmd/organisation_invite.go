@@ -22,42 +22,34 @@ package cmd
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var createOrganisationCmd = &cobra.Command{
-	Use:   "create-organisation",
-	Short: "Create a new organisation",
-	Long: `Create a new organisation locally and upload it to the keyserver.
-
-This assumes you have a BitMaelum invitation token for the specific server.`,
+var organisationInviteCmd = &cobra.Command{
+	Use:   "create-organisation-invite",
+	Short: "Create a new organisation invitation for a user",
+	Long:  `Creates an invitation for a user for the organisation.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+		v := vault.OpenDefaultVault()
 
-		kt, err := bmcrypto.FindKeyType(*orgKeytype)
-		if err != nil {
-			logrus.Fatal("incorrect key type")
-		}
-		handlers.CreateOrganisation(v, *orgAddr, *orgFullName, *orgValidations, kt)
+		handlers.CreateOrganisationInvite(v, *orgInvOrg, *orgInvAddress, *orgInvRoutingID)
 	},
 }
 
 var (
-	orgAddr        *string
-	orgFullName    *string
-	orgValidations *[]string
-	orgKeytype     *string
+	orgInvOrg       *string
+	orgInvAddress   *string
+	orgInvRoutingID *string
 )
 
 func init() {
-	rootCmd.AddCommand(createOrganisationCmd)
+	organisationCmd.AddCommand(organisationInviteCmd)
 
-	orgAddr = createOrganisationCmd.Flags().StringP("org", "o", "", "Organisation address (...@<name>! part)")
-	orgFullName = createOrganisationCmd.Flags().StringP("name", "n", "", "Actual name (Acme Inc.)")
-	orgValidations = createOrganisationCmd.Flags().StringArray("val", nil, "validations for the organisation")
-	orgKeytype = createOrganisationCmd.Flags().StringP("keytype", "k", "ed25519", "Key type to use (defaults to ED25519)")
+	orgInvOrg = organisationInviteCmd.Flags().StringP("org", "o", "", "org name")
+	orgInvAddress = organisationInviteCmd.Flags().StringP("addr", "a", "", "address")
+	orgInvRoutingID = organisationInviteCmd.Flags().StringP("routing-id", "r", "", "routing ID where this user will be invited to")
 
-	_ = createOrganisationCmd.MarkFlagRequired("org")
+	_ = organisationInviteCmd.MarkFlagRequired("org")
+	_ = organisationInviteCmd.MarkFlagRequired("addr")
+	_ = organisationInviteCmd.MarkFlagRequired("routing-id")
 }

@@ -17,48 +17,18 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package main
+package cmd
 
 import (
-	"fmt"
-	"math/rand"
-	"os"
-	"time"
-
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/cmd"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/spf13/cobra"
 )
 
-type options struct {
-	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
-	Password string `short:"p" long:"password" description:"Vault password" default:""`
-	Vault    string `long:"vault" description:"Custom vault file" default:""`
-	Version  bool   `short:"v" long:"version" description:"Display version information"`
+var vaultCmd = &cobra.Command{
+	Use:   "vault",
+	Short: "Vault management",
+	Long:  ``,
 }
 
-var opts options
-
-func main() {
-	rand.Seed(time.Now().UnixNano())
-
-	internal.ParseOptions(&opts)
-	if opts.Version {
-		internal.WriteVersionInfo("BitMaelum Client", os.Stdout)
-		fmt.Println()
-		os.Exit(1)
-	}
-
-	fmt.Println(internal.GetASCIILogo())
-	config.LoadClientConfig(opts.Config)
-
-	// Set default vault info if set in config
-	vault.VaultPassword = opts.Password
-	vault.VaultPath = config.Client.Accounts.Path
-	if opts.Vault != "" {
-		vault.VaultPath = opts.Vault
-	}
-
-	cmd.Execute()
+func init() {
+	rootCmd.AddCommand(vaultCmd)
 }

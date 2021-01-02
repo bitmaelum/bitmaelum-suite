@@ -20,53 +20,46 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var setDefaultCmd = &cobra.Command{
-	Use:     "set-default",
-	Aliases: []string{"default"},
-	Short:   "Set default account to send from",
-	Long:    `When you don't specify a from address, bm-client (ano other tools) will automatically use this address.`,
+var createAccountCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Creates a new account",
+	Long: `Creates a new account locally and upload it to a BitMaelum server.
+
+This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+		v := vault.OpenDefaultVault()
 
-		fromAddr, err := address.NewAddress(*sdFrom)
+		kt, err := bmcrypto.FindKeyType(*keytype)
 		if err != nil {
-			logrus.Fatal(err)
+			logrus.Fatal("incorrect key type")
 		}
-		if !v.HasAccount(*fromAddr) {
-			logrus.Fatal("Address not found in vault")
-		}
-
-		for i := range v.Store.Accounts {
-			v.Store.Accounts[i].Default = false
-
-			if v.Store.Accounts[i].Address.String() == *sdFrom {
-				v.Store.Accounts[i].Default = true
-			}
-		}
-
-		err = v.WriteToDisk()
-		if err != nil {
-			logrus.Fatalf("error while saving vault: %s\n", err)
-		}
-
-		fmt.Printf("Default address set to '%s'\n", *sdFrom)
+		handlers.CreateAccount(v, *account, *name, *token, kt)
 	},
 }
 
-var sdFrom *string
+var (
+	account *string
+	name    *string
+	token   *string
+	keytype *string
+)
 
 func init() {
-	rootCmd.AddCommand(setDefaultCmd)
+	accountCmd.AddCommand(createAccountCmd)
 
-	sdFrom = setDefaultCmd.Flags().String("address", "", "Default address to set")
+	account = createAccountCmd.Flags().String("account", "", "Account to create")
+	name = createAccountCmd.Flags().String("name", "", "Your full name")
+	token = createAccountCmd.Flags().String("token", "", "Invitation token from server")
+	keytype = createAccountCmd.Flags().String("keytype", "ed25519", "Type of key you want to generate (defaults to ed25519)")
 
-	_ = setDefaultCmd.MarkFlagRequired("address")
+	_ = createAccountCmd.MarkFlagRequired("account")
+	_ = createAccountCmd.MarkFlagRequired("name")
+	_ = createAccountCmd.MarkFlagRequired("token")
 }

@@ -29,7 +29,7 @@ import (
 
 // AccountInfo represents client account information
 type AccountInfo struct {
-	Default bool             `json:"default"` // Is this the default account
+	// Default bool             `json:"default"` // Is this the default account
 	Address *address.Address `json:"address"` // The address of the account
 
 	Name     string            `json:"name"`     // Full name of the user
@@ -79,21 +79,21 @@ func (v *Vault) HasAccount(addr address.Address) bool {
 	return err == nil
 }
 
-// GetDefaultAccount returns the default account from the vault. This could be the one set to default, or if none found,
-// the first account in the vault. Returns nil when no accounts are present in the vault.
-func (v *Vault) GetDefaultAccount() *AccountInfo {
-	// No accounts, return nil
-	if len(v.Store.Accounts) == 0 {
-		return nil
-	}
-
-	// Return account that is set default (the first one, if multiple)
-	for i := range v.Store.Accounts {
-		if v.Store.Accounts[i].Default {
-			return &v.Store.Accounts[i]
-		}
-	}
-
-	// No default found, return the first account
-	return &v.Store.Accounts[0]
-}
+// // GetDefaultAccount returns the default account from the vault. This could be the one set to default, or if none found,
+// // the first account in the vault. Returns nil when no accounts are present in the vault.
+// func (v *Vault) GetDefaultAccount() *AccountInfo {
+// 	// No accounts, return nil
+// 	if len(v.Store.Accounts) == 0 {
+// 		return nil
+// 	}
+//
+// 	// Return account that is set default (the first one, if multiple)
+// 	for i := range v.Store.Accounts {
+// 		if v.Store.Accounts[i].Default {
+// 			return &v.Store.Accounts[i]
+// 		}
+// 	}
+//
+// 	// No default found, return the first account
+// 	return &v.Store.Accounts[0]
+// }
