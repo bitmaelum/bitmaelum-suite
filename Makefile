@@ -9,7 +9,7 @@ REPO="github.com/bitmaelum/bitmaelum-suite"
 
 # Our defined apps and tools
 APPS := bm-server bm-client bm-config bm-mail bm-send bm-json
-TOOLS := hash-address jwt proof-of-work readmail update-resolver resolve vault-edit resolve-auth update-pow jwt-validate check-org
+TOOLS := hash-address jwt proof-of-work readmail update-resolver resolve vault-edit resolve-auth update-pow jwt-validate check-org toaster
 
 # These files are checked for license headers
 LICENSE_CHECK_DIRS=internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go
@@ -118,14 +118,16 @@ $(TOOLS):
 # Build GOOS/GOARCH apps in separate release directory
 $(CROSS_APPS):
 	$(info -   Building app $(subst cross-,,$@) (${GOOS}-${GOARCH}))
-	go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/cmd/$(subst cross-,,$@)
+	CGO_ENABLED=0 go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/cmd/$(subst cross-,,$@)
 
 # Build GOOS/GOARCH tools in separate release directory
 $(CROSS_TOOLS):
 	$(info -   Building tool $(subst cross-,,$@) (${GOOS}-${GOARCH}))
 	go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/tools/$(subst cross-,,$@)
 
-$(BUILD_ALL_PLATFORMS): $(CROSS_APPS) $(CROSS_TOOLS)
+$(BUILD_ALL_PLATFORMS):
+	make -j $(CROSS_APPS)
+	#make -j $(CROSS_TOOLS)
 
 $(PLATFORMS):
 	$(eval GOOS=$(firstword $(subst -, ,$@)))
