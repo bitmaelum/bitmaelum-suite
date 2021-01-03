@@ -18,7 +18,6 @@ jobs:
       - name: Build linux version
         run: |
           make -j linux-amd64
-          ls -la -R ./release
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -44,9 +43,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - name: Build docker client image
         run: |
-          ls -laR
           sh ./buildscripts/docker/generate-client.sh
       - name: Build docker server image
         run: |
-          ls -laR
           sh ./buildscripts/docker/generate-server.sh
