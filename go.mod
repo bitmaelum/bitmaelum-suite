@@ -12,7 +12,8 @@ require (
 	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/gdamore/tcell/v2 v2.1.0
 	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
-	github.com/go-redis/redis/v8 v8.4.4
+	github.com/go-redis/redis/v7 v7.4.0
+	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/uuid v1.1.3
 	github.com/gookit/color v1.3.6
 	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
@@ -27,6 +28,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nightlyone/lockfile v1.0.0
 	github.com/olekukonko/tablewriter v0.0.4
+	github.com/onsi/ginkgo v1.14.2 // indirect
+	github.com/onsi/gomega v1.10.4 // indirect
 	github.com/rivo/tview v0.0.0-20201204190810-5406288b8e4e
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/afero v1.5.1
@@ -43,6 +46,5 @@ require (
 	golang.org/x/sys v0.0.0-20201231184435-2d18734c6014 // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 	golang.org/x/text v0.3.4 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

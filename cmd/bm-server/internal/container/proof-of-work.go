@@ -25,7 +25,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/pow"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v7"
 )
 
 var (

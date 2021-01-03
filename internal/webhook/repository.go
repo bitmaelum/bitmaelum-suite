@@ -24,7 +24,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v7"
 	"github.com/sirupsen/logrus"
 	bolt "go.etcd.io/bbolt"
 )

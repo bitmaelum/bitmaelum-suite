@@ -23,7 +23,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v7"
 )
 
 /* Defines a wrapper for redis results. Redis-go uses a system where you generate redis-commands which you need
@@ -34,7 +34,7 @@ import (
  * RedisResultWrapper interface.
  */
 
-// RedisResultWrapper This is the our redis repository. It only contains the methods we really need. THis
+// RedisResultWrapper This is the our redis repository. It only contains the methods we really need.
 type RedisResultWrapper interface {
 	Del(ctx context.Context, keys ...string) (int64, error)
 	Get(ctx context.Context, key string) (string, error)
@@ -53,35 +53,35 @@ type RedisBridge struct {
 
 // Del removes a key
 func (r RedisBridge) Del(ctx context.Context, keys ...string) (int64, error) {
-	return r.Client.Del(ctx, keys...).Result()
+	return r.Client.Del(keys...).Result()
 }
 
 // Get fetches a key
 func (r RedisBridge) Get(ctx context.Context, key string) (string, error) {
-	return r.Client.Get(ctx, key).Result()
+	return r.Client.Get(key).Result()
 }
 
 // Exists checks if a key exists
 func (r RedisBridge) Exists(ctx context.Context, key string) (int64, error) {
-	return r.Client.Exists(ctx, key).Result()
+	return r.Client.Exists(key).Result()
 }
 
 // Set stores a key
 func (r RedisBridge) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) (string, error) {
-	return r.Client.Set(ctx, key, value, expiration).Result()
+	return r.Client.Set(key, value, expiration).Result()
 }
 
 // SMembers returns a set
 func (r RedisBridge) SMembers(ctx context.Context, key string) ([]string, error) {
-	return r.Client.SMembers(ctx, key).Result()
+	return r.Client.SMembers(key).Result()
 }
 
 // SAdd adds a key to a set
 func (r RedisBridge) SAdd(ctx context.Context, key string, members ...interface{}) (int64, error) {
-	return r.Client.SAdd(ctx, key, members...).Result()
+	return r.Client.SAdd(key, members...).Result()
 }
 
 // SRem removes a key from a set
 func (r RedisBridge) SRem(ctx context.Context, key string, members ...interface{}) (int64, error) {
-	return r.Client.SRem(ctx, key, members...).Result()
+	return r.Client.SRem(key, members...).Result()
 }

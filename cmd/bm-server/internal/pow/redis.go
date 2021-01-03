@@ -23,7 +23,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v7"
 )
 
 type redisStorage struct {
@@ -38,7 +38,7 @@ func NewRedis(opts *redis.Options) Storable {
 }
 
 func (r *redisStorage) Retrieve(challenge string) (*ProofOfWork, error) {
-	data, err := r.client.Get(r.client.Context(), challenge).Result()
+	data, err := r.client.Get(challenge).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -64,9 +64,9 @@ func (r *redisStorage) Store(pow *ProofOfWork) error {
 		return err
 	}
 
-	return r.client.Set(r.client.Context(), pow.Challenge, data, expiry).Err()
+	return r.client.Set(pow.Challenge, data, expiry).Err()
 }
 
 func (r *redisStorage) Remove(challenge string) error {
-	return r.client.Del(r.client.Context(), challenge).Err()
+	return r.client.Del(challenge).Err()
 }
