@@ -118,14 +118,16 @@ $(TOOLS):
 # Build GOOS/GOARCH apps in separate release directory
 $(CROSS_APPS):
 	$(info -   Building app $(subst cross-,,$@) (${GOOS}-${GOARCH}))
-	go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/cmd/$(subst cross-,,$@)
+	CGO_ENABLED=0 go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/cmd/$(subst cross-,,$@)
 
 # Build GOOS/GOARCH tools in separate release directory
 $(CROSS_TOOLS):
 	$(info -   Building tool $(subst cross-,,$@) (${GOOS}-${GOARCH}))
 	go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/tools/$(subst cross-,,$@)
 
-$(BUILD_ALL_PLATFORMS): $(CROSS_APPS) $(CROSS_TOOLS)
+$(BUILD_ALL_PLATFORMS):
+	make -j $(CROSS_APPS)
+	#make -j $(CROSS_TOOLS)
 
 $(PLATFORMS):
 	$(eval GOOS=$(firstword $(subst -, ,$@)))
@@ -147,11 +149,6 @@ build-all: cross-info $(PLATFORMS) ## Build all cross-platform binaries
 build: info $(APPS) $(TOOLS) ## Build default platform binaries
 
 all: test build ## Run tests and build default platform binaries
-
-docker-image: ## Create docker image and push to dockerhub
-	$(info Building BitMaelum docker image)
-	docker build -t bitmaelum/bitmaelum-suite:latest .
-	docker push bitmaelum/bitmaelum-suite:latest
 
 help: ## Display available commands
 	echo "BitMaelum make commands"

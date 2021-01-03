@@ -16,6 +16,7 @@ on:
 
 jobs:
   analyze:
+    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false && contains(toJson(github.event.commits), '[skip ci]') == false
     name: Analyze
     runs-on: ubuntu-20.04
 
