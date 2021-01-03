@@ -41,6 +41,10 @@ func Execute() {
 	}
 }
 
+func GetRootCommand() *cobra.Command {
+	return rootCmd
+}
+
 func init() {
 	rootCmd.PersistentFlags().StringP("config", "c", "", "configuration file")
 	rootCmd.PersistentFlags().StringP("password", "p", "", "password to unlock your account vault")

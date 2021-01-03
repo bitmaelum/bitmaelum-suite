@@ -196,7 +196,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 		// We can't remove the account from the vault as we have created it on the mail-server
 
 		fmt.Printf("\n  X error while uploading account to the resolver: " + err.Error())
-		fmt.Printf("\n  X Please try again with:\n   bm-client push-account -a '%s'\n", addr.String())
+		fmt.Printf("\n  X Please try again with:\n   bm-client account push -a '%s'\n", addr.String())
 		fmt.Println("")
 		os.Exit(1)
 	}

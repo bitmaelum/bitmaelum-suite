@@ -10,7 +10,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ernesto-jimenez/httplogger v0.0.0-20150224132909-86cc44f6150a
 	github.com/gabriel-vasile/mimetype v1.1.2
-	github.com/gdamore/tcell v1.4.0
 	github.com/gdamore/tcell/v2 v2.1.0
 	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
 	github.com/go-redis/redis/v8 v8.4.4

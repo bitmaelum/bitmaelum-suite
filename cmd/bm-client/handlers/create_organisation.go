@@ -117,7 +117,7 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 		// We can't remove the account from the vault as we have created it on the mail-server
 
 		fmt.Printf("\n  X error while uploading organisation to the resolver: " + err.Error())
-		fmt.Printf("\n  X Please try again with:\n   bm-client push-organisation -a '%s'\n", orgHash.String())
+		fmt.Printf("\n  X Please try again with:\n   bm-client organisation push -a '%s'\n", orgHash.String())
 		fmt.Println("")
 		os.Exit(1)
 	}
