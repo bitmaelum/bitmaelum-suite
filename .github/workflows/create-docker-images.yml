@@ -26,6 +26,7 @@ jobs:
           path: |
             release/linux-amd64
             buildscripts
+            Makefile
 
   docker-build:
     runs-on: ubuntu-20.04
