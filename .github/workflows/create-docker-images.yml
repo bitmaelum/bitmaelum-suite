@@ -17,7 +17,7 @@ jobs:
           go-version: 1.15.x
       - name: Build linux version
         run: |
-          make -d -j linux-amd64
+          make -j linux-amd64
           ls -la -R ./release
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
@@ -43,9 +43,9 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - name: Build docker client image
         run: |
-          ls -la
-          ./buildscripts/docker/generate-client.sh
+          ls -laR
+          sh ./buildscripts/docker/generate-client.sh
       - name: Build docker server image
         run: |
-          ls -la
-          ./buildscripts/docker/generate-server.sh
+          ls -laR
+          sh ./buildscripts/docker/generate-server.sh
