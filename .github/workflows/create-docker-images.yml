@@ -24,13 +24,16 @@ jobs:
           name: release-binaries
           path: |
             release/linux-amd64
-            buildscripts
-            Makefile
 
   docker-build:
     runs-on: ubuntu-20.04
     needs: build
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Download release artifact
         uses: actions/download-artifact@v2
         with:
@@ -41,9 +44,29 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
       - name: Build docker client image
         run: |
           sh ./buildscripts/docker/generate-client.sh
+      - name: push README to Dockerhub
+        uses: christian-korneck/update-container-description-action@v1
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        with:
+          destination_container_repo: bitmaelum/server
+          provider: dockerhub
+          readme_file: './buildscripts/docker/README.client.md'
+
       - name: Build docker server image
         run: |
           sh ./buildscripts/docker/generate-server.sh
+      - name: push README to Dockerhub
+        uses: christian-korneck/update-container-description-action@v1
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        with:
+          destination_container_repo: bitmaelum/server
+          provider: dockerhub
+          readme_file: './buildscripts/docker/README.server.md'
