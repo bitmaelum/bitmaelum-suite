@@ -34,6 +34,7 @@ import (
 type options struct {
 	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
 	Password string `short:"p" long:"password" description:"Vault password" default:""`
+	Vault    string `long:"vault" description:"Custom vault file" default:""`
 	Version  bool   `short:"v" long:"version" description:"Display version information"`
 }
 
@@ -51,9 +52,13 @@ func main() {
 
 	config.LoadClientConfig(opts.Config)
 
-	// Set main password for the vault
+	// Set default vault info if set in config
 	vault.VaultPassword = opts.Password
+	vault.VaultPath = config.Client.Accounts.Path
+	if opts.Vault != "" {
+		vault.VaultPath = opts.Vault
+	}
 
-	v := vault.OpenVault()
+	v := vault.OpenDefaultVault()
 	gui.Run(v)
 }

@@ -39,7 +39,7 @@ func main() {
 	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
 
-	v, err := vault.New(config.Client.Accounts.Path, []byte(opts.Password))
+	v, err := vault.Open(config.Client.Accounts.Path, opts.Password)
 	if err != nil {
 		panic(err)
 	}
@@ -53,10 +53,10 @@ func main() {
 	v.Store = st
 
 	if opts.NewPassword != "" {
-		v.ChangePassword(opts.NewPassword)
+		v.SetPassword(opts.NewPassword)
 	}
 
-	err = v.WriteToDisk()
+	err = v.Persist()
 	if err != nil {
 		panic(err)
 	}

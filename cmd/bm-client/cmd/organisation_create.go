@@ -22,24 +22,43 @@ package cmd
 import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var listOrganisationsCmd = &cobra.Command{
-	Use:     "list-organisations",
-	Aliases: []string{"list-org", "lo"},
-	Short:   "List your organisations",
-	Long:    `Displays a list of all your organisations currently available`,
+var organisationCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Creates a new organisation",
+	Long: `Creates a new organisation locally and upload it to the keyserver.
+
+This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-		handlers.ListOrganisations(v, *orgDisplayKeys)
+		v := vault.OpenDefaultVault()
+
+		kt, err := bmcrypto.FindKeyType(*orgKeytype)
+		if err != nil {
+			logrus.Fatal("incorrect key type")
+		}
+
+		handlers.CreateOrganisation(v, *orgAddr, *orgFullName, *orgValidations, kt)
 	},
 }
 
-var orgDisplayKeys *bool
+var (
+	orgAddr        *string
+	orgFullName    *string
+	orgValidations *[]string
+	orgKeytype     *string
+)
 
 func init() {
-	rootCmd.AddCommand(listOrganisationsCmd)
+	organisationCmd.AddCommand(organisationCreateCmd)
 
-	orgDisplayKeys = listOrganisationsCmd.Flags().BoolP("keys", "k", false, "Display private and public key")
+	orgAddr = organisationCreateCmd.Flags().StringP("org", "o", "", "Organisation address (...@<name>! part)")
+	orgFullName = organisationCreateCmd.Flags().StringP("name", "n", "", "Actual name (Acme Inc.)")
+	orgValidations = organisationCreateCmd.Flags().StringArray("val", nil, "validations for the organisation")
+	orgKeytype = organisationCreateCmd.Flags().StringP("keytype", "k", "ed25519", "Key type to use (defaults to ED25519)")
+
+	_ = organisationCreateCmd.MarkFlagRequired("org")
 }

@@ -20,50 +20,56 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var organisationCmd = &cobra.Command{
-	Use:   "organisation",
-	Short: "Returns local organisation info",
+var vaultInitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Creates a new vault with a password",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		v, err := vault.Open(vault.VaultPath, vault.VaultPassword)
-		if err != nil {
-			output.JSONErrorStrOut("cannot open vault")
+
+		// Get either given path, or the default configuration vault path
+		vaultPath := *vpath
+		if vaultPath == "" {
+			vaultPath = config.Client.Accounts.Path
+		}
+
+		// Check if vault/path exists
+		if vault.Exists(vaultPath) {
+			// Vault already exists. Not creating a new vault
+			fmt.Println("Vault already exists. Use --path to create a new vault on a specific path.")
 			os.Exit(1)
 		}
 
-		out := []output.JSONT{}
-		for _, org := range v.Store.Organisations {
-
-			privkey := ""
-			if *orgDisplayPrivKey {
-				privkey = org.PrivKey.String()
-			}
-
-			out = append(out, output.JSONT{
-				"address":       org.Addr,
-				"full_name":     org.FullName,
-				"private_key":   privkey,
-				"public_key":    org.PubKey.String(),
-				"proof_of_work": org.Pow.String(),
-				"validations":   org.Validations,
-			})
+		// Check if password is given. If not, ask for password
+		if vault.VaultPassword == "" {
+			vault.VaultPassword, _ = console.AskDoublePassword()
 		}
 
-		output.JSONOut(out)
+		// Create a new vault
+		_, err := vault.Create(vaultPath, vault.VaultPassword)
+		if err != nil {
+			fmt.Println("error: cannot create vault: ", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("successfully created a new vault at ", vaultPath)
 	},
 }
 
-var orgDisplayPrivKey *bool
+var (
+	vpath *string
+)
 
 func init() {
-	rootCmd.AddCommand(organisationCmd)
+	vaultCmd.AddCommand(vaultInitCmd)
 
-	orgDisplayPrivKey = organisationCmd.Flags().Bool("display-private-key", false, "Should the output return the private keys as well?")
+	vpath = vaultInitCmd.Flags().String("path", "", "Path to vault")
 }

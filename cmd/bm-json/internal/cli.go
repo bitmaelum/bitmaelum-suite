@@ -31,9 +31,10 @@ import (
 // api client. Since this is used a lot, we created a separate function for this. This will take care of a lot of code
 // duplication.
 func GetClientAndInfo(acc string) (*vault.Vault, *vault.AccountInfo, *api.API, error) {
-	v := vault.OpenVault()
-	info := vault.GetAccountOrDefault(v, acc)
-	if info == nil {
+	v := vault.OpenDefaultVault()
+
+	info, err := vault.GetAccount(v, acc)
+	if err != nil {
 		return nil, nil, nil, errors.New("account not found")
 	}
 

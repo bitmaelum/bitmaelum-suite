@@ -29,8 +29,8 @@ import (
 )
 
 func TestVaultAccount(t *testing.T) {
-	v, err := New("", []byte{})
-	assert.NoError(t, err)
+	v := New()
+	assert.NotNil(t, v)
 
 	assert.Len(t, v.Store.Accounts, 0)
 
@@ -70,44 +70,29 @@ func TestVaultAccount(t *testing.T) {
 }
 
 func TestVaultGetDefaultAccount(t *testing.T) {
-	v, err := New("", []byte{})
-	assert.NoError(t, err)
+	v := New()
+	assert.NotNil(t, v)
 
 	assert.Len(t, v.Store.Accounts, 0)
 
 	addr, _ := address.NewAddress("acc1!")
 	acc := AccountInfo{
-		Default: false,
 		Address: addr,
 	}
 	v.AddAccount(acc)
 
 	addr, _ = address.NewAddress("acc2!")
 	acc = AccountInfo{
-		Default: true,
 		Address: addr,
 	}
 	v.AddAccount(acc)
 
 	addr, _ = address.NewAddress("acc3!")
 	acc = AccountInfo{
-		Default: false,
 		Address: addr,
 	}
 	v.AddAccount(acc)
 	assert.Len(t, v.Store.Accounts, 3)
-
-	da := v.GetDefaultAccount()
-	assert.Equal(t, "acc2!", da.Address.String())
-
-	// Without default set, pick the first
-	v.Store.Accounts[1].Default = false
-	da = v.GetDefaultAccount()
-	assert.Equal(t, "acc1!", da.Address.String())
-
-	v, _ = New("", []byte{})
-	da = v.GetDefaultAccount()
-	assert.Nil(t, da)
 }
 
 func TestInfoToOrg(t *testing.T) {
@@ -126,7 +111,6 @@ func TestInfoToOrg(t *testing.T) {
 func TestAccountInfoAddressHash(t *testing.T) {
 	addr, _ := address.NewAddress("example!")
 	info := &AccountInfo{
-		Default: false,
 		Address: addr,
 		Name:    "John DOe",
 	}

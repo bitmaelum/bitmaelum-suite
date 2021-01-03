@@ -21,62 +21,45 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var setCmd = &cobra.Command{
-	Use:   "set",
-	Short: "Create or update a specific setting in your vault",
-	Long:  `Your vault accounts can have additional settings. With this command you can easily manage these.`,
+var accountSettingDeleteCmd = &cobra.Command{
+	Use:   "setting",
+	Short: "Delete setting",
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
-		info := vault.GetAccountOrDefault(v, *sAddress)
+		v := vault.OpenDefaultVault()
 
-		var msg string
-
-		k := strings.ToLower(*sKey)
-		switch k {
-		case "name":
-			info.Name = *sValue
-			msg = fmt.Sprintf("Updated setting %s to %s", "name", *sValue)
-		default:
-			if *sValue == "" {
-				if info.Settings != nil {
-					delete(info.Settings, k)
-				}
-				msg = fmt.Sprintf("Removed setting %s", k)
-			} else {
-				if info.Settings == nil {
-					info.Settings = make(map[string]string)
-				}
-				info.Settings[k] = *sValue
-				msg = fmt.Sprintf("Updated setting %s to %s", k, *sValue)
-			}
-		}
-
-		err := v.WriteToDisk()
+		info, err := vault.GetAccount(v, *asAccount)
 		if err != nil {
-			logrus.Fatalf("error while saving vault: %s\n", err)
+			fmt.Println("cannot find account in vault")
+			os.Exit(1)
 		}
 
-		logrus.Printf("%s\n", msg)
+		k := strings.ToLower(*asdKey)
+		delete(info.Settings, k)
+
+		err = v.Persist()
+		if err != nil {
+			fmt.Printf("Error while saving vault: %s\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("Removed setting %s\n", k)
 	},
 }
 
 var (
-	sAddress *string
-	sKey     *string
-	sValue   *string
+	asdKey *string
 )
 
 func init() {
-	rootCmd.AddCommand(setCmd)
+	accountSettingsCmd.AddCommand(accountSettingDeleteCmd)
 
-	sAddress = setCmd.Flags().String("address", "", "Default address to set")
-	sKey = setCmd.Flags().String("key", "", "Key to set")
-	sValue = setCmd.Flags().String("value", "", "Value to set")
+	asdKey = accountSettingDeleteCmd.PersistentFlags().String("key", "", "Key to remove")
+	_ = accountSettingDeleteCmd.MarkPersistentFlagRequired("key")
 }

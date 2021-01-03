@@ -30,34 +30,28 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	// inmemory vault
-	v, err := New("", []byte{})
-	assert.NoError(t, err)
-	assert.NotNil(t, v)
-
 	fs = afero.NewMemMapFs()
 
+	// inmemory vault
+	v := New()
+	assert.NotNil(t, v)
+
 	// open/create new vault
-	v, err = New("/my/dir/vault.json", []byte("secret"))
+	v, err := Create("/my/dir/vault.json", "secret")
 	assert.NoError(t, err)
 	assert.NotNil(t, v)
 	ok, _ := afero.Exists(fs, "/my/dir/vault.json")
 	assert.True(t, ok)
 
 	// Reopen again
-	v, err = New("/my/dir/vault.json", []byte("secret"))
+	v, err = Open("/my/dir/vault.json", "secret")
 	assert.NoError(t, err)
 	assert.NotNil(t, v)
-
-	// refuse to overwrite vault with empty vault
-	err = v.WriteToDisk()
-	assert.Errorf(t, err, "vault seems to have invalid data. Refusing to overwrite the current vault")
 
 	privKey, pubKey, _ := testing2.ReadTestKey("../../testdata/key-1.json")
 
 	addr, _ := address.NewAddress("foobar!")
 	acc := &AccountInfo{
-		Default:   false,
 		Address:   addr,
 		Name:      "Foo Bar",
 		Settings:  nil,
@@ -68,8 +62,8 @@ func TestNew(t *testing.T) {
 	}
 	v.AddAccount(*acc)
 
-	// Write to disk works when we have at least one account
-	err = v.WriteToDisk()
+	// Write to disk
+	err = v.Persist()
 	assert.NoError(t, err)
 
 	// Check if the backup exists
@@ -77,12 +71,12 @@ func TestNew(t *testing.T) {
 	assert.True(t, ok)
 
 	// Open vault with wrong password
-	v, err = New("/my/dir/vault.json", []byte("incorrect password"))
+	v, err = Open("/my/dir/vault.json", "incorrect password")
 	assert.Errorf(t, err, "incorrect password")
 	assert.Nil(t, v)
 
 	// Open vault with correct password
-	v, err = New("/my/dir/vault.json", []byte("secret"))
+	v, err = Open("/my/dir/vault.json", "secret")
 	assert.NoError(t, err)
 	assert.Len(t, v.Store.Accounts, 1)
 }
@@ -90,7 +84,7 @@ func TestNew(t *testing.T) {
 func TestFindShortRoutingId(t *testing.T) {
 	var acc AccountInfo
 
-	v, _ := New("", []byte{})
+	v := New()
 
 	addr, _ := address.NewAddress("example!")
 	acc = AccountInfo{Address: addr, RoutingID: "123456780000"}
@@ -108,34 +102,61 @@ func TestFindShortRoutingId(t *testing.T) {
 	assert.Equal(t, "", v.FindShortRoutingID("1"))
 }
 
-func TestVaultChangePassword(t *testing.T) {
-	v, _ := New("", []byte("foobar"))
-	assert.Equal(t, []byte("foobar"), v.password)
+func TestNewPersistent(t *testing.T) {
+	v := NewPersistent("/v1.json", "foobar")
+	assert.NotNil(t, v)
 
-	v.ChangePassword("secret")
-	assert.Equal(t, []byte("secret"), v.password)
+	assert.Equal(t, "foobar", v.password)
+	assert.Equal(t, "/v1.json", v.path)
 }
 
-func TestGetAccountOrDefault(t *testing.T) {
-	var acc *AccountInfo
+func TestVaultChangePassword(t *testing.T) {
+	v := New()
+	assert.NotNil(t, v)
 
-	v, _ := New("", []byte{})
-	addr, _ := address.NewAddress("example1!")
-	acc = &AccountInfo{Address: addr, RoutingID: "123456780000"}
-	v.AddAccount(*acc)
-	addr, _ = address.NewAddress("example2!")
-	acc = &AccountInfo{Address: addr, RoutingID: "123456780001"}
-	v.AddAccount(*acc)
-	addr, _ = address.NewAddress("example3!")
-	acc = &AccountInfo{Address: addr, RoutingID: "123456780002", Default: true}
-	v.AddAccount(*acc)
-	addr, _ = address.NewAddress("example4!")
-	acc = &AccountInfo{Address: addr, RoutingID: "154353535335"}
-	v.AddAccount(*acc)
+	v.SetPassword("foobar")
+	assert.Equal(t, "foobar", v.password)
 
-	acc = GetAccountOrDefault(v, "")
-	assert.Equal(t, "example3!", acc.Address.String())
+	v.SetPassword("secret")
+	assert.Equal(t, "secret", v.password)
+}
 
-	acc = GetAccountOrDefault(v, "example2!")
-	assert.Equal(t, "example2!", acc.Address.String())
+func TestExisting(t *testing.T) {
+	fs = afero.NewMemMapFs()
+
+	// Cant open vaults
+	v, err := Open("/v1.json", "foo")
+	assert.Error(t, err)
+	assert.Nil(t, v)
+	v, err = Open("/v2.json", "bar")
+	assert.Error(t, err)
+	assert.Nil(t, v)
+
+	// Create vaults
+	_, err = Create("/v1.json", "foo")
+	assert.NoError(t, err)
+	_, err = Create("/v2.json", "bar")
+	assert.NoError(t, err)
+
+	// Open vaults
+	v, err = Open("/v1.json", "foo")
+	assert.NoError(t, err)
+	assert.NotNil(t, v)
+	v, err = Open("/v2.json", "bar")
+	assert.NoError(t, err)
+	assert.NotNil(t, v)
+
+	// Change password of vault
+	v.SetPassword("anotherpass")
+	err = v.Persist()
+	assert.NoError(t, err)
+
+	// Try open vault again
+	v, err = Open("/v2.json", "bar")
+	assert.Error(t, err)
+	assert.Nil(t, v)
+	v, err = Open("/v2.json", "anotherpass")
+	assert.NoError(t, err)
+	assert.NotNil(t, v)
+
 }

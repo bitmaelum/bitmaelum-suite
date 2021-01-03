@@ -20,50 +20,37 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
+	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var organisationCmd = &cobra.Command{
-	Use:   "organisation",
-	Short: "Returns local organisation info",
-	Long:  ``,
+var vaultPasswordCmd = &cobra.Command{
+	Use:   "password",
+	Short: "Changes the password for the vault",
 	Run: func(cmd *cobra.Command, args []string) {
-		v, err := vault.Open(vault.VaultPath, vault.VaultPassword)
+		v := vault.OpenDefaultVault()
+
+		pwd, err := console.AskDoublePassword()
 		if err != nil {
-			output.JSONErrorStrOut("cannot open vault")
+			fmt.Println("error: cannot change password: ", err)
 			os.Exit(1)
 		}
 
-		out := []output.JSONT{}
-		for _, org := range v.Store.Organisations {
-
-			privkey := ""
-			if *orgDisplayPrivKey {
-				privkey = org.PrivKey.String()
-			}
-
-			out = append(out, output.JSONT{
-				"address":       org.Addr,
-				"full_name":     org.FullName,
-				"private_key":   privkey,
-				"public_key":    org.PubKey.String(),
-				"proof_of_work": org.Pow.String(),
-				"validations":   org.Validations,
-			})
+		v.SetPassword(pwd)
+		err = v.Persist()
+		if err != nil {
+			fmt.Println("error: cannot change password: ", err)
+			os.Exit(1)
 		}
 
-		output.JSONOut(out)
+		fmt.Println("successfully changed password")
 	},
 }
 
-var orgDisplayPrivKey *bool
-
 func init() {
-	rootCmd.AddCommand(organisationCmd)
-
-	orgDisplayPrivKey = organisationCmd.Flags().Bool("display-private-key", false, "Should the output return the private keys as well?")
+	vaultCmd.AddCommand(vaultPasswordCmd)
 }

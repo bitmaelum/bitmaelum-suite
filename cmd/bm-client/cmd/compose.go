@@ -43,11 +43,11 @@ var composeCmd = &cobra.Command{
 	Short:   "Compose a new message",
 	Long:    `This command will allow you to compose a new message and send it through your BitMaelum server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+		v := vault.OpenDefaultVault()
 
-		fromInfo := vault.GetAccountOrDefault(v, *from)
-		if fromInfo == nil {
-			fmt.Println("Error: account not found in your vault")
+		fromInfo, err := vault.GetAccount(v, *from)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
 			os.Exit(1)
 		}
 

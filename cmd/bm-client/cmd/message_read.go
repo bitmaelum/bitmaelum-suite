@@ -34,18 +34,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var readCmd = &cobra.Command{
+var messageReadCmd = &cobra.Command{
 	Use:     "read",
 	Aliases: []string{"read-message", "r"},
 	Short:   "Read messages from your account",
 	Long: `Read message from your account
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+		v := vault.OpenDefaultVault()
 
-		info := vault.GetAccountOrDefault(v, *rAccount)
-		if info == nil {
-			logrus.Fatal("* No account found in vault")
+		info, err := vault.GetAccount(v, *rAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
 			os.Exit(1)
 		}
 
@@ -92,14 +92,14 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(readCmd)
+	messageCmd.AddCommand(messageReadCmd)
 
-	rAccount = readCmd.Flags().StringP("account", "a", "", "Account")
+	rAccount = messageReadCmd.Flags().StringP("account", "a", "", "Account")
 
-	rBox = readCmd.Flags().StringP("box", "b", "", "Box to fetch")
-	rMessageID = readCmd.Flags().String("id", "", "Message ID")
-	rNew = readCmd.Flags().BoolP("new", "n", false, "Read new messages only")
-	rSince = readCmd.Flags().StringP("since", "s", "", "Read messages since the specific duration (accepts 1y1w1d1h)")
+	rBox = messageReadCmd.Flags().StringP("box", "b", "", "Box to fetch")
+	rMessageID = messageReadCmd.Flags().String("id", "", "Message ID")
+	rNew = messageReadCmd.Flags().BoolP("new", "n", false, "Read new messages only")
+	rSince = messageReadCmd.Flags().StringP("since", "s", "", "Read messages since the specific duration (accepts 1y1w1d1h)")
 
-	_ = readCmd.MarkFlagRequired("account")
+	_ = messageReadCmd.MarkFlagRequired("account")
 }

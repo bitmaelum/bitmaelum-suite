@@ -20,50 +20,15 @@
 package cmd
 
 import (
-	"os"
-
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var organisationCmd = &cobra.Command{
-	Use:   "organisation",
-	Short: "Returns local organisation info",
+var vaultCmd = &cobra.Command{
+	Use:   "vault",
+	Short: "Vault management",
 	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		v, err := vault.Open(vault.VaultPath, vault.VaultPassword)
-		if err != nil {
-			output.JSONErrorStrOut("cannot open vault")
-			os.Exit(1)
-		}
-
-		out := []output.JSONT{}
-		for _, org := range v.Store.Organisations {
-
-			privkey := ""
-			if *orgDisplayPrivKey {
-				privkey = org.PrivKey.String()
-			}
-
-			out = append(out, output.JSONT{
-				"address":       org.Addr,
-				"full_name":     org.FullName,
-				"private_key":   privkey,
-				"public_key":    org.PubKey.String(),
-				"proof_of_work": org.Pow.String(),
-				"validations":   org.Validations,
-			})
-		}
-
-		output.JSONOut(out)
-	},
 }
 
-var orgDisplayPrivKey *bool
-
 func init() {
-	rootCmd.AddCommand(organisationCmd)
-
-	orgDisplayPrivKey = organisationCmd.Flags().Bool("display-private-key", false, "Should the output return the private keys as well?")
+	rootCmd.AddCommand(vaultCmd)
 }

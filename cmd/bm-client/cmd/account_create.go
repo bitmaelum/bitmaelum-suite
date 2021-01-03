@@ -28,33 +28,38 @@ import (
 )
 
 var createAccountCmd = &cobra.Command{
-	Use:   "create-account",
-	Short: "Create a new account",
-	Long: `Create a new account locally and upload it to a BitMaelum server.
+	Use:   "create",
+	Short: "Creates a new account",
+	Long: `Creates a new account locally and upload it to a BitMaelum server.
 
 This assumes you have a BitMaelum invitation token for the specific server.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+		v := vault.OpenDefaultVault()
 
 		kt, err := bmcrypto.FindKeyType(*keytype)
 		if err != nil {
 			logrus.Fatal("incorrect key type")
 		}
-		handlers.CreateAccount(v, *addr, *name, *token, kt)
+		handlers.CreateAccount(v, *account, *name, *token, kt)
 	},
 }
 
-var addr, name, token, keytype *string
+var (
+	account *string
+	name    *string
+	token   *string
+	keytype *string
+)
 
 func init() {
-	rootCmd.AddCommand(createAccountCmd)
+	accountCmd.AddCommand(createAccountCmd)
 
-	addr = createAccountCmd.Flags().String("address", "", "Address to create")
+	account = createAccountCmd.Flags().String("account", "", "Account to create")
 	name = createAccountCmd.Flags().String("name", "", "Your full name")
 	token = createAccountCmd.Flags().String("token", "", "Invitation token from server")
 	keytype = createAccountCmd.Flags().String("keytype", "ed25519", "Type of key you want to generate (defaults to ed25519)")
 
-	_ = createAccountCmd.MarkFlagRequired("address")
+	_ = createAccountCmd.MarkFlagRequired("account")
 	_ = createAccountCmd.MarkFlagRequired("name")
 	_ = createAccountCmd.MarkFlagRequired("token")
 }

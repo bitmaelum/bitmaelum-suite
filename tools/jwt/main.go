@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// Load account
-	accountVault, err := vault.New(config.Client.Accounts.Path, []byte(opts.Password))
+	accountVault, err := vault.Open(config.Client.Accounts.Path, opts.Password)
 	if err != nil {
 		logrus.Fatal(err)
 	}

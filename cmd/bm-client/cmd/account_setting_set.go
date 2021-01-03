@@ -20,50 +20,64 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-json/internal/output"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var organisationCmd = &cobra.Command{
-	Use:   "organisation",
-	Short: "Returns local organisation info",
-	Long:  ``,
+var accountSettingsSetCmd = &cobra.Command{
+	Use:   "set",
+	Short: "Create or update a specific setting in your account",
+	Long:  `Your accounts can have additional settings. With this command you can easily manage these.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		v, err := vault.Open(vault.VaultPath, vault.VaultPassword)
+		v := vault.OpenDefaultVault()
+
+		info, err := vault.GetAccount(v, *asAccount)
 		if err != nil {
-			output.JSONErrorStrOut("cannot open vault")
+			fmt.Println("cannot find account in vault")
 			os.Exit(1)
 		}
 
-		out := []output.JSONT{}
-		for _, org := range v.Store.Organisations {
+		var msg string
 
-			privkey := ""
-			if *orgDisplayPrivKey {
-				privkey = org.PrivKey.String()
+		k := strings.ToLower(*assKey)
+		switch k {
+		case "name":
+			info.Name = *assValue
+			msg = fmt.Sprintf("Updated setting %s to %s", "name", *assValue)
+		default:
+			if info.Settings == nil {
+				info.Settings = make(map[string]string)
 			}
-
-			out = append(out, output.JSONT{
-				"address":       org.Addr,
-				"full_name":     org.FullName,
-				"private_key":   privkey,
-				"public_key":    org.PubKey.String(),
-				"proof_of_work": org.Pow.String(),
-				"validations":   org.Validations,
-			})
+			info.Settings[k] = *assValue
+			msg = fmt.Sprintf("Updated setting %s to %s", k, *assValue)
 		}
 
-		output.JSONOut(out)
+		err = v.Persist()
+		if err != nil {
+			fmt.Printf("error while saving vault: %s\n", err)
+			os.Exit(1)
+		}
+
+		logrus.Printf("%s\n", msg)
 	},
 }
 
-var orgDisplayPrivKey *bool
+var (
+	assKey   *string
+	assValue *string
+)
 
 func init() {
-	rootCmd.AddCommand(organisationCmd)
+	accountSettingsCmd.AddCommand(accountSettingsSetCmd)
 
-	orgDisplayPrivKey = organisationCmd.Flags().Bool("display-private-key", false, "Should the output return the private keys as well?")
+	assKey = accountSettingsSetCmd.Flags().String("key", "", "Key to set")
+	assValue = accountSettingsSetCmd.Flags().String("value", "", "Value to set")
+
+	_ = accountSettingsSetCmd.MarkFlagRequired("key")
+	_ = accountSettingsSetCmd.MarkFlagRequired("value")
 }

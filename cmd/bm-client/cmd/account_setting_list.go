@@ -20,36 +20,41 @@
 package cmd
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
+	"fmt"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
-var createOrganisationInviteCmd = &cobra.Command{
-	Use:   "create-organisation-invite",
-	Short: "Create a new organisation invitation for a user",
-	Long:  `Creates an invitation for a user for the organisation.`,
+var accountSettingsListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "Display settings",
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenVault()
+		v := vault.OpenDefaultVault()
 
-		handlers.CreateOrganisationInvite(v, *orgInvOrg, *orgInvAddress, *orgInvRoutingID)
+		info, err := vault.GetAccount(v, *asAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
+			os.Exit(1)
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Key", "Value"})
+
+		table.Append([]string{"Name", info.Name})
+
+		if info.Settings != nil {
+			for k, v := range info.Settings {
+				table.Append([]string{k, v})
+			}
+		}
+
+		table.Render()
 	},
 }
 
-var (
-	orgInvOrg       *string
-	orgInvAddress   *string
-	orgInvRoutingID *string
-)
-
 func init() {
-	rootCmd.AddCommand(createOrganisationInviteCmd)
-
-	orgInvOrg = createOrganisationInviteCmd.Flags().StringP("org", "o", "", "org name")
-	orgInvAddress = createOrganisationInviteCmd.Flags().StringP("addr", "a", "", "address")
-	orgInvRoutingID = createOrganisationInviteCmd.Flags().StringP("routing-id", "r", "", "routing ID where this user will be invited to")
-
-	_ = createOrganisationInviteCmd.MarkFlagRequired("org")
-	_ = createOrganisationInviteCmd.MarkFlagRequired("addr")
-	_ = createOrganisationInviteCmd.MarkFlagRequired("routing-id")
+	accountSettingsCmd.AddCommand(accountSettingsListCmd)
 }
