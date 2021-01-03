@@ -42,7 +42,9 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - name: Build docker client image
         run: |
+          - ls -la
           - ./buildscripts/docker/generate-client.sh
       - name: Build docker server image
         run: |
+          - ls -la
           - ./buildscripts/docker/generate-server.sh
