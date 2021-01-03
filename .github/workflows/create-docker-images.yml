@@ -17,7 +17,7 @@ jobs:
           go-version: 1.15.x
       - name: Build linux version
         run: |
-          make linux-amd64
+          make -d -j linux-amd64
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         with:
