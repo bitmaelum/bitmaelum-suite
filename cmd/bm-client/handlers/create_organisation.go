@@ -102,7 +102,7 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 		}
 
 		v.AddOrganisation(*info)
-		err = v.WriteToDisk()
+		err = v.Persist()
 		if err != nil {
 			fmt.Printf("\n  X error while saving organisation into vault: %#v", err)
 			fmt.Println("")

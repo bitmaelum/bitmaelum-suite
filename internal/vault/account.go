@@ -21,6 +21,7 @@ package vault
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -77,6 +78,35 @@ func (v *Vault) HasAccount(addr address.Address) bool {
 	_, err := v.GetAccountInfo(addr)
 
 	return err == nil
+}
+
+// GetAccount returns the given account, or nil when not found
+func GetAccount(vault *Vault, a string) (*AccountInfo, error) {
+	addr, err := address.NewAddress(a)
+	if err != nil {
+		return nil, err
+	}
+
+	return vault.GetAccountInfo(*addr)
+}
+
+// FindShortRoutingID will find a short routing ID in the vault and expand it to the full routing ID. So we can use
+// "12345" instead of "1234567890123456789012345678901234567890".
+// Will not return anything when multiple candidates are found.
+func (v *Vault) FindShortRoutingID(id string) string {
+	var found = ""
+	for _, acc := range v.Store.Accounts {
+		if strings.HasPrefix(acc.RoutingID, id) {
+			// Found something else that matches
+			if found != "" && found != acc.RoutingID {
+				// Multiple entries are found, don't return them
+				return ""
+			}
+			found = acc.RoutingID
+		}
+	}
+
+	return found
 }
 
 // // GetDefaultAccount returns the default account from the vault. This could be the one set to default, or if none found,

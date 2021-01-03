@@ -57,7 +57,7 @@ var accountSettingsSetCmd = &cobra.Command{
 			msg = fmt.Sprintf("Updated setting %s to %s", k, *assValue)
 		}
 
-		err = v.WriteToDisk()
+		err = v.Persist()
 		if err != nil {
 			fmt.Printf("error while saving vault: %s\n", err)
 			os.Exit(1)
@@ -68,8 +68,8 @@ var accountSettingsSetCmd = &cobra.Command{
 }
 
 var (
-	assKey     *string
-	assValue   *string
+	assKey   *string
+	assValue *string
 )
 
 func init() {

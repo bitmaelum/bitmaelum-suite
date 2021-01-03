@@ -42,10 +42,10 @@ func main() {
 	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
 
-	v := vault.OpenVault()
+	v := vault.OpenDefaultVault()
 
-	info := vault.GetAccountOrDefault(v, opts.Address)
-	if info == nil {
+	info, err := vault.GetAccount(v, opts.Address)
+	if err != nil {
 		logrus.Fatal("No account found in vault")
 		os.Exit(1)
 	}

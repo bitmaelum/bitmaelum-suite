@@ -27,9 +27,7 @@ import (
 )
 
 func TestVaultAddOrganisation(t *testing.T) {
-	v, err := New("", []byte{})
-	assert.NoError(t, err)
-
+	v := New()
 	assert.Len(t, v.Store.Organisations, 0)
 
 	org := OrganisationInfo{

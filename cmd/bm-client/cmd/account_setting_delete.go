@@ -43,7 +43,7 @@ var accountSettingDeleteCmd = &cobra.Command{
 		k := strings.ToLower(*asdKey)
 		delete(info.Settings, k)
 
-		err = v.WriteToDisk()
+		err = v.Persist()
 		if err != nil {
 			fmt.Printf("Error while saving vault: %s\n", err)
 			os.Exit(1)

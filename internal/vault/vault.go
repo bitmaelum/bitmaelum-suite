@@ -20,34 +20,20 @@
 package vault
 
 import (
-	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/hmac"
-	"crypto/rand"
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
-	"path/filepath"
-	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/console"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/afero"
-	"golang.org/x/crypto/pbkdf2"
 )
 
 var (
 	errIncorrectPassword   = errors.New("incorrect password")
 	errNotOverwritingVault = errors.New("vault seems to have invalid data. Refusing to overwrite the current vault")
-)
-
-const (
-	pbkdfIterations = 100002
+	errVaultNotFound       = errors.New("vault not found")
+	errNoPathSet           = errors.New("vault path is not set")
 )
 
 // VersionV0 is the first version that uses versioning
@@ -76,7 +62,7 @@ type StoreType struct {
 type Vault struct {
 	Store    StoreType
 	RawData  []byte
-	password []byte
+	password string
 	path     string
 }
 
@@ -90,42 +76,23 @@ type vaultContainer struct {
 }
 
 // New instantiates a new vault
-func New(p string, pwd []byte) (*Vault, error) {
-	var err error
-
-	v := &Vault{
+func New() *Vault {
+	return &Vault{
 		Store: StoreType{
 			Accounts:      []AccountInfo{},
 			Organisations: []OrganisationInfo{},
 		},
-		RawData:  []byte{},
-		password: pwd,
-		path:     p,
+		RawData: []byte{},
 	}
+}
 
-	// No path given, we return just the empty vault
-	if p == "" {
-		return v, nil
-	}
+// NewPersistent instantiates a new vault and persists on disk
+func NewPersistent(p, pass string) *Vault {
+	v := New()
+	v.SetPassword(pass)
+	v.SetPath(p)
 
-	// Create new vault when we cannot find the one specified
-	_, err = fs.Stat(p)
-	if _, ok := err.(*os.PathError); ok {
-		err = fs.MkdirAll(filepath.Dir(p), 0777)
-		if err != nil {
-			return nil, err
-		}
-		err = v.WriteToDisk()
-		return v, err
-	}
-
-	// Read vault data from disk
-	err = v.ReadFromDisk()
-	if err != nil {
-		return nil, err
-	}
-
-	return v, nil
+	return v
 }
 
 // sanityCheck checks if the vault contains correct data. It might be the accounts are in some kind of invalid state,
@@ -152,9 +119,13 @@ func (v *Vault) sanityCheck() bool {
 	return true
 }
 
-// WriteToDisk saves the vault data back to disk
-func (v *Vault) WriteToDisk() error {
-	// Only do sanity chck when file is already present
+// Persist saves the vault data back to disk
+func (v *Vault) Persist() error {
+	if v.path == "" {
+		return errNoPathSet
+	}
+
+	// Only do sanity check when file is already present
 	_, err := fs.Stat(v.path)
 	fileExists := err == nil
 
@@ -176,165 +147,24 @@ func (v *Vault) WriteToDisk() error {
 	}
 
 	// Write vault container back
-	err = afero.WriteFile(fs, v.path, container, 0600)
-	return err
+	return afero.WriteFile(fs, v.path, container, 0600)
 }
 
-// ReadFromDisk will read the account data from disk and stores this into the vault data
-func (v *Vault) ReadFromDisk() error {
-	data, err := afero.ReadFile(fs, v.path)
-	if err != nil {
-		return err
-	}
-
-	container := &vaultContainer{}
-	err = json.Unmarshal(data, &container)
-	if err != nil {
-		return err
-	}
-
-	return v.DecryptContainer(container)
+// SetPassword allows us to change the vault password. Will take effect on writing to disk
+func (v *Vault) SetPassword(pass string) {
+	v.password = pass
 }
 
-// DecryptContainer decrypts a container and fills the values in v.Store
-func (v *Vault) DecryptContainer(container *vaultContainer) error {
-
-	// Check if HMAC is correct
-	hash := hmac.New(sha256.New, v.password)
-	hash.Write(container.Data)
-	if !bytes.Equal(hash.Sum(nil), container.Hmac) {
-		return errIncorrectPassword
-	}
-
-	// Generate key based on password
-	derivedAESKey := pbkdf2.Key(v.password, container.Salt, pbkdfIterations, 32, sha256.New)
-	aes256, err := aes.NewCipher(derivedAESKey)
-	if err != nil {
-		return err
-	}
-
-	// Decrypt vault data
-	plainText := make([]byte, len(container.Data))
-	ctr := cipher.NewCTR(aes256, container.Iv)
-	ctr.XORKeyStream(plainText, container.Data)
-
-	// store raw data. This makes editing through vault-edit tool easier
-	v.RawData = plainText
-
-	if container.Version == VersionV0 {
-		// Unmarshal "old" style, with no organisations present
-		var accounts []AccountInfo
-		err = json.Unmarshal(plainText, &accounts)
-		if err == nil {
-			v.Store.Accounts = accounts
-			v.Store.Organisations = []OrganisationInfo{}
-
-			// Write back to disk in a newer format
-			return v.WriteToDisk()
-		}
-	}
-
-	// Version 1 has organisation info
-	if container.Version == VersionV1 {
-		err = json.Unmarshal(plainText, &v.Store)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+// SetPath sets the path of the vault.
+func (v *Vault) SetPath(p string) {
+	v.path = p
 }
 
-// EncryptContainer encrypts v.Store and returns the vault as encrypted JSON container
-func (v *Vault) EncryptContainer() ([]byte, error) {
-	// Generate 64 byte salt
-	salt := make([]byte, 64)
-	_, err := io.ReadFull(rand.Reader, salt)
-	if err != nil {
-		return nil, err
-	}
+// Create will create a new vault on the given path
+func Create(p, pass string) (*Vault, error) {
+	v := NewPersistent(p, pass)
 
-	// Generate key based on password
-	derivedAESKey := pbkdf2.Key(v.password, salt, pbkdfIterations, 32, sha256.New)
-	aes256, err := aes.NewCipher(derivedAESKey)
-	if err != nil {
-		return nil, err
-	}
-
-	// Generate 32 byte IV
-	iv := make([]byte, aes.BlockSize)
-	_, err = io.ReadFull(rand.Reader, iv)
-	if err != nil {
-		return nil, err
-	}
-
-	// Marshal and encrypt the data
-	plainText, err := json.MarshalIndent(&v.Store, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-
-	cipherText := make([]byte, len(plainText))
-	ctr := cipher.NewCTR(aes256, iv)
-	ctr.XORKeyStream(cipherText, plainText)
-
-	// Generate HMAC based on the encrypted data (encrypt-then-mac?)
-	hash := hmac.New(sha256.New, v.password)
-	hash.Write(cipherText)
-
-	// Generate the vault structure for disk
-	return json.MarshalIndent(&vaultContainer{
-		Version: VersionV1,
-		Data:    cipherText,
-		Salt:    salt,
-		Iv:      iv,
-		Hmac:    hash.Sum(nil),
-	}, "", "  ")
-}
-
-// ChangePassword allows us to change the vault password. Will take effect on writing to disk
-func (v *Vault) ChangePassword(newPassword string) {
-	v.password = []byte(newPassword)
-}
-
-// FindShortRoutingID will find a short routing ID in the vault and expand it to the full routing ID. So we can use
-// "12345" instead of "1234567890123456789012345678901234567890".
-// Will not return anything when multiple candidates are found.
-func (v *Vault) FindShortRoutingID(id string) string {
-	var found = ""
-	for _, acc := range v.Store.Accounts {
-		if strings.HasPrefix(acc.RoutingID, id) {
-			// Found something else that matches
-			if found != "" && found != acc.RoutingID {
-				// Multiple entries are found, don't return them
-				return ""
-			}
-			found = acc.RoutingID
-		}
-	}
-
-	return found
-}
-
-// GetAccount returns the given account, or nil when not found
-func GetAccount(vault *Vault, a string) (*AccountInfo, error) {
-	addr, err := address.NewAddress(a)
-	if err != nil {
-		return nil, err
-	}
-
-	return vault.GetAccountInfo(*addr)
-}
-
-// OpenVaultWithPass will open the vault with the given password BUT does not ask for a password if the
-// vault could not be opened.
-func OpenVaultWithPass(pass string) (*Vault, error) {
-	return New(config.Client.Accounts.Path, []byte(pass))
-}
-
-// CreateVault will create a new vault on the given path
-func CreateVault(p, pass string) (*Vault, error) {
-	v, err := New(p, []byte(pass))
+	err := v.Persist()
 	if err != nil {
 		return nil, err
 	}
@@ -342,7 +172,7 @@ func CreateVault(p, pass string) (*Vault, error) {
 	return v, nil
 }
 
-// OpenDefaultVault returns an opened vault on vault.VaultPath and with password vault.VaultPath
+// OpenDefaultVault returns an opened vault on vault.VaultPath and with password vault.VaultPath. Will die when incorrect vault or password
 func OpenDefaultVault() *Vault {
 	if !Exists(VaultPath) {
 		fmt.Printf("Cannot open vault at '%s'. You might want to initialize a new vault with by issuing \n\n   $ bm-client vault init\n", VaultPath)
@@ -362,12 +192,12 @@ func OpenDefaultVault() *Vault {
 		_ = console.StorePassword(VaultPassword)
 	}
 
-	return OpenVault(VaultPath, VaultPassword)
+	return OpenOrDie(VaultPath, VaultPassword)
 }
 
-func OpenVault(vp, pass string) *Vault {
-	// Unlock vault
-	v, err := New(vp, []byte(pass))
+// OpenOrDie will open a specific vault with a specific password
+func OpenOrDie(vp, pass string) *Vault {
+	v, err := Open(vp, pass)
 	if err != nil {
 		fmt.Printf("Error while opening vault: %s", err)
 		fmt.Println("")
@@ -377,13 +207,43 @@ func OpenVault(vp, pass string) *Vault {
 	return v
 }
 
+// Open will open a specific vault with a specific password
+func Open(vp, pass string) (*Vault, error) {
+	if !Exists(vp) {
+		return nil, errVaultNotFound
+	}
+
+	// Create in memory vault
+	v := NewPersistent(vp, pass)
+
+	// Read data container from path
+	data, err := afero.ReadFile(fs, v.path)
+	if err != nil {
+		return nil, err
+	}
+
+	container := &vaultContainer{}
+	err = json.Unmarshal(data, &container)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decrypt the container into the new vault
+	err = v.DecryptContainer(container)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
 // Exists will return true if the vault exists
 func Exists(p string) bool {
-	info, err := os.Stat(p)
+	info, err := fs.Stat(p)
 
 	if err != nil {
 		return false
 	}
 
-	return info.IsDir() == false
+	return !info.IsDir()
 }

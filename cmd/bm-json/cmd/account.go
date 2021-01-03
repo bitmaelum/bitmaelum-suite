@@ -32,7 +32,7 @@ var accountCmd = &cobra.Command{
 	Short: "Returns local account info",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		v, err := vault.OpenVaultWithPass(vault.VaultPassword)
+		v, err := vault.Open(vault.VaultPath, vault.VaultPassword)
 		if err != nil {
 			output.JSONErrorStrOut("cannot open vault")
 			os.Exit(1)

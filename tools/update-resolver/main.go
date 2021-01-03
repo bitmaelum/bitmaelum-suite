@@ -48,7 +48,7 @@ func main() {
 	logrus.SetLevel(logrus.TraceLevel)
 
 	vault.VaultPassword = opts.Password
-	v := vault.OpenVault()
+	v := vault.OpenDefaultVault()
 
 	if opts.Address != "" {
 		addr, err := address.NewAddress(opts.Address)

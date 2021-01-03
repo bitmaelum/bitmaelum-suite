@@ -40,8 +40,8 @@ var vaultPasswordCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		v.ChangePassword(pwd)
-		err = v.WriteToDisk()
+		v.SetPassword(pwd)
+		err = v.Persist()
 		if err != nil {
 			fmt.Println("error: cannot change password: ", err)
 			os.Exit(1)

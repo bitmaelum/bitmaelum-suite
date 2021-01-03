@@ -46,7 +46,6 @@ var authCreateCmd = &cobra.Command{
 
 		v := vault.OpenDefaultVault()
 
-
 		info, err := vault.GetAccount(v, *asAccount)
 		if err != nil {
 			fmt.Println("cannot find account in vault")

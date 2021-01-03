@@ -42,7 +42,7 @@ func main() {
 	config.LoadClientConfig(opts.Config)
 
 	vault.VaultPassword = opts.Password
-	v := vault.OpenVault()
+	v := vault.OpenDefaultVault()
 
 	for i := range v.Store.Accounts {
 		var pow *proofofwork.ProofOfWork
@@ -63,7 +63,7 @@ func main() {
 
 		v.Store.Accounts[i].Pow = pow
 
-		err := v.WriteToDisk()
+		err := v.Persist()
 		if err != nil {
 			panic(err)
 		}

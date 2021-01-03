@@ -32,9 +32,9 @@ import (
 )
 
 var messageListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "Displays a list of messages from your account(s)",
-	Long:    `Retrieves and displays a list of message found on your remote server`,
+	Use:   "list",
+	Short: "Displays a list of messages from your account(s)",
+	Long:  `Retrieves and displays a list of message found on your remote server`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 

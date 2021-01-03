@@ -26,7 +26,6 @@ import (
 var accountSettingsCmd = &cobra.Command{
 	Use:   "settings",
 	Short: "Settings management",
-
 }
 
 var (

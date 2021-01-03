@@ -149,7 +149,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 		}
 
 		v.AddAccount(*info)
-		err = v.WriteToDisk()
+		err = v.Persist()
 		if err != nil {
 			fmt.Printf("\n  X error while saving account into vault: %#v", err)
 			fmt.Println("")
@@ -171,7 +171,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		v.RemoveAccount(*addr)
-		_ = v.WriteToDisk()
+		_ = v.Persist()
 
 		fmt.Printf("cannot initialize API")
 		fmt.Println("")
@@ -182,7 +182,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		v.RemoveAccount(*addr)
-		_ = v.WriteToDisk()
+		_ = v.Persist()
 
 		fmt.Printf("\n  X error from API while trying to create account: " + err.Error())
 		fmt.Println("")

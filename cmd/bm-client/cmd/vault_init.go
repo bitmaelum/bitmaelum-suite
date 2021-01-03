@@ -54,7 +54,7 @@ var vaultInitCmd = &cobra.Command{
 		}
 
 		// Create a new vault
-		_, err := vault.CreateVault(vaultPath, vault.VaultPassword)
+		_, err := vault.Create(vaultPath, vault.VaultPassword)
 		if err != nil {
 			fmt.Println("error: cannot create vault: ", err)
 			os.Exit(1)
