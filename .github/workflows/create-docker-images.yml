@@ -15,16 +15,16 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.15.x
-#      - name: Build linux version
-#        run: |
-#          make linux-amd64
-#      - name: Archive production artifacts
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: release-binaries
-#          path: |
-#            release/linux-amd64
-#            buildscripts
+      - name: Build linux version
+        run: |
+          make linux-amd64
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-binaries
+          path: |
+            release/linux-amd64
+            buildscripts
 
   docker-build:
     runs-on: ubuntu-20.04
