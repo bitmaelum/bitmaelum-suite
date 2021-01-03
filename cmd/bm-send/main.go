@@ -42,6 +42,7 @@ type options struct {
 	PrivateKey  string   `long:"private-key" description:"Private key" required:"true" env:"BITMAELUM_SEND_PRIVATE_KEY"`
 	Subject     string   `short:"s" long:"subject" description:"Subject" required:"true"`
 	From        string   `short:"f" long:"from" description:"Sender" required:"true" env:"BITMAELUM_SEND_FROM"`
+	FromName    string   `short:"n" long:"name" description:"Sender full name" required:"false"`
 	To          string   `short:"t" long:"to" description:"Recipient" required:"true"`
 	Message     string   `short:"m" long:"message" description:"Default message"`
 	Blocks      []string `short:"b" long:"block" description:"Body block"`
@@ -110,7 +111,7 @@ func main() {
 
 	// Setup addressing
 	addressing := message.NewAddressing(message.SignedByTypeAuthorized)
-	addressing.AddSender(fromAddr, nil, "", privKey, senderInfo.RoutingInfo.Routing)
+	addressing.AddSender(fromAddr, nil, opts.FromName, privKey, senderInfo.RoutingInfo.Routing)
 	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 
 	// Compose mail
