@@ -48,25 +48,6 @@ jobs:
       - name: Build docker client image
         run: |
           sh ./buildscripts/docker/generate-client.sh
-      - name: push README to Dockerhub
-        uses: christian-korneck/update-container-description-action@v1
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_PASS: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-        with:
-          destination_container_repo: bitmaelum/server
-          provider: dockerhub
-          readme_file: './buildscripts/docker/README.client.md'
-
       - name: Build docker server image
         run: |
           sh ./buildscripts/docker/generate-server.sh
-      - name: push README to Dockerhub
-        uses: christian-korneck/update-container-description-action@v1
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_PASS: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-        with:
-          destination_container_repo: bitmaelum/server
-          provider: dockerhub
-          readme_file: './buildscripts/docker/README.server.md'
