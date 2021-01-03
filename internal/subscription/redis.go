@@ -23,7 +23,7 @@ import (
 	"context"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v7"
 )
 
 type redisRepo struct {

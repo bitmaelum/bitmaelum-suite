@@ -23,7 +23,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v7"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,7 +41,7 @@ func NewRedisRepository(opts *redis.Options) Repository {
 // Fetch a ticket from the repository, or err
 func (r redisRepo) Fetch(ticketID string) (*Ticket, error) {
 	logrus.Trace("Trying to fetch ticket from REDIS: ", ticketID)
-	data, err := r.client.Get(r.client.Context(), createTicketKey(ticketID)).Result()
+	data, err := r.client.Get(createTicketKey(ticketID)).Result()
 	if data == "" || err != nil {
 		logrus.Trace("ticket not found in REDIS: ", data, err)
 		return nil, errTicketNotFound
@@ -58,12 +58,12 @@ func (r redisRepo) Fetch(ticketID string) (*Ticket, error) {
 
 // Store the given ticket in the repository
 func (r redisRepo) Store(ticket *Ticket) error {
-	_, err := r.client.Set(r.client.Context(), createTicketKey(ticket.ID), ticket, 30*time.Minute).Result()
+	_, err := r.client.Set(createTicketKey(ticket.ID), ticket, 30*time.Minute).Result()
 
 	return err
 }
 
 // Remove the given ticket from the repository
 func (r redisRepo) Remove(ticketID string) {
-	_ = r.client.Del(r.client.Context(), createTicketKey(ticketID))
+	_ = r.client.Del(createTicketKey(ticketID))
 }
