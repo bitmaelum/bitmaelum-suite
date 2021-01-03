@@ -193,7 +193,7 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(composeCmd)
+	messageCmd.AddCommand(composeCmd)
 
 	from = composeCmd.Flags().StringP("from", "f", "", "Sender address")
 	to = composeCmd.Flags().StringP("to", "t", "", "Recipient address")

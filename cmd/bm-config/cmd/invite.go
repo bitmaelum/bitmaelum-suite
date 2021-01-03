@@ -39,7 +39,7 @@ var inviteCmd = &cobra.Command{
 	Long: `This command will generate an invitation token that must be used for registering an account on your 
 server. Only the specified address can register the account`,
 	Run: func(cmd *cobra.Command, args []string) {
-		s, _ := cmd.Flags().GetString("address")
+		s, _ := cmd.Flags().GetString("account")
 		d, _ := cmd.Flags().GetString("duration")
 		asJSON, _ := cmd.Flags().GetBool("json")
 
@@ -65,7 +65,7 @@ server. Only the specified address can register the account`,
 
 		if asJSON {
 			output := jsonOut{
-				"address": addr.String(),
+				"account": addr.String(),
 				"token":   token.String(),
 				"expires": validUntil.Unix(),
 			}
@@ -91,9 +91,9 @@ func outError(msg string, asJSON bool) {
 func init() {
 	rootCmd.AddCommand(inviteCmd)
 
-	inviteCmd.Flags().String("address", "", "Address to register")
+	inviteCmd.Flags().String("account", "", "Address to register")
 	inviteCmd.Flags().String("duration", "30", "NUmber of days (or duration like 1w2d3h4m6s) allowed for registration")
 	inviteCmd.Flags().Bool("json", false, "Return JSON response when set")
 
-	_ = inviteCmd.MarkFlagRequired("address")
+	_ = inviteCmd.MarkFlagRequired("account")
 }
