@@ -1,4 +1,4 @@
-name: Create release and packages
+name: Create docker images
 on:
   push:
     branches: [ master, docker-test ]

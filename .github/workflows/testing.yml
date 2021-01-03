@@ -1,4 +1,4 @@
-name: BitMaelum CI
+name: Continous intergration
 on: [push, pull_request]
 jobs:
   test:
