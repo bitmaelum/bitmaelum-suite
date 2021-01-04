@@ -95,6 +95,11 @@ func AskDoublePasswordPrompt(p1, p2 string) (string, error) {
 
 // AskPassword will ask for a password (without confirmation) on the commandline
 func AskPassword() (string, bool) {
+	return AskPasswordPrompt("Please enter your vault password: ")
+}
+
+// AskPasswordPrompt will prompt for a password
+func AskPasswordPrompt(p1 string) (string, bool) {
 	if kr != nil {
 		pwd, err := kr.Get(service, user)
 		if err == nil {
@@ -102,7 +107,7 @@ func AskPassword() (string, bool) {
 		}
 	}
 
-	fmt.Print("Please enter your vault password: ")
+	fmt.Print(p1)
 	b, _ := pwdReader.ReadPassword()
 	fmt.Println("")
 	fmt.Println("")

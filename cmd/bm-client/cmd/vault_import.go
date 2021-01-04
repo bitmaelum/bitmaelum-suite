@@ -45,11 +45,7 @@ var vaultImportCmd = &cobra.Command{
 
 		var err error
 		if *viImportPassword == "" {
-			*viImportPassword, err = console.AskDoublePasswordPrompt("Please type your import password: ", "Retry your import password: ")
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			*viImportPassword, _ = console.AskPasswordPrompt("Please type your import password: ")
 		}
 
 		data, err := ioutil.ReadFile(*viImportPath)
