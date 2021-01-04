@@ -18,7 +18,7 @@ BitMaelum (old Anglo-Saxon for "bit-by-bit") is an attempt. Instead of trying to
 
 To build and test BitMaelum, check out [build document](docs/build.md).
 
-New to BitMaelum? Take a 5-minute tour on [what's it about](https://github.com/bitmaelum/bitmaelum-suite/wiki/BItMaelum-in-5-minutes-or-less)
+New to BitMaelum? Take a 5-minute tour to read [what it is about](https://github.com/bitmaelum/bitmaelum-suite/wiki/BItMaelum-in-5-minutes-or-less).
 
 # Quickstart
 
@@ -28,20 +28,20 @@ To start with BitMaelum right away, check out [Quickstart guide](https://github.
 
 BitMaelum tries to be a system that:
 
-  - Privacy first
+  - Will be designed with privacy first
   - Deal with less to no spam at all
-  - Nullifies mail address harvesting (it becomes useless)
+  - Nullifies mail address harvesting (it becomes a useless effort)
   - Host your mail wherever you like
   - Move your messages to another provider without losing your mail address
   - Allows that only you can subscribe and unsubscribe from mailing lists
-  - Slow connection / mobile friendly 
+  - Slow connection / mobile friendly
  
 
 For more features, please take a look at [our wiki](https://github.com/bitmaelum/bitmaelum-suite/wiki/Feature-list)
 
 # Development
 
-BitMaelum is highly experimental and under heavy development. Do not use it yet in any production environment. 
+BitMaelum is highly experimental and under heavy development. Do not use it yet in any production environment. We invite early-adopters to try out the system and contribute by testing.
 
 
 <hr>
