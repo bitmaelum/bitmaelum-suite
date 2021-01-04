@@ -2,7 +2,6 @@ name: Continous intergration
 on: [push, pull_request]
 jobs:
   test:
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false && contains(toJson(github.event.commits), '[skip ci]') == false
     strategy:
       matrix:
         go-version: [1.13.x, 1.14.x, 1.15.x]
@@ -23,6 +22,7 @@ jobs:
         $GOPATH/bin/addlicense -c "BitMaelum Authors" -l mit -y 2021 -check internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go
     - name: Go imports
       run: |
+        go get -u golang.org/x/tools/cmd/goimports
         test -z "$(goimports -l .)"
     - name: Go vet
       run: |
