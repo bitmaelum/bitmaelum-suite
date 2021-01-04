@@ -65,15 +65,20 @@ func StorePassword(pwd string) error {
 
 // AskDoublePassword will ask for a password (and confirmation) on the commandline
 func AskDoublePassword() (string, error) {
+	return AskDoublePasswordPrompt("Please enter your new vault password: ", "Please retype your new vault password: ")
+}
+
+// AskDoublePasswordPrompt will ask for a password (and confirmation) on the commandline, with a custom prompt
+func AskDoublePasswordPrompt(p1, p2 string) (string, error) {
 	for {
-		fmt.Print("Please enter your new vault password: ")
+		fmt.Print(p1)
 		p1, err := pwdReader.ReadPassword()
 		if err != nil {
 			return "", err
 		}
 		fmt.Println("")
 
-		fmt.Print("Please retype your new vault password: ")
+		fmt.Print(p2)
 		p2, err := pwdReader.ReadPassword()
 		if err != nil {
 			return "", err
@@ -90,6 +95,11 @@ func AskDoublePassword() (string, error) {
 
 // AskPassword will ask for a password (without confirmation) on the commandline
 func AskPassword() (string, bool) {
+	return AskPasswordPrompt("Please enter your vault password: ")
+}
+
+// AskPasswordPrompt will prompt for a password
+func AskPasswordPrompt(p1 string) (string, bool) {
 	if kr != nil {
 		pwd, err := kr.Get(service, user)
 		if err == nil {
@@ -97,7 +107,7 @@ func AskPassword() (string, bool) {
 		}
 	}
 
-	fmt.Print("Please enter your vault password: ")
+	fmt.Print(p1)
 	b, _ := pwdReader.ReadPassword()
 	fmt.Println("")
 	fmt.Println("")

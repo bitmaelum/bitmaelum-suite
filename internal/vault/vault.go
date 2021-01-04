@@ -66,15 +66,6 @@ type Vault struct {
 	path     string
 }
 
-// vaultContainer is a json wrapper that encrypts the actual vault data
-type vaultContainer struct {
-	Version int    `json:"version"`
-	Data    []byte `json:"data"`
-	Salt    []byte `json:"salt"`
-	Iv      []byte `json:"iv"`
-	Hmac    []byte `json:"hmac"`
-}
-
 // New instantiates a new vault
 func New() *Vault {
 	return &Vault{
@@ -222,7 +213,7 @@ func Open(vp, pass string) (*Vault, error) {
 		return nil, err
 	}
 
-	container := &vaultContainer{}
+	container := &EncryptedContainer{}
 	err = json.Unmarshal(data, &container)
 	if err != nil {
 		return nil, err
