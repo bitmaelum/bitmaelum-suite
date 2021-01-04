@@ -118,5 +118,5 @@ func init() {
 	viImportPassword = vaultImportCmd.Flags().String("import-password", "", "password to encrypt the import file")
 	viImportPath = vaultImportCmd.Flags().String("import-file", "", "path to import file")
 
-	_ = vaultImportCmd.MarkFlagRequired("export-file")
+	_ = vaultImportCmd.MarkFlagRequired("import-file")
 }
