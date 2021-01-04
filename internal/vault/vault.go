@@ -222,7 +222,7 @@ func Open(vp, pass string) (*Vault, error) {
 		return nil, err
 	}
 
-	container := &vaultContainer{}
+	container := &EncryptedContainer{}
 	err = json.Unmarshal(data, &container)
 	if err != nil {
 		return nil, err
