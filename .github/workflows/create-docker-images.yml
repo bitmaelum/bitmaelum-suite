@@ -1,0 +1,53 @@
+name: Create docker images
+on:
+  push:
+    branches: [ master, docker-test ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.x
+      - name: Build linux version
+        run: |
+          make -j linux-amd64
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-binaries
+          path: |
+            release/linux-amd64
+
+  docker-build:
+    runs-on: ubuntu-20.04
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Download release artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: release-binaries
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build docker client image
+        run: |
+          sh ./buildscripts/docker/generate-client.sh
+      - name: Build docker server image
+        run: |
+          sh ./buildscripts/docker/generate-server.sh
