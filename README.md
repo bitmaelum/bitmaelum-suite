@@ -22,7 +22,7 @@ New to BitMaelum? Take a 5-minute tour to read [what it is about](https://github
 
 # Quickstart
 
-To start with BitMaelum right away, check out [Quickstart guide](https://github.com/bitmaelum/bitmaelum-suite/wiki/Quickstart)
+To start with BitMaelum right away, check out [Quickstart guide](https://github.com/bitmaelum/bitmaelum-suite/wiki/Quickstart).
 
 # Features
 
@@ -46,4 +46,4 @@ BitMaelum is highly experimental and under heavy development. Do not use it yet 
 
 <hr>
 
-![https://bitmaelum.com/logo_and_name.svg](https://bitmaelum.com/logo_and_name.svg)
+![https://bitmaelum.com/logo_and_name.svg](https://bitmaelum.com/logo_and_name.svg).
