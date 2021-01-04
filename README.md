@@ -1,3 +1,5 @@
+<img align=right height=70 src="https://bitmaelum.com/logo_and_name.svg">
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/bitmaelum/bitmaelum-suite)](https://goreportcard.com/report/github.com/bitmaelum/bitmaelum-suite)
 ![BitMaelum CI](https://github.com/bitmaelum/bitmaelum-suite/workflows/BitMaelum%20CI/badge.svg?branch=develop)
 [![codecov](https://codecov.io/gh/bitmaelum/bitmaelum-suite/branch/develop/graph/badge.svg)](https://codecov.io/gh/bitmaelum/bitmaelum-suite)
