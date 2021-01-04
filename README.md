@@ -20,6 +20,10 @@ To build and test BitMaelum, check out [build document](docs/build.md).
 
 New to BitMaelum? Take a 5-minute tour on [what's it about](https://github.com/bitmaelum/bitmaelum-suite/wiki/BItMaelum-in-5-minutes-or-less)
 
+# Quickstart
+
+To start with BitMaelum right away, check out [Quickstart guide](https://github.com/bitmaelum/bitmaelum-suite/wiki/Quickstart)
+
 # Features
 
 BitMaelum tries to be a system that:
@@ -34,12 +38,6 @@ BitMaelum tries to be a system that:
  
 
 For more features, please take a look at [our wiki](https://github.com/bitmaelum/bitmaelum-suite/wiki/Feature-list)
-
-
-# Quickstart
-
-To start with BitMaelum right away, check out [Quickstart guide](https://github.com/bitmaelum/bitmaelum-suite/wiki/Quickstart)
-
 
 # Development
 
