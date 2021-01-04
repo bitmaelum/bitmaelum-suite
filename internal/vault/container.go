@@ -36,13 +36,14 @@ const (
 	pbkdfIterations = 100002
 )
 
+// EncryptedContainer is the on-disk structure for an encrypted blob.
 type EncryptedContainer struct {
-	Type    string `json:"type"`
-	Version int    `json:"version"`
-	Data    []byte `json:"data"`
-	Salt    []byte `json:"salt"`
-	Iv      []byte `json:"iv"`
-	Hmac    []byte `json:"hmac"`
+	Type    string `json:"type"`            // Type of the data
+	Version int    `json:"version"`         // Version of the data
+	Data    []byte `json:"data"`            // Actual data
+	Salt    []byte `json:"salt"`            // Salt
+	Iv      []byte `json:"iv"`              // IV for encryption
+	Hmac    []byte `json:"hmac"`            // Hash MAC
 }
 
 // DecryptContainer decrypts an encrypted data container

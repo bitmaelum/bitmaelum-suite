@@ -32,6 +32,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ExportType is the structure that holds either an account or an organsation info
 type ExportType struct {
 	Type         string
 	Account      *vault.AccountInfo

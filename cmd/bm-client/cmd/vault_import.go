@@ -66,6 +66,11 @@ var vaultImportCmd = &cobra.Command{
 		}
 
 		b, err := vault.DecryptContainer(container, *viImportPassword)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 		ex := &ExportType{}
 		err = json.Unmarshal(b, &ex)
 		if err != nil {
