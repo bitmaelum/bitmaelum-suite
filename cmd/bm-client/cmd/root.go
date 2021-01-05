@@ -38,15 +38,15 @@ var rootCmd = &cobra.Command{
 		// command we actually run to configure things.
 
 		// Display logo unless annotations tells us otherwise
-	    if _, exist := cmd.Annotations["dont_display_logo"] ; exist {
-		    fmt.Println(bminternal.GetASCIILogo())
-	    }
+		if _, exist := cmd.Annotations["dont_display_logo"]; exist {
+			fmt.Println(bminternal.GetASCIILogo())
+		}
 
 		// Load configuration unless annotations tells us otherwise
-		if _, exist := cmd.Annotations["dont_load_config"] ; exist {
+		if _, exist := cmd.Annotations["dont_load_config"]; exist {
 			config.LoadClientConfig(internal.Opts.Config)
-	    }
-    },
+		}
+	},
 }
 
 // Execute runs the given command

@@ -41,11 +41,11 @@ var configInitCmd = &cobra.Command{
 
 		err := createConfigFile(*cFile)
 		if err != nil {
-			fmt.Println("Error while creating file: %v", err)
+			fmt.Println("Error while creating file: ", err)
 			os.Exit(1)
 		}
 
-		fmt.Println("successfully created a new configuration file at ", *cFile)
+		fmt.Printf("successfully created a new configuration file at %s\n", *cFile)
 	},
 	Annotations: map[string]string{
 		"dont_load_config": "true",
