@@ -82,7 +82,32 @@ func JSONFileEditor(src interface{}, dst interface{}) error {
 	}
 }
 
-// Get default editor
+// EditFile allows you to inplace edit a file until the editor returns success status
+func EditFile(file string) error {
+	editor, err := getEditor()
+	if err != nil {
+		return err
+	}
+
+	for {
+		// Execute editor
+		c := exec.Command(editor, file)
+		c.Stdin = os.Stdin
+		c.Stdout = os.Stdout
+		err := c.Run()
+		if err != nil {
+			return err
+		}
+
+		// Editor successfully ended?
+		if c.ProcessState.Success() {
+			// All is good, return
+			return nil
+		}
+	}
+}
+
+// getEditor Get default editor
 func getEditor() (string, error) {
 	if os.Getenv("EDITOR") != "" {
 		return os.Getenv("EDITOR"), nil

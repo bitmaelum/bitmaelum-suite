@@ -37,9 +37,9 @@ type wrappedClientConfig struct {
 
 // ClientConfig is the representation of the client configuration
 type ClientConfig struct {
-	Accounts struct {
+	Vault struct {
 		Path string `yaml:"path"`
-	} `yaml:"accounts"`
+	} `yaml:"vault"`
 
 	Composer struct {
 		Editor string `yaml:"editor"`
@@ -77,7 +77,7 @@ func (c *ClientConfig) LoadConfig(r io.Reader) error {
 	*c = lc.Cfg
 
 	// Expand homedirs in configuration
-	c.Accounts.Path, _ = homedir.Expand(c.Accounts.Path)
+	c.Vault.Path, _ = homedir.Expand(c.Vault.Path)
 
 	return nil
 }

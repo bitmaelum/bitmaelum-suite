@@ -24,52 +24,54 @@ import (
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/console"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var vaultInitCmd = &cobra.Command{
+var configInitCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Creates a new vault with a password",
+	Short: "Creates a new config file",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// Get either given path, or the default configuration vault path
-		vaultPath := *vpath
-		if vaultPath == "" {
-			vaultPath = config.Client.Vault.Path
-		}
-
-		// Check if vault/path exists
-		if vault.Exists(vaultPath) {
-			// Vault already exists. Not creating a new vault
-			fmt.Println("Vault already exists. Use --path to create a new vault on a specific path.")
+		_, ok := os.Stat(*cFile)
+		if ok == nil {
+			fmt.Println("Configuration file already exist. Not overwriting the current one.")
 			os.Exit(1)
 		}
 
-		// Check if password is given. If not, ask for password
-		if vault.VaultPassword == "" {
-			vault.VaultPassword, _ = console.AskDoublePassword()
-		}
-
-		// Create a new vault
-		_, err := vault.Create(vaultPath, vault.VaultPassword)
+		err := createConfigFile(*cFile)
 		if err != nil {
-			fmt.Println("error: cannot create vault: ", err)
+			fmt.Println("Error while creating file: ", err)
 			os.Exit(1)
 		}
 
-		fmt.Println("successfully created a new vault at ", vaultPath)
+		fmt.Printf("successfully created a new configuration file at %s\n", *cFile)
+	},
+	Annotations: map[string]string{
+		"dont_load_config": "true",
 	},
 }
 
+func createConfigFile(p string) error {
+	f, err := os.Create(p)
+	if err != nil {
+		return err
+	}
+
+	err = config.GenerateClientConfig(f)
+	if err != nil {
+		return err
+	}
+
+	return f.Close()
+}
+
 var (
-	vpath *string
+	cFile *string
 )
 
 func init() {
-	vaultCmd.AddCommand(vaultInitCmd)
+	configCmd.AddCommand(configInitCmd)
 
-	vpath = vaultInitCmd.Flags().String("path", "", "Path to vault")
+	cFile = configInitCmd.Flags().StringP("file", "f", "./bitmaelum-client-config.yml", "Path to configuration file")
 }

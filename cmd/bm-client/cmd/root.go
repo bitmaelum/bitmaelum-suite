@@ -23,6 +23,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
+	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -30,6 +34,25 @@ var rootCmd = &cobra.Command{
 	Use:   "bm-client",
 	Short: "BitMaelum client",
 	Long:  `This client allows you to manage accounts, read and compose mail.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// PersistentPreRun will be always called (first). We can actually use the annotations on the
+		// command we actually run to configure things.
+
+		// Display logo unless annotations tells us otherwise
+		if _, exist := cmd.Annotations["dont_display_logo"]; !exist {
+			fmt.Println(bminternal.GetASCIILogo())
+		}
+
+		// Load configuration unless annotations tells us otherwise
+		if _, exist := cmd.Annotations["dont_load_config"]; !exist {
+			config.LoadClientConfig(internal.Opts.Config)
+
+			// Set vault path if not already set
+			if vault.VaultPath == "" {
+				vault.VaultPath = config.Client.Vault.Path
+			}
+		}
+	},
 }
 
 // Execute runs the given command

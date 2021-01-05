@@ -23,53 +23,25 @@ import (
 	"fmt"
 	"os"
 
+	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/console"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var vaultInitCmd = &cobra.Command{
-	Use:   "init",
-	Short: "Creates a new vault with a password",
+var configEditCmd = &cobra.Command{
+	Use:   "edit",
+	Short: "Edits the current configuration file",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// Get either given path, or the default configuration vault path
-		vaultPath := *vpath
-		if vaultPath == "" {
-			vaultPath = config.Client.Vault.Path
-		}
-
-		// Check if vault/path exists
-		if vault.Exists(vaultPath) {
-			// Vault already exists. Not creating a new vault
-			fmt.Println("Vault already exists. Use --path to create a new vault on a specific path.")
-			os.Exit(1)
-		}
-
-		// Check if password is given. If not, ask for password
-		if vault.VaultPassword == "" {
-			vault.VaultPassword, _ = console.AskDoublePassword()
-		}
-
-		// Create a new vault
-		_, err := vault.Create(vaultPath, vault.VaultPassword)
+		err := bminternal.EditFile(config.LoadedClientConfigPath)
 		if err != nil {
-			fmt.Println("error: cannot create vault: ", err)
+			fmt.Println("cannot open editor. Please edit this file manually.")
 			os.Exit(1)
 		}
-
-		fmt.Println("successfully created a new vault at ", vaultPath)
 	},
 }
 
-var (
-	vpath *string
-)
-
 func init() {
-	vaultCmd.AddCommand(vaultInitCmd)
-
-	vpath = vaultInitCmd.Flags().String("path", "", "Path to vault")
+	configCmd.AddCommand(configEditCmd)
 }

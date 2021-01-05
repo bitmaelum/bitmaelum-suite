@@ -17,49 +17,18 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package main
+package cmd
 
 import (
-	"fmt"
-
-	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/spf13/cobra"
 )
 
-type options struct {
-	Config      string `short:"c" long:"config" description:"Path to your configuration file"`
-	Password    string `short:"p" long:"password" description:"Password to your vault"`
-	NewPassword string `short:"n" long:"new-password" description:"New password to your vault"`
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Config management",
+	Long:  ``,
 }
 
-var opts options
-
-func main() {
-	internal.ParseOptions(&opts)
-	config.LoadClientConfig(opts.Config)
-
-	v, err := vault.Open(config.Client.Vault.Path, opts.Password)
-	if err != nil {
-		panic(err)
-	}
-
-	st := vault.StoreType{}
-	err = internal.JSONFileEditor(v.Store, &st)
-	if err != nil {
-		panic(err)
-	}
-
-	v.Store = st
-
-	if opts.NewPassword != "" {
-		v.SetPassword(opts.NewPassword)
-	}
-
-	err = v.Persist()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Vault saved to disk")
+func init() {
+	rootCmd.AddCommand(configCmd)
 }

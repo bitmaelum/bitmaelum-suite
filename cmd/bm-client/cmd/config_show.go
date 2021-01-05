@@ -24,52 +24,28 @@ import (
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/console"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
-var vaultInitCmd = &cobra.Command{
-	Use:   "init",
-	Short: "Creates a new vault with a password",
+var configShowCmd = &cobra.Command{
+	Use:   "show",
+	Short: "Displays the current configuration settings",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// Get either given path, or the default configuration vault path
-		vaultPath := *vpath
-		if vaultPath == "" {
-			vaultPath = config.Client.Vault.Path
-		}
-
-		// Check if vault/path exists
-		if vault.Exists(vaultPath) {
-			// Vault already exists. Not creating a new vault
-			fmt.Println("Vault already exists. Use --path to create a new vault on a specific path.")
-			os.Exit(1)
-		}
-
-		// Check if password is given. If not, ask for password
-		if vault.VaultPassword == "" {
-			vault.VaultPassword, _ = console.AskDoublePassword()
-		}
-
-		// Create a new vault
-		_, err := vault.Create(vaultPath, vault.VaultPassword)
+		b, err := yaml.Marshal(config.Client)
 		if err != nil {
-			fmt.Println("error: cannot create vault: ", err)
+			fmt.Println("cannot display configuration")
 			os.Exit(1)
 		}
 
-		fmt.Println("successfully created a new vault at ", vaultPath)
+		fmt.Println(string(b))
+	},
+	Annotations: map[string]string{
+		"dont_display_logo": "true",
 	},
 }
 
-var (
-	vpath *string
-)
-
 func init() {
-	vaultCmd.AddCommand(vaultInitCmd)
-
-	vpath = vaultInitCmd.Flags().String("path", "", "Path to vault")
+	configCmd.AddCommand(configShowCmd)
 }

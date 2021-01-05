@@ -44,14 +44,14 @@ func TestClientConfig(t *testing.T) {
 	err := LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
-	f, err := fs.Create("/etc/bitmaelum/client-config.yml")
+	f, err := fs.Create("/etc/bitmaelum/bitmaelum-client-config.yml")
 	assert.NoError(t, err)
 	err = GenerateClientConfig(f)
 	assert.NoError(t, err)
 	_ = f.Close()
 
 	Client.Resolver.Remote.URL = ""
-	err = LoadClientConfigOrPass("/etc/bitmaelum/client-config.yml")
+	err = LoadClientConfigOrPass("/etc/bitmaelum/bitmaelum-client-config.yml")
 	assert.NoError(t, err)
 	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
 
@@ -61,7 +61,7 @@ func TestClientConfig(t *testing.T) {
 	assert.Equal(t, "", Client.Resolver.Remote.URL)
 
 	Client.Resolver.Remote.URL = ""
-	err = LoadClientConfigOrPass("/etc/bitmaelum/client-config.yml")
+	err = LoadClientConfigOrPass("/etc/bitmaelum/bitmaelum-client-config.yml")
 	assert.NoError(t, err)
 	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
 
@@ -84,7 +84,7 @@ func TestClientConfig(t *testing.T) {
 
 	// Read from existing env
 	Client.Resolver.Remote.URL = ""
-	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/client-config.yml")
+	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/bitmaelum-client-config.yml")
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
@@ -97,7 +97,7 @@ func TestServerConfig(t *testing.T) {
 	assert.Error(t, err)
 
 	fs = afero.NewMemMapFs()
-	f, err := fs.Create("/etc/bitmaelum/server-config.yml")
+	f, err := fs.Create("/etc/bitmaelum/bitmaelum-server-config.yml")
 	assert.NoError(t, err)
 	err = GenerateServerConfig(f)
 	assert.NoError(t, err)
@@ -105,7 +105,7 @@ func TestServerConfig(t *testing.T) {
 
 	// Load direct
 	Server.Work.Pow.Bits = 0
-	err = LoadServerConfigOrPass("/etc/bitmaelum/server-config.yml")
+	err = LoadServerConfigOrPass("/etc/bitmaelum/bitmaelum-server-config.yml")
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
@@ -117,7 +117,7 @@ func TestServerConfig(t *testing.T) {
 
 	// Load direct
 	Server.Work.Pow.Bits = 0
-	err = LoadServerConfigOrPass("/etc/bitmaelum/server-config.yml")
+	err = LoadServerConfigOrPass("/etc/bitmaelum/bitmaelum-server-config.yml")
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
@@ -141,7 +141,7 @@ func TestServerConfig(t *testing.T) {
 
 	// Read from existing env
 	Server.Work.Pow.Bits = 0
-	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/server-config.yml")
+	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/bitmaelum-server-config.yml")
 	err = LoadServerConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
@@ -149,7 +149,7 @@ func TestServerConfig(t *testing.T) {
 
 func TestLoadClientConfig(t *testing.T) {
 	// Failed loading
-	err := readConfigPath("/foo/bar", "", Client.LoadConfig)
+	err := readConfigPath("/foo/bar", "", Client.LoadConfig, &LoadedClientConfigPath)
 	assert.Error(t, err)
 }
 
