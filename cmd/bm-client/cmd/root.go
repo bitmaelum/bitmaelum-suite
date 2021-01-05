@@ -26,6 +26,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -38,13 +39,18 @@ var rootCmd = &cobra.Command{
 		// command we actually run to configure things.
 
 		// Display logo unless annotations tells us otherwise
-		if _, exist := cmd.Annotations["dont_display_logo"]; exist {
+		if _, exist := cmd.Annotations["dont_display_logo"]; !exist {
 			fmt.Println(bminternal.GetASCIILogo())
 		}
 
 		// Load configuration unless annotations tells us otherwise
-		if _, exist := cmd.Annotations["dont_load_config"]; exist {
+		if _, exist := cmd.Annotations["dont_load_config"]; !exist {
 			config.LoadClientConfig(internal.Opts.Config)
+
+			// Set vault path if not already set
+			if vault.VaultPath == "" {
+				vault.VaultPath = config.Client.Vault.Path
+			}
 		}
 	},
 }

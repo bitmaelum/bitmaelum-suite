@@ -47,6 +47,12 @@ var (
 	ServerConfigFile string = "bitmaelum-server-config.yml"
 )
 
+// Absolute paths of the loaded configurations
+var (
+	LoadedClientConfigPath string
+	LoadedServerConfigPath string
+)
+
 // LoadClientConfig loads client configuration from given path or panic if cannot load
 func LoadClientConfig(configPath string) {
 	err := LoadClientConfigOrPass(configPath)
@@ -76,18 +82,18 @@ func LoadClientConfigOrPass(configPath string) error {
 
 	// Try custom path first
 	if configPath != "" {
-		return readConfigPath(configPath, "from commandline", Client.LoadConfig)
+		return readConfigPath(configPath, "from commandline", Client.LoadConfig, &LoadedClientConfigPath)
 	}
 
 	configPath = os.Getenv("BITMAELUM_CLIENT_CONFIG")
 	if configPath != "" {
-		return readConfigPath(configPath, "from BITMAELUM_CLIENT_CONFIG environment", Client.LoadConfig)
+		return readConfigPath(configPath, "from BITMAELUM_CLIENT_CONFIG environment", Client.LoadConfig, &LoadedClientConfigPath)
 	}
 
 	// try on our search paths
 	for _, p := range getSearchPaths() {
 		p = filepath.Join(p, ClientConfigFile)
-		err = readConfigPath(p, "from hardcoded search path", Client.LoadConfig)
+		err = readConfigPath(p, "from hardcoded search path", Client.LoadConfig, &LoadedClientConfigPath)
 		if err == nil || err != errConfigNotFound {
 			return err
 		}
@@ -102,18 +108,23 @@ func LoadServerConfigOrPass(configPath string) error {
 
 	// Try custom path first
 	if configPath != "" {
-		return readConfigPath(configPath, "from commandline", Server.LoadConfig)
+		return readConfigPath(configPath, "from commandline", Server.LoadConfig, &LoadedServerConfigPath)
 	}
 
 	configPath = os.Getenv("BITMAELUM_SERVER_CONFIG")
 	if configPath != "" {
-		return readConfigPath(configPath, "from BITMAELUM_SERVER_CONFIG environment", Server.LoadConfig)
+		return readConfigPath(configPath, "from BITMAELUM_SERVER_CONFIG environment", Server.LoadConfig, &LoadedServerConfigPath)
 	}
 
 	// try on our search paths
 	for _, p := range getSearchPaths() {
 		p = filepath.Join(p, ServerConfigFile)
-		err = readConfigPath(p, "from hardcoded search path", Server.LoadConfig)
+		err = readConfigPath(p, "from hardcoded search path", Server.LoadConfig, &LoadedServerConfigPath)
+
+		// Set config path if this is the one found
+		if err == nil {
+			LoadedServerConfigPath = p
+		}
 		if err == nil || err != errConfigNotFound {
 			return err
 		}
@@ -123,7 +134,7 @@ func LoadServerConfigOrPass(configPath string) error {
 }
 
 // Expands the given path and loads the configuration
-func readConfigPath(p, src string, loader func(r io.Reader) error) error {
+func readConfigPath(p, src string, loader func(r io.Reader) error, loadedPath *string) error {
 	p, _ = homedir.Expand(p)
 
 	triedPaths = append(triedPaths, p+" ("+src+")")
@@ -133,5 +144,10 @@ func readConfigPath(p, src string, loader func(r io.Reader) error) error {
 		return errConfigNotFound
 	}
 
-	return loader(f)
+	err = loader(f)
+	if err == nil {
+		*loadedPath = p
+	}
+
+	return err
 }

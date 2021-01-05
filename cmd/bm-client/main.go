@@ -28,7 +28,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/cmd"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 )
 
@@ -44,7 +43,6 @@ func main() {
 
 	// Set default vault info if set in config
 	vault.VaultPassword = internal.Opts.Password
-	vault.VaultPath = config.Client.Vault.Path
 	if internal.Opts.Vault != "" {
 		vault.VaultPath = internal.Opts.Vault
 	}

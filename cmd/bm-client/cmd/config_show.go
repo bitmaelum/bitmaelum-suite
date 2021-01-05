@@ -33,7 +33,6 @@ var configShowCmd = &cobra.Command{
 	Short: "Displays the current configuration settings",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		b, err := yaml.Marshal(config.Client)
 		if err != nil {
 			fmt.Println("cannot display configuration")

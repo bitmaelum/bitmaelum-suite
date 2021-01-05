@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +33,8 @@ var configEditCmd = &cobra.Command{
 	Short: "Edits the current configuration file",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := internal.EditFile(config.ClientConfigFile)
+
+		err := bminternal.EditFile(config.LoadedClientConfigPath)
 		if err != nil {
 			fmt.Println("cannot open editor. Please edit this file manually.")
 			os.Exit(1)
