@@ -98,13 +98,11 @@ func EditFile(file string) error {
 			return err
 		}
 
-		// Editor errored
-		if !c.ProcessState.Success() {
-			return err
+		// Editor successfully ended?
+		if c.ProcessState.Success() {
+			// All is good, return
+			return nil
 		}
-
-		// All is good, return
-		return nil
 	}
 }
 
