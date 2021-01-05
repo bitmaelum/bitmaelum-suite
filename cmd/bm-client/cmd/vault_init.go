@@ -38,7 +38,7 @@ var vaultInitCmd = &cobra.Command{
 		// Get either given path, or the default configuration vault path
 		vaultPath := *vpath
 		if vaultPath == "" {
-			vaultPath = config.Client.Accounts.Path
+			vaultPath = config.Client.Vault.Path
 		}
 
 		// Check if vault/path exists

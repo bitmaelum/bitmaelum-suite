@@ -39,7 +39,7 @@ func main() {
 	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
 
-	v, err := vault.Open(config.Client.Accounts.Path, opts.Password)
+	v, err := vault.Open(config.Client.Vault.Path, opts.Password)
 	if err != nil {
 		panic(err)
 	}

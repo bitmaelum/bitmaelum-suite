@@ -49,7 +49,7 @@ func main() {
 	fmt.Println(internal.GetASCIILogo())
 
 	// Unlock vault
-	accountVault, err := vault.Open(config.Client.Accounts.Path, opts.Password)
+	accountVault, err := vault.Open(config.Client.Vault.Path, opts.Password)
 	if err != nil {
 		fmt.Printf("Error while opening vault: %s", err)
 		fmt.Println("")

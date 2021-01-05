@@ -62,7 +62,7 @@ func main() {
 
 	// Set default vault info if set in config
 	vault.VaultPassword = opts.Password
-	vault.VaultPath = config.Client.Accounts.Path
+	vault.VaultPath = config.Client.Vault.Path
 	if opts.Vault != "" {
 		vault.VaultPath = opts.Vault
 	}
