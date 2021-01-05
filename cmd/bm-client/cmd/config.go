@@ -17,37 +17,18 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package main
+package cmd
 
 import (
-	"fmt"
-	"math/rand"
-	"os"
-	"time"
-
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/cmd"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	rand.Seed(time.Now().UnixNano())
+var configCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Config management",
+	Long:  ``,
+}
 
-	bminternal.ParseOptions(&internal.Opts)
-	if internal.Opts.Version {
-		bminternal.WriteVersionInfo("BitMaelum Client", os.Stdout)
-		fmt.Println()
-		os.Exit(1)
-	}
-
-	// Set default vault info if set in config
-	vault.VaultPassword = internal.Opts.Password
-	vault.VaultPath = config.Client.Accounts.Path
-	if internal.Opts.Vault != "" {
-		vault.VaultPath = internal.Opts.Vault
-	}
-
-	cmd.Execute()
+func init() {
+	rootCmd.AddCommand(configCmd)
 }

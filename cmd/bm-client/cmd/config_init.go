@@ -23,43 +23,55 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "bm-client",
-	Short: "BitMaelum client",
-	Long:  `This client allows you to manage accounts, read and compose mail.`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// PersistentPreRun will be always called (first). We can actually use the annotations on the
-		// command we actually run to configure things.
+var configInitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Creates a new config file",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
 
-		// Display logo unless annotations tells us otherwise
-	    if _, exist := cmd.Annotations["dont_display_logo"] ; exist {
-		    fmt.Println(bminternal.GetASCIILogo())
-	    }
+		_, ok := os.Stat(*cFile)
+		if ok == nil {
+			fmt.Println("Configuration file already exist. Not overwriting the current one.")
+			os.Exit(1)
+		}
 
-		// Load configuration unless annotations tells us otherwise
-		if _, exist := cmd.Annotations["dont_load_config"] ; exist {
-			config.LoadClientConfig(internal.Opts.Config)
-	    }
-    },
+		err := createConfigFile(*cFile)
+		if err != nil {
+			fmt.Println("Error while creating file: %v", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("successfully created a new configuration file at ", *cFile)
+	},
+	Annotations: map[string]string{
+		"dont_load_config": "true",
+	},
 }
 
-// Execute runs the given command
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		fmt.Println("")
-		os.Exit(1)
+func createConfigFile(p string) error {
+	f, err := os.Create(p)
+	if err != nil {
+		return err
 	}
+
+	err = config.GenerateClientConfig(f)
+	if err != nil {
+		return err
+	}
+
+	return f.Close()
 }
+
+var (
+	cFile *string
+)
 
 func init() {
-	rootCmd.PersistentFlags().StringP("config", "c", "", "configuration file")
-	rootCmd.PersistentFlags().StringP("password", "p", "", "password to unlock your account vault")
-	rootCmd.PersistentFlags().StringP("vault", "", "", "custom vault file")
+	configCmd.AddCommand(configInitCmd)
+
+	cFile = configInitCmd.Flags().StringP("file", "f", "./client-config.yml", "Path to configuration file")
 }

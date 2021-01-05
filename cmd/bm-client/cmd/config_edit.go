@@ -23,43 +23,24 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
-	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "bm-client",
-	Short: "BitMaelum client",
-	Long:  `This client allows you to manage accounts, read and compose mail.`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// PersistentPreRun will be always called (first). We can actually use the annotations on the
-		// command we actually run to configure things.
-
-		// Display logo unless annotations tells us otherwise
-	    if _, exist := cmd.Annotations["dont_display_logo"] ; exist {
-		    fmt.Println(bminternal.GetASCIILogo())
-	    }
-
-		// Load configuration unless annotations tells us otherwise
-		if _, exist := cmd.Annotations["dont_load_config"] ; exist {
-			config.LoadClientConfig(internal.Opts.Config)
-	    }
-    },
-}
-
-// Execute runs the given command
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		fmt.Println("")
-		os.Exit(1)
-	}
+var configEditCmd = &cobra.Command{
+	Use:   "edit",
+	Short: "Edits the current configuration file",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		err := internal.EditFile(config.ClientConfigFile)
+		if err != nil {
+			fmt.Println("cannot open editor. Please edit this file manually.")
+			os.Exit(1)
+		}
+	},
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringP("config", "c", "", "configuration file")
-	rootCmd.PersistentFlags().StringP("password", "p", "", "password to unlock your account vault")
-	rootCmd.PersistentFlags().StringP("vault", "", "", "custom vault file")
+	configCmd.AddCommand(configEditCmd)
 }
