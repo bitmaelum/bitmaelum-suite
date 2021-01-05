@@ -12,7 +12,7 @@ fi
 TMPDIR="tmp-$$"
 mkdir $TMPDIR
 
-cp ./buildscripts/docker/server-config.yml $TMPDIR
+cp ./buildscripts/docker/bitmaelum-server-config.yml $TMPDIR
 cp ./buildscripts/docker/docker-entrypoint-server.sh $TMPDIR
 cp ./release/linux-amd64/bm-* $TMPDIR
 

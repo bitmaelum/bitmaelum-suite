@@ -42,9 +42,9 @@ var triedPaths []string
 
 var (
 	// ClientConfigFile Filename of client configuration
-	ClientConfigFile string = "client-config.yml"
+	ClientConfigFile string = "bitmaelum-client-config.yml"
 	// ServerConfigFile Filename of server configuration
-	ServerConfigFile string = "server-config.yml"
+	ServerConfigFile string = "bitmaelum-server-config.yml"
 )
 
 // LoadClientConfig loads client configuration from given path or panic if cannot load
@@ -54,7 +54,7 @@ func LoadClientConfig(configPath string) {
 		for _, p := range triedPaths {
 			logrus.Errorf("Tried path: %s", p)
 		}
-		logrus.Fatalf("could not load client configuration")
+		logrus.Fatalf("could not load client configuration. You can generate a new configuration with: 'bm-client config init'")
 	}
 }
 
@@ -66,7 +66,7 @@ func LoadServerConfig(configPath string) {
 			logrus.Errorf("Tried path: %s", p)
 		}
 
-		logrus.Fatalf("could not load server configuration")
+		logrus.Fatalf("could not load server configuration. You can generate a new configuration with: 'bm-config init-config --server'")
 	}
 }
 

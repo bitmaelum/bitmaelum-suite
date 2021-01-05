@@ -82,6 +82,7 @@ func JSONFileEditor(src interface{}, dst interface{}) error {
 	}
 }
 
+// EditFile allows you to inplace edit a file until the editor returns success status
 func EditFile(file string) error {
 	editor, err := getEditor()
 	if err != nil {

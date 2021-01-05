@@ -73,5 +73,5 @@ var (
 func init() {
 	configCmd.AddCommand(configInitCmd)
 
-	cFile = configInitCmd.Flags().StringP("file", "f", "./client-config.yml", "Path to configuration file")
+	cFile = configInitCmd.Flags().StringP("file", "f", "./bitmaelum-client-config.yml", "Path to configuration file")
 }
