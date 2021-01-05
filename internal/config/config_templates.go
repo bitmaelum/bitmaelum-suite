@@ -23,7 +23,7 @@ import "io"
 
 const clientConfigTemplate string = `# BitMaelum Client Configuration Template. Edit for your own needs.
 config:
-    accounts:
+    vault:
         # where are our accounts stored?
         path: "~/.bitmaelum/accounts.vault.json"
     composer:
