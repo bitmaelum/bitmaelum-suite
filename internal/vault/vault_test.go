@@ -52,11 +52,18 @@ func TestNew(t *testing.T) {
 
 	addr, _ := address.NewAddress("foobar!")
 	acc := &AccountInfo{
-		Address:   addr,
-		Name:      "Foo Bar",
-		Settings:  nil,
-		PrivKey:   *privKey,
-		PubKey:    *pubKey,
+		Address:  addr,
+		Name:     "Foo Bar",
+		Settings: nil,
+		Keys: []KeyPair{
+			{
+				Generator:   "",
+				FingerPrint: pubKey.Fingerprint(),
+				PrivKey:     *privKey,
+				PubKey:      *pubKey,
+				Active:      true,
+			},
+		},
 		Pow:       &proofofwork.ProofOfWork{},
 		RoutingID: "12345678",
 	}

@@ -30,6 +30,7 @@ import (
 
 var errAccountNotFound = errors.New("cannot find account")
 
+// KeyPair is a structure with key information
 type KeyPair struct {
 	Generator   string           `json:"generator"`   // The generator string that will generate the given keypair
 	FingerPrint string           `json:"fingerprint"` // The sha1 fingerprint for this key
@@ -64,6 +65,7 @@ type AccountInfo struct {
 	RoutingID string                   `json:"routing_id"`      // ID of the routing used
 }
 
+// GetActiveKey will return the currently active key from the list of keys in the info structure
 func (info AccountInfo) GetActiveKey() KeyPair {
 	for _, k := range info.Keys {
 		if k.Active {

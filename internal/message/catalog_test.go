@@ -50,7 +50,7 @@ func TestCatalogNewCatalog(t *testing.T) {
 
 	privkey, pubkey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
 	addressing := NewAddressing(SignedByTypeOrigin)
-	addressing.AddSender(nil, &h, "john doe", privkey, "host.example")
+	addressing.AddSender(nil, &h, "john doe", *privkey, "host.example")
 	addressing.AddRecipient(addrTo, nil, pubkey)
 
 	c = NewCatalog(addressing, "subject")
@@ -217,7 +217,7 @@ func genCatalog() *Catalog {
 
 	privkey, pubkey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
 	addressing := NewAddressing(SignedByTypeOrigin)
-	addressing.AddSender(addrFrom, nil, "john doe", privkey, "host.example")
+	addressing.AddSender(addrFrom, nil, "john doe", *privkey, "host.example")
 	addressing.AddRecipient(addrTo, nil, pubkey)
 
 	return NewCatalog(addressing, "subject")

@@ -140,8 +140,8 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 
 		fmt.Printf("* Adding your new account into the vault: ")
 		info = &vault.AccountInfo{
-			Address:   addr,
-			Name:      name,
+			Address: addr,
+			Name:    name,
 			Keys: []vault.KeyPair{
 				{
 					Generator:   e,

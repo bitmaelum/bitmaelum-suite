@@ -94,8 +94,8 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 
 		fmt.Printf("* Adding your new organisation into the vault: ")
 		info = &vault.OrganisationInfo{
-			Addr:        orgAddr,
-			FullName:    fullName,
+			Addr:     orgAddr,
+			FullName: fullName,
 			Keys: []vault.KeyPair{
 				{
 					Generator:   e,

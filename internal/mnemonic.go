@@ -47,8 +47,6 @@ func GenerateKeypairWithMnemonic(kt bmcrypto.KeyType) (string, string, *bmcrypto
 		return "", "", nil, nil, err
 	}
 
-
-
 	return kt.String() + " " + mnemonic, hex.EncodeToString(e), privKey, pubKey, nil
 }
 

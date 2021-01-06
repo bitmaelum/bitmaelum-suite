@@ -59,6 +59,7 @@ func (info OrganisationInfo) ToOrg() *organisation.Organisation {
 	}
 }
 
+// GetActiveKey will return the currently active key from the list of keys in the info structure
 func (info OrganisationInfo) GetActiveKey() KeyPair {
 	for _, k := range info.Keys {
 		if k.Active {

@@ -43,7 +43,7 @@ const (
 	VersionV2        // Multi key
 )
 
-// Latest vault version. Everything below this version will be automatically migrated to this version
+// LatestVaultVersion Everything below this version will be automatically migrated to this version
 const LatestVaultVersion = VersionV2
 
 // Override for testing purposes

@@ -97,10 +97,17 @@ func TestVaultGetDefaultAccount(t *testing.T) {
 
 func TestInfoToOrg(t *testing.T) {
 	info := &OrganisationInfo{
-		Addr:        "foo",
-		FullName:    "bar",
-		PrivKey:     bmcrypto.PrivKey{},
-		PubKey:      bmcrypto.PubKey{},
+		Addr:     "foo",
+		FullName: "bar",
+		Keys: []KeyPair{
+			{
+				Generator:   "",
+				FingerPrint: "",
+				PrivKey:     bmcrypto.PrivKey{},
+				PubKey:      bmcrypto.PubKey{},
+				Active:      true,
+			},
+		},
 		Pow:         proofofwork.New(22, "foobar", 1234),
 		Validations: nil,
 	}
