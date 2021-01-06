@@ -65,6 +65,17 @@ type AccountInfo struct {
 	RoutingID string                   `json:"routing_id"`      // ID of the routing used
 }
 
+func (info AccountInfo) FindKey(fp string) (*KeyPair, error) {
+	// Find key with fingerprint
+	for _, k := range info.Keys {
+		if k.FingerPrint == fp {
+			return &k, nil
+		}
+	}
+
+	return nil, errors.New("cannot find key")
+}
+
 // GetActiveKey will return the currently active key from the list of keys in the info structure
 func (info AccountInfo) GetActiveKey() KeyPair {
 	for _, k := range info.Keys {

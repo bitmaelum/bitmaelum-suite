@@ -61,11 +61,30 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 
 	// iterate list until we quit
 	for !readDone {
-		decryptedMsg, err := messageList[idx].Decrypt(info.GetActiveKey().PrivKey)
-		if err != nil {
-			fmt.Println("Cannot decrypt message: ", err)
-		} else {
+		// Find key, or iterate all keys when key is not found
+		keys := info.Keys
+		key, err := info.FindKey(messageList[idx].Header.To.Fingerprint)
+		if err == nil {
+			keys = []vault.KeyPair{*key}
+		}
+
+
+		// Iterate all keys (or the single key), and see if we can decrypt the message
+		var decryptedMsg *message.DecryptedMessage
+		for _, key := range keys {
+			var err error
+			decryptedMsg, err = messageList[idx].Decrypt(key.PrivKey)
+			if err == nil {
+				break
+			}
+			decryptedMsg = nil
+		}
+
+		// Display message or fail when not decrypted
+		if decryptedMsg != nil {
 			displayMessage(*decryptedMsg)
+		} else {
+			fmt.Println("Cannot decrypt message: ", err)
 		}
 
 		parseDone := false
