@@ -30,25 +30,21 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 		senderHash      hash.Hash
 		recipientHash   hash.Hash
 		senderPrivKey   *bmcrypto.PrivKey
-		recipientPubKey *bmcrypto.PubKey
 		cat             *Catalog
 	)
 
+	recipientPubKey := addressing.Recipient.PubKey
+	senderPrivKey = addressing.Sender.PrivKey
+
 	switch addressing.Type {
 	case SignedByTypeOrigin:
-		senderPrivKey = addressing.Sender.PrivKey
-		recipientPubKey = addressing.Recipient.PubKey
 		cat = NewCatalog(addressing, subject)
 
 	case SignedByTypeServer:
-		senderPrivKey = addressing.Sender.PrivKey
-		recipientPubKey = addressing.Recipient.PubKey
 		cat = NewCatalog(addressing, subject)
 		cat.AddFlags("postmaster")
 
 	case SignedByTypeAuthorized:
-		senderPrivKey = addressing.Sender.PrivKey
-		recipientPubKey = addressing.Recipient.PubKey
 		cat = NewCatalog(addressing, subject)
 		cat.AddFlags("onbehalf")
 	}
@@ -82,7 +78,7 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 		recipientHash = *addressing.Recipient.Hash
 	}
 
-	header, err := generateHeader(senderHash, recipientHash, addressing.Type)
+	header, err := generateHeader(senderHash, recipientHash, addressing.Type, *recipientPubKey)
 	if err != nil {
 		return nil, err
 	}
@@ -102,12 +98,14 @@ func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, e
 }
 
 // Generate a header file based on the info provided
-func generateHeader(sender, recipient hash.Hash, origin SignedByType) (*Header, error) {
+func generateHeader(sender, recipient hash.Hash, origin SignedByType, pubKey bmcrypto.PubKey) (*Header, error) {
 	header := &Header{}
 
 	header.From.Addr = sender
-	header.To.Addr = recipient
 	header.From.SignedBy = origin
+
+	header.To.Addr = recipient
+	header.To.Fingerprint = pubKey.Fingerprint()
 
 	return header, nil
 }

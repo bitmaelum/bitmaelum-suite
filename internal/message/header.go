@@ -49,7 +49,8 @@ type Header struct {
 
 	// Information on the recipient of the message
 	To struct {
-		Addr hash.Hash `json:"address"` // Address hash of the recipient
+		Addr        hash.Hash `json:"address"`     // Address hash of the recipient
+		Fingerprint string    `json:"fingerprint,omitempty"` // The fingerprint used for encrypting to this user
 	} `json:"to"`
 
 	// Information about the catalog of this message
