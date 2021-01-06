@@ -61,7 +61,7 @@ func (api *API) CreateAccount(info vault.AccountInfo, token string) error {
 		UserHash:    info.Address.LocalHash(),
 		OrgHash:     info.Address.OrgHash(),
 		Token:       token,
-		PublicKey:   info.PubKey,
+		PublicKey:   info.GetActiveKey().PubKey,
 		ProofOfWork: *info.Pow,
 	}
 

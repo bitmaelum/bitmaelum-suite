@@ -21,6 +21,7 @@ package internal
 
 import (
 	"bytes"
+	"encoding/hex"
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -28,25 +29,27 @@ import (
 )
 
 // GenerateKeypairWithMnemonic generates a mnemonic, and a RSA keypair that can be generated through the same mnemonic again.
-func GenerateKeypairWithMnemonic(kt bmcrypto.KeyType) (string, *bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
+func GenerateKeypairWithMnemonic(kt bmcrypto.KeyType) (string, string, *bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	// Generate large enough random string
 	e, err := bip39.NewEntropy(192)
 	if err != nil {
-		return "", nil, nil, err
+		return "", "", nil, nil, err
 	}
 
 	// Generate Mnemonic words
 	mnemonic, err := bip39.NewMnemonic(e)
 	if err != nil {
-		return "", nil, nil, err
+		return "", "", nil, nil, err
 	}
 
 	privKey, pubKey, err := kt.GenerateKeyPair(bytes.NewReader(e))
 	if err != nil {
-		return "", nil, nil, err
+		return "", "", nil, nil, err
 	}
 
-	return kt.String() + " " + mnemonic, privKey, pubKey, nil
+
+
+	return kt.String() + " " + mnemonic, hex.EncodeToString(e), privKey, pubKey, nil
 }
 
 // GenerateKeypairFromMnemonic generates a keypair based on the given mnemonic

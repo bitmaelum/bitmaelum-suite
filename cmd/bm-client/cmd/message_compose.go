@@ -116,7 +116,7 @@ var composeCmd = &cobra.Command{
 
 		// Setup addressing and compose the message
 		addressing := message.NewAddressing(message.SignedByTypeOrigin)
-		addressing.AddSender(fromInfo.Address, nil, fromInfo.Name, &fromInfo.PrivKey, routingInfo.Routing)
+		addressing.AddSender(fromInfo.Address, nil, fromInfo.Name, fromInfo.GetActiveKey().PrivKey, routingInfo.Routing)
 		addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 
 		err = handlers.ComposeMessage(addressing, *subject, *blocks, *attachments)

@@ -34,6 +34,15 @@ var errOrganisationNotFound = errors.New("cannot find organisation")
 type OrganisationInfo struct {
 	Addr        string                        `json:"addr"`          // org part from the bitmaelum address
 	FullName    string                        `json:"name"`          // Full name of the organisation
+	Keys        []KeyPair                     `json:"keys"`          // Organisation keys
+	Pow         *proofofwork.ProofOfWork      `json:"pow,omitempty"` // Proof of work
+	Validations []organisation.ValidationType `json:"validations"`   // Validations
+}
+
+// OrganisationInfoV1 is an older structure
+type OrganisationInfoV1 struct {
+	Addr        string                        `json:"addr"`          // org part from the bitmaelum address
+	FullName    string                        `json:"name"`          // Full name of the organisation
 	PrivKey     bmcrypto.PrivKey              `json:"priv_key"`      // PEM encoded private key
 	PubKey      bmcrypto.PubKey               `json:"pub_key"`       // PEM encoded public key
 	Pow         *proofofwork.ProofOfWork      `json:"pow,omitempty"` // Proof of work
@@ -45,9 +54,20 @@ func (info OrganisationInfo) ToOrg() *organisation.Organisation {
 	return &organisation.Organisation{
 		Hash:       hash.New(info.Addr),
 		FullName:   info.FullName,
-		PublicKey:  info.PubKey,
+		PublicKey:  info.GetActiveKey().PubKey,
 		Validation: info.Validations,
 	}
+}
+
+func (info OrganisationInfo) GetActiveKey() KeyPair {
+	for _, k := range info.Keys {
+		if k.Active {
+			return k
+		}
+	}
+
+	// @TODO: Return first key, as we assume this is the active key. We shouldn't. Keys might not be even filled!
+	return info.Keys[0]
 }
 
 // AddOrganisation adds an organisation to the vault

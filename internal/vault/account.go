@@ -28,6 +28,27 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
+var errAccountNotFound = errors.New("cannot find account")
+
+type KeyPair struct {
+	Generator   string           `json:"generator"`   // The generator string that will generate the given keypair
+	FingerPrint string           `json:"fingerprint"` // The sha1 fingerprint for this key
+	PrivKey     bmcrypto.PrivKey `json:"priv_key"`    // PEM encoded private key
+	PubKey      bmcrypto.PubKey  `json:"pub_key"`     // PEM encoded public key
+	Active      bool             `json:"active"`      // This is the currently active key
+}
+
+// AccountInfoV1 represents client account information
+type AccountInfoV1 struct {
+	Address   *address.Address         `json:"address"`         // The address of the account
+	Name      string                   `json:"name"`            // Full name of the user
+	Settings  map[string]string        `json:"settings"`        // Additional settings that can be user-defined
+	PrivKey   bmcrypto.PrivKey         `json:"priv_key"`        // PEM encoded private key
+	PubKey    bmcrypto.PubKey          `json:"pub_key"`         // PEM encoded public key
+	Pow       *proofofwork.ProofOfWork `json:"proof,omitempty"` // Proof of work
+	RoutingID string                   `json:"routing_id"`      // ID of the routing used
+}
+
 // AccountInfo represents client account information
 type AccountInfo struct {
 	// Default bool             `json:"default"` // Is this the default account
@@ -36,11 +57,22 @@ type AccountInfo struct {
 	Name     string            `json:"name"`     // Full name of the user
 	Settings map[string]string `json:"settings"` // Additional settings that can be user-defined
 
+	Keys []KeyPair // Actual keys
+
 	// Communication and encryption information
-	PrivKey   bmcrypto.PrivKey         `json:"priv_key"`        // PEM encoded private key
-	PubKey    bmcrypto.PubKey          `json:"pub_key"`         // PEM encoded public key
 	Pow       *proofofwork.ProofOfWork `json:"proof,omitempty"` // Proof of work
 	RoutingID string                   `json:"routing_id"`      // ID of the routing used
+}
+
+func (info AccountInfo) GetActiveKey() KeyPair {
+	for _, k := range info.Keys {
+		if k.Active {
+			return k
+		}
+	}
+
+	// @TODO: Return first key, as we assume this is the active key. We shouldn't. Keys might not be even filled!
+	return info.Keys[0]
 }
 
 // AddAccount adds a new account to the vault
@@ -59,8 +91,6 @@ func (v *Vault) RemoveAccount(addr address.Address) {
 	}
 	v.Store.Accounts = v.Store.Accounts[:k]
 }
-
-var errAccountNotFound = errors.New("cannot find account")
 
 // GetAccountInfo tries to find the given address and returns the account from the vault
 func (v *Vault) GetAccountInfo(addr address.Address) (*AccountInfo, error) {
@@ -108,22 +138,3 @@ func (v *Vault) FindShortRoutingID(id string) string {
 
 	return found
 }
-
-// // GetDefaultAccount returns the default account from the vault. This could be the one set to default, or if none found,
-// // the first account in the vault. Returns nil when no accounts are present in the vault.
-// func (v *Vault) GetDefaultAccount() *AccountInfo {
-// 	// No accounts, return nil
-// 	if len(v.Store.Accounts) == 0 {
-// 		return nil
-// 	}
-//
-// 	// Return account that is set default (the first one, if multiple)
-// 	for i := range v.Store.Accounts {
-// 		if v.Store.Accounts[i].Default {
-// 			return &v.Store.Accounts[i]
-// 		}
-// 	}
-//
-// 	// No default found, return the first account
-// 	return &v.Store.Accounts[0]
-// }

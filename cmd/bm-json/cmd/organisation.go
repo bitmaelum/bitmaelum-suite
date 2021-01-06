@@ -43,14 +43,16 @@ var organisationCmd = &cobra.Command{
 
 			privkey := ""
 			if *orgDisplayPrivKey {
-				privkey = org.PrivKey.String()
+				pk := org.GetActiveKey().PrivKey
+				privkey = pk.String()
 			}
 
+			pk := org.GetActiveKey().PubKey
 			out = append(out, output.JSONT{
 				"address":       org.Addr,
 				"full_name":     org.FullName,
 				"private_key":   privkey,
-				"public_key":    org.PubKey.String(),
+				"public_key":    pk.String(),
 				"proof_of_work": org.Pow.String(),
 				"validations":   org.Validations,
 			})

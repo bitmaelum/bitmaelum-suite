@@ -77,7 +77,7 @@ var webhookCreateSlackCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
+		client, err := api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 		if err != nil {
 			logrus.Fatal(err)
 			os.Exit(1)

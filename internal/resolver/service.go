@@ -141,10 +141,10 @@ func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, err
 func (s *Service) UploadAddressInfo(info vault.AccountInfo, orgToken string) error {
 	return s.repo.UploadAddress(*info.Address, &AddressInfo{
 		Hash:      info.Address.Hash().String(),
-		PublicKey: info.PubKey,
+		PublicKey: info.GetActiveKey().PubKey,
 		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
-	}, info.PrivKey, *info.Pow, orgToken)
+	}, info.GetActiveKey().PrivKey, *info.Pow, orgToken)
 }
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers
@@ -156,10 +156,10 @@ func (s *Service) UploadRoutingInfo(info RoutingInfo, privKey *bmcrypto.PrivKey)
 func (s *Service) UploadOrganisationInfo(info vault.OrganisationInfo) error {
 	return s.repo.UploadOrganisation(&OrganisationInfo{
 		Hash:        hash.New(info.Addr).String(),
-		PublicKey:   info.PubKey,
+		PublicKey:   info.GetActiveKey().PubKey,
 		Pow:         info.Pow.String(),
 		Validations: info.Validations,
-	}, info.PrivKey, *info.Pow)
+	}, info.GetActiveKey().PrivKey, *info.Pow)
 }
 
 // GetConfig returns the configuration from the given repo, or a default configuration on error

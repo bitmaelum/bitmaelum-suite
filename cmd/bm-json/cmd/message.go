@@ -56,7 +56,7 @@ var messageCmd = &cobra.Command{
 			GenerateAttachmentReader: client.GenerateAPIAttachmentReader(info.Address.Hash()),
 		}
 
-		dMsg, err := em.Decrypt(info.PrivKey)
+		dMsg, err := em.Decrypt(info.GetActiveKey().PrivKey)
 		if err != nil {
 			output.JSONErrorStrOut("cannot decrypt message")
 			os.Exit(1)

@@ -123,7 +123,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	if info == nil {
 		fmt.Printf("* Generating your secret key to send and read mail: ")
 
-		mnemonic, privKey, pubKey, err := bminternal.GenerateKeypairWithMnemonic(kt)
+		mnemonic, e, privKey, pubKey, err := bminternal.GenerateKeypairWithMnemonic(kt)
 
 		if err != nil {
 			fmt.Print(err)
@@ -142,8 +142,15 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 		info = &vault.AccountInfo{
 			Address:   addr,
 			Name:      name,
-			PrivKey:   *privKey,
-			PubKey:    *pubKey,
+			Keys: []vault.KeyPair{
+				{
+					Generator:   e,
+					FingerPrint: pubKey.Fingerprint(),
+					PrivKey:     *privKey,
+					PubKey:      *pubKey,
+					Active:      true,
+				},
+			},
 			Pow:       proof,
 			RoutingID: it.RoutingID, // Fetch from token
 		}
@@ -167,7 +174,7 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	}
 
 	fmt.Printf("* Sending your account information to the server: ")
-	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
+	client, err := api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 	if err != nil {
 		// Remove account from the local vault as well, as we could not store on the server
 		v.RemoveAccount(*addr)

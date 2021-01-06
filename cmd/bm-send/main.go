@@ -111,7 +111,7 @@ func main() {
 
 	// Setup addressing
 	addressing := message.NewAddressing(message.SignedByTypeAuthorized)
-	addressing.AddSender(fromAddr, nil, opts.FromName, privKey, senderInfo.RoutingInfo.Routing)
+	addressing.AddSender(fromAddr, nil, opts.FromName, *privKey, senderInfo.RoutingInfo.Routing)
 	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 
 	// Compose mail
@@ -122,7 +122,7 @@ func main() {
 	}
 
 	// Send mail
-	client, err := api.NewAuthenticated(*fromAddr, privKey, senderInfo.RoutingInfo.Routing, apiErrorFunc)
+	client, err := api.NewAuthenticated(*fromAddr, *privKey, senderInfo.RoutingInfo.Routing, apiErrorFunc)
 	if err != nil {
 		fmt.Println("cannot connect to api")
 		os.Exit(1)

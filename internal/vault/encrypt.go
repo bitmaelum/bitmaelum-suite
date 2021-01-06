@@ -20,8 +20,10 @@
 package vault
 
 import (
-	"encoding/json"
+	"errors"
 )
+
+var errMigrationError = errors.New("error while migrating vault to the latest version")
 
 // DecryptContainer decrypts a container and fills the values in v.Store
 func (v *Vault) DecryptContainer(container *EncryptedContainer) error {
@@ -32,24 +34,18 @@ func (v *Vault) DecryptContainer(container *EncryptedContainer) error {
 		return err
 	}
 
-	if container.Version == VersionV0 {
-		// Unmarshal "old" style, with no organisations present
-		var accounts []AccountInfo
-		err = json.Unmarshal(v.RawData, &accounts)
-		if err == nil {
-			v.Store.Accounts = accounts
-			v.Store.Organisations = []OrganisationInfo{}
-
-			// Write back to disk in a newer format
-			return v.Persist()
-		}
+	// Migrate vault to latest version if needed
+	store, err := MigrateVault(v.RawData, container.Version)
+	if err != nil {
+		return errMigrationError
 	}
+	v.Store = *store
 
-	// Version 1 has organisation info
-	if container.Version == VersionV1 {
-		err = json.Unmarshal(v.RawData, &v.Store)
+	// Save vault if it wasn't the latest version already
+	if container.Version != LatestVaultVersion {
+		err = v.Persist()
 		if err != nil {
-			return err
+			return errMigrationError
 		}
 	}
 
@@ -58,5 +54,5 @@ func (v *Vault) DecryptContainer(container *EncryptedContainer) error {
 
 // EncryptContainer encrypts v.Store and returns the vault as encrypted JSON container
 func (v *Vault) EncryptContainer() ([]byte, error) {
-	return EncryptContainer(&v.Store, v.password, "vault", VersionV1)
+	return EncryptContainer(&v.Store, v.password, "vault", LatestVaultVersion)
 }

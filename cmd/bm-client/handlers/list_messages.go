@@ -56,7 +56,7 @@ func ListMessages(accounts []vault.AccountInfo, since time.Time) int {
 			continue
 		}
 
-		client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
+		client, err := api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 		if err != nil {
 			continue
 		}
@@ -120,11 +120,11 @@ func displayBox(client *api.API, account *vault.AccountInfo, box string, table *
 	}
 
 	// Sort messages first
-	msort := mailbox.NewMessageSort(&account.PrivKey, mb.Messages, mailbox.SortDate, true)
+	msort := mailbox.NewMessageSort(account.GetActiveKey().PrivKey, mb.Messages, mailbox.SortDate, true)
 	sort.Sort(&msort)
 
 	for _, msg := range mb.Messages {
-		key, err := bmcrypto.Decrypt(account.PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+		key, err := bmcrypto.Decrypt(account.GetActiveKey().PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			continue
 		}

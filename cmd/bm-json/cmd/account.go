@@ -43,9 +43,11 @@ var accountCmd = &cobra.Command{
 
 			privkey := ""
 			if *accDisplayPrivKey {
-				privkey = acc.PrivKey.String()
+				pk := acc.GetActiveKey().PrivKey
+				privkey = pk.String()
 			}
 
+			pk := acc.GetActiveKey().PubKey
 			out = append(out, output.JSONT{
 				"address": output.JSONT{
 					"hash":       acc.Address.Hash().String(),
@@ -56,7 +58,7 @@ var accountCmd = &cobra.Command{
 				"name":          acc.Name,
 				"routing_id":    acc.RoutingID,
 				"private_key":   privkey,
-				"public_key":    acc.PubKey.String(),
+				"public_key":    pk.String(),
 				"proof_of_work": acc.Pow.String(),
 				"settings":      acc.Settings,
 			})

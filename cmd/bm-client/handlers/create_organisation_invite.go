@@ -70,7 +70,7 @@ func CreateOrganisationInvite(vault *vault.Vault, orgAddr, inviteAddr, shortRout
 	}
 
 	validUntil := pkginternal.TimeNow().Add(7 * 24 * time.Hour)
-	token, err := signature.NewInviteToken(hashAddr.Hash(), routingID, validUntil, oi.PrivKey)
+	token, err := signature.NewInviteToken(hashAddr.Hash(), routingID, validUntil, oi.GetActiveKey().PrivKey)
 	if err != nil {
 		fmt.Println("Error while generating token: ", err)
 		os.Exit(1)

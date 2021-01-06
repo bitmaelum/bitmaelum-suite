@@ -41,7 +41,7 @@ import (
 
 // ReadMessages will read a specific message blocks
 func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, box, messageID string, since time.Time) {
-	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
+	client, err := api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 
 	// iterate list until we quit
 	for !readDone {
-		decryptedMsg, err := messageList[idx].Decrypt(info.PrivKey)
+		decryptedMsg, err := messageList[idx].Decrypt(info.GetActiveKey().PrivKey)
 		if err != nil {
 			fmt.Println("Cannot decrypt message: ", err)
 		} else {

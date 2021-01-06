@@ -52,7 +52,7 @@ func ListOrganisations(v *vault.Vault, displayKeys bool) {
 				org.ToOrg().Hash.String(),
 			}
 			if displayKeys {
-				values = append(values, org.PrivKey.S, org.PubKey.S)
+				values = append(values, org.GetActiveKey().PrivKey.S, org.GetActiveKey().PubKey.S)
 			}
 
 			table.Append(values)
@@ -86,7 +86,7 @@ func ListOrganisations(v *vault.Vault, displayKeys bool) {
 			}
 
 			if displayKeys {
-				values = append(values, org.PrivKey.S, org.PubKey.S)
+				values = append(values, org.GetActiveKey().PrivKey.S, org.GetActiveKey().PubKey.S)
 			}
 
 			table.Append(values)
