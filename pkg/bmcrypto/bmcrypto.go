@@ -20,7 +20,9 @@
 package bmcrypto
 
 import (
+	"bytes"
 	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"io"
 	"math/big"
@@ -37,6 +39,14 @@ var randReader io.Reader = rand.Reader
 
 type ecdsaSignature struct {
 	R, S *big.Int
+}
+
+// KeyPair is a structure with key information
+type KeyPair struct {
+	Generator   string  `json:"generator"`   // The generator string that will generate the given keypair
+	FingerPrint string  `json:"fingerprint"` // The sha1 fingerprint for this key
+	PrivKey     PrivKey `json:"priv_key"`    // PEM encoded private key
+	PubKey      PubKey  `json:"pub_key"`     // PEM encoded public key
 }
 
 // FindKeyType finds the keytype based on the given string
@@ -94,4 +104,19 @@ func Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
 	}
 
 	return key.Type.Decrypt(key, txID, message)
+}
+
+// CreateKeypair create a new keypair
+func CreateKeypair(kt KeyType, seed []byte) (*KeyPair, error) {
+	privKey, pubKey, err := kt.GenerateKeyPair(bytes.NewReader(seed))
+	if err != nil {
+		return nil, err
+	}
+
+	return &KeyPair{
+		Generator:   hex.EncodeToString(seed),
+		FingerPrint: pubKey.Fingerprint(),
+		PrivKey:     *privKey,
+		PubKey:      *pubKey,
+	}, nil
 }

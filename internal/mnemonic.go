@@ -20,7 +20,6 @@
 package internal
 
 import (
-	"bytes"
 	"encoding/hex"
 	"strings"
 
@@ -28,41 +27,55 @@ import (
 	"github.com/tyler-smith/go-bip39"
 )
 
-// GenerateKeypairWithMnemonic generates a mnemonic, and a RSA keypair that can be generated through the same mnemonic again.
-func GenerateKeypairWithMnemonic(kt bmcrypto.KeyType) (string, string, *bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
-	// Generate large enough random string
-	e, err := bip39.NewEntropy(192)
+// GetMnemonic will return a mnemonic representation of the given keypair
+func GetMnemonic(kp *bmcrypto.KeyPair) string {
+	seed, err := hex.DecodeString(kp.Generator)
 	if err != nil {
-		return "", "", nil, nil, err
+		return ""
 	}
 
-	// Generate Mnemonic words
-	mnemonic, err := bip39.NewMnemonic(e)
+	mnemonic, err := RandomSeedToMnemonic(seed)
 	if err != nil {
-		return "", "", nil, nil, err
+		return ""
 	}
 
-	privKey, pubKey, err := kt.GenerateKeyPair(bytes.NewReader(e))
-	if err != nil {
-		return "", "", nil, nil, err
-	}
-
-	return kt.String() + " " + mnemonic, hex.EncodeToString(e), privKey, pubKey, nil
+	return kp.PubKey.Type.String() + " " + mnemonic
 }
 
-// GenerateKeypairFromMnemonic generates a keypair based on the given mnemonic
-func GenerateKeypairFromMnemonic(mnemonic string) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
+// RandomSeedToMnemonic converts a random seed to a mnemonic
+func RandomSeedToMnemonic(seed []byte) (string, error) {
+	return bip39.NewMnemonic(seed)
+}
+
+// MnemonicToRandomSeed converts a mnemonic to a random seed
+func MnemonicToRandomSeed(mnemonic string) ([]byte, error) {
+	return bip39.MnemonicToByteArray(mnemonic, true)
+}
+
+// GenerateKeypairWithRandomSeed generates a seed and generates a keypair which can be reconstructed again with the same seed
+func GenerateKeypairWithRandomSeed(kt bmcrypto.KeyType) (*bmcrypto.KeyPair, error) {
+	// Generate large enough random string
+	seed, err := bip39.NewEntropy(192)
+	if err != nil {
+		return nil, err
+	}
+
+	return bmcrypto.CreateKeypair(kt, seed)
+}
+
+// GenerateKeypairFromRandomSeed generates a keypair based on the given mnemonic
+func GenerateKeypairFromMnemonic(mnemonic string) (*bmcrypto.KeyPair, error) {
 	words := strings.SplitN(mnemonic, " ", 2)
 
 	kt, err := bmcrypto.FindKeyType(words[0])
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	e, err := bip39.MnemonicToByteArray(words[1], true)
+	seed, err := MnemonicToRandomSeed(words[1])
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return kt.GenerateKeyPair(bytes.NewReader(e))
+	return bmcrypto.CreateKeypair(kt, seed)
 }

@@ -17,14 +17,26 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package cmd
 
-import "time"
+import (
+	"github.com/spf13/cobra"
+)
 
-var timeNow = time.Now
+var accountKeyCmd = &cobra.Command{
+	Use:   "key",
+	Short: "Account key management",
+}
 
-// TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
-func TimeNow() time.Time {
-	ct := timeNow().Unix()
-	return time.Unix(ct, 0).UTC()
+var (
+	akAccount *string
+)
+
+
+func init() {
+	accountCmd.AddCommand(accountKeyCmd)
+
+	akAccount = accountKeyCmd.PersistentFlags().String("account", "", "Account to key on")
+
+	_ = accountKeyCmd.MarkPersistentFlagRequired("account")
 }

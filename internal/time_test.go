@@ -19,12 +19,17 @@
 
 package internal
 
-import "time"
+import (
+	"testing"
+	"time"
 
-var timeNow = time.Now
+	"github.com/stretchr/testify/assert"
+)
 
-// TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
-func TimeNow() time.Time {
-	ct := timeNow().Unix()
-	return time.Unix(ct, 0).UTC()
+func TestTimeNow(t *testing.T) {
+	timeNow = func() time.Time {
+		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
+	}
+
+	assert.Equal(t, "2010-01-01 12:34:56 +0000 UTC", TimeNow().String())
 }

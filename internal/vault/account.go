@@ -32,10 +32,7 @@ var errAccountNotFound = errors.New("cannot find account")
 
 // KeyPair is a structure with key information
 type KeyPair struct {
-	Generator   string           `json:"generator"`   // The generator string that will generate the given keypair
-	FingerPrint string           `json:"fingerprint"` // The sha1 fingerprint for this key
-	PrivKey     bmcrypto.PrivKey `json:"priv_key"`    // PEM encoded private key
-	PubKey      bmcrypto.PubKey  `json:"pub_key"`     // PEM encoded public key
+	bmcrypto.KeyPair
 	Active      bool             `json:"active"`      // This is the currently active key
 }
 

@@ -17,14 +17,51 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package cmd
 
-import "time"
+import (
+	"fmt"
+	"os"
 
-var timeNow = time.Now
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
+)
 
-// TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
-func TimeNow() time.Time {
-	ct := timeNow().Unix()
-	return time.Unix(ct, 0).UTC()
+var accountKeyListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "Display account keys",
+	Run: func(cmd *cobra.Command, args []string) {
+		v := vault.OpenDefaultVault()
+
+		info, err := vault.GetAccount(v, *akAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
+			os.Exit(1)
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Created at", "Type", "Active", "Fingerprint"})
+
+		for _, key := range info.Keys {
+			active := ""
+			if key.Active {
+				active = "*"
+			}
+
+			table.Append([]string{
+				internal.TimeNow().String(),
+				key.PubKey.Type.String(),
+				active,
+				key.FingerPrint,
+			})
+		}
+
+		table.Render()
+	},
+}
+
+func init() {
+	accountKeyCmd.AddCommand(accountKeyListCmd)
 }
