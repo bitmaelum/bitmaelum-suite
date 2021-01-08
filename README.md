@@ -23,6 +23,7 @@ To start with BitMaelum right away, check out [Quickstart guide](https://github.
 
 To build and test BitMaelum, check out [build document](docs/build.md).
 
+Join us on our discourse forum: https://discourse.bitmaelum.com
 
 
 # Features
