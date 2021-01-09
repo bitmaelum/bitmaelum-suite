@@ -280,14 +280,13 @@ func setupServer() {
 	addr, _ := address.NewAddress("foobar!")
 
 	// Note: our mail server uses key1
-	privKey, pubKey, err := testing2.ReadTestKey("../../testdata/key-1.json")
+	kp, err := testing2.ReadKeyPair("../../testdata/key-1.json")
 	if err != nil {
 		panic(err)
 	}
 	config.Routing = config.RoutingConfig{
-		RoutingID:  "12345678",
-		PrivateKey: *privKey,
-		PublicKey:  *pubKey,
+		RoutingID: "12345678",
+		KeyPair:   kp,
 	}
 
 	// Setup container with mock repository for routing
@@ -300,7 +299,7 @@ func setupServer() {
 	uploadAddress(repo, *addr, "111100000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc", "12345678", "../../testdata/key-3.json")
 
 	// Note: our mail server uses key1
-	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-1.json")
+	privKey, pubKey, err := testing2.ReadTestKey("../../testdata/key-1.json")
 	if err != nil {
 		panic(err)
 	}

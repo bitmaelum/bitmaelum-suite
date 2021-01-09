@@ -33,7 +33,7 @@ var errAccountNotFound = errors.New("cannot find account")
 // KeyPair is a structure with key information
 type KeyPair struct {
 	bmcrypto.KeyPair
-	Active      bool             `json:"active"`      // This is the currently active key
+	Active bool `json:"active"` // This is the currently active key
 }
 
 // AccountInfoV1 represents client account information
@@ -62,6 +62,7 @@ type AccountInfo struct {
 	RoutingID string                   `json:"routing_id"`      // ID of the routing used
 }
 
+// FindKey will try and retrieve a key based on the fingerprint
 func (info AccountInfo) FindKey(fp string) (*KeyPair, error) {
 	// Find key with fingerprint
 	for _, k := range info.Keys {

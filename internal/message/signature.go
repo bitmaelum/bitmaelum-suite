@@ -38,7 +38,7 @@ func SignServerHeader(header *Header) error {
 		return err
 	}
 
-	sig, err := bmcrypto.Sign(config.Routing.PrivateKey, h)
+	sig, err := bmcrypto.Sign(config.Routing.KeyPair.PrivKey, h)
 	if err != nil {
 		return err
 	}

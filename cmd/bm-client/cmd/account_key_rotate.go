@@ -39,7 +39,7 @@ var accountKeyRotateCmd = &cobra.Command{
   rsa       RSA 2048 bit 
   rsa4096   RSA 4096 bit 
 
-`,	Run: func(cmd *cobra.Command, args []string) {
+`, Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
 		info, err := vault.GetAccount(v, *akAccount)
@@ -53,17 +53,14 @@ var accountKeyRotateCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		mnemonic, randomSeed, privKey, pubKey, err := internal.GenerateKeypairWithMnemonic(kt)
+		kp, err := internal.GenerateKeypairWithRandomSeed(kt)
 		if err != nil {
 			logrus.Fatal(err)
 		}
 
 		info.Keys = append(info.Keys, vault.KeyPair{
-			Generator:   randomSeed,
-			FingerPrint: pubKey.Fingerprint(),
-			PrivKey:     *privKey,
-			PubKey:      *pubKey,
-			Active:      false,
+			KeyPair: *kp,
+			Active:  false,
 		})
 
 		err = v.Persist()
@@ -82,7 +79,7 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-		fmt.Print(internal.WordWrap(mnemonic, 78))
+		fmt.Print(internal.WordWrap(internal.GetMnemonic(kp), 78))
 		fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 

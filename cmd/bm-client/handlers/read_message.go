@@ -68,7 +68,6 @@ func ReadMessages(info *vault.AccountInfo, routingInfo *resolver.RoutingInfo, bo
 			keys = []vault.KeyPair{*key}
 		}
 
-
 		// Iterate all keys (or the single key), and see if we can decrypt the message
 		var decryptedMsg *message.DecryptedMessage
 		for _, key := range keys {

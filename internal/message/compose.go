@@ -27,10 +27,10 @@ import (
 // Compose will create a new message and places it inside an envelope. This can be used for actual sending the message
 func Compose(addressing Addressing, subject string, b, a []string) (*Envelope, error) {
 	var (
-		senderHash      hash.Hash
-		recipientHash   hash.Hash
-		senderPrivKey   *bmcrypto.PrivKey
-		cat             *Catalog
+		senderHash    hash.Hash
+		recipientHash hash.Hash
+		senderPrivKey *bmcrypto.PrivKey
+		cat           *Catalog
 	)
 
 	recipientPubKey := addressing.Recipient.PubKey

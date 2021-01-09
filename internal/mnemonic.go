@@ -63,7 +63,7 @@ func GenerateKeypairWithRandomSeed(kt bmcrypto.KeyType) (*bmcrypto.KeyPair, erro
 	return bmcrypto.CreateKeypair(kt, seed)
 }
 
-// GenerateKeypairFromRandomSeed generates a keypair based on the given mnemonic
+// GenerateKeypairFromMnemonic generates a keypair based on the given mnemonic
 func GenerateKeypairFromMnemonic(mnemonic string) (*bmcrypto.KeyPair, error) {
 	words := strings.SplitN(mnemonic, " ", 2)
 

@@ -24,6 +24,7 @@ import (
 
 	testing2 "github.com/bitmaelum/bitmaelum-suite/internal/testing"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -57,11 +58,13 @@ func TestNew(t *testing.T) {
 		Settings: nil,
 		Keys: []KeyPair{
 			{
-				Generator:   "",
-				FingerPrint: pubKey.Fingerprint(),
-				PrivKey:     *privKey,
-				PubKey:      *pubKey,
-				Active:      true,
+				KeyPair: bmcrypto.KeyPair{
+					Generator:   "",
+					FingerPrint: pubKey.Fingerprint(),
+					PrivKey:     *privKey,
+					PubKey:      *pubKey,
+				},
+				Active: true,
 			},
 		},
 		Pow:       &proofofwork.ProofOfWork{},

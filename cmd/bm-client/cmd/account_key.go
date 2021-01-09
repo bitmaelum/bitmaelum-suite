@@ -32,7 +32,6 @@ var (
 	akAccount *string
 )
 
-
 func init() {
 	accountCmd.AddCommand(accountKeyCmd)
 

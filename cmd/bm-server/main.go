@@ -127,9 +127,9 @@ You can generate a new one by running:
 		// Upload routing
 		err := res.UploadRoutingInfo(resolver.RoutingInfo{
 			Hash:      config.Routing.RoutingID,
-			PublicKey: config.Routing.PublicKey,
+			PublicKey: config.Routing.KeyPair.PubKey,
 			Routing:   config.Server.Server.Hostname,
-		}, &config.Routing.PrivateKey)
+		}, &config.Routing.KeyPair.PrivKey)
 		if err != nil {
 			fmt.Print("There is an error while uploading routing information to the key resolver: ", err)
 			os.Exit(1)

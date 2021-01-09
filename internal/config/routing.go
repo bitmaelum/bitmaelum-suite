@@ -34,9 +34,15 @@ import (
 
 // RoutingConfig holds routing configuration for the mail server
 type RoutingConfig struct {
-	RoutingID  string           `json:"routing_id"`
-	PrivateKey bmcrypto.PrivKey `json:"private_key"`
-	PublicKey  bmcrypto.PubKey  `json:"public_key"`
+	Version   int               `json:"version"`
+	RoutingID string            `json:"routing_id"`
+	KeyPair   *bmcrypto.KeyPair `json:"keypair,omitempty"`
+}
+
+type routingConfigV1 struct {
+	RoutingID  string            `json:"routing_id"`
+	PrivateKey *bmcrypto.PrivKey `json:"private_key,omitempty"`
+	PublicKey  *bmcrypto.PubKey  `json:"public_key,omitempty"`
 }
 
 // Routing keeps the routing ID and keys
@@ -54,13 +60,41 @@ func ReadRouting(p string) error {
 		return err
 	}
 
-	Routing = RoutingConfig{}
-	err = json.Unmarshal(data, &Routing)
+	err = readConfigV0(p, data)
+	if err != nil {
+		err = readConfigV1(p, data)
+	}
+
+	return err
+}
+
+func readConfigV0(p string, data []byte) error {
+	tmp := routingConfigV1{}
+	err := json.Unmarshal(data, &tmp)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	// Migrate to new structure
+	Routing.KeyPair = &bmcrypto.KeyPair{
+		Generator:   "",
+		FingerPrint: tmp.PublicKey.Fingerprint(),
+		PrivKey:     *tmp.PrivateKey,
+		PubKey:      *tmp.PublicKey,
+	}
+
+	return SaveRouting(p, &Routing)
+}
+
+func readConfigV1(p string, data []byte) error {
+	tmp := routingConfigV1{}
+	err := json.Unmarshal(data, &tmp)
+	if err != nil {
+		return err
+	}
+
+	Routing = RoutingConfig{}
+	return json.Unmarshal(data, &Routing)
 }
 
 // SaveRouting will save the routing into a file. It will overwrite if exists
@@ -80,35 +114,33 @@ func SaveRouting(p string, routing *RoutingConfig) error {
 
 // GenerateRoutingFromMnemonic generates a new routing file from the given seed
 func GenerateRoutingFromMnemonic(mnemonic string) (*RoutingConfig, error) {
-	privKey, pubKey, err := internal.GenerateKeypairFromMnemonic(mnemonic)
+	kp, err := internal.GenerateKeypairFromMnemonic(mnemonic)
 	if err != nil {
 		return nil, err
 	}
 
-	id := hex.EncodeToString(pubKey.K.(ed25519.PublicKey))
+	id := hex.EncodeToString(kp.PubKey.K.(ed25519.PublicKey))
 	return &RoutingConfig{
-		RoutingID:  hash.New(id).String(),
-		PrivateKey: *privKey,
-		PublicKey:  *pubKey,
+		RoutingID: hash.New(id).String(),
+		KeyPair:   kp,
 	}, nil
 }
 
 // GenerateRouting generates a new routing structure
-func GenerateRouting() (string, *RoutingConfig, error) {
+func GenerateRouting() (*RoutingConfig, error) {
 	kt, err := bmcrypto.FindKeyType("ed25519")
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
-	mnemonic, _, privKey, pubKey, err := internal.GenerateKeypairWithMnemonic(kt)
+	kp, err := internal.GenerateKeypairWithRandomSeed(kt)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
-	id := hex.EncodeToString(pubKey.K.(ed25519.PublicKey))
-	return mnemonic, &RoutingConfig{
-		RoutingID:  hash.New(id).String(),
-		PrivateKey: *privKey,
-		PublicKey:  *pubKey,
+	id := hex.EncodeToString(kp.PubKey.K.(ed25519.PublicKey))
+	return &RoutingConfig{
+		RoutingID: hash.New(id).String(),
+		KeyPair:   kp,
 	}, nil
 }

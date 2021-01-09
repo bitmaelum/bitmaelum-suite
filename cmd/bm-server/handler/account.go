@@ -84,7 +84,7 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if we need to verify against the mail server key, or the organisation key
-	var pubKey = config.Routing.PublicKey
+	var pubKey = config.Routing.KeyPair.PubKey
 	if !orgHash.IsEmpty() {
 		r := container.Instance.GetResolveService()
 		oh, err := hash.NewFromHash(input.OrgHash)

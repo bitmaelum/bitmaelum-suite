@@ -20,6 +20,7 @@
 package cmd
 
 import (
+	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -40,36 +41,42 @@ the server on the network.
 This command creates a new routing file if one does not exist.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if config.Server.Server.RoutingFile == "" {
-			logrus.Fatalf("Routing file path is not found in your server configuration.")
+			fmt.Println("Routing file path is not found in your server configuration.")
+			os.Exit(1)
 		}
 
 		// Check if file exist
 		_, err := os.Stat(config.Server.Server.RoutingFile)
 		if os.IsExist(err) {
-			logrus.Fatalf("Routing file %s already exist. I will not overwrite this file.", config.Server.Server.RoutingFile)
+			fmt.Printf("Routing file %s already exist. I will not overwrite this file.", config.Server.Server.RoutingFile)
+			os.Exit(1)
 		}
 
 		var (
 			mnemonic string
 			r        *config.RoutingConfig
 		)
+
 		if ok, _ := cmd.Flags().GetBool("mnemonic"); ok {
 			// ask for mnemonic
 			mnemonic = console.AskMnemonicPhrase()
 			r, err = config.GenerateRoutingFromMnemonic(mnemonic)
+			checkError(err)
 		} else {
 			// Generate new routing
-			mnemonic, r, err = config.GenerateRouting()
-		}
-		if err != nil {
-			logrus.Fatalf("Error while generating routing file: %v", err)
+			r, err = config.GenerateRouting()
+			checkError(err)
+
+			seed, err := hex.DecodeString(r.KeyPair.Generator)
+			checkError(err)
+
+			mnemonic, err = internal.RandomSeedToMnemonic(seed)
+			checkError(err)
 		}
 
 		// Save routing
 		err = config.SaveRouting(config.Server.Server.RoutingFile, r)
-		if err != nil {
-			logrus.Fatalf("Error while creating routing file: %v", err)
-		}
+		checkError(err)
 
 		logrus.Printf("Generated routing file: %s", config.Server.Server.RoutingFile)
 
@@ -90,6 +97,13 @@ Write these words down and store them in a secure environment. They are the
 ONLY way to recover your private key in case you lose it.
 `)
 	},
+}
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Printf("Error while generating routing file: %s\n", err)
+		os.Exit(1)
+	}
 }
 
 func init() {

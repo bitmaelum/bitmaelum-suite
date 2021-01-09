@@ -27,16 +27,15 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	_, r, err := GenerateRouting()
+	r, err := GenerateRouting()
 	assert.NoError(t, err)
 
 	assert.NotEmpty(t, r.RoutingID)
-	assert.NotEmpty(t, r.PrivateKey)
-	assert.NotEmpty(t, r.PublicKey)
+	assert.NotEmpty(t, r.KeyPair)
 }
 
 func TestReadSaveRouting(t *testing.T) {
-	_, r, err := GenerateRouting()
+	r, err := GenerateRouting()
 	assert.NoError(t, err)
 
 	fs = afero.NewMemMapFs()
