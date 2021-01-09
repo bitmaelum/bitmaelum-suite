@@ -60,7 +60,7 @@ func ReadRouting(p string) error {
 		return err
 	}
 
-	err = readConfigV0(p, data)
+	err = readConfigLatest(p, data)
 	if err != nil {
 		err = readConfigV1(p, data)
 	}
@@ -68,7 +68,7 @@ func ReadRouting(p string) error {
 	return err
 }
 
-func readConfigV0(p string, data []byte) error {
+func readConfigV1(p string, data []byte) error {
 	tmp := routingConfigV1{}
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {
@@ -86,7 +86,7 @@ func readConfigV0(p string, data []byte) error {
 	return SaveRouting(p, &Routing)
 }
 
-func readConfigV1(p string, data []byte) error {
+func readConfigLatest(p string, data []byte) error {
 	tmp := routingConfigV1{}
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {
