@@ -285,7 +285,7 @@ func setupServer() {
 		panic(err)
 	}
 	config.Routing = config.RoutingConfig{
-		Version: 1,
+		Version:   1,
 		RoutingID: "12345678",
 		KeyPair:   kp,
 	}

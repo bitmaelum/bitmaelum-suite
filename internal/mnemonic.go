@@ -21,8 +21,6 @@ package internal
 
 import (
 	"encoding/hex"
-	"bytes"
-	"encoding/hex"
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"

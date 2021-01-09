@@ -121,7 +121,7 @@ func GenerateRoutingFromMnemonic(mnemonic string) (*RoutingConfig, error) {
 
 	id := hex.EncodeToString(kp.PubKey.K.(ed25519.PublicKey))
 	return &RoutingConfig{
-		Version: 1,
+		Version:   1,
 		RoutingID: hash.New(id).String(),
 		KeyPair:   kp,
 	}, nil
@@ -141,7 +141,7 @@ func GenerateRouting() (*RoutingConfig, error) {
 
 	id := hex.EncodeToString(kp.PubKey.K.(ed25519.PublicKey))
 	return &RoutingConfig{
-		Version: 1,
+		Version:   1,
 		RoutingID: hash.New(id).String(),
 		KeyPair:   kp,
 	}, nil

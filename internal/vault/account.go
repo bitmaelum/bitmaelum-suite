@@ -86,18 +86,6 @@ func (info AccountInfo) FindKey(fp string) (*KeyPair, error) {
 	return nil, errors.New("cannot find key")
 }
 
-// GetActiveKey will return the currently active key from the list of keys in the info structure
-func (info AccountInfo) GetActiveKey() KeyPair {
-	for _, k := range info.Keys {
-		if k.Active {
-			return k
-		}
-	}
-
-	// @TODO: Return first key, as we assume this is the active key. We shouldn't. Keys might not be even filled!
-	return info.Keys[0]
-}
-
 // AddAccount adds a new account to the vault
 func (v *Vault) AddAccount(account AccountInfo) {
 	v.Store.Accounts = append(v.Store.Accounts, account)
