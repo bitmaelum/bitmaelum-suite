@@ -1,3 +1,3 @@
-## 0.0.1 (2020-dec-27)
+## 0.0.1 (2021-jan-10)
 
-Initial release
+Initial developers-only release
