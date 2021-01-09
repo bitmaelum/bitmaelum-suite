@@ -71,6 +71,13 @@ func (info OrganisationInfo) GetActiveKey() KeyPair {
 	return info.Keys[0]
 }
 
+// SetActiveKey sets the active key in the info
+func (info OrganisationInfo) SetActiveKey(kp *KeyPair) {
+	for _, k := range info.Keys {
+		k.Active = k.FingerPrint == kp.FingerPrint
+	}
+}
+
 // AddOrganisation adds an organisation to the vault
 func (v *Vault) AddOrganisation(organisation OrganisationInfo) {
 	v.Store.Organisations = append(v.Store.Organisations, organisation)

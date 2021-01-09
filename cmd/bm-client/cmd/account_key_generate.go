@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -30,10 +31,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var accountKeyRotateCmd = &cobra.Command{
-	Use:   "rotate",
-	Short: "Rotate to a new account key",
-	Long: `Rotate a new key into your account. The keytype (--keytype, -k) can be either one of the following:
+var accountKeyGenerateCmd = &cobra.Command{
+	Use:   "generate",
+	Short: "Generate a new account key",
+	Long: `Generate a new key into your account. The keytype (--keytype, -k) can be either one of the following:
 	
   ed25519   ED25519 elliptic curve
   rsa       RSA 2048 bit 
@@ -63,18 +64,13 @@ var accountKeyRotateCmd = &cobra.Command{
 			Active:  false,
 		})
 
-		err = v.Persist()
-		if err != nil {
-			fmt.Println("cannot save vault")
-			os.Exit(1)
-		}
 
 		fmt.Print(`
 *****************************************************************************
 !IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
 *****************************************************************************
 
-We have generated a private key which allows you to control the organisation. 
+We have generated a private key which allows you to control your account. 
 If, for any reason, you lose this key, you will need to use the following 
 words in order to recreate the key:
 
@@ -85,18 +81,41 @@ words in order to recreate the key:
 Write these words down and store them in a secure environment. They are the 
 ONLY way to recover your private key in case you lose it.
 
-WITHOUT THESE WORDS, ALL ACCESS TO YOUR ORGANISATION IS LOST!
+WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
+
+
 `)
 
+		// Upload the new key to the server
+		if *advertise {
+			info.SetActiveKey(kp)
+
+			ks := container.Instance.GetResolveService()
+			err = ks.UploadAddressInfo(*info, "")
+		}
+
+		// Error or we didn't advertise
+		if err != nil || !*advertise {
+			fmt.Printf("Note: your key is not yet advertised. To make sure others use your key, please run:\n\n   bm-client account key advertise --account %s --key %s`\n", info.Address, kp.FingerPrint)
+		}
+
+		// Save vault
+		err = v.Persist()
+		if err != nil {
+			fmt.Println("cannot save vault")
+			os.Exit(1)
+		}
 	},
 }
 
 var (
-	keyType *string
+	keyType  *string
+	advertise *bool
 )
 
 func init() {
-	accountKeyCmd.AddCommand(accountKeyRotateCmd)
+	accountKeyCmd.AddCommand(accountKeyGenerateCmd)
 
-	keyType = accountKeyRotateCmd.Flags().StringP("keytype", "k", "ed25519", "The key type (defaults to ed25519)")
+	keyType = accountKeyGenerateCmd.Flags().StringP("keytype", "k", "ed25519", "The key type (defaults to ed25519)")
+	advertise = accountKeyGenerateCmd.Flags().BoolP("advertise", "a", false, "Automatically advertise the key")
 }

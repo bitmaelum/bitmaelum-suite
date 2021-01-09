@@ -20,6 +20,11 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -27,10 +32,46 @@ var accountKeyAdvertiseCmd = &cobra.Command{
 	Use:   "advertise",
 	Short: "Advertise new key to the key resolver",
 	Run: func(cmd *cobra.Command, args []string) {
-		// v := vault.OpenDefaultVault()
+		v := vault.OpenDefaultVault()
+
+		info, err := vault.GetAccount(v, *akAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
+			os.Exit(1)
+		}
+
+		vkp, err := info.FindKey(*akaKey)
+		if err != nil {
+			fmt.Println("cannot find key in account")
+			os.Exit(1)
+		}
+
+		info.SetActiveKey(&vkp.KeyPair)
+
+		// Save vault
+		err = v.Persist()
+		if err != nil {
+			fmt.Println("cannot save vault")
+			os.Exit(1)
+		}
+
+		ks := container.Instance.GetResolveService()
+		err = ks.UploadAddressInfo(*info, "")
+		if err != nil {
+			fmt.Println("cannot advertise key")
+			os.Exit(1)
+		}
+
 	},
 }
 
+var akaKey *string
+
 func init() {
 	accountKeyCmd.AddCommand(accountKeyAdvertiseCmd)
+
+
+	akaKey = accountKeyAdvertiseCmd.Flags().StringP("key", "k", "", "fingerprint of the key to advertise")
+
+	_ = accountKeyAdvertiseCmd.MarkPersistentFlagRequired("account")
 }

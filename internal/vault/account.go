@@ -74,6 +74,13 @@ func (info AccountInfo) GetActiveKey() KeyPair {
 	return info.Keys[0]
 }
 
+// SetActiveKey sets the active key in the info
+func (info AccountInfo) SetActiveKey(kp *bmcrypto.KeyPair) {
+	for idx, k := range info.Keys {
+		info.Keys[idx].Active = k.FingerPrint == kp.FingerPrint
+	}
+}
+
 // FindKey will try and retrieve a key based on the fingerprint
 func (info AccountInfo) FindKey(fp string) (*KeyPair, error) {
 	// Find key with fingerprint
