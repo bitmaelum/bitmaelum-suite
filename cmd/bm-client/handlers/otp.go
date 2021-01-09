@@ -60,7 +60,7 @@ func OtpGenerate(info *vault.AccountInfo, otpServer *string) {
 		oi, err := resolver.ResolveOrganisation(*orgHash)
 		if err == nil {
 			// Generate secret on the client and compute OTP
-			secret, err := bmcrypto.KeyExchange(info.PrivKey, oi.PublicKey)
+			secret, err := bmcrypto.KeyExchange(info.GetActiveKey().PrivKey, oi.PublicKey)
 			if err != nil {
 				logrus.Fatal(err)
 			}

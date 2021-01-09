@@ -100,7 +100,7 @@ func GenerateRouting() (string, *RoutingConfig, error) {
 		return "", nil, err
 	}
 
-	mnemonic, privKey, pubKey, err := internal.GenerateKeypairWithMnemonic(kt)
+	mnemonic, _, privKey, pubKey, err := internal.GenerateKeypairWithMnemonic(kt)
 	if err != nil {
 		return "", nil, err
 	}

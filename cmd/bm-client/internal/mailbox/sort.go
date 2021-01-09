@@ -47,10 +47,10 @@ const (
 )
 
 // NewMessageSort will create a new sorted based on the given sortfield and ascending/descending order
-func NewMessageSort(key *bmcrypto.PrivKey, messages []api.MailboxMessagesMessage, field SortField, asc bool) MessageSort {
+func NewMessageSort(key bmcrypto.PrivKey, messages []api.MailboxMessagesMessage, field SortField, asc bool) MessageSort {
 	ms := MessageSort{
 		Messages:       messages,
-		key:            key,
+		key:            &key,
 		openedCatalogs: make(map[string]*message.Catalog),
 		asc:            asc,
 	}

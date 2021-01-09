@@ -73,9 +73,10 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 			privKey *bmcrypto.PrivKey
 			pubKey  *bmcrypto.PubKey
 			err     error
+			e       string
 		)
 
-		mnemonic, privKey, pubKey, err = internal.GenerateKeypairWithMnemonic(kt)
+		mnemonic, e, privKey, pubKey, err = internal.GenerateKeypairWithMnemonic(kt)
 
 		if err != nil {
 			fmt.Print(err)
@@ -93,10 +94,17 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 
 		fmt.Printf("* Adding your new organisation into the vault: ")
 		info = &vault.OrganisationInfo{
-			Addr:        orgAddr,
-			FullName:    fullName,
-			PrivKey:     *privKey,
-			PubKey:      *pubKey,
+			Addr:     orgAddr,
+			FullName: fullName,
+			Keys: []vault.KeyPair{
+				{
+					Generator:   e,
+					FingerPrint: pubKey.Fingerprint(),
+					PrivKey:     *privKey,
+					PubKey:      *pubKey,
+					Active:      true,
+				},
+			},
 			Pow:         proof,
 			Validations: val,
 		}

@@ -43,7 +43,7 @@ func CreateAuthorizedKey(info *vault.AccountInfo, targetKey *bmcrypto.PubKey, va
 
 	// Create and sign key
 	k := key.NewAuthKey(info.Address.Hash(), targetKey, "", expiry, desc)
-	err := k.Sign(info.PrivKey)
+	err := k.Sign(info.GetActiveKey().PrivKey)
 	if err != nil {
 		return "", err
 	}
@@ -64,5 +64,5 @@ func getAPIClient(info *vault.AccountInfo) (*api.API, error) {
 		return nil, errNoRoutingID
 	}
 
-	return api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
+	return api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 }

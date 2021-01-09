@@ -60,20 +60,20 @@ func main() {
 	}
 
 	fmt.Println("PRIV:")
-	fmt.Printf("%s\n", info.PrivKey)
+	fmt.Printf("%s\n", info.GetActiveKey().PrivKey)
 
 	fmt.Println("PUB:")
-	fmt.Printf("%s\n", info.PubKey)
+	fmt.Printf("%s\n", info.GetActiveKey().PubKey)
 	fmt.Println("")
 
-	ts, err := api.GenerateJWTToken(fromAddr.Hash(), info.PrivKey)
+	ts, err := api.GenerateJWTToken(fromAddr.Hash(), info.GetActiveKey().PrivKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	fmt.Println(ts)
 	fmt.Println("")
 
-	token, err := api.ValidateJWTToken(ts, fromAddr.Hash(), info.PubKey)
+	token, err := api.ValidateJWTToken(ts, fromAddr.Hash(), info.GetActiveKey().PubKey)
 	if err != nil {
 		logrus.Fatal(err)
 	}

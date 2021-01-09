@@ -36,11 +36,15 @@ var (
 	errNoPathSet           = errors.New("vault path is not set")
 )
 
-// VersionV0 is the first version that uses versioning
+// Vault versions
 const (
-	VersionV0 = iota
-	VersionV1
+	VersionV0 = iota // Only accounts
+	VersionV1        // Accounts + organisations
+	VersionV2        // Multi key
 )
+
+// LatestVaultVersion Everything below this version will be automatically migrated to this version
+const LatestVaultVersion = VersionV2
 
 // Override for testing purposes
 var fs = afero.NewOsFs()
@@ -56,6 +60,12 @@ var (
 type StoreType struct {
 	Accounts      []AccountInfo      `json:"accounts"`
 	Organisations []OrganisationInfo `json:"organisations"`
+}
+
+// StoreTypeV1 hold the actual data that is encrypted inside the vault
+type StoreTypeV1 struct {
+	Accounts      []AccountInfoV1      `json:"accounts"`
+	Organisations []OrganisationInfoV1 `json:"organisations"`
 }
 
 // Vault defines our vault with path and password. Only the accounts should be exported
@@ -90,20 +100,24 @@ func NewPersistent(p, pass string) *Vault {
 // so we should not save any data once we detected this.
 func (v *Vault) sanityCheck() bool {
 	for _, acc := range v.Store.Accounts {
-		if acc.PrivKey.S == "" {
-			return false
-		}
-		if acc.PubKey.S == "" {
-			return false
+		for _, k := range acc.Keys {
+			if k.PrivKey.S == "" {
+				return false
+			}
+			if k.PubKey.S == "" {
+				return false
+			}
 		}
 	}
 
 	for _, org := range v.Store.Organisations {
-		if org.PrivKey.S == "" {
-			return false
-		}
-		if org.PubKey.S == "" {
-			return false
+		for _, k := range org.Keys {
+			if k.PrivKey.S == "" {
+				return false
+			}
+			if k.PubKey.S == "" {
+				return false
+			}
 		}
 	}
 

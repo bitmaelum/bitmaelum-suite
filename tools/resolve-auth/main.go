@@ -51,7 +51,7 @@ func main() {
 	}
 
 	hashed := []byte(info.Address.Hash().String() + info.RoutingID)
-	sig, err := bmcrypto.Sign(info.PrivKey, hashed)
+	sig, err := bmcrypto.Sign(info.GetActiveKey().PrivKey, hashed)
 	if err != nil {
 		logrus.Fatal("Cannot sign")
 		os.Exit(1)

@@ -73,11 +73,11 @@ func NewAddressing(signType SignedByType) Addressing {
 }
 
 // AddSender will add sender information to the addressing
-func (a *Addressing) AddSender(addr *address.Address, h *hash.Hash, name string, key *bmcrypto.PrivKey, host string) {
+func (a *Addressing) AddSender(addr *address.Address, h *hash.Hash, name string, key bmcrypto.PrivKey, host string) {
 	a.Sender.Address = addr
 	a.Sender.Hash = h
 	a.Sender.Name = name
-	a.Sender.PrivKey = key
+	a.Sender.PrivKey = &key
 	a.Sender.Host = host
 }
 

@@ -60,7 +60,7 @@ func ListAccounts(v *vault.Vault, displayKeys bool) {
 			route,
 		}
 		if displayKeys {
-			values = append(values, acc.PrivKey.S, acc.PubKey.S)
+			values = append(values, acc.GetActiveKey().PrivKey.S, acc.GetActiveKey().PubKey.S)
 		}
 
 		table.Append(values)

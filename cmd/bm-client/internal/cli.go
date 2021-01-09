@@ -44,7 +44,7 @@ func GetClientAndInfo(acc string) (*vault.Vault, *vault.AccountInfo, *api.API, e
 		return nil, nil, nil, errors.New("cannot find routing ID for this account")
 	}
 
-	client, err := api.NewAuthenticated(*info.Address, &info.PrivKey, routingInfo.Routing, JwtErrorFunc)
+	client, err := api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, JwtErrorFunc)
 	if err != nil {
 		return nil, nil, nil, err
 	}

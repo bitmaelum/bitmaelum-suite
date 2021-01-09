@@ -100,13 +100,14 @@ func displayAccount(v *vault.Vault, info vault.AccountInfo) {
 		})
 	}
 
+	pk := info.GetActiveKey().PubKey
 	table.AppendBulk([][]string{
 		{"", ""},
 		{"Full name", info.Name},
 		{"Routing ID", info.RoutingID},
 		{"Routing Host", getHostByRoutingID(info.RoutingID, "unknown host")},
 		{"", ""},
-		{"Public key", strings.Join(chunks(info.PubKey.String(), 78), "\n")},
+		{"Public key", strings.Join(chunks(pk.String(), 78), "\n")},
 		{"Proof of work", fmt.Sprintf("%d bits", info.Pow.Bits)},
 	})
 
