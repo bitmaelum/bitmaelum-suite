@@ -64,7 +64,6 @@ var accountKeyGenerateCmd = &cobra.Command{
 			Active:  false,
 		})
 
-
 		fmt.Print(`
 *****************************************************************************
 !IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
@@ -109,7 +108,7 @@ WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
 }
 
 var (
-	keyType  *string
+	keyType   *string
 	advertise *bool
 )
 

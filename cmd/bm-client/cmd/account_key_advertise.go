@@ -70,7 +70,6 @@ var akaKey *string
 func init() {
 	accountKeyCmd.AddCommand(accountKeyAdvertiseCmd)
 
-
 	akaKey = accountKeyAdvertiseCmd.Flags().StringP("key", "k", "", "fingerprint of the key to advertise")
 
 	_ = accountKeyAdvertiseCmd.MarkPersistentFlagRequired("account")
