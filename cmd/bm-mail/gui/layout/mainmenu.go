@@ -43,7 +43,9 @@ var shortcuts = []string{
 }
 
 var (
-	MainMenu     *components.MainMenu
+	// MainMenu Global main menu
+	MainMenu *components.MainMenu
+	// MainMenuGrid Grid with main menu
 	MainMenuGrid *tview.Grid
 )
 

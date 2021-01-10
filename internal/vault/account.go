@@ -60,6 +60,8 @@ type AccountInfo struct {
 	// Communication and encryption information
 	Pow       *proofofwork.ProofOfWork `json:"proof,omitempty"` // Proof of work
 	RoutingID string                   `json:"routing_id"`      // ID of the routing used
+
+	StoreKey *bmcrypto.KeyPair `json:"store_key,omitempty"` // Keypair for the store
 }
 
 // GetActiveKey will return the currently active key from the list of keys in the info structure

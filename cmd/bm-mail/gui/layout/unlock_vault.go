@@ -28,10 +28,13 @@ import (
 	"github.com/rivo/tview"
 )
 
+// ModalDialogBox is the modal box that displays the password form
 var ModalDialogBox *tview.Frame
+
+// ModalDialogInput is the input for the password
 var ModalDialogInput *tview.Form
 
-// Display a modal dialog that opens the vault
+// NewUnlockVault Display a modal dialog that opens the vault
 func NewUnlockVault() tview.Primitive {
 
 	createModal := func(p tview.Primitive, width, height int) tview.Primitive {

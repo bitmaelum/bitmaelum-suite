@@ -23,6 +23,7 @@ jobs:
         GOPATH=`go env GOPATH`
         shopt -s globstar
         $GOPATH/bin/addlicense -c "BitMaelum Authors" -l mit -y 2021 -check internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go
+
     - name: Go imports
       run: |
         source .github/workflows/github.sh
@@ -31,11 +32,13 @@ jobs:
         OUT=`goimports -l .`
         echo $OUT
         test -z "$OUT"
+
     - name: Go vet
       run: |
         source .github/workflows/github.sh
         section "Vetting files"
         go vet ./...
+
     - name: Go static check
       run: |
         source .github/workflows/github.sh
@@ -43,6 +46,7 @@ jobs:
         go get honnef.co/go/tools/cmd/staticcheck
         GOPATH=`go env GOPATH`
         $GOPATH/bin/staticcheck ./...
+
     - name: Go ineffassign
       run: |
         source .github/workflows/github.sh
@@ -50,6 +54,15 @@ jobs:
         go get -u github.com/gordonklaus/ineffassign
         GOPATH=`go env GOPATH`
         $GOPATH/bin/ineffassign ./...
+
+    - name: Go linting
+      run: |
+        source .github/workflows/github.sh
+        section "Checking for lint"
+        go get -u golang.org/x/lint/golint
+        GOPATH=`go env GOPATH`
+        $GOPATH/bin/golint -set_exit_status ./...
+
     - name: Go cyclo
       run: |
         source .github/workflows/github.sh
@@ -57,11 +70,13 @@ jobs:
         go get -u github.com/fzipp/gocyclo/cmd/gocyclo
         GOPATH=`go env GOPATH`
         $GOPATH/bin/gocyclo -over 15 .
+
     - name: Go test
       run: |
         source .github/workflows/github.sh
         section "Running unit tests"
         go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+
     - name: Upload coverage report
       uses: codecov/codecov-action@v1
       with:
