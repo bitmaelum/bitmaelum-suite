@@ -68,7 +68,7 @@ func short(ID string) string {
 
 func displayAccounts(v *vault.Vault) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Address", "Name", "Routing ID", "Server"})
+	table.SetHeader([]string{"Account", "Name", "Routing ID", "Server"})
 
 	for _, a := range v.Store.Accounts {
 		table.Append([]string{

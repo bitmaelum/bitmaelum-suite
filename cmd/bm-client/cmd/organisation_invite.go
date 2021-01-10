@@ -45,8 +45,8 @@ var (
 func init() {
 	organisationCmd.AddCommand(organisationInviteCmd)
 
-	orgInvOrg = organisationInviteCmd.Flags().StringP("org", "o", "", "org name")
-	orgInvAddress = organisationInviteCmd.Flags().StringP("addr", "a", "", "address")
+	orgInvOrg = organisationInviteCmd.Flags().StringP("organisation", "o", "", "org name")
+	orgInvAddress = organisationInviteCmd.Flags().StringP("account", "a", "", "account")
 	orgInvRoutingID = organisationInviteCmd.Flags().StringP("routing-id", "r", "", "routing ID where this user will be invited to")
 
 	_ = organisationInviteCmd.MarkFlagRequired("org")
