@@ -20,34 +20,70 @@
 package internal
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateED25519KeypairFromMnemonic(t *testing.T) {
-	kt, err := bmcrypto.FindKeyType("ed25519")
+func TestRandomSeedToMnemonic(t *testing.T) {
+	seed, _ := hex.DecodeString("cf8952d5ce19cf8d606ebf6222520a50df7bd81d33be4453")
+	mnemonic, err := RandomSeedToMnemonic(seed)
 	assert.NoError(t, err)
-	s, _, priv1, pub1, err := GenerateKeypairWithMnemonic(kt)
-	assert.NoError(t, err)
+	assert.Equal(t, "sort enhance rely order ostrich shop like subject giraffe barely little payment waste ugly inquiry jelly dust occur", mnemonic)
 
-	priv2, pub2, err := GenerateKeypairFromMnemonic(s)
+	tmp, err := MnemonicToRandomSeed(mnemonic)
 	assert.NoError(t, err)
+	assert.Equal(t, "cf8952d5ce19cf8d606ebf6222520a50df7bd81d33be4453", hex.EncodeToString(tmp))
 
-	assert.Equal(t, priv1, priv2)
-	assert.Equal(t, pub1, pub2)
+	tmp, err = MnemonicToRandomSeed("foo")
+	assert.Error(t, err)
+	assert.Nil(t, tmp)
+
+	tmp, err = MnemonicToRandomSeed("ed25519 foo bar baz")
+	assert.Error(t, err)
+	assert.Nil(t, tmp)
+
+	tmp, err = MnemonicToRandomSeed("ed25519 ship")
+	assert.Error(t, err)
+	assert.Nil(t, tmp)
 }
 
-func TestGenerateRSAKeypairFromMnemonic(t *testing.T) {
-	kt, err := bmcrypto.FindKeyType("rsa")
-	assert.NoError(t, err)
-	s, _, priv1, pub1, err := GenerateKeypairWithMnemonic(kt)
+func TestGetMnemonic(t *testing.T) {
+	kp := bmcrypto.KeyPair{
+		Generator:   "FOOBAR",
+		FingerPrint: "",
+		PrivKey:     bmcrypto.PrivKey{},
+		PubKey:      bmcrypto.PubKey{},
+	}
+
+	s := GetMnemonic(&kp)
+	assert.Empty(t, s)
+}
+
+func TestGenerateKeypairFromMnemonic(t *testing.T) {
+	kp, err := GenerateKeypairFromMnemonic("foobar")
+	assert.Error(t, err)
+	assert.Nil(t, kp)
+
+	kp, err = GenerateKeypairFromMnemonic("ed25519 foobar")
+	assert.Error(t, err)
+	assert.Nil(t, kp)
+
+}
+
+func TestGenerateKeypair(t *testing.T) {
+	kt, err := bmcrypto.FindKeyType("ed25519")
 	assert.NoError(t, err)
 
-	priv2, pub2, err := GenerateKeypairFromMnemonic(s)
+	kp, err := GenerateKeypairWithRandomSeed(kt)
 	assert.NoError(t, err)
 
-	assert.Equal(t, priv1, priv2)
-	assert.Equal(t, pub1, pub2)
+	mnemonic := GetMnemonic(kp)
+	assert.Contains(t, mnemonic, "ed25519")
+
+	kp2, err := GenerateKeypairFromMnemonic(mnemonic)
+	assert.NoError(t, err)
+	assert.Equal(t, kp.FingerPrint, kp2.FingerPrint)
 }

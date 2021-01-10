@@ -154,7 +154,7 @@ func sendPostmasterMail(toHash hash.Hash, subject string, body string) error {
 	senderName := fmt.Sprintf("postmaster at %s", config.Server.Server.Hostname)
 
 	addressing := message.NewAddressing(message.SignedByTypeServer)
-	addressing.AddSender(nil, fromHash, senderName, config.Routing.PrivateKey, "host")
+	addressing.AddSender(nil, fromHash, senderName, config.Routing.KeyPair.PrivKey, "host")
 	addressing.AddRecipient(nil, &toHash, &addr.PublicKey)
 
 	// Create a single block with our body

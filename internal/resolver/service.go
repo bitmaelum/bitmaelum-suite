@@ -22,6 +22,7 @@ package resolver
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"strconv"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
@@ -139,12 +140,24 @@ func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, err
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
 func (s *Service) UploadAddressInfo(info vault.AccountInfo, orgToken string) error {
+	// Read current key, so we can find the correct privkey for authentication
+	privKey := info.GetActiveKey().PrivKey
+	currentInfo, err := s.repo.ResolveAddress(info.Address.Hash())
+	if err == nil {
+		kp, err := info.FindKey(currentInfo.PublicKey.Fingerprint())
+		if err != nil {
+			return err
+		}
+		fmt.Println("found authorizing key: ", kp.FingerPrint)
+		privKey = kp.PrivKey
+	}
+
 	return s.repo.UploadAddress(*info.Address, &AddressInfo{
 		Hash:      info.Address.Hash().String(),
 		PublicKey: info.GetActiveKey().PubKey,
 		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
-	}, info.GetActiveKey().PrivKey, *info.Pow, orgToken)
+	}, privKey, *info.Pow, orgToken)
 }
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers

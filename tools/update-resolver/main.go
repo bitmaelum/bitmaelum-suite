@@ -47,8 +47,11 @@ func main() {
 
 	logrus.SetLevel(logrus.TraceLevel)
 
-	vault.VaultPassword = opts.Password
-	v := vault.OpenDefaultVault()
+	v, err := vault.Open(config.Client.Vault.Path, opts.Password)
+	if err != nil {
+		fmt.Println("cannot open vault")
+		os.Exit(1)
+	}
 
 	if opts.Address != "" {
 		addr, err := address.NewAddress(opts.Address)

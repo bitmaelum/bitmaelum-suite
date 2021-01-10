@@ -108,8 +108,6 @@ func checkAccountInVault(vault *vault.Vault, addr address.Address) *vault.Accoun
 
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
 func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyType) {
-	var mnemonicToShow string
-
 	fmt.Println("")
 
 	addr := verifyAddress(bmAddr)
@@ -120,17 +118,20 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	res := container.Instance.GetResolveService()
 	resolverCfg := res.GetConfig()
 
+	var (
+		err error
+		kp  *bmcrypto.KeyPair
+	)
+
 	if info == nil {
 		fmt.Printf("* Generating your secret key to send and read mail: ")
 
-		mnemonic, e, privKey, pubKey, err := bminternal.GenerateKeypairWithMnemonic(kt)
-
+		kp, err = bminternal.GenerateKeypairWithRandomSeed(kt)
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
 			os.Exit(1)
 		}
-		mnemonicToShow = mnemonic
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Doing some work to let people know this is not a fake account, this might take a while: ")
@@ -144,11 +145,8 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 			Name:    name,
 			Keys: []vault.KeyPair{
 				{
-					Generator:   e,
-					FingerPrint: pubKey.Fingerprint(),
-					PrivKey:     *privKey,
-					PubKey:      *pubKey,
-					Active:      true,
+					KeyPair: *kp,
+					Active:  true,
 				},
 			},
 			Pow:       proof,
@@ -212,24 +210,24 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	fmt.Printf("\n")
 	fmt.Printf("* All done")
 
-	if len(mnemonicToShow) > 0 {
+	if kp != nil {
 		fmt.Print(`
-*****************************************************************************
-!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
-*****************************************************************************
-
-We have generated a private key which allows you to control your account. 
-If, for any reason, you lose this key, you will need to use the following 
-words in order to recreate the key:
-
-`)
-		fmt.Print(bminternal.WordWrap(mnemonicToShow, 78))
+	*****************************************************************************
+	!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
+	*****************************************************************************
+	
+	We have generated a private key which allows you to control your account. 
+	If, for any reason, you lose this key, you will need to use the following 
+	words in order to recreate the key:
+	
+	`)
+		fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(kp), 78))
 		fmt.Print(`
-
-Write these words down and store them in a secure environment. They are the 
-ONLY way to recover your private key in case you lose it.
-
-WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
-`)
+	
+	Write these words down and store them in a secure environment. They are the 
+	ONLY way to recover your private key in case you lose it.
+	
+	WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
+	`)
 	}
 }

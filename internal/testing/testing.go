@@ -26,6 +26,32 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
+// ReadKeyPair reads a path to a keypair
+func ReadKeyPair(p string) (*bmcrypto.KeyPair, error) {
+	data, err := ioutil.ReadFile(p)
+	if err != nil {
+		return nil, err
+	}
+
+	type jsonKeyType struct {
+		PrivKey bmcrypto.PrivKey `json:"private_key"`
+		PubKey  bmcrypto.PubKey  `json:"public_key"`
+	}
+
+	v := &jsonKeyType{}
+	err = json.Unmarshal(data, &v)
+	if err != nil {
+		return nil, err
+	}
+
+	return &bmcrypto.KeyPair{
+		Generator:   "",
+		FingerPrint: v.PubKey.Fingerprint(),
+		PrivKey:     v.PrivKey,
+		PubKey:      v.PubKey,
+	}, nil
+}
+
 // ReadTestKey reads a path to a keypair and returns the keys
 func ReadTestKey(p string) (*bmcrypto.PrivKey, *bmcrypto.PubKey, error) {
 	data, err := ioutil.ReadFile(p)

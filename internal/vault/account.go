@@ -32,11 +32,8 @@ var errAccountNotFound = errors.New("cannot find account")
 
 // KeyPair is a structure with key information
 type KeyPair struct {
-	Generator   string           `json:"generator"`   // The generator string that will generate the given keypair
-	FingerPrint string           `json:"fingerprint"` // The sha1 fingerprint for this key
-	PrivKey     bmcrypto.PrivKey `json:"priv_key"`    // PEM encoded private key
-	PubKey      bmcrypto.PubKey  `json:"pub_key"`     // PEM encoded public key
-	Active      bool             `json:"active"`      // This is the currently active key
+	bmcrypto.KeyPair
+	Active bool `json:"active"` // This is the currently active key
 }
 
 // AccountInfoV1 represents client account information
@@ -75,6 +72,25 @@ func (info AccountInfo) GetActiveKey() KeyPair {
 
 	// @TODO: Return first key, as we assume this is the active key. We shouldn't. Keys might not be even filled!
 	return info.Keys[0]
+}
+
+// SetActiveKey sets the active key in the info
+func (info AccountInfo) SetActiveKey(kp *bmcrypto.KeyPair) {
+	for idx, k := range info.Keys {
+		info.Keys[idx].Active = k.FingerPrint == kp.FingerPrint
+	}
+}
+
+// FindKey will try and retrieve a key based on the fingerprint
+func (info AccountInfo) FindKey(fp string) (*KeyPair, error) {
+	// Find key with fingerprint
+	for _, k := range info.Keys {
+		if k.FingerPrint == fp {
+			return &k, nil
+		}
+	}
+
+	return nil, errors.New("cannot find key")
 }
 
 // AddAccount adds a new account to the vault

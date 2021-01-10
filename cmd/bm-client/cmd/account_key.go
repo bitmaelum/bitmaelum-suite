@@ -17,33 +17,25 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package config
+package cmd
 
 import (
-	"testing"
-
-	"github.com/spf13/afero"
-	"github.com/stretchr/testify/assert"
+	"github.com/spf13/cobra"
 )
 
-func TestGenerate(t *testing.T) {
-	r, err := GenerateRouting()
-	assert.NoError(t, err)
-
-	assert.NotEmpty(t, r.RoutingID)
-	assert.NotEmpty(t, r.KeyPair)
+var accountKeyCmd = &cobra.Command{
+	Use:   "key",
+	Short: "Account key management",
 }
 
-func TestReadSaveRouting(t *testing.T) {
-	r, err := GenerateRouting()
-	assert.NoError(t, err)
+var (
+	akAccount *string
+)
 
-	fs = afero.NewMemMapFs()
+func init() {
+	accountCmd.AddCommand(accountKeyCmd)
 
-	err = SaveRouting("/generated/routing.json", r)
-	assert.NoError(t, err)
+	akAccount = accountKeyCmd.PersistentFlags().String("account", "", "Account to key on")
 
-	err = ReadRouting("/generated/routing.json")
-	assert.NoError(t, err)
-	assert.Equal(t, r.RoutingID, Routing.RoutingID)
+	_ = accountKeyCmd.MarkPersistentFlagRequired("account")
 }

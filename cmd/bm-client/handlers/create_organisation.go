@@ -56,7 +56,9 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 	}
 	fmt.Printf("not found. This is a good thing.\n")
 
-	var mnemonic string
+	var (
+		kp *bmcrypto.KeyPair
+	)
 
 	fmt.Printf("* Checking if the organisation is already present in the vault: ")
 	var info *vault.OrganisationInfo
@@ -69,15 +71,7 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 
 		fmt.Printf("* Generating organisation public/private key pair: ")
 
-		var (
-			privKey *bmcrypto.PrivKey
-			pubKey  *bmcrypto.PubKey
-			err     error
-			e       string
-		)
-
-		mnemonic, e, privKey, pubKey, err = internal.GenerateKeypairWithMnemonic(kt)
-
+		kp, err = internal.GenerateKeypairWithRandomSeed(kt)
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
@@ -98,11 +92,8 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 			FullName: fullName,
 			Keys: []vault.KeyPair{
 				{
-					Generator:   e,
-					FingerPrint: pubKey.Fingerprint(),
-					PrivKey:     *privKey,
-					PubKey:      *pubKey,
-					Active:      true,
+					KeyPair: *kp,
+					Active:  true,
 				},
 			},
 			Pow:         proof,
@@ -134,8 +125,7 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 	fmt.Printf("\n")
 	fmt.Printf("* All done")
 
-	if len(mnemonic) > 0 {
-		fmt.Print(`
+	fmt.Print(`
 *****************************************************************************
 !IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
 *****************************************************************************
@@ -145,13 +135,12 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-		fmt.Print(internal.WordWrap(mnemonic, 78))
-		fmt.Print(`
+	fmt.Print(internal.WordWrap(internal.GetMnemonic(kp), 78))
+	fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 
 ONLY way to recover your private key in case you lose it.
 
 WITHOUT THESE WORDS, ALL ACCESS TO YOUR ORGANISATION IS LOST!
 `)
-	}
 }

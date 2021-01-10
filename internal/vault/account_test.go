@@ -101,11 +101,13 @@ func TestInfoToOrg(t *testing.T) {
 		FullName: "bar",
 		Keys: []KeyPair{
 			{
-				Generator:   "",
-				FingerPrint: "",
-				PrivKey:     bmcrypto.PrivKey{},
-				PubKey:      bmcrypto.PubKey{},
-				Active:      true,
+				KeyPair: bmcrypto.KeyPair{
+					Generator:   "",
+					FingerPrint: "",
+					PrivKey:     bmcrypto.PrivKey{},
+					PubKey:      bmcrypto.PubKey{},
+				},
+				Active: true,
 			},
 		},
 		Pow:         proofofwork.New(22, "foobar", 1234),

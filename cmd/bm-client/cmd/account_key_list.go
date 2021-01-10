@@ -17,33 +17,51 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package config
+package cmd
 
 import (
-	"testing"
+	"fmt"
+	"os"
 
-	"github.com/spf13/afero"
-	"github.com/stretchr/testify/assert"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
 )
 
-func TestGenerate(t *testing.T) {
-	r, err := GenerateRouting()
-	assert.NoError(t, err)
+var accountKeyListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "Display account keys",
+	Run: func(cmd *cobra.Command, args []string) {
+		v := vault.OpenDefaultVault()
 
-	assert.NotEmpty(t, r.RoutingID)
-	assert.NotEmpty(t, r.KeyPair)
+		info, err := vault.GetAccount(v, *akAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
+			os.Exit(1)
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Created at", "Type", "Active", "Fingerprint"})
+
+		for _, key := range info.Keys {
+			active := ""
+			if key.Active {
+				active = "*"
+			}
+
+			table.Append([]string{
+				internal.TimeNow().String(),
+				key.PubKey.Type.String(),
+				active,
+				key.FingerPrint,
+			})
+		}
+
+		table.Render()
+	},
 }
 
-func TestReadSaveRouting(t *testing.T) {
-	r, err := GenerateRouting()
-	assert.NoError(t, err)
-
-	fs = afero.NewMemMapFs()
-
-	err = SaveRouting("/generated/routing.json", r)
-	assert.NoError(t, err)
-
-	err = ReadRouting("/generated/routing.json")
-	assert.NoError(t, err)
-	assert.Equal(t, r.RoutingID, Routing.RoutingID)
+func init() {
+	accountKeyCmd.AddCommand(accountKeyListCmd)
 }

@@ -22,6 +22,8 @@ package vault
 import (
 	"encoding/json"
 	"errors"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 // MigrateVault will migrate a vault from a specific version all the way to the latest version
@@ -73,11 +75,13 @@ func MigrateVault(data []byte, fromVersion int) (*StoreType, error) {
 				accV2.Settings = accV1.Settings
 				accV2.Keys = []KeyPair{
 					{
-						Generator:   "",
-						FingerPrint: accV1.PubKey.Fingerprint(),
-						PrivKey:     accV1.PrivKey,
-						PubKey:      accV1.PubKey,
-						Active:      true,
+						KeyPair: bmcrypto.KeyPair{
+							Generator:   "",
+							FingerPrint: accV1.PubKey.Fingerprint(),
+							PrivKey:     accV1.PrivKey,
+							PubKey:      accV1.PubKey,
+						},
+						Active: true,
 					},
 				}
 				storeV2.Accounts = append(storeV2.Accounts, *accV2)
@@ -91,11 +95,13 @@ func MigrateVault(data []byte, fromVersion int) (*StoreType, error) {
 				orgV2.Validations = orgV1.Validations
 				orgV2.Keys = []KeyPair{
 					{
-						Generator:   "",
-						FingerPrint: orgV1.PubKey.Fingerprint(),
-						PrivKey:     orgV1.PrivKey,
-						PubKey:      orgV1.PubKey,
-						Active:      true,
+						KeyPair: bmcrypto.KeyPair{
+							Generator:   "",
+							FingerPrint: orgV1.PubKey.Fingerprint(),
+							PrivKey:     orgV1.PrivKey,
+							PubKey:      orgV1.PubKey,
+						},
+						Active: true,
 					},
 				}
 				storeV2.Organisations = append(storeV2.Organisations, *orgV2)

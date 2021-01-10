@@ -17,33 +17,19 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package config
+package internal
 
 import (
 	"testing"
+	"time"
 
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerate(t *testing.T) {
-	r, err := GenerateRouting()
-	assert.NoError(t, err)
+func TestTimeNow(t *testing.T) {
+	timeNow = func() time.Time {
+		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
+	}
 
-	assert.NotEmpty(t, r.RoutingID)
-	assert.NotEmpty(t, r.KeyPair)
-}
-
-func TestReadSaveRouting(t *testing.T) {
-	r, err := GenerateRouting()
-	assert.NoError(t, err)
-
-	fs = afero.NewMemMapFs()
-
-	err = SaveRouting("/generated/routing.json", r)
-	assert.NoError(t, err)
-
-	err = ReadRouting("/generated/routing.json")
-	assert.NoError(t, err)
-	assert.Equal(t, r.RoutingID, Routing.RoutingID)
+	assert.Equal(t, "2010-01-01 12:34:56 +0000 UTC", TimeNow().String())
 }

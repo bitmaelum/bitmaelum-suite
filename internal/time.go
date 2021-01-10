@@ -21,8 +21,10 @@ package internal
 
 import "time"
 
+var timeNow = time.Now
+
 // TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
 func TimeNow() time.Time {
-	ct := time.Now().Unix()
+	ct := timeNow().Unix()
 	return time.Unix(ct, 0).UTC()
 }
