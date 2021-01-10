@@ -102,5 +102,5 @@ func init() {
 	messageAccount = messageCmd.Flags().StringP("account", "a", "", "Account")
 	messageID = messageCmd.Flags().String("id", "", "Message ID")
 	_ = messageCmd.MarkFlagRequired("account")
-	_ = messageCmd.MarkFlagRequired("message")
+	_ = messageCmd.MarkFlagRequired("id")
 }
