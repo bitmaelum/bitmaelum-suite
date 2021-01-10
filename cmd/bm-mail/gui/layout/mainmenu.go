@@ -22,9 +22,9 @@ package layout
 import (
 	"fmt"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/app"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/app"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/components"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -42,14 +42,19 @@ var shortcuts = []string{
 	"Exit BitMaelum client",
 }
 
+var (
+	MainMenu     *components.MainMenu
+	MainMenuGrid *tview.Grid
+)
+
 // NewMainMenuScreen creates a new main menu screen
-func NewMainMenuScreen(app app.Type) tview.Primitive {
+func NewMainMenuScreen() tview.Primitive {
 
 	// Convert our ANSI logo into textview
 	logo := tview.NewTextView().
 		SetDynamicColors(true)
 	w := tview.ANSIWriter(logo)
-	_, _ = fmt.Fprint(w, internal.GetASCIILogo())
+	_, _ = fmt.Fprint(w, bminternal.GetASCIILogo())
 
 	// in order to center the logo, we need to set it inside a grid
 	logoBox := tview.NewGrid()
@@ -61,52 +66,53 @@ func NewMainMenuScreen(app app.Type) tview.Primitive {
 		AddText(subtitle, true, tview.AlignCenter, tcell.ColorWhite)
 
 	// List with options
-	menu := components.NewMainMenu().
+	MainMenu = components.NewMainMenu().
 		SetMainTextColor(tcell.ColorTeal).
 		SetSelectedTextColor(tcell.ColorYellow).
 		SetSelectedBackgroundColor(tcell.ColorTeal)
 
 	for _, s := range shortcuts {
-		menu.AddItem(s, rune(0))
+		MainMenu.AddItem(s, rune(0))
 	}
 
-	menu.SetSelectedFunc(func(idx int, main string, r rune) {
+	MainMenu.SetSelectedFunc(func(idx int, main string, r rune) {
 		switch idx {
 		case 0:
-			// Display account configuration
-			app.Pages.SwitchToPage("message-overview")
+			// Display message overview
+			app.MailApp.App.SetFocus(app.MailApp.MessageAccountTree)
+			app.MailApp.Pages.SwitchToPage("message-overview")
 
 		case 1:
-			// Display account conssfiguration
-			app.Pages.SwitchToPage("message-overview")
+			// Display account configuration
+			app.MailApp.Pages.SwitchToPage("message-overview")
 
 		case 2:
 			// Display account configuration
-			app.Pages.SwitchToPage("accounts")
+			app.MailApp.Pages.SwitchToPage("accounts")
 		case 4:
 			// Display help
-			app.Pages.SwitchToPage("help")
+			app.MailApp.Pages.SwitchToPage("help")
 		case 5:
 			// Exit application
-			app.App.Stop()
+			app.MailApp.App.Stop()
 		default:
 			modal := tview.NewModal().
 				SetText("This is a modal").
 				AddButtons([]string{"Ok"}).
 				SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-					app.Pages.HidePage("modal")
+					app.MailApp.Pages.HidePage("modal")
 				})
 
-			app.Pages.AddPage("modal", modal, false, true)
+			app.MailApp.Pages.AddPage("modal", modal, false, true)
 		}
 	})
 
 	// Create a Flex layout that centers the logo and subtitle.
-	grid := tview.NewGrid().SetColumns(0, 70, 0).SetRows(1, 10, 4, 0, 1)
+	MainMenuGrid = tview.NewGrid().SetColumns(0, 70, 0).SetRows(1, 10, 4, 0, 1)
 
-	grid.AddItem(logoBox, 1, 1, 1, 1, 10, 70, false)
-	grid.AddItem(frame, 2, 1, 1, 1, 0, 0, false)
-	grid.AddItem(menu, 3, 1, 1, 1, 0, 0, true)
+	MainMenuGrid.AddItem(logoBox, 1, 1, 1, 1, 10, 70, false)
+	MainMenuGrid.AddItem(frame, 2, 1, 1, 1, 0, 0, false)
+	MainMenuGrid.AddItem(MainMenu, 3, 1, 1, 1, 0, 0, true)
 
-	return grid
+	return MainMenuGrid
 }
