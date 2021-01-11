@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/console"
 	"github.com/spf13/afero"
@@ -139,6 +140,12 @@ func (v *Vault) Persist() error {
 	}
 
 	container, err := v.EncryptContainer()
+	if err != nil {
+		return err
+	}
+
+	// Create directory first if needed
+	err = fs.MkdirAll(filepath.Dir(v.path), 0700)
 	if err != nil {
 		return err
 	}
