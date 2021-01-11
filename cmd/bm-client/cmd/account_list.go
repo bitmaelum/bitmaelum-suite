@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/olekukonko/tablewriter"
@@ -68,7 +69,7 @@ func short(ID string) string {
 
 func displayAccounts(v *vault.Vault) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Address", "Name", "Routing ID", "Server"})
+	table.SetHeader([]string{"Account", "Name", "Routing ID", "Server"})
 
 	for _, a := range v.Store.Accounts {
 		table.Append([]string{
@@ -87,6 +88,7 @@ func displayAccount(v *vault.Vault, info vault.AccountInfo) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetBorders(tablewriter.Border{Left: false, Top: true, Right: false, Bottom: true})
 	table.SetCenterSeparator("|")
+	table.SetColMinWidth(1, 80)
 
 	table.AppendBulk([][]string{
 		{"Account", info.Address.String()},
@@ -100,14 +102,15 @@ func displayAccount(v *vault.Vault, info vault.AccountInfo) {
 		})
 	}
 
-	pk := info.GetActiveKey().PubKey
+	kp := info.GetActiveKey()
 	table.AppendBulk([][]string{
 		{"", ""},
 		{"Full name", info.Name},
 		{"Routing ID", info.RoutingID},
 		{"Routing Host", getHostByRoutingID(info.RoutingID, "unknown host")},
 		{"", ""},
-		{"Public key", strings.Join(chunks(pk.String(), 78), "\n")},
+		{"Public key", strings.Join(chunks(kp.PubKey.String(), 118), "\n")},
+		{"Account mnemonic", internal.GetMnemonic(&kp.KeyPair)},
 		{"Proof of work", fmt.Sprintf("%d bits", info.Pow.Bits)},
 	})
 

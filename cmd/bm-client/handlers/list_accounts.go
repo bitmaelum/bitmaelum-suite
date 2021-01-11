@@ -31,7 +31,7 @@ import (
 func ListAccounts(v *vault.Vault, displayKeys bool) {
 	table := tablewriter.NewWriter(os.Stdout)
 
-	headers := []string{"Address", "Name", "Routing ID", "Route Host"}
+	headers := []string{"Account", "Name", "Routing ID", "Route Host"}
 	align := []int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT}
 
 	if displayKeys {
