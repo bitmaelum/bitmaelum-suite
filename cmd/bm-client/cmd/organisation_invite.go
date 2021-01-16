@@ -26,7 +26,7 @@ import (
 )
 
 var organisationInviteCmd = &cobra.Command{
-	Use:   "create-organisation-invite",
+	Use:   "invite",
 	Short: "Create a new organisation invitation for a user",
 	Long:  `Creates an invitation for a user for the organisation.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -49,7 +49,7 @@ func init() {
 	orgInvAddress = organisationInviteCmd.Flags().StringP("account", "a", "", "account")
 	orgInvRoutingID = organisationInviteCmd.Flags().StringP("routing-id", "r", "", "routing ID where this user will be invited to")
 
-	_ = organisationInviteCmd.MarkFlagRequired("org")
-	_ = organisationInviteCmd.MarkFlagRequired("addr")
+	_ = organisationInviteCmd.MarkFlagRequired("organisation")
+	_ = organisationInviteCmd.MarkFlagRequired("account")
 	_ = organisationInviteCmd.MarkFlagRequired("routing-id")
 }

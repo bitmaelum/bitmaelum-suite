@@ -55,10 +55,10 @@ var (
 func init() {
 	organisationCmd.AddCommand(organisationCreateCmd)
 
-	orgAddr = organisationCreateCmd.Flags().StringP("org", "o", "", "Organisation address (...@<name>! part)")
+	orgAddr = organisationCreateCmd.Flags().StringP("organisation", "o", "", "Organisation address (...@<name>! part)")
 	orgFullName = organisationCreateCmd.Flags().StringP("name", "n", "", "Actual name (Acme Inc.)")
 	orgValidations = organisationCreateCmd.Flags().StringArray("val", nil, "validations for the organisation")
 	orgKeytype = organisationCreateCmd.Flags().StringP("keytype", "k", "ed25519", "Key type to use (defaults to ED25519)")
 
-	_ = organisationCreateCmd.MarkFlagRequired("org")
+	_ = organisationCreateCmd.MarkFlagRequired("organisation")
 }
