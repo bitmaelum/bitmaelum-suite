@@ -24,6 +24,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/olekukonko/tablewriter"
@@ -101,12 +102,13 @@ func displayOrganisation(info vault.OrganisationInfo) {
 		{"Organisation hash", info.ToOrg().Hash.String()},
 	})
 
-	pk := info.GetActiveKey().PubKey
+	kp := info.GetActiveKey()
 	table.AppendBulk([][]string{
 		{"", ""},
 		{"Full name", info.FullName},
 		{"", ""},
-		{"Public key", strings.Join(chunks(pk.String(), 78), "\n")},
+		{"Public key", strings.Join(chunks(kp.PubKey.String(), 78), "\n")},
+		{"Account mnemonic", internal.GetMnemonic(&kp.KeyPair)},
 		{"Proof of work", fmt.Sprintf("%d bits", info.Pow.Bits)},
 	})
 
