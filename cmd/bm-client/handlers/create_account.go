@@ -200,7 +200,11 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 	fmt.Printf("done\n")
 
 	fmt.Printf("* Making your account known to the outside world: ")
-	err = ks.UploadAddressInfo(*info, "")
+	if addr.HasOrganisationPart() {
+		err = ks.UploadAddressInfo(*info, token)
+	} else {
+		err = ks.UploadAddressInfo(*info, "")
+	}
 	if err != nil {
 		// We can't remove the account from the vault as we have created it on the mail-server
 
