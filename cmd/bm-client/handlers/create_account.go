@@ -22,6 +22,7 @@ package handlers
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
@@ -136,7 +137,10 @@ func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyTy
 
 		fmt.Printf("* Doing some work to let people know this is not a fake account, this might take a while: ")
 		proof := pow.NewWithoutProof(resolverCfg.ProofOfWork.Address, addr.Hash().String())
+		s := internal.NewSpinner(100 * time.Millisecond)
+		s.Start()
 		proof.WorkMulticore()
+		s.Stop()
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Adding your new account into the vault: ")

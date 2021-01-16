@@ -22,9 +22,11 @@ package handlers
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
+	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -71,7 +73,7 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 
 		fmt.Printf("* Generating organisation public/private key pair: ")
 
-		kp, err = internal.GenerateKeypairWithRandomSeed(kt)
+		kp, err = bminternal.GenerateKeypairWithRandomSeed(kt)
 		if err != nil {
 			fmt.Print(err)
 			fmt.Println("")
@@ -81,9 +83,13 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 
 		resolverCfg := ks.GetConfig()
 
-		fmt.Printf("* Doing some work to let people know this is not a fake account, this might take a while: ")
+		fmt.Print("* Doing some work to let people know this is not a fake account, this might take a while: ")
+
 		proof := pow.NewWithoutProof(resolverCfg.ProofOfWork.Organisation, orgHash.String())
+		s := internal.NewSpinner(100 * time.Millisecond)
+		s.Start()
 		proof.WorkMulticore()
+		s.Stop()
 		fmt.Printf("done.\n")
 
 		fmt.Printf("* Adding your new organisation into the vault: ")
@@ -135,7 +141,7 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-	fmt.Print(internal.WordWrap(internal.GetMnemonic(kp), 78))
+	fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(kp), 78))
 	fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 
