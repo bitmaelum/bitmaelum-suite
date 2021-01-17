@@ -101,7 +101,6 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		// Use the organisation public key for signature verification
 		pubKey = oi.PublicKey
 
-
 		// Check if the organisation is whitelisted on our server
 		allowed := false
 		for _, org := range config.Server.Organisations {
