@@ -24,8 +24,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"

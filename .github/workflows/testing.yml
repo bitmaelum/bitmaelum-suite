@@ -24,7 +24,6 @@ jobs:
     - name: Go imports
       run: |
         go get -u golang.org/x/tools/cmd/goimports
-        goimports --version
         test -z "$(goimports -l .)"
     - name: Go vet
       run: |
