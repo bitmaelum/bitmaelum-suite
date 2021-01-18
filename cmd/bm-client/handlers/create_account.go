@@ -20,15 +20,15 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/stepper"
 	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/signature"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -36,206 +36,348 @@ import (
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
-func verifyAddress(bmAddr string) *address.Address {
-	fmt.Printf("* Verifying if address is correct: ")
-	addr, err := address.NewAddress(bmAddr)
-	if err != nil {
-		fmt.Println("not a valid address")
+type ctxKey int
+
+const (
+	ctxAddr ctxKey = iota
+	ctxAddrStr
+	ctxVault
+	ctxName
+	ctxTokenStr
+	ctxKeyType
+	ctxInfo
+	ctxAccountFound
+	ctxProof
+	ctxToken
+	ctxKeyPair
+)
+
+// CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
+func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.KeyType) {
+	s := stepper.New()
+
+	// Set some initial values in the context. We read and write to the context to deal with variables instead of using globals.
+	s.Ctx = context.WithValue(s.Ctx, ctxVault, v)
+	s.Ctx = context.WithValue(s.Ctx, ctxAddrStr, addrStr)
+	s.Ctx = context.WithValue(s.Ctx, ctxName, name)
+	s.Ctx = context.WithValue(s.Ctx, ctxTokenStr, tokenStr)
+	s.Ctx = context.WithValue(s.Ctx, ctxKeyType, kt)
+
+	// Add all the steps from the account creation procedure
+
+	s.AddStep(stepper.Step{
+		Title:   fmt.Sprintf("Verifying if address %s%s%s is correct", stepper.AnsiFgYellow, addrStr, stepper.AnsiReset),
+		RunFunc: verifyAddress,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:   "Checking if address is already known in the resolver service",
+		RunFunc: checkAddressInResolver,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:   "Checking if token is valid and extracting data",
+		RunFunc: checkToken,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:   "Checking if the account is already present in the vault",
+		RunFunc: checkAccountInVault,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          "Generating your initial keypair",
+		DisplaySpinner: true,
+		OnlyIfFunc:     accountNotFoundInContext,
+		RunFunc:        generateKeyPair,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          fmt.Sprintf("Doing some work to let people know this is not a fake account, %sthis might take a while%s...", stepper.AnsiFgYellow, stepper.AnsiReset),
+		DisplaySpinner: true,
+		OnlyIfFunc:     accountNotFoundInContext,
+		RunFunc:        doProofOfWork,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:      "Placing your new account into the vault",
+		OnlyIfFunc: accountNotFoundInContext,
+		RunFunc:    addAccountToVault,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          "Sending your account to the server",
+		DisplaySpinner: true,
+		RunFunc:        uploadAccountToServer,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          "Making your account known to the outside world",
+		DisplaySpinner: true,
+		RunFunc:        uploadAccountToResolver,
+	})
+
+	// Run the stepper
+	s.Run()
+	if s.Status == stepper.FAILURE {
+		fmt.Println("There was an error while creating the account.")
 		os.Exit(1)
 	}
-	fmt.Println("ok")
 
-	if addr.HasOrganisationPart() {
-		fmt.Println("* You are creating an organisation address.")
-	}
+	info := s.Ctx.Value(ctxInfo).(*vault.AccountInfo)
 
-	return addr
+	fmt.Print(`
+*****************************************************************************
+!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
+*****************************************************************************
+
+We have generated a private key which allows you to control your account. 
+If, for any reason, you lose this key, you will need to use the following 
+words in order to recreate the key:
+	
+`)
+	kp := info.GetActiveKey().KeyPair
+	fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(&kp), 78))
+	fmt.Print(`
+	
+Write these words down and store them in a secure environment. They are the 
+ONLY way to recover your private key in case you lose it.
+	
+WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
+	`)
 }
 
-func checkAddressInResolver(addr address.Address) *resolver.Service {
-	fmt.Printf("* Checking if address is already known in the resolver service: ")
+func verifyAddress(s *stepper.Stepper) stepper.StepResult {
+	addrStr := s.Ctx.Value(ctxAddrStr).(string)
+
+	addr, err := address.NewAddress(addrStr)
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "it seems that this is not a valid address",
+		}
+	}
+
+	s.Ctx = context.WithValue(s.Ctx, ctxAddr, addr)
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func checkAddressInResolver(s *stepper.Stepper) stepper.StepResult {
+	addr := s.Ctx.Value(ctxAddr).(*address.Address)
 
 	ks := container.Instance.GetResolveService()
 	_, err := ks.ResolveAddress(addr.Hash())
 
 	if err == nil {
-		fmt.Println("")
-		fmt.Println("  X it seems that this address is already in use. Please specify another address.")
-		os.Exit(1)
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "address already found",
+		}
 	}
 
-	fmt.Println("not found. This is a good thing.")
-
-	return ks
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
 }
 
-func checkToken(token string, addr address.Address) *signature.Token {
-	fmt.Printf("* Checking token format and extracting data: ")
+func checkToken(s *stepper.Stepper) stepper.StepResult {
+	tokenStr := s.Ctx.Value(ctxTokenStr).(string)
+	addr := s.Ctx.Value(ctxAddr).(*address.Address)
 
-	it, err := signature.ParseInviteToken(token)
+	token, err := signature.ParseInviteToken(tokenStr)
 	if err != nil {
-		fmt.Println("\n  X it seems that this token is invalid")
-		os.Exit(1)
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "it seems that this token is invalid",
+		}
 	}
 
 	// Check address matches the one in the token
-	if it.AddrHash.String() != addr.Hash().String() {
-		fmt.Println("\n  X this token is not for", addr.String())
-		os.Exit(1)
-	}
-
-	fmt.Printf("token is valid.\n")
-
-	return it
-}
-
-func checkAccountInVault(vault *vault.Vault, addr address.Address) *vault.AccountInfo {
-	fmt.Printf("* Checking if the account is already present in the vault: ")
-
-	if vault.HasAccount(addr) {
-		fmt.Printf("\n  X account already present in the vault. Strange, but let's continue...\n")
-		info, err := vault.GetAccountInfo(addr)
-		if err != nil {
-			fmt.Print(err)
-			fmt.Println("")
-			os.Exit(1)
+	if token.AddrHash.String() != addr.Hash().String() {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: fmt.Sprintf("this token is not for %s", addr.String()),
 		}
-		return info
 	}
-	fmt.Printf("not found. This is a good thing.\n")
 
-	return nil
+	s.Ctx = context.WithValue(s.Ctx, ctxToken, token)
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
 }
 
-// CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
-func CreateAccount(v *vault.Vault, bmAddr, name, token string, kt bmcrypto.KeyType) {
-	fmt.Println("")
+func checkAccountInVault(s *stepper.Stepper) stepper.StepResult {
+	v := s.Ctx.Value(ctxVault).(*vault.Vault)
+	addr := s.Ctx.Value(ctxAddr).(*address.Address)
 
-	addr := verifyAddress(bmAddr)
-	ks := checkAddressInResolver(*addr)
-	it := checkToken(token, *addr)
-	info := checkAccountInVault(v, *addr)
+	if !v.HasAccount(*addr) {
+		return stepper.StepResult{
+			Status:  stepper.SUCCESS,
+			Message: "not found. That's good.",
+		}
+	}
 
+	info, err := v.GetAccountInfo(*addr)
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "found. But error while fetching from the vault.",
+		}
+	}
+
+	s.Ctx = context.WithValue(s.Ctx, ctxInfo, info)
+	s.Ctx = context.WithValue(s.Ctx, ctxAccountFound, true)
+
+	return stepper.StepResult{
+		Status:  stepper.SUCCESS,
+		Message: "found. That's odd, but let's continue...",
+	}
+
+}
+
+func generateKeyPair(s *stepper.Stepper) stepper.StepResult {
+	kt := s.Ctx.Value(ctxKeyType).(bmcrypto.KeyType)
+	kp, err := bminternal.GenerateKeypairWithRandomSeed(kt)
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: err.Error(),
+		}
+	}
+
+	s.Ctx = context.WithValue(s.Ctx, ctxKeyPair, kp)
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func doProofOfWork(s *stepper.Stepper) stepper.StepResult {
+	addr := s.Ctx.Value(ctxAddr).(*address.Address)
+
+	// Find the number of bits for address creation
 	res := container.Instance.GetResolveService()
 	resolverCfg := res.GetConfig()
 
-	var (
-		err error
-		kp  *bmcrypto.KeyPair
-	)
+	proof := pow.NewWithoutProof(resolverCfg.ProofOfWork.Address, addr.Hash().String())
+	proof.WorkMulticore()
 
-	if info == nil {
-		fmt.Printf("* Generating your secret key to send and read mail: ")
+	s.Ctx = context.WithValue(s.Ctx, ctxProof, proof)
 
-		kp, err = bminternal.GenerateKeypairWithRandomSeed(kt)
-		if err != nil {
-			fmt.Print(err)
-			fmt.Println("")
-			os.Exit(1)
-		}
-		fmt.Printf("done.\n")
-
-		fmt.Printf("* Doing some work to let people know this is not a fake account, this might take a while: ")
-		proof := pow.NewWithoutProof(resolverCfg.ProofOfWork.Address, addr.Hash().String())
-		s := internal.NewSpinner(100 * time.Millisecond)
-		s.Start()
-		proof.WorkMulticore()
-		s.Stop()
-		fmt.Printf("done.\n")
-
-		fmt.Printf("* Adding your new account into the vault: ")
-		info = &vault.AccountInfo{
-			Address: addr,
-			Name:    name,
-			Keys: []vault.KeyPair{
-				{
-					KeyPair: *kp,
-					Active:  true,
-				},
-			},
-			Pow:       proof,
-			RoutingID: it.RoutingID, // Fetch from token
-		}
-
-		v.AddAccount(*info)
-		err = v.Persist()
-		if err != nil {
-			fmt.Printf("\n  X error while saving account into vault: %#v", err)
-			fmt.Println("")
-			os.Exit(1)
-		}
-		fmt.Printf("done\n")
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
 	}
+}
+
+func addAccountToVault(s *stepper.Stepper) stepper.StepResult {
+	v := s.Ctx.Value(ctxVault).(*vault.Vault)
+	addr := s.Ctx.Value(ctxAddr).(*address.Address)
+	name := s.Ctx.Value(ctxName).(string)
+	kp := s.Ctx.Value(ctxKeyPair).(*bmcrypto.KeyPair)
+	proof := s.Ctx.Value(ctxProof).(*pow.ProofOfWork)
+	token := s.Ctx.Value(ctxToken).(*signature.Token)
+
+	info := &vault.AccountInfo{
+		Address: addr,
+		Name:    name,
+		Keys: []vault.KeyPair{
+			{
+				KeyPair: *kp,
+				Active:  true,
+			},
+		},
+		Pow:       proof,
+		RoutingID: token.RoutingID,
+	}
+
+	v.AddAccount(*info)
+
+	err := v.Persist()
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: fmt.Sprintf("error while saving account into vault: %#v", err),
+		}
+	}
+
+	s.Ctx = context.WithValue(s.Ctx, ctxInfo, info)
+	s.Ctx = context.WithValue(s.Ctx, ctxAccountFound, true)
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func uploadAccountToServer(s *stepper.Stepper) stepper.StepResult {
+	token := s.Ctx.Value(ctxToken).(*signature.Token)
+	info := s.Ctx.Value(ctxInfo).(*vault.AccountInfo)
+	tokenStr := s.Ctx.Value(ctxTokenStr).(string)
 
 	// Fetch routing info
-	routingInfo, err := ks.ResolveRouting(it.RoutingID)
+	ks := container.Instance.GetResolveService()
+	routingInfo, err := ks.ResolveRouting(token.RoutingID)
 	if err != nil {
-		fmt.Printf("\n  X routing information is not found: %#v", err)
-		fmt.Println("")
-		os.Exit(1)
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: fmt.Sprintf("cannot find route ID inside the resolver: %#v", err),
+		}
 	}
 
-	fmt.Printf("* Sending your account information to the server: ")
 	client, err := api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
 	if err != nil {
-		// Remove account from the local vault as well, as we could not store on the server
-		v.RemoveAccount(*addr)
-		_ = v.Persist()
-
-		fmt.Printf("cannot initialize API")
-		fmt.Println("")
-		os.Exit(1)
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "error while authenticating to the API",
+		}
 	}
 
-	err = client.CreateAccount(*info, token)
+	err = client.CreateAccount(*info, tokenStr)
 	if err != nil {
-		// Remove account from the local vault as well, as we could not store on the server
-		v.RemoveAccount(*addr)
-		_ = v.Persist()
+		if err.Error() == "account already exists" {
+			return stepper.StepResult{
+				Status:  stepper.NOTICE,
+				Message: "account already exists on the server.",
+			}
+		}
 
-		fmt.Printf("\n  X error from API while trying to create account: " + err.Error())
-		fmt.Println("")
-		os.Exit(1)
+		// Other error
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: fmt.Sprintf("error while uploading the account: " + err.Error()),
+		}
 	}
-	fmt.Printf("done\n")
 
-	fmt.Printf("* Making your account known to the outside world: ")
-	if addr.HasOrganisationPart() {
-		err = ks.UploadAddressInfo(*info, token)
-	} else {
-		err = ks.UploadAddressInfo(*info, "")
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
 	}
+}
+
+func uploadAccountToResolver(s *stepper.Stepper) stepper.StepResult {
+	addr := s.Ctx.Value(ctxAddr).(*address.Address)
+	info := s.Ctx.Value(ctxInfo).(*vault.AccountInfo)
+	tokenStr := s.Ctx.Value(ctxTokenStr).(string)
+
+	if !addr.HasOrganisationPart() {
+		tokenStr = ""
+	}
+
+	ks := container.Instance.GetResolveService()
+	err := ks.UploadAddressInfo(*info, tokenStr)
 	if err != nil {
-		// We can't remove the account from the vault as we have created it on the mail-server
-
-		fmt.Printf("\n  X error while uploading account to the resolver: " + err.Error())
-		fmt.Printf("\n  X Please try again with:\n   bm-client account push -a '%s'\n", addr.String())
-		fmt.Println("")
-		os.Exit(1)
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: fmt.Sprintf("error while uploading account to the resolver: %s", err.Error()),
+		}
 	}
-	fmt.Printf("done\n")
 
-	fmt.Printf("\n")
-	fmt.Printf("* All done")
-
-	if kp != nil {
-		fmt.Print(`
-	*****************************************************************************
-	!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
-	*****************************************************************************
-	
-	We have generated a private key which allows you to control your account. 
-	If, for any reason, you lose this key, you will need to use the following 
-	words in order to recreate the key:
-	
-	`)
-		fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(kp), 78))
-		fmt.Print(`
-	
-	Write these words down and store them in a secure environment. They are the 
-	ONLY way to recover your private key in case you lose it.
-	
-	WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
-	`)
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
 	}
+}
+
+func accountNotFoundInContext(s stepper.Stepper) bool {
+	return s.Ctx.Value(ctxAccountFound) != nil
 }
