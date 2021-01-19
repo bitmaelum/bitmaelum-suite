@@ -20,12 +20,12 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/stepper"
 	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -34,102 +34,82 @@ import (
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
+const (
+	ctxOrganisationFound ctxKey = iota
+	ctxOrgVault
+	ctxOrgAddr
+	ctxOrgHash
+	ctxOrgValidations
+	ctxOrgValidationsStr
+	ctxOrgKeyType
+	ctxOrgKeyPair
+	ctxOrgName
+	ctxOrgInfo
+	ctxOrgProof
+)
+
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
 func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations []string, kt bmcrypto.KeyType) {
-	fmt.Printf("* Verifying if organisation name is valid: ")
-	orgHash := hash.New(orgAddr)
+	s := stepper.New()
 
-	fmt.Printf("* Checking if your validations are correct: ")
-	val, err := organisation.NewValidationTypeFromStringArray(orgValidations)
-	if err != nil {
-		fmt.Print("\n  X it seems that one of your validations is wrong: ", err)
-		fmt.Println("")
+	// Set some initial values in the context. We read and write to the context to deal with variables instead of using globals.
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgVault, v)
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgKeyType, kt)
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgName, fullName)
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgValidationsStr, orgValidations)
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgAddr, orgAddr)
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgHash, hash.New(orgAddr))
+
+	// Add all the steps from the account creation procedure
+
+	s.AddStep(stepper.Step{
+		Title:   "Checking if organisation is already known in the resolver service",
+		RunFunc: checkOrganisationInResolver,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          "Checking if validations are correct",
+		DisplaySpinner: true,
+		RunFunc:        checkValidations,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:   "Checking if the organisation is already present in the vault",
+		RunFunc: checkOrganisationInVault,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          "Generating organisation public/private keypair",
+		DisplaySpinner: true,
+		OnlyIfFunc:     organisationNotFoundInContext,
+		RunFunc:        generateOrganisationKeyPair,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          fmt.Sprintf("Doing some work to let people know this is not a fake account, %sthis might take a while%s...", stepper.AnsiFgYellow, stepper.AnsiReset),
+		DisplaySpinner: true,
+		OnlyIfFunc:     organisationNotFoundInContext,
+		RunFunc:        doProofOfWorkOrg,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:      "Placing your new organisation into the vault",
+		OnlyIfFunc: organisationNotFoundInContext,
+		RunFunc:    addOrganisationToVault,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          "Making your organisation known to the outside world",
+		DisplaySpinner: true,
+		RunFunc:        uploadOrganisationToResolver,
+	})
+
+	// Run the stepper
+	s.Run()
+	if s.Status == stepper.FAILURE {
+		fmt.Println("There was an error while creating the organisation.")
 		os.Exit(1)
 	}
-	fmt.Printf("ok.\n")
-
-	fmt.Printf("* Checking if organisation is already known in the resolver service: ")
-	ks := container.Instance.GetResolveService()
-	_, err = ks.ResolveOrganisation(orgHash)
-	if err == nil {
-		fmt.Printf("\n  X it seems that this organisation is already in use. Please specify another organisation.")
-		fmt.Println("")
-		os.Exit(1)
-	}
-	fmt.Printf("not found. This is a good thing.\n")
-
-	var (
-		kp *bmcrypto.KeyPair
-	)
-
-	fmt.Printf("* Checking if the organisation is already present in the vault: ")
-	var info *vault.OrganisationInfo
-	if v.HasOrganisation(orgHash) {
-		fmt.Printf("\n  X organisation already present in the vault.\n")
-		fmt.Println("")
-		os.Exit(1)
-	} else {
-		fmt.Printf("not found. This is a good thing.\n")
-
-		fmt.Printf("* Generating organisation public/private key pair: ")
-
-		kp, err = bminternal.GenerateKeypairWithRandomSeed(kt)
-		if err != nil {
-			fmt.Print(err)
-			fmt.Println("")
-			os.Exit(1)
-		}
-		fmt.Printf("done.\n")
-
-		resolverCfg := ks.GetConfig()
-
-		fmt.Print("* Doing some work to let people know this is not a fake account, this might take a while: ")
-
-		proof := pow.NewWithoutProof(resolverCfg.ProofOfWork.Organisation, orgHash.String())
-		s := internal.NewSpinner(100 * time.Millisecond)
-		s.Start()
-		proof.WorkMulticore()
-		s.Stop()
-		fmt.Printf("done.\n")
-
-		fmt.Printf("* Adding your new organisation into the vault: ")
-		info = &vault.OrganisationInfo{
-			Addr:     orgAddr,
-			FullName: fullName,
-			Keys: []vault.KeyPair{
-				{
-					KeyPair: *kp,
-					Active:  true,
-				},
-			},
-			Pow:         proof,
-			Validations: val,
-		}
-
-		v.AddOrganisation(*info)
-		err = v.Persist()
-		if err != nil {
-			fmt.Printf("\n  X error while saving organisation into vault: %#v", err)
-			fmt.Println("")
-			os.Exit(1)
-		}
-		fmt.Printf("done\n")
-	}
-
-	fmt.Printf("* Making your organisation known to the outside world: ")
-	err = ks.UploadOrganisationInfo(*info)
-	if err != nil {
-		// We can't remove the account from the vault as we have created it on the mail-server
-
-		fmt.Printf("\n  X error while uploading organisation to the resolver: " + err.Error())
-		fmt.Printf("\n  X Please try again with:\n   bm-client organisation push -a '%s'\n", orgHash.String())
-		fmt.Println("")
-		os.Exit(1)
-	}
-	fmt.Printf("done\n")
-
-	fmt.Printf("\n")
-	fmt.Printf("* All done")
 
 	fmt.Print(`
 *****************************************************************************
@@ -141,7 +121,9 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-	fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(kp), 78))
+	info := s.Ctx.Value(ctxOrgInfo).(*vault.OrganisationInfo)
+	kp := info.GetActiveKey().KeyPair
+	fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(&kp), 78))
 	fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 
@@ -149,4 +131,159 @@ ONLY way to recover your private key in case you lose it.
 
 WITHOUT THESE WORDS, ALL ACCESS TO YOUR ORGANISATION IS LOST!
 `)
+}
+
+func checkOrganisationInVault(s *stepper.Stepper) stepper.StepResult {
+	v := s.Ctx.Value(ctxOrgVault).(*vault.Vault)
+	orgHash := s.Ctx.Value(ctxOrgHash).(hash.Hash)
+
+	if !v.HasOrganisation(orgHash) {
+		return stepper.StepResult{
+			Status:  stepper.SUCCESS,
+			Message: "not found. That's good.",
+		}
+	}
+
+	info, err := v.GetOrganisationInfo(orgHash)
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "found. But error while fetching from the vault.",
+		}
+	}
+
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgInfo, info)
+	s.Ctx = context.WithValue(s.Ctx, ctxOrganisationFound, true)
+
+	return stepper.StepResult{
+		Status:  stepper.SUCCESS,
+		Message: "found. That's odd, but let's continue...",
+	}
+}
+
+func checkOrganisationInResolver(s *stepper.Stepper) stepper.StepResult {
+	orgHash := s.Ctx.Value(ctxOrgHash).(hash.Hash)
+
+	ks := container.Instance.GetResolveService()
+	_, err := ks.ResolveOrganisation(orgHash)
+
+	if err == nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "organisation already found",
+		}
+	}
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func checkValidations(s *stepper.Stepper) stepper.StepResult {
+	arr := s.Ctx.Value(ctxOrgValidationsStr).([]string)
+	validations, err := organisation.NewValidationTypeFromStringArray(arr)
+	if err != nil {
+		return stepper.StepResult{
+			Status: stepper.FAILURE,
+			Message: "validation failed",
+		}
+	}
+
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgValidations, validations)
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func doProofOfWorkOrg(s *stepper.Stepper) stepper.StepResult {
+	orgHash := s.Ctx.Value(ctxOrgHash).(hash.Hash)
+
+	// Find the number of bits for address creation
+	res := container.Instance.GetResolveService()
+	resolverCfg := res.GetConfig()
+
+	proof := pow.NewWithoutProof(resolverCfg.ProofOfWork.Organisation, orgHash.String())
+	proof.WorkMulticore()
+
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgProof, proof)
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func generateOrganisationKeyPair(s *stepper.Stepper) stepper.StepResult {
+	kt := s.Ctx.Value(ctxOrgKeyType).(bmcrypto.KeyType)
+	kp, err := bminternal.GenerateKeypairWithRandomSeed(kt)
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: err.Error(),
+		}
+	}
+
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgKeyPair, kp)
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func addOrganisationToVault(s *stepper.Stepper) stepper.StepResult {
+	v := s.Ctx.Value(ctxOrgVault).(*vault.Vault)
+	orgAddr := s.Ctx.Value(ctxOrgAddr).(string)
+	name := s.Ctx.Value(ctxOrgName).(string)
+	kp := s.Ctx.Value(ctxOrgKeyPair).(*bmcrypto.KeyPair)
+	proof := s.Ctx.Value(ctxOrgProof).(*pow.ProofOfWork)
+	validations := s.Ctx.Value(ctxOrgValidations).([]organisation.ValidationType)
+
+	info := &vault.OrganisationInfo{
+		Addr:     orgAddr,
+		FullName: name,
+		Keys: []vault.KeyPair{
+			{
+				KeyPair: *kp,
+				Active:  true,
+			},
+		},
+		Pow:         proof,
+		Validations: validations,
+	}
+
+	v.AddOrganisation(*info)
+	err := v.Persist()
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: fmt.Sprintf("error while saving organisation into vault: %#v", err),
+		}
+	}
+
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgInfo, info)
+	s.Ctx = context.WithValue(s.Ctx, ctxOrganisationFound, true)
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func uploadOrganisationToResolver(s *stepper.Stepper) stepper.StepResult {
+	info := s.Ctx.Value(ctxOrgInfo).(*vault.OrganisationInfo)
+
+	ks := container.Instance.GetResolveService()
+	err := ks.UploadOrganisationInfo(*info)
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: fmt.Sprintf("error while uploading organisation to the resolver: %s", err.Error()),
+		}
+	}
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+	}
+}
+
+func organisationNotFoundInContext(s stepper.Stepper) bool {
+	return s.Ctx.Value(ctxOrganisationFound) != nil
 }

@@ -124,8 +124,6 @@ func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.K
 		os.Exit(1)
 	}
 
-	info := s.Ctx.Value(ctxInfo).(*vault.AccountInfo)
-
 	fmt.Print(`
 *****************************************************************************
 !IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
@@ -136,6 +134,7 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 	
 `)
+	info := s.Ctx.Value(ctxInfo).(*vault.AccountInfo)
 	kp := info.GetActiveKey().KeyPair
 	fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(&kp), 78))
 	fmt.Print(`
@@ -236,7 +235,6 @@ func checkAccountInVault(s *stepper.Stepper) stepper.StepResult {
 		Status:  stepper.SUCCESS,
 		Message: "found. That's odd, but let's continue...",
 	}
-
 }
 
 func generateKeyPair(s *stepper.Stepper) stepper.StepResult {
