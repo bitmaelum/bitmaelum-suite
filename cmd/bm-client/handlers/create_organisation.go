@@ -184,7 +184,7 @@ func checkValidations(s *stepper.Stepper) stepper.StepResult {
 	validations, err := organisation.NewValidationTypeFromStringArray(arr)
 	if err != nil {
 		return stepper.StepResult{
-			Status: stepper.FAILURE,
+			Status:  stepper.FAILURE,
 			Message: "validation failed",
 		}
 	}
