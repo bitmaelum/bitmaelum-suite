@@ -58,7 +58,6 @@ func queryAccount(account string) {
 		os.Exit(1)
 	}
 
-
 	rs := container.Instance.GetResolveService()
 	info, err := rs.ResolveAddress(addr.Hash())
 	if err != nil {
@@ -129,10 +128,10 @@ func toMultiLine(validations []organisation.ValidationType) string {
 	return strings.Join(ret, "\n")
 }
 
-func queryRouting(routingId string) {
+func queryRouting(routingID string) {
 
 	rs := container.Instance.GetResolveService()
-	info, err := rs.ResolveRouting(routingId)
+	info, err := rs.ResolveRouting(routingID)
 	if err != nil {
 		fmt.Println("error: cannot query routing: ", err)
 		os.Exit(1)
@@ -153,11 +152,10 @@ func queryRouting(routingId string) {
 	table.Render()
 }
 
-
 var (
-	raAccount *string
+	raAccount      *string
 	raOrganisation *string
-	raRouting *string
+	raRouting      *string
 )
 
 func init() {
