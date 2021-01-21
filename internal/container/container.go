@@ -19,6 +19,8 @@
 
 package container
 
+import "sync"
+
 /*
  * This is a very basic container system. We use this to easily locate services (ie: service locator) inside our code.
  * With this container, we can also easily change a service to another instance, like a mocking service.
@@ -55,6 +57,7 @@ type Container interface {
 
 // Type is the main container structure holding all service
 type Type struct {
+	mu          sync.Mutex
 	definitions map[string]*ServiceDefinition
 	resolved    map[string]interface{}
 }
@@ -69,6 +72,9 @@ func NewContainer() Container {
 
 // SetNonShared will set the function for the given service. It is not shared, meaning you will get a new instance on each call to get
 func (c *Type) SetNonShared(key string, f ServiceFunc) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.definitions[key] = &ServiceDefinition{
 		Func: f,
 		Type: ServiceTypeNonShared,
@@ -80,6 +86,9 @@ func (c *Type) SetNonShared(key string, f ServiceFunc) {
 
 // SetShared will set the function for the given service. It will return a shared instance on each call to get
 func (c *Type) SetShared(key string, f ServiceFunc) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.definitions[key] = &ServiceDefinition{
 		Func: f,
 		Type: ServiceTypeShared,
@@ -122,7 +131,9 @@ func (c *Type) Get(key string) interface{} {
 	if err != nil {
 		return nil
 	}
+	c.mu.Lock()
 	c.resolved[key] = obj
+	c.mu.Unlock()
 
 	return obj
 }

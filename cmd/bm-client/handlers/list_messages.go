@@ -24,6 +24,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
@@ -37,93 +38,166 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+// AccountEntry is a single entry to display
+type AccountEntry struct {
+	account string   // The account of the entry
+	box     string   // the box of the entry
+	idx     int      // the index/position we need to display
+	row     []string // actual row data for the table
+}
+
+// AccountData is the complete list of all messages we want to display.
+type AccountData []AccountEntry
+
+// Len returns the length of the account data
+func (ad AccountData) Len() int {
+	return len(ad)
+}
+
+// Swap will swap two account data entries in the slice
+func (ad AccountData) Swap(i, j int) {
+	ad[i], ad[j] = ad[j], ad[i]
+}
+
+// Less will sort account entries on account first, box second, idx third.
+func (ad AccountData) Less(i, j int) bool {
+	if ad[i].account < ad[j].account {
+		return true
+	}
+	if ad[i].account > ad[j].account {
+		return false
+	}
+
+	if ad[i].box < ad[j].box {
+		return true
+	}
+	if ad[i].box > ad[j].box {
+		return false
+	}
+
+	return ad[i].idx < ad[j].idx
+}
+
 // ListMessages will display message information from accounts and boxes
 func ListMessages(accounts []vault.AccountInfo, since time.Time) int {
-	table := tablewriter.NewWriter(os.Stdout)
-	// table.SetAutoMergeCells(true)
+	fmt.Print("* Fetching messages from remote server(s): ")
+	spinner := internal.NewSpinner(100 * time.Millisecond)
+	spinner.Start()
 
-	headers := []string{"Account", "Box", "ID", "Subject", "From", "Date", "# Blocks", "# Attachments"}
-	table.SetHeader(headers)
+	accountData := queryAccounts(accounts, since)
 
-	msgCount := 0
-
-	fmt.Print("* Fetching messages from remote server(s)...")
-	for _, info := range accounts {
-		// Fetch routing info
-		resolver := container.Instance.GetResolveService()
-		routingInfo, err := resolver.ResolveRouting(info.RoutingID)
-		if err != nil {
-			continue
-		}
-
-		client, err := api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
-		if err != nil {
-			continue
-		}
-
-		msgCount += displayBoxList(client, &info, table, since)
-	}
+	spinner.Stop()
 	fmt.Println("")
 
-	if msgCount > 0 {
+	if len(*accountData) > 0 {
+		table := tablewriter.NewWriter(os.Stdout)
+		headers := []string{"Account", "Box", "ID", "Subject", "From", "Date", "# Blocks", "# Attachments"}
+		table.SetHeader(headers)
+
+		for _, ad := range *accountData {
+			table.Append(ad.row)
+		}
+
 		table.Render()
 	}
 
-	return msgCount
+	return len(*accountData)
 }
 
-var firstRender bool
+func queryAccounts(accounts []vault.AccountInfo, since time.Time) *AccountData {
+	var accountData AccountData
+	var wg sync.WaitGroup
 
-func displayBoxList(client *api.API, account *vault.AccountInfo, table *tablewriter.Table, since time.Time) int {
+	doneCh := make(chan int)
+	dataCh := make(chan AccountEntry)
+
+	// Make a go routine for each account
+	for _, info := range accounts {
+		wg.Add(1)
+		go func(wg *sync.WaitGroup, info vault.AccountInfo) {
+			defer wg.Done()
+
+			// Fetch routing info
+			resolver := container.Instance.GetResolveService()
+			routingInfo, err := resolver.ResolveRouting(info.RoutingID)
+			if err != nil {
+				return
+			}
+
+			client, err := api.NewAuthenticated(*info.Address, info.GetActiveKey().PrivKey, routingInfo.Routing, internal.JwtErrorFunc)
+			if err != nil {
+				return
+			}
+
+			queryBoxes(client, &info, dataCh, since)
+		}(&wg, info)
+	}
+
+	// Main collector routine
+	go func() {
+		for {
+			select {
+			case data := <-dataCh:
+				accountData = append(accountData, data)
+			case <-doneCh:
+				return
+			}
+		}
+	}()
+
+	// Wait until the query routines have completed
+	wg.Wait()
+
+	// Send signal to the collector routine that its done
+	doneCh <- 1
+
+	// Make sure all data is in the right order
+	sort.Sort(accountData)
+	return &accountData
+}
+
+func queryBoxes(client *api.API, account *vault.AccountInfo, dataCh chan AccountEntry, since time.Time) {
 	mbl, err := client.GetMailboxList(account.Address.Hash())
 	if err != nil {
-		return 0
+		return
 	}
 
-	msgCount := 0
-	firstRender = true
 	for _, mb := range mbl.Boxes {
-		msgCount += displayBox(client, account, fmt.Sprintf("%d", mb.ID), table, since)
+		queryBox(client, account, fmt.Sprintf("%d", mb.ID), dataCh, since)
 	}
-
-	return msgCount
 }
 
-func displayBox(client *api.API, account *vault.AccountInfo, box string, table *tablewriter.Table, since time.Time) int {
+func queryBox(client *api.API, account *vault.AccountInfo, box string, dataCh chan AccountEntry, since time.Time) {
 	mb, err := client.GetMailboxMessages(account.Address.Hash(), box, since)
 	if err != nil {
-		return 0
+		return
 	}
 
 	// No messages in this box found
 	if len(mb.Messages) == 0 {
-		return 0
-	}
-
-	// Display account info on first render
-	if firstRender {
-		firstRender = false
-
-		values := []string{
-			account.Address.String(),
-			box,
-			"", "", "", "", "", "",
-		}
-		table.Append(values)
-	} else {
-		values := []string{
-			"",
-			box,
-			"", "", "", "", "", "",
-		}
-		table.Append(values)
+		return
 	}
 
 	// Sort messages first
 	msort := mailbox.NewMessageSort(account.GetActiveKey().PrivKey, mb.Messages, mailbox.SortDate, true)
 	sort.Sort(&msort)
 
+	// Add first entry with just the account and box number
+	idx := 1
+	dataCh <- AccountEntry{
+		account: account.Address.String(),
+		box:     box,
+		idx:     idx,
+		row: []string{
+			account.Address.String(),
+			box,
+			"", "", "", "", "", "",
+		},
+	}
+
 	for _, msg := range mb.Messages {
+		idx++
+
 		key, err := bmcrypto.Decrypt(account.GetActiveKey().PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			continue
@@ -145,19 +219,20 @@ func displayBox(client *api.API, account *vault.AccountInfo, box string, table *
 			attachments = append(attachments, a.FileName+" ("+fs.HR()+")")
 		}
 
-		values := []string{
-			"",
-			"",
-			msg.ID,
-			catalog.Subject,
-			fmt.Sprintf("%s <%s>", catalog.From.Name, catalog.From.Address),
-			catalog.CreatedAt.Format(time.RFC822),
-			strings.Join(blocks, ","),
-			strings.Join(attachments, "\n"),
+		dataCh <- AccountEntry{
+			account: account.Address.String(),
+			box:     box,
+			idx:     idx,
+			row: []string{
+				"",
+				"",
+				msg.ID,
+				catalog.Subject,
+				fmt.Sprintf("%s <%s>", catalog.From.Name, catalog.From.Address),
+				catalog.CreatedAt.Format(time.RFC822),
+				strings.Join(blocks, ","),
+				strings.Join(attachments, "\n"),
+			},
 		}
-
-		table.Append(values)
 	}
-
-	return len(mb.Messages)
 }
