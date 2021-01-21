@@ -52,6 +52,13 @@ var organisationValidateAddCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		for i := range info.Validations {
+			if info.Validations[i].Type == val.Type && info.Validations[i].Value == val.Value {
+				fmt.Println("error: type/value already present")
+				os.Exit(1)
+			}
+		}
+
 		info.Validations = append(info.Validations, *val)
 
 		err = v.Persist()
