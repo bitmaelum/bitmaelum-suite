@@ -3,7 +3,7 @@
 Finalized "hello-world" release
 
 ### Security
--  no issues found or fixed
+- no issues found or fixed
 
 ### Changes
 - Removed some obsolete tooling
@@ -11,6 +11,7 @@ Finalized "hello-world" release
 - bm-client: Added functionality for managing organisation validations 
 - bm-client: Added functionality to query info from the resolver 
 - bm-client: "account create" and "organisation create" use a "step" layout for better feedback
+- bm-client: reading messages is done concurrently, speeding it up a huge amount 
 
 ### Fixes
 - bm-server: added whitelisting in config to only allow specific organisations to add accounts
