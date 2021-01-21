@@ -42,7 +42,7 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 		if err != nil {
 			logrus.Fatal("incorrect key type")
 		}
-		
+
 		handlers.CreateOrganisation(v, strings.TrimRight(*orgAddr, "!"), *orgFullName, *orgValidations, kt)
 	},
 }

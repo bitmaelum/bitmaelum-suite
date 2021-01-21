@@ -34,8 +34,6 @@ var organisationInviteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
-
-
 		handlers.CreateOrganisationInvite(v, strings.TrimRight(*orgInvOrg, "!"), *orgInvAddress, *orgInvRoutingID)
 	},
 }

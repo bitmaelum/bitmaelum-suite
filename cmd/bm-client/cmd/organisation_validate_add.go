@@ -37,7 +37,6 @@ var organisationValidateAddCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
-
 		orgHash := hash.New(strings.TrimRight(*ovOrganisation, "!"))
 
 		info, err := v.GetOrganisationInfo(orgHash)
