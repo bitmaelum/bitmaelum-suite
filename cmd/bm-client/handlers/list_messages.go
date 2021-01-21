@@ -40,10 +40,10 @@ import (
 
 // AccountEntry is a single entry to display
 type AccountEntry struct {
-	account string      // The account of the entry
-	box     string      // the box of the entry
-	idx     int         // the index/position we need to display
-	row     []string    // actual row data for the table
+	account string   // The account of the entry
+	box     string   // the box of the entry
+	idx     int      // the index/position we need to display
+	row     []string // actual row data for the table
 }
 
 // AccountData is the complete list of all messages we want to display.
@@ -77,7 +77,6 @@ func (ad AccountData) Less(i, j int) bool {
 
 	return ad[i].idx < ad[j].idx
 }
-
 
 // ListMessages will display message information from accounts and boxes
 func ListMessages(accounts []vault.AccountInfo, since time.Time) int {
@@ -183,7 +182,6 @@ func queryBox(client *api.API, account *vault.AccountInfo, box string, dataCh ch
 	msort := mailbox.NewMessageSort(account.GetActiveKey().PrivKey, mb.Messages, mailbox.SortDate, true)
 	sort.Sort(&msort)
 
-
 	// Add first entry with just the account and box number
 	idx := 1
 	dataCh <- AccountEntry{
@@ -198,7 +196,7 @@ func queryBox(client *api.API, account *vault.AccountInfo, box string, dataCh ch
 	}
 
 	for _, msg := range mb.Messages {
-		idx += 1
+		idx++
 
 		key, err := bmcrypto.Decrypt(account.GetActiveKey().PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
 		if err != nil {

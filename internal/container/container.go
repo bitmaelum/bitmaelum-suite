@@ -57,7 +57,7 @@ type Container interface {
 
 // Type is the main container structure holding all service
 type Type struct {
-	mu sync.Mutex
+	mu          sync.Mutex
 	definitions map[string]*ServiceDefinition
 	resolved    map[string]interface{}
 }

@@ -58,7 +58,6 @@ var messageListCmd = &cobra.Command{
 			since = internal.GetReadTime()
 		}
 
-
 		// Get account or all accounts
 		accounts := v.Store.Accounts
 		if *lmAccount != "" {
@@ -67,7 +66,6 @@ var messageListCmd = &cobra.Command{
 				accounts = []vault.AccountInfo{*acc}
 			}
 		}
-
 
 		msgCount := handlers.ListMessages(accounts, since)
 		if msgCount == 0 {
