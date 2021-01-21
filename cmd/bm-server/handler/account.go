@@ -20,6 +20,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -84,27 +85,17 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Check if we need to verify against the mail server key, or the organisation key
-	var pubKey = config.Routing.KeyPair.PubKey
+	var pubKey = &config.Routing.KeyPair.PubKey
 	if !orgHash.IsEmpty() {
-		r := container.Instance.GetResolveService()
-		oh, err := hash.NewFromHash(input.OrgHash)
+		pubKey, err = checkOrganisation(input, w)
 		if err != nil {
-			httputils.ErrorOut(w, http.StatusBadRequest, "incorrect org hash")
 			return
 		}
-		oi, err := r.ResolveOrganisation(*oh)
-		if err != nil {
-			httputils.ErrorOut(w, http.StatusBadRequest, "cannot find organisation")
-			return
-		}
-
-		// Use the organisation public key for signature verification
-		pubKey = oi.PublicKey
 	}
 
 	// Verify token
 	it, err := signature.ParseInviteToken(input.Token)
-	if err != nil || !it.Verify(config.Routing.RoutingID, pubKey) {
+	if err != nil || !it.Verify(config.Routing.RoutingID, *pubKey) {
 		httputils.ErrorOut(w, http.StatusBadRequest, "cannot validate token")
 		return
 	}
@@ -124,7 +115,35 @@ func CreateAccount(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	httputils.JSONOut(w, http.StatusCreated, httputils.StatusOk("BitMaelum account has been successfully created."))
+	_ = httputils.JSONOut(w, http.StatusCreated, httputils.StatusOk("BitMaelum account has been successfully created."))
+}
+
+func checkOrganisation(input inputCreateAccount, w http.ResponseWriter) (*bmcrypto.PubKey, error) {
+	r := container.Instance.GetResolveService()
+	orgHash, err := hash.NewFromHash(input.OrgHash)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect org hash")
+		return nil, err
+	}
+	orgInfo, err := r.ResolveOrganisation(*orgHash)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusBadRequest, "cannot find organisation")
+		return nil, err
+	}
+
+	// Check if the organisation is whitelisted on our server
+	allowed := false
+	for _, org := range config.Server.Organisations {
+		if hash.New(org).String() == orgHash.String() {
+			allowed = true
+		}
+	}
+	if !allowed {
+		httputils.ErrorOut(w, http.StatusBadRequest, "organisation not allowed to register on this server")
+		return nil, errors.New("org not alllowed")
+	}
+
+	return &orgInfo.PublicKey, nil
 }
 
 // RetrieveOrganisation is the handler that will retrieve organisation settings

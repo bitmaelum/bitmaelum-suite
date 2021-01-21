@@ -20,47 +20,60 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/sirupsen/logrus"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
-var organisationCreateCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Creates a new organisation",
-	Long: `Creates a new organisation locally and upload it to the keyserver.
-
-This assumes you have a BitMaelum invitation token for the specific server.`,
+var organisationValidateListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List organisation validations",
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
-		kt, err := bmcrypto.FindKeyType(*orgKeytype)
+		orgHash := hash.New(strings.TrimRight(*ovOrganisation, "!"))
+
+		info, err := v.GetOrganisationInfo(orgHash)
 		if err != nil {
-			logrus.Fatal("incorrect key type")
+			fmt.Println("error: organisation not found: ", *oaddress)
+			os.Exit(1)
 		}
 
-		handlers.CreateOrganisation(v, strings.TrimRight(*orgAddr, "!"), *orgFullName, *orgValidations, kt)
+		displayValidations(*info)
 	},
 }
 
-var (
-	orgAddr        *string
-	orgFullName    *string
-	orgValidations *[]string
-	orgKeytype     *string
-)
+func displayValidations(org vault.OrganisationInfo) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetReflowDuringAutoWrap(false)
+	table.SetAutoWrapText(false)
+	table.SetHeader([]string{"Type", "Value", "Validated"})
+
+	for _, v := range org.Validations {
+		var valStr string
+
+		if ok, err := v.Validate(*org.ToOrg()); err == nil && ok {
+			valStr = "yes"
+		} else {
+			valStr = "no"
+		}
+
+		table.Append([]string{
+			v.Type,
+			v.Value,
+			valStr,
+		})
+
+	}
+
+	table.Render()
+}
 
 func init() {
-	organisationCmd.AddCommand(organisationCreateCmd)
-
-	orgAddr = organisationCreateCmd.Flags().StringP("organisation", "o", "", "Organisation address (...@<name>! part)")
-	orgFullName = organisationCreateCmd.Flags().StringP("name", "n", "", "Actual name (Acme Inc.)")
-	orgValidations = organisationCreateCmd.Flags().StringArray("val", nil, "validations for the organisation")
-	orgKeytype = organisationCreateCmd.Flags().StringP("keytype", "k", "ed25519", "Key type to use (defaults to ED25519)")
-
-	_ = organisationCreateCmd.MarkFlagRequired("organisation")
+	organisationValidateCmd.AddCommand(organisationValidateListCmd)
 }
