@@ -22,6 +22,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
@@ -35,7 +36,7 @@ var organisationValidateListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
-		orgHash := hash.New(*ovOrganisation)
+		orgHash := hash.New(strings.TrimRight(*ovOrganisation, "!"))
 
 		info, err := v.GetOrganisationInfo(orgHash)
 		if err != nil {

@@ -20,6 +20,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -40,8 +42,8 @@ This assumes you have a BitMaelum invitation token for the specific server.`,
 		if err != nil {
 			logrus.Fatal("incorrect key type")
 		}
-
-		handlers.CreateOrganisation(v, *orgAddr, *orgFullName, *orgValidations, kt)
+		
+		handlers.CreateOrganisation(v, strings.TrimRight(*orgAddr, "!"), *orgFullName, *orgValidations, kt)
 	},
 }
 

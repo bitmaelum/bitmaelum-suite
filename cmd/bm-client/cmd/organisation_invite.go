@@ -20,6 +20,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
@@ -32,7 +34,9 @@ var organisationInviteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
-		handlers.CreateOrganisationInvite(v, *orgInvOrg, *orgInvAddress, *orgInvRoutingID)
+
+
+		handlers.CreateOrganisationInvite(v, strings.TrimRight(*orgInvOrg, "!"), *orgInvAddress, *orgInvRoutingID)
 	},
 }
 

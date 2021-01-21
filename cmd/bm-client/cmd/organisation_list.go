@@ -40,7 +40,7 @@ var listOrganisationCmd = &cobra.Command{
 		if *oaddress == "" {
 			displayOrganisations(v)
 		} else {
-			orgHash := hash.New(*oaddress)
+			orgHash := hash.New(strings.TrimRight(*oaddress, "!"))
 
 			info, err := v.GetOrganisationInfo(orgHash)
 			if err != nil {
