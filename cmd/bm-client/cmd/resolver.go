@@ -20,38 +20,15 @@
 package cmd
 
 import (
-	"strings"
-
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var organisationInviteCmd = &cobra.Command{
-	Use:   "invite",
-	Short: "Create a new organisation invitation for a user",
-	Long:  `Creates an invitation for a user for the organisation.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenDefaultVault()
-
-		handlers.CreateOrganisationInvite(v, strings.TrimRight(*orgInvOrg, "!"), *orgInvAddress, *orgInvRoutingID)
-	},
+var resolverCmd = &cobra.Command{
+	Use:   "resolver",
+	Short: "Index the resolver",
+	Long:  ``,
 }
 
-var (
-	orgInvOrg       *string
-	orgInvAddress   *string
-	orgInvRoutingID *string
-)
-
 func init() {
-	organisationCmd.AddCommand(organisationInviteCmd)
-
-	orgInvOrg = organisationInviteCmd.Flags().StringP("organisation", "o", "", "org name")
-	orgInvAddress = organisationInviteCmd.Flags().StringP("account", "a", "", "account")
-	orgInvRoutingID = organisationInviteCmd.Flags().StringP("routing-id", "r", "", "routing ID where this user will be invited to")
-
-	_ = organisationInviteCmd.MarkFlagRequired("organisation")
-	_ = organisationInviteCmd.MarkFlagRequired("account")
-	_ = organisationInviteCmd.MarkFlagRequired("routing-id")
+	rootCmd.AddCommand(resolverCmd)
 }

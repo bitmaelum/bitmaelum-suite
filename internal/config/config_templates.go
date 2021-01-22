@@ -131,6 +131,10 @@ config:
         # Routing file holds the server's keypair and routing ID.
         routingfile: "~/.bitmaelum/private/routing.json"
 
+    organisations:
+        # Temporary list of all organisations that are allowed to register on your server
+        # - foo  
+        # - bar
     management: 
         # When enabled, allow remote management through HTTPS instead of only local bm-config
         remote_enabled: false

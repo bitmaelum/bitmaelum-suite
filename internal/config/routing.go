@@ -23,6 +23,7 @@ import (
 	"crypto/ed25519"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"path/filepath"
 
@@ -39,7 +40,7 @@ type RoutingConfig struct {
 	KeyPair   *bmcrypto.KeyPair `json:"keypair,omitempty"`
 }
 
-type routingConfigV1 struct {
+type routingConfigV0 struct {
 	RoutingID  string            `json:"routing_id"`
 	PrivateKey *bmcrypto.PrivKey `json:"private_key,omitempty"`
 	PublicKey  *bmcrypto.PubKey  `json:"public_key,omitempty"`
@@ -62,39 +63,45 @@ func ReadRouting(p string) error {
 
 	err = readConfigLatest(p, data)
 	if err != nil {
-		err = readConfigV1(p, data)
+		err = readConfigV0(p, data)
 	}
 
 	return err
 }
 
-func readConfigV1(p string, data []byte) error {
-	tmp := routingConfigV1{}
+func readConfigV0(p string, data []byte) error {
+	tmp := routingConfigV0{}
 	err := json.Unmarshal(data, &tmp)
 	if err != nil {
 		return err
 	}
 
 	// Migrate to new structure
-	Routing.KeyPair = &bmcrypto.KeyPair{
-		Generator:   "",
-		FingerPrint: tmp.PublicKey.Fingerprint(),
-		PrivKey:     *tmp.PrivateKey,
-		PubKey:      *tmp.PublicKey,
+	Routing = RoutingConfig{
+		Version:   1,
+		RoutingID: tmp.RoutingID,
+		KeyPair: &bmcrypto.KeyPair{
+			Generator:   "",
+			FingerPrint: tmp.PublicKey.Fingerprint(),
+			PrivKey:     *tmp.PrivateKey,
+			PubKey:      *tmp.PublicKey,
+		},
 	}
 
 	return SaveRouting(p, &Routing)
 }
 
 func readConfigLatest(p string, data []byte) error {
-	tmp := routingConfigV1{}
-	err := json.Unmarshal(data, &tmp)
+	err := json.Unmarshal(data, &Routing)
 	if err != nil {
 		return err
 	}
 
-	Routing = RoutingConfig{}
-	return json.Unmarshal(data, &Routing)
+	if Routing.Version == 1 {
+		return nil
+	}
+
+	return errors.New("incorrect version")
 }
 
 // SaveRouting will save the routing into a file. It will overwrite if exists
