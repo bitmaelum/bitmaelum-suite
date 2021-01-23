@@ -136,7 +136,7 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	checkKey(t, a, false, user2token, user2TestAddr, "bar") // no match
 	checkKey(t, a, true, user2token, user2TestAddr, "baz")  // perm B
 
-	user3token := "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi"
+	user3token := "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3"
 
 	checkKey(t, a, false, user3token, user3TestAddr, "")   // no match
 	checkKey(t, a, true, user3token, user3TestAddr, "foo") // Matches b and c

@@ -28,12 +28,23 @@ import (
 )
 
 const (
-	ApiKey       = "api-key"
-	AuthKey      = "auth-key"
-	Resolver     = "resolver"
+	// APIKey key
+	APIKey = "api-key"
+
+	// AuthKey key
+	AuthKey = "auth-key"
+
+	// Resolver key
+	Resolver = "resolver"
+
+	// Subscription key
 	Subscription = "subscription"
-	Ticket       = "ticket"
-	Webhook      = "webhook"
+
+	// Ticket key
+	Ticket = "ticket"
+
+	// Webhook key
+	Webhook = "webhook"
 )
 
 // Instance is the main bitmaelum service container
@@ -44,7 +55,7 @@ var Instance = Type{
 
 // GetAPIKeyRepo will return the current api key repository
 func (c *Type) GetAPIKeyRepo() key.APIKeyRepo {
-	retValue, _ := c.Get(ApiKey).(key.APIKeyRepo)
+	retValue, _ := c.Get(APIKey).(key.APIKeyRepo)
 	return retValue
 }
 

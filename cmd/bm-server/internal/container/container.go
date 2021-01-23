@@ -74,11 +74,11 @@ func (c *MultiContainer) GetAccountRepo() account.Repository {
 
 // GetAPIKeyRepo will return the current api key repository
 func (c *MultiContainer) GetAPIKeyRepo() key.APIKeyRepo {
-	if c.client.Has(maincontainer.ApiKey) {
-		return c.client.Get(maincontainer.ApiKey).(key.APIKeyRepo)
+	if c.client.Has(maincontainer.APIKey) {
+		return c.client.Get(maincontainer.APIKey).(key.APIKeyRepo)
 	}
 
-	return c.general.Get(maincontainer.ApiKey).(key.APIKeyRepo)
+	return c.general.Get(maincontainer.APIKey).(key.APIKeyRepo)
 }
 
 // GetAuthKeyRepo will return the current auth key repository

@@ -38,7 +38,7 @@ var (
 func TestClientConfig(t *testing.T) {
 	testingClientConfigPath := "/etc/bitmaelum/bitmaelum-client-config.yml"
 	testingNotExistsFilePath := "/etc/bitmaelum/not-exist.yml"
-	testingResolverRemoteUrl := "https://resolver.bitmaelum.com"
+	testingResolverRemoteURL := "https://resolver.bitmaelum.com"
 
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "")
 
@@ -56,7 +56,7 @@ func TestClientConfig(t *testing.T) {
 	Client.Resolver.Remote.URL = ""
 	err = LoadClientConfigOrPass(testingClientConfigPath)
 	assert.NoError(t, err)
-	assert.Equal(t, testingResolverRemoteUrl, Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
 
 	Client.Resolver.Remote.URL = ""
 	err = LoadClientConfigOrPass(testingNotExistsFilePath)
@@ -66,7 +66,7 @@ func TestClientConfig(t *testing.T) {
 	Client.Resolver.Remote.URL = ""
 	err = LoadClientConfigOrPass(testingClientConfigPath)
 	assert.NoError(t, err)
-	assert.Equal(t, testingResolverRemoteUrl, Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
 
 	// Read from searchpath
 	if runtime.GOOS != "windows" {
@@ -76,7 +76,7 @@ func TestClientConfig(t *testing.T) {
 		Client.Resolver.Remote.URL = ""
 		err = LoadClientConfigOrPass("")
 		assert.NoError(t, err)
-		assert.Equal(t, testingResolverRemoteUrl, Client.Resolver.Remote.URL)
+		assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
 	}
 
 	// Read from non-existing env
@@ -90,7 +90,7 @@ func TestClientConfig(t *testing.T) {
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", testingClientConfigPath)
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
-	assert.Equal(t, testingResolverRemoteUrl, Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
 }
 
 func TestServerConfig(t *testing.T) {

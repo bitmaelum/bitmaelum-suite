@@ -37,7 +37,7 @@ const (
 	publicKeyColName    = "Public Key"
 	organisationColName = "Organisation"
 	proofOfWorkColName  = "Proof of work"
-	routingIdColName    = "Routing ID"
+	routingIDColName    = "Routing ID"
 	routingColName      = "Routing"
 )
 
@@ -84,7 +84,7 @@ func queryAccount(account string) {
 		{publicKeyColName, strings.Join(chunks(info.PublicKey.String(), 50), "\n")},
 		{proofOfWorkColName, info.Pow},
 		{"", ""},
-		{routingIdColName, info.RoutingID},
+		{routingIDColName, info.RoutingID},
 		{routingColName, info.RoutingInfo.Routing},
 	})
 
