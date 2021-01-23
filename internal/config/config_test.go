@@ -173,5 +173,7 @@ func init() {
 	_, hook = test.NewNullLogger()
 	logrus.AddHook(hook)
 	logrus.SetOutput(ioutil.Discard)
-	logrus.StandardLogger().ExitFunc = func(int) {}
+	logrus.StandardLogger().ExitFunc = func(int) {
+		// dummy function to prevent os.Exit being called by logrus
+	}
 }
