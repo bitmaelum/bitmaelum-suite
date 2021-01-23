@@ -180,6 +180,11 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 	g := new(errgroup.Group)
 
 	g.Go(func() error {
+		logrus.Tracef("uploading header for ticket %s", t.ID)
+		return c.UploadHeader(*t, header)
+	})
+
+	g.Go(func() error {
 		catalogPath, err := message.GetPath(message.SectionProcessing, msgID, "catalog")
 		if err != nil {
 			return err
