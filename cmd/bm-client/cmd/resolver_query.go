@@ -20,7 +20,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -30,6 +29,16 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+)
+
+const (
+	addressColName      = "Address"
+	hashColName         = "Hash"
+	publicKeyColName    = "Public Key"
+	organisationColName = "Organisation"
+	proofOfWorkColName  = "Proof of work"
+	routingIdColName    = "Routing ID"
+	routingColName      = "Routing"
 )
 
 var resolverQueryCmd = &cobra.Command{
@@ -54,15 +63,13 @@ var resolverQueryCmd = &cobra.Command{
 func queryAccount(account string) {
 	addr, err := address.NewAddress(account)
 	if err != nil {
-		fmt.Println("error: bad address: ", addr)
-		os.Exit(1)
+		fatal("bad address: ", addr)
 	}
 
 	rs := container.Instance.GetResolveService()
 	info, err := rs.ResolveAddress(addr.Hash())
 	if err != nil {
-		fmt.Println("error: cannot query account: ", err)
-		os.Exit(1)
+		fatal("cannot query account: ", err)
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -72,13 +79,13 @@ func queryAccount(account string) {
 	table.SetAutoWrapText(false)
 
 	table.AppendBulk([][]string{
-		{"Address", account},
-		{"Hash", info.Hash},
-		{"Public Key", strings.Join(chunks(info.PublicKey.String(), 50), "\n")},
-		{"Proof of work", info.Pow},
+		{addressColName, account},
+		{hashColName, info.Hash},
+		{publicKeyColName, strings.Join(chunks(info.PublicKey.String(), 50), "\n")},
+		{proofOfWorkColName, info.Pow},
 		{"", ""},
-		{"Routing ID", info.RoutingID},
-		{"Routing", info.RoutingInfo.Routing},
+		{routingIdColName, info.RoutingID},
+		{routingColName, info.RoutingInfo.Routing},
 	})
 
 	table.Render()
@@ -90,8 +97,7 @@ func queryOrganisation(organisation string) {
 	rs := container.Instance.GetResolveService()
 	info, err := rs.ResolveOrganisation(orgHash)
 	if err != nil {
-		fmt.Println("error: cannot query organisation: ", err)
-		os.Exit(1)
+		fatal("cannot query organisation: ", err)
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -101,10 +107,10 @@ func queryOrganisation(organisation string) {
 	table.SetAutoWrapText(false)
 
 	table.AppendBulk([][]string{
-		{"Organisation", organisation},
-		{"Hash", info.Hash},
-		{"Public Key", strings.Join(chunks(info.PublicKey.String(), 50), "\n")},
-		{"Proof of work", info.Pow},
+		{organisationColName, organisation},
+		{hashColName, info.Hash},
+		{publicKeyColName, strings.Join(chunks(info.PublicKey.String(), 50), "\n")},
+		{proofOfWorkColName, info.Pow},
 		{"", ""},
 	})
 
@@ -129,12 +135,10 @@ func toMultiLine(validations []organisation.ValidationType) string {
 }
 
 func queryRouting(routingID string) {
-
 	rs := container.Instance.GetResolveService()
 	info, err := rs.ResolveRouting(routingID)
 	if err != nil {
-		fmt.Println("error: cannot query routing: ", err)
-		os.Exit(1)
+		fatal("cannot query routing: ", err)
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -144,9 +148,9 @@ func queryRouting(routingID string) {
 	table.SetAutoWrapText(false)
 
 	table.AppendBulk([][]string{
-		{"Hash", info.Hash},
-		{"Public Key", strings.Join(chunks(info.PublicKey.String(), 50), "\n")},
-		{"Routing", info.Routing},
+		{hashColName, info.Hash},
+		{publicKeyColName, strings.Join(chunks(info.PublicKey.String(), 50), "\n")},
+		{routingColName, info.Routing},
 	})
 
 	table.Render()

@@ -74,54 +74,54 @@ func (c *MultiContainer) GetAccountRepo() account.Repository {
 
 // GetAPIKeyRepo will return the current api key repository
 func (c *MultiContainer) GetAPIKeyRepo() key.APIKeyRepo {
-	if c.client.Has("api-key") {
-		return c.client.Get("api-key").(key.APIKeyRepo)
+	if c.client.Has(maincontainer.ApiKey) {
+		return c.client.Get(maincontainer.ApiKey).(key.APIKeyRepo)
 	}
 
-	return c.general.Get("api-key").(key.APIKeyRepo)
+	return c.general.Get(maincontainer.ApiKey).(key.APIKeyRepo)
 }
 
 // GetAuthKeyRepo will return the current auth key repository
 func (c *MultiContainer) GetAuthKeyRepo() key.AuthKeyRepo {
-	if c.client.Has("auth-key") {
-		return c.client.Get("auth-key").(key.AuthKeyRepo)
+	if c.client.Has(maincontainer.AuthKey) {
+		return c.client.Get(maincontainer.AuthKey).(key.AuthKeyRepo)
 	}
 
-	return c.general.Get("auth-key").(key.AuthKeyRepo)
+	return c.general.Get(maincontainer.AuthKey).(key.AuthKeyRepo)
 }
 
 // GetResolveService will return the current resolver service
 func (c *MultiContainer) GetResolveService() *resolver.Service {
-	if c.client.Has("resolver") {
-		return c.client.Get("resolver").(*resolver.Service)
+	if c.client.Has(maincontainer.Resolver) {
+		return c.client.Get(maincontainer.Resolver).(*resolver.Service)
 	}
 
-	return c.general.Get("resolver").(*resolver.Service)
+	return c.general.Get(maincontainer.Resolver).(*resolver.Service)
 }
 
 // GetSubscriptionRepo will return the current subscription repository
 func (c *MultiContainer) GetSubscriptionRepo() subscription.Repository {
-	if c.client.Has("subscription") {
-		return c.client.Get("subscription").(subscription.Repository)
+	if c.client.Has(maincontainer.Subscription) {
+		return c.client.Get(maincontainer.Subscription).(subscription.Repository)
 	}
 
-	return c.general.Get("subscription").(subscription.Repository)
+	return c.general.Get(maincontainer.Subscription).(subscription.Repository)
 }
 
 // GetTicketRepo will return the current ticket repository
 func (c *MultiContainer) GetTicketRepo() ticket.Repository {
-	if c.client.Has("ticket") {
-		return c.client.Get("ticket").(ticket.Repository)
+	if c.client.Has(maincontainer.Ticket) {
+		return c.client.Get(maincontainer.Ticket).(ticket.Repository)
 	}
 
-	return c.general.Get("ticket").(ticket.Repository)
+	return c.general.Get(maincontainer.Ticket).(ticket.Repository)
 }
 
 // GetWebhookRepo will return the current web hook repository
 func (c *MultiContainer) GetWebhookRepo() webhook.Repository {
-	if c.client.Has("webhook") {
-		return c.client.Get("webhook").(webhook.Repository)
+	if c.client.Has(maincontainer.Webhook) {
+		return c.client.Get(maincontainer.Webhook).(webhook.Repository)
 	}
 
-	return c.general.Get("webhook").(webhook.Repository)
+	return c.general.Get(maincontainer.Webhook).(webhook.Repository)
 }

@@ -23,11 +23,11 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 )
 
@@ -114,57 +114,9 @@ func SignClientHeader(header *Header, privKey bmcrypto.PrivKey) error {
 }
 
 // VerifyClientHeader will verify a client signature from a message header. This can be used to proof the origin of the message
-func VerifyClientHeader(header Header) bool {
-	var signedByPublicKey bmcrypto.PubKey
-
-	// No header at all
+func VerifyClientHeader(header Header) bool { // No header at all
 	if len(header.Signatures.Client) == 0 {
 		return false
-	}
-
-	switch header.From.SignedBy {
-	case SignedByTypeServer:
-		// Resolve the routing to fetch the public key since the From Addr is the routing ID
-		rs := container.Instance.GetResolveService()
-		routing, err := rs.ResolveRouting(header.From.Addr.String())
-		if err != nil {
-			return false
-		}
-
-		signedByPublicKey = routing.PublicKey
-
-	case SignedByTypeAuthorized:
-		// Fetch public key from routing
-		rs := container.Instance.GetResolveService()
-		addr, err := rs.ResolveAddress(header.From.Addr)
-		if err != nil {
-			return false
-		}
-
-		msg := hash.New(header.AuthorizedBy.PublicKey.String())
-		sig, err := base64.StdEncoding.DecodeString(header.AuthorizedBy.Signature)
-		if err != nil {
-			return false
-		}
-
-		// Test if the authorized public key is actually signed by the authorizer
-		ok, err := bmcrypto.Verify(addr.PublicKey, msg.Byte(), sig)
-		if err != nil || !ok {
-			// Cannot validate the authorized key
-			return false
-		}
-
-		// The signature is correct (the key is signed by the originating authorizer). The can safely be used for verifying our client signature
-		signedByPublicKey = *header.AuthorizedBy.PublicKey
-
-	default:
-		// Fetch public key from routing
-		rs := container.Instance.GetResolveService()
-		addr, err := rs.ResolveAddress(header.From.Addr)
-		if err != nil {
-			return false
-		}
-		signedByPublicKey = addr.PublicKey
 	}
 
 	// Store signature
@@ -179,6 +131,11 @@ func VerifyClientHeader(header Header) bool {
 		return false
 	}
 
+	signedByPublicKey, err := getSignerPublicKey(header)
+	if err != nil {
+		return false
+	}
+
 	// Verify signature
 	ok, err := bmcrypto.Verify(signedByPublicKey, h[:], []byte(targetSignature))
 	if err != nil {
@@ -186,6 +143,52 @@ func VerifyClientHeader(header Header) bool {
 	}
 
 	return ok
+}
+
+func getSignerPublicKey(header Header) (bmcrypto.PubKey, error) {
+	switch header.From.SignedBy {
+	case SignedByTypeServer:
+		// Resolve the routing to fetch the public key since the From Addr is the routing ID
+		rs := container.Instance.GetResolveService()
+		routing, err := rs.ResolveRouting(header.From.Addr.String())
+		if err != nil {
+			return bmcrypto.PubKey{}, err
+		}
+		return routing.PublicKey, err
+
+	case SignedByTypeAuthorized:
+		// Fetch public key from routing
+		rs := container.Instance.GetResolveService()
+		addr, err := rs.ResolveAddress(header.From.Addr)
+		if err != nil {
+			return bmcrypto.PubKey{}, err
+		}
+
+		msg := hash.New(header.AuthorizedBy.PublicKey.String())
+		sig, err := base64.StdEncoding.DecodeString(header.AuthorizedBy.Signature)
+		if err != nil {
+			return bmcrypto.PubKey{}, err
+		}
+
+		// Test if the authorized public key is actually signed by the authorizer
+		ok, err := bmcrypto.Verify(addr.PublicKey, msg.Byte(), sig)
+		if err != nil || !ok {
+			// Cannot validate the authorized key
+			return bmcrypto.PubKey{}, err
+		}
+
+		// The signature is correct (the key is signed by the originating authorizer). The can safely be used for verifying our client signature
+		return *header.AuthorizedBy.PublicKey, nil
+
+	default:
+		// Fetch public key from routing
+		rs := container.Instance.GetResolveService()
+		addr, err := rs.ResolveAddress(header.From.Addr)
+		if err != nil {
+			return bmcrypto.PubKey{}, err
+		}
+		return addr.PublicKey, nil
+	}
 }
 
 func generateServerHash(header *Header) ([]byte, error) {

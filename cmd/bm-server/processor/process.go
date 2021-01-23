@@ -21,9 +21,6 @@ package processor
 
 import (
 	"errors"
-	"io/ioutil"
-	"os"
-
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
@@ -34,6 +31,8 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
+	"io/ioutil"
+	"os"
 )
 
 var errValidating = errors.New("error while validating")
@@ -178,10 +177,7 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 
 	// parallelize uploads
 	g := new(errgroup.Group)
-	g.Go(func() error {
-		logrus.Tracef("uploading header for ticket %s", t.ID)
-		return c.UploadHeader(*t, header)
-	})
+
 	g.Go(func() error {
 		catalogPath, err := message.GetPath(message.SectionProcessing, msgID, "catalog")
 		if err != nil {
@@ -204,22 +200,7 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 	}
 
 	for _, messageFile := range messageFiles {
-		// Store locally, otherwise the anonymous go function doesn't know which "block"
-		mf := messageFile
-
-		g.Go(func() error {
-			// Open reader
-			f, err := os.Open(mf.Path)
-			if err != nil {
-				return err
-			}
-			defer func() {
-				_ = f.Close()
-			}()
-
-			logrus.Tracef("uploading block %s for ticket %s", mf.ID, t.ID)
-			return c.UploadBlock(*t, mf.ID, f)
-		})
+		g.Go(uploadBlockFromFile(c, t, messageFile))
 	}
 
 	// Wait until all are completed
@@ -243,6 +224,20 @@ func deliverRemote(addrInfo *resolver.AddressInfo, msgID string, header *message
 
 	// Remove local message from processing queue
 	return message.RemoveMessage(message.SectionProcessing, msgID)
+}
+
+func uploadBlockFromFile(c *api.API, t *ticket.Ticket, mf message.FileType) func() error {
+	return func() error {
+		// Open reader
+		f, err := os.Open(mf.Path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		logrus.Tracef("uploading block %s for ticket %s", mf.ID, t.ID)
+		return c.UploadBlock(*t, mf.ID, f)
+	}
 }
 
 // processTicket will fetch a ticket from the mail server and validate it through proof-of-work

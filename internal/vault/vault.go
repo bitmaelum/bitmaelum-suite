@@ -102,10 +102,7 @@ func NewPersistent(p, pass string) *Vault {
 func (v *Vault) sanityCheck() bool {
 	for _, acc := range v.Store.Accounts {
 		for _, k := range acc.Keys {
-			if k.PrivKey.S == "" {
-				return false
-			}
-			if k.PubKey.S == "" {
+			if k.PrivKey.S == "" || k.PubKey.S == "" {
 				return false
 			}
 		}
@@ -113,10 +110,7 @@ func (v *Vault) sanityCheck() bool {
 
 	for _, org := range v.Store.Organisations {
 		for _, k := range org.Keys {
-			if k.PrivKey.S == "" {
-				return false
-			}
-			if k.PubKey.S == "" {
+			if k.PrivKey.S == "" || k.PubKey.S == "" {
 				return false
 			}
 		}

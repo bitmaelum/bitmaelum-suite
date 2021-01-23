@@ -38,6 +38,8 @@ import (
 // Lots of code is abstracted into functions. THis is to please sonarcloud duplication system
 
 func TestAuthJwtAuthenticate(t *testing.T) {
+	exampleTestAddr := "example!"
+
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
 
@@ -46,7 +48,7 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	})
 
 	accountRepo := container.Instance.GetAccountRepo()
-	_ = accountRepo.Create(hash.New("example!"), *pubkey)
+	_ = accountRepo.Create(hash.New(exampleTestAddr), *pubkey)
 
 	jwt.TimeFunc = func() time.Time {
 		return time.Date(2020, 01, 01, 12, 34, 56, 0, time.UTC)
@@ -71,19 +73,19 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	// No authorization
 	req, _ = http.NewRequest("GET", "/foo", nil)
 	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("example!").String(),
+		"addr": hash.New(exampleTestAddr).String(),
 	})
 	checkFalse(t, &a, req)
 
 	// No bearer key
-	req = createReq("foobar", "example!")
+	req = createReq("foobar", exampleTestAddr)
 	checkFalse(t, &a, req)
 
 	// Incorrect jwt token: not a token with the correct private key
 	req, _ = http.NewRequest("GET", "/foo", nil)
 	req.Header.Set("authorization", "bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODU2OTYsImlhdCI6MTU3Nzg4MjA5NiwibmJmIjoxNTc3ODgyMDk2LCJzdWIiOiIyZTQ1NTFkZTgwNGUyN2FhY2YyMGY5ZGY1YmUzZThjZDM4NGVkNjQ0ODhiMjFhYjA3OWZiNThlOGM5MDA2OGFiIn0.Bdm5brolKzTB4S-NQPTa93ubzPjejJb5hT8tpuRJG2Qpx3D0XrkAUAJNRyrQ2-aH188mfKmPcYeTXwd4qF3IAg")
 	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("example!").String(),
+		"addr": hash.New(exampleTestAddr).String(),
 	})
 	checkFalse(t, &a, req)
 
@@ -91,7 +93,7 @@ func TestAuthJwtAuthenticate(t *testing.T) {
 	req, _ = http.NewRequest("GET", "/foo", nil)
 	req.Header.Set("authorization", "bearer eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4ODU2OTYsImlhdCI6MTU3Nzg4MjA5NiwibmJmIjoxNTc3ODgyMDk2LCJzdWIiOiIyZTQ1NTFkZTgwNGUyN2FhY2YyMGY5ZGY1YmUzZThjZDM4NGVkNjQ0ODhiMjFhYjA3OWZiNThlOGM5MDA2OGFiIn0.EJmNoi18A0F_XGuel547ugFRcsIy3ZQj-NNp1JQB49zTdXHQ2Ob587CnYhUoREuHS-AJJAEHwuuAbsZIYkJoBw")
 	req = mux.SetURLVars(req, map[string]string{
-		"addr": hash.New("example!").String(),
+		"addr": hash.New(exampleTestAddr).String(),
 	})
 
 	status, ctx, err = a.Authenticate(req, "")

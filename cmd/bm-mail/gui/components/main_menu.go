@@ -89,10 +89,6 @@ func (m *MainMenu) Draw(screen tcell.Screen) {
 		}
 
 		y++
-
-		if y >= bottomLimit {
-			break
-		}
 	}
 }
 
@@ -140,41 +136,46 @@ func (m *MainMenu) Clear() *MainMenu {
 // InputHandler will be called when the main menu is active and we have an input. It will deal with navigating through
 // the main menu
 func (m *MainMenu) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
-	return m.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
-		if event.Key() == tcell.KeyEscape {
-			return
-		} else if len(m.items) == 0 {
-			return
-		}
+	return m.WrapInputHandler(m.handleInput)
+}
 
-		// previousItem := m.currentItem
+func (m *MainMenu) handleInput(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
+	if event.Key() == tcell.KeyEscape {
+		return
+	}
 
-		switch key := event.Key(); key {
-		case tcell.KeyTab, tcell.KeyDown, tcell.KeyRight:
-			m.currentItem++
-		case tcell.KeyBacktab, tcell.KeyUp, tcell.KeyLeft:
-			m.currentItem--
-		case tcell.KeyHome:
-			m.currentItem = 0
-		case tcell.KeyEnd:
-			m.currentItem = len(m.items) - 1
-		case tcell.KeyEnter:
-			if m.currentItem >= 0 && m.currentItem < len(m.items) {
-				item := m.items[m.currentItem]
-				if m.selected != nil {
-					m.selected(m.currentItem, item.Text, item.Shortcut)
-				}
-			}
-		case tcell.KeyRune:
-			doRune(m, event.Rune())
-		}
+	if len(m.items) == 0 {
+		return
+	}
 
-		if m.currentItem < 0 {
-			m.currentItem = 0
-		} else if m.currentItem >= len(m.items) {
-			m.currentItem = len(m.items) - 1
+	// previousItem := m.currentItem
+
+	switch key := event.Key(); key {
+	case tcell.KeyTab, tcell.KeyDown, tcell.KeyRight:
+		m.currentItem++
+	case tcell.KeyBacktab, tcell.KeyUp, tcell.KeyLeft:
+		m.currentItem--
+	case tcell.KeyHome:
+		m.currentItem = 0
+	case tcell.KeyEnd:
+		m.currentItem = len(m.items) - 1
+	case tcell.KeyEnter:
+		if m.currentItem < 0 || m.currentItem >= len(m.items) {
+			break
 		}
-	})
+		item := m.items[m.currentItem]
+		if m.selected != nil {
+			m.selected(m.currentItem, item.Text, item.Shortcut)
+		}
+	case tcell.KeyRune:
+		doRune(m, event.Rune())
+	}
+
+	if m.currentItem < 0 {
+		m.currentItem = 0
+	} else if m.currentItem >= len(m.items) {
+		m.currentItem = len(m.items) - 1
+	}
 }
 
 func doRune(m *MainMenu, ch rune) {

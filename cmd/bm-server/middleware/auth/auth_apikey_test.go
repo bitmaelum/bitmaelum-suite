@@ -36,15 +36,22 @@ import (
 )
 
 // Lots of code is abstracted into functions. THis is to please sonarcloud duplication system
-
-var apiKeyFixtures = []key.APIKeyType{
-	key.NewAPIAccountKey(hash.New("user-1!"), []string{"a"}, time.Time{}, "my desc 1"),
-	key.NewAPIAccountKey(hash.New("user-2!"), []string{"b"}, time.Time{}, "my desc 2"),
-	key.NewAPIAccountKey(hash.New("user-3!"), []string{"b", "c"}, time.Time{}, "my desc 3"),
-	key.NewAPIAccountKey(hash.New("expired!"), []string{"a", "b", "c"}, time.Unix(12521510, 0), "expired key"),
-}
-
 func TestAuthAPIKeyAuthenticate(t *testing.T) {
+	var (
+		exampleTestAddr = "example!"
+		user1TestAddr   = "user-1!"
+		user2TestAddr   = "user-2!"
+		user3TestAddr   = "user-3!"
+		expiredTestAddr = "expired!"
+	)
+
+	var apiKeyFixtures = []key.APIKeyType{
+		key.NewAPIAccountKey(hash.New(user1TestAddr), []string{"a"}, time.Time{}, "my desc 1"),
+		key.NewAPIAccountKey(hash.New(user2TestAddr), []string{"b"}, time.Time{}, "my desc 2"),
+		key.NewAPIAccountKey(hash.New(user3TestAddr), []string{"b", "c"}, time.Time{}, "my desc 3"),
+		key.NewAPIAccountKey(hash.New(expiredTestAddr), []string{"a", "b", "c"}, time.Unix(12521510, 0), "expired key"),
+	}
+
 	_, pubkey, err := testing2.ReadTestKey("../../../../testdata/key-ed25519-1.json")
 	assert.NoError(t, err)
 
@@ -54,11 +61,11 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 
 	accountRepo := container.Instance.GetAccountRepo()
 	// container.Set("account", func() interface{} { return accountRepo })
-	_ = accountRepo.Create(hash.New("example!"), *pubkey)
-	_ = accountRepo.Create(hash.New("user-1!"), *pubkey)
-	_ = accountRepo.Create(hash.New("user-2!"), *pubkey)
-	_ = accountRepo.Create(hash.New("user-3!"), *pubkey)
-	_ = accountRepo.Create(hash.New("expired!"), *pubkey)
+	_ = accountRepo.Create(hash.New(exampleTestAddr), *pubkey)
+	_ = accountRepo.Create(hash.New(user1TestAddr), *pubkey)
+	_ = accountRepo.Create(hash.New(user2TestAddr), *pubkey)
+	_ = accountRepo.Create(hash.New(user3TestAddr), *pubkey)
+	_ = accountRepo.Create(hash.New(expiredTestAddr), *pubkey)
 
 	// 42 creates BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io
 	rand.Seed(42)
@@ -85,7 +92,7 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	checkFalse(t, &a, req)
 
 	// No auth
-	req = createReq("", "example!")
+	req = createReq("", exampleTestAddr)
 	checkFalse(t, &a, req)
 
 	// Address does not exist
@@ -93,42 +100,42 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	checkFalse(t, &a, req)
 
 	// ?
-	req = createReq("foobar", "example!")
+	req = createReq("foobar", exampleTestAddr)
 	checkFalse(t, &a, req)
 
 	// No key after bearer
 	checkKey(t, a, false, "", "example!", "foo")
 
 	// Expired key
-	checkKey(t, a, false, "BMK-S7gYekwHUMGhWzGpld7aFPfYJK6SV75a", "expired!", "foo")
+	checkKey(t, a, false, "BMK-S7gYekwHUMGhWzGpld7aFPfYJK6SV75a", expiredTestAddr, "foo")
 
 	// nonexisting route
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", "user-1!", "not-exist-in-perm-list")
+	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "not-exist-in-perm-list")
 
 	// Check all routes
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", "user-1!", "")    // no match
-	checkKey(t, a, true, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", "user-1!", "foo")  // perm A
-	checkKey(t, a, true, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", "user-1!", "bar")  // perm A
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", "user-1!", "baz") // no match
+	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "")    // no match
+	checkKey(t, a, true, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "foo")  // perm A
+	checkKey(t, a, true, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "bar")  // perm A
+	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "baz") // no match
 
 	// Token does not match for any other user
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", "user-2!", "foo")
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", "user-3!", "foo")
+	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user2TestAddr, "foo")
+	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user3TestAddr, "foo")
 
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", "user-1!", "")
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", "user-1!", "foo")
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", "user-1!", "bar")
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", "user-1!", "baz")
+	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user1TestAddr, "")
+	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user1TestAddr, "foo")
+	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user1TestAddr, "bar")
+	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user1TestAddr, "baz")
 
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", "user-2!", "")    // no match
-	checkKey(t, a, true, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", "user-2!", "foo")  // perm B
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", "user-2!", "bar") // no match
-	checkKey(t, a, true, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", "user-2!", "baz")  // perm B
+	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user2TestAddr, "")    // no match
+	checkKey(t, a, true, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user2TestAddr, "foo")  // perm B
+	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user2TestAddr, "bar") // no match
+	checkKey(t, a, true, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user2TestAddr, "baz")  // perm B
 
-	checkKey(t, a, false, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "")   // no match
-	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "foo") // Matches b and c
-	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "bar") // Matches b
-	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", "user-3!", "baz") // Matches c
+	checkKey(t, a, false, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", user3TestAddr, "")   // no match
+	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", user3TestAddr, "foo") // Matches b and c
+	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", user3TestAddr, "bar") // Matches b
+	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", user3TestAddr, "baz") // Matches c
 }
 
 func createReq(auth string, addr string) *http.Request {
@@ -137,7 +144,7 @@ func createReq(auth string, addr string) *http.Request {
 
 	if addr != "" {
 		req = mux.SetURLVars(req, map[string]string{
-			"addr": hash.New("example!").String(),
+			"addr": hash.New(addr).String(),
 		})
 	}
 

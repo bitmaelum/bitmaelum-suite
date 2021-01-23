@@ -37,10 +37,13 @@ import (
 )
 
 func TestCatalogNewCatalog(t *testing.T) {
+	testingSenderName := "john doe"
+	testingSenderAddr := "john!"
+
 	c := genCatalog()
 
-	assert.Equal(t, "john!", c.From.Address)
-	assert.Equal(t, "john doe", c.From.Name)
+	assert.Equal(t, testingSenderAddr, c.From.Address)
+	assert.Equal(t, testingSenderName, c.From.Name)
 	assert.False(t, c.CreatedAt.Before(internal.TimeNow().Add(-1*time.Second)))
 	assert.Equal(t, "subject", c.Subject)
 
@@ -50,12 +53,12 @@ func TestCatalogNewCatalog(t *testing.T) {
 
 	privkey, pubkey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
 	addressing := NewAddressing(SignedByTypeOrigin)
-	addressing.AddSender(nil, &h, "john doe", *privkey, "host.example")
+	addressing.AddSender(nil, &h, testingSenderName, *privkey, "host.example")
 	addressing.AddRecipient(addrTo, nil, pubkey)
 
 	c = NewCatalog(addressing, "subject")
 	assert.Equal(t, "c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2", c.From.Address)
-	assert.Equal(t, "john doe", c.From.Name)
+	assert.Equal(t, testingSenderName, c.From.Name)
 	assert.False(t, c.CreatedAt.Before(internal.TimeNow().Add(-1*time.Second)))
 	assert.Equal(t, "subject", c.Subject)
 
@@ -212,12 +215,15 @@ func TestCatalogAddBlock(t *testing.T) {
 }
 
 func genCatalog() *Catalog {
-	addrFrom, _ := address.NewAddress("john!")
+	testingSenderName := "john doe"
+	testingSenderAddr := "john!"
+
+	addrFrom, _ := address.NewAddress(testingSenderAddr)
 	addrTo, _ := address.NewAddress("jane!")
 
 	privkey, pubkey, _ := testing2.ReadTestKey("../../testdata/key-ed25519-1.json")
 	addressing := NewAddressing(SignedByTypeOrigin)
-	addressing.AddSender(addrFrom, nil, "john doe", *privkey, "host.example")
+	addressing.AddSender(addrFrom, nil, testingSenderName, *privkey, "host.example")
 	addressing.AddRecipient(addrTo, nil, pubkey)
 
 	return NewCatalog(addressing, "subject")

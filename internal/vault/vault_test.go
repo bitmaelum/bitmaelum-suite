@@ -31,6 +31,8 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	testingFilePath := "/my/dir/vault.json"
+
 	fs = afero.NewMemMapFs()
 
 	// inmemory vault
@@ -38,14 +40,14 @@ func TestNew(t *testing.T) {
 	assert.NotNil(t, v)
 
 	// open/create new vault
-	v, err := Create("/my/dir/vault.json", "secret")
+	v, err := Create(testingFilePath, "secret")
 	assert.NoError(t, err)
 	assert.NotNil(t, v)
-	ok, _ := afero.Exists(fs, "/my/dir/vault.json")
+	ok, _ := afero.Exists(fs, testingFilePath)
 	assert.True(t, ok)
 
 	// Reopen again
-	v, err = Open("/my/dir/vault.json", "secret")
+	v, err = Open(testingFilePath, "secret")
 	assert.NoError(t, err)
 	assert.NotNil(t, v)
 
@@ -81,12 +83,12 @@ func TestNew(t *testing.T) {
 	assert.True(t, ok)
 
 	// Open vault with wrong password
-	v, err = Open("/my/dir/vault.json", "incorrect password")
+	v, err = Open(testingFilePath, "incorrect password")
 	assert.Errorf(t, err, "incorrect password")
 	assert.Nil(t, v)
 
 	// Open vault with correct password
-	v, err = Open("/my/dir/vault.json", "secret")
+	v, err = Open(testingFilePath, "secret")
 	assert.NoError(t, err)
 	assert.Len(t, v.Store.Accounts, 1)
 }
@@ -113,11 +115,12 @@ func TestFindShortRoutingId(t *testing.T) {
 }
 
 func TestNewPersistent(t *testing.T) {
-	v := NewPersistent("/v1.json", "foobar")
+	testingVault1FilePath := "/v1.json"
+	v := NewPersistent(testingVault1FilePath, "foobar")
 	assert.NotNil(t, v)
 
 	assert.Equal(t, "foobar", v.password)
-	assert.Equal(t, "/v1.json", v.path)
+	assert.Equal(t, testingVault1FilePath, v.path)
 }
 
 func TestVaultChangePassword(t *testing.T) {
@@ -132,27 +135,30 @@ func TestVaultChangePassword(t *testing.T) {
 }
 
 func TestExisting(t *testing.T) {
+	testingVault1FilePath := "/v1.json"
+	testingVault2FilePath := "/v2.json"
+
 	fs = afero.NewMemMapFs()
 
 	// Cant open vaults
-	v, err := Open("/v1.json", "foo")
+	v, err := Open(testingVault1FilePath, "foo")
 	assert.Error(t, err)
 	assert.Nil(t, v)
-	v, err = Open("/v2.json", "bar")
+	v, err = Open(testingVault2FilePath, "bar")
 	assert.Error(t, err)
 	assert.Nil(t, v)
 
 	// Create vaults
-	_, err = Create("/v1.json", "foo")
+	_, err = Create(testingVault1FilePath, "foo")
 	assert.NoError(t, err)
-	_, err = Create("/v2.json", "bar")
+	_, err = Create(testingVault2FilePath, "bar")
 	assert.NoError(t, err)
 
 	// Open vaults
-	v, err = Open("/v1.json", "foo")
+	v, err = Open(testingVault1FilePath, "foo")
 	assert.NoError(t, err)
 	assert.NotNil(t, v)
-	v, err = Open("/v2.json", "bar")
+	v, err = Open(testingVault2FilePath, "bar")
 	assert.NoError(t, err)
 	assert.NotNil(t, v)
 
@@ -162,10 +168,10 @@ func TestExisting(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Try open vault again
-	v, err = Open("/v2.json", "bar")
+	v, err = Open(testingVault2FilePath, "bar")
 	assert.Error(t, err)
 	assert.Nil(t, v)
-	v, err = Open("/v2.json", "anotherpass")
+	v, err = Open(testingVault2FilePath, "anotherpass")
 	assert.NoError(t, err)
 	assert.NotNil(t, v)
 
