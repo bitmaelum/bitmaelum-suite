@@ -21,6 +21,9 @@ package processor
 
 import (
 	"errors"
+	"io/ioutil"
+	"os"
+
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/account"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-server/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
@@ -31,8 +34,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	"io/ioutil"
-	"os"
 )
 
 var errValidating = errors.New("error while validating")
