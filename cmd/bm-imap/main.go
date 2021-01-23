@@ -27,7 +27,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-imap/internal"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-imap/internal/imap"
 	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -41,9 +41,6 @@ type options struct {
 }
 
 // Opts are the options set through the command line
-var Opts options
-
-
 var opts options
 
 func main() {
@@ -83,7 +80,7 @@ func main() {
 			log.Fatal("error while accepting connection: %s\n", err)
 		}
 
-		c := internal.NewConn(conn, v)
+		c := imap.NewConn(conn, v)
 		go c.Handle()
 	}
 }
