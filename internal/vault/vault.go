@@ -152,6 +152,9 @@ func (v *Vault) Persist() error {
 		}
 	}
 
+	// Store the current password in the keyring
+	console.StorePassword(v.password)
+
 	// Write vault container back
 	return afero.WriteFile(fs, v.path, container, 0600)
 }
@@ -193,12 +196,24 @@ func OpenDefaultVault() *Vault {
 		VaultPassword, retrievedFromKeyStore = console.AskPassword()
 	}
 
-	// If the password was correct and not already read from the vault, store it in the vault
+	// Make sure the password is correct
+	v, err := Open(VaultPath, VaultPassword)
+	if err != nil {
+		if retrievedFromKeyStore {
+			// If the password is not correct and it was retrieved from the store, delete it
+			console.DeletePassword()
+		}
+		fmt.Printf("Error while opening vault: %s", err)
+		fmt.Println("")
+		os.Exit(1)
+	}
+
 	if !retrievedFromKeyStore {
+		// Store the password in the keyring
 		_ = console.StorePassword(VaultPassword)
 	}
 
-	return OpenOrDie(VaultPath, VaultPassword)
+	return v
 }
 
 // OpenOrDie will open a specific vault with a specific password

@@ -46,8 +46,16 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 	messageID := mux.Vars(req)["message"]
 
 	ar := container.Instance.GetAccountRepo()
-	header, _ := ar.FetchMessageHeader(*haddr, messageID)
-	catalog, _ := ar.FetchMessageCatalog(*haddr, messageID)
+	header, err := ar.FetchMessageHeader(*haddr, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+	catalog, err := ar.FetchMessageCatalog(*haddr, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
 
 	output := &api.Message{
 		ID:      messageID,

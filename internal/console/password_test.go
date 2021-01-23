@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/zalando/go-keyring"
 )
 
 var (
@@ -63,40 +64,15 @@ func TestAskDoublePassword(t *testing.T) {
 	assert.Equal(t, "bar", string(b))
 }
 
-type mockKeyring struct {
-	p map[string]string
-}
-
-func (m *mockKeyring) Set(service, user, password string) error {
-	m.p[service+":"+user] = password
-	return nil
-}
-
-func (m *mockKeyring) Get(service, user string) (string, error) {
-	v, ok := m.p[service+":"+user]
-	if !ok {
-		return "", errServiceNotFound
-	}
-
-	return v, nil
-}
-
-func (m *mockKeyring) Delete(service, user string) error {
-	delete(m.p, service+":"+user)
-	return nil
-}
-
 func TestAskPassword(t *testing.T) {
+	keyring.MockInit()
+
 	pwdReader = &stubPasswordReader{Passwords: []string{"secret"}}
-	kr = nil
 	s, ok := AskPassword()
-	assert.Equal(t, "secret", s)
+	assert.Equal(t, "secret", string(s))
 	assert.False(t, ok)
 
-	kr = &mockKeyring{
-		p: make(map[string]string),
-	}
-	_ = kr.Set(service, user, "stored-in-keyring")
+	_ = keyring.Set(service, user, "stored-in-keyring")
 
 	pwdReader = &stubPasswordReader{Passwords: []string{"foobar"}}
 	s, ok = AskPassword()
@@ -104,7 +80,7 @@ func TestAskPassword(t *testing.T) {
 	assert.True(t, ok)
 
 	pwdReader = &stubPasswordReader{Passwords: []string{"not-stored"}}
-	_ = kr.Delete(service, user)
+	_ = keyring.Delete(service, user)
 	s, ok = AskPassword()
 	assert.Equal(t, "not-stored", s)
 	assert.False(t, ok)

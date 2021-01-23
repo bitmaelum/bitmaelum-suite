@@ -29,8 +29,8 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/mailbox"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/mailbox"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
