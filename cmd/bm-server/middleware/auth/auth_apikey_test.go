@@ -67,7 +67,7 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	_ = accountRepo.Create(hash.New(user3TestAddr), *pubkey)
 	_ = accountRepo.Create(hash.New(expiredTestAddr), *pubkey)
 
-	// 42 creates BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io
+	// 42 creates user1token
 	rand.Seed(42)
 	apiKeyRepo := key.NewAPIMockRepository()
 	container.Instance.SetShared("api-key", func() (interface{}, error) { return apiKeyRepo, nil })
@@ -109,33 +109,39 @@ func TestAuthAPIKeyAuthenticate(t *testing.T) {
 	// Expired key
 	checkKey(t, a, false, "BMK-S7gYekwHUMGhWzGpld7aFPfYJK6SV75a", expiredTestAddr, "foo")
 
+	user1token := "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io"
+
 	// nonexisting route
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "not-exist-in-perm-list")
+	checkKey(t, a, false, user1token, user1TestAddr, "not-exist-in-perm-list")
 
 	// Check all routes
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "")    // no match
-	checkKey(t, a, true, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "foo")  // perm A
-	checkKey(t, a, true, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "bar")  // perm A
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user1TestAddr, "baz") // no match
+	checkKey(t, a, false, user1token, user1TestAddr, "")    // no match
+	checkKey(t, a, true, user1token, user1TestAddr, "foo")  // perm A
+	checkKey(t, a, true, user1token, user1TestAddr, "bar")  // perm A
+	checkKey(t, a, false, user1token, user1TestAddr, "baz") // no match
 
 	// Token does not match for any other user
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user2TestAddr, "foo")
-	checkKey(t, a, false, "BMK-dl2INvNSQTZ5zQu9MxNmGyAVmNkB33io", user3TestAddr, "foo")
+	checkKey(t, a, false, user1token, user2TestAddr, "foo")
+	checkKey(t, a, false, user1token, user3TestAddr, "foo")
 
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user1TestAddr, "")
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user1TestAddr, "foo")
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user1TestAddr, "bar")
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user1TestAddr, "baz")
+	user2token := "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi"
 
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user2TestAddr, "")    // no match
-	checkKey(t, a, true, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user2TestAddr, "foo")  // perm B
-	checkKey(t, a, false, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user2TestAddr, "bar") // no match
-	checkKey(t, a, true, "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi", user2TestAddr, "baz")  // perm B
+	checkKey(t, a, false, user2token, user1TestAddr, "")
+	checkKey(t, a, false, user2token, user1TestAddr, "foo")
+	checkKey(t, a, false, user2token, user1TestAddr, "bar")
+	checkKey(t, a, false, user2token, user1TestAddr, "baz")
 
-	checkKey(t, a, false, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", user3TestAddr, "")   // no match
-	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", user3TestAddr, "foo") // Matches b and c
-	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", user3TestAddr, "bar") // Matches b
-	checkKey(t, a, true, "BMK-FD4MY7O3gDk8Bg7W9LLxq2zGNO6q1Xh3", user3TestAddr, "baz") // Matches c
+	checkKey(t, a, false, user2token, user2TestAddr, "")    // no match
+	checkKey(t, a, true, user2token, user2TestAddr, "foo")  // perm B
+	checkKey(t, a, false, user2token, user2TestAddr, "bar") // no match
+	checkKey(t, a, true, user2token, user2TestAddr, "baz")  // perm B
+
+	user3token := "BMK-nwj2qrsh3xyC8OmCp1gObD0iOtQNQsLi"
+
+	checkKey(t, a, false, user3token, user3TestAddr, "")   // no match
+	checkKey(t, a, true, user3token, user3TestAddr, "foo") // Matches b and c
+	checkKey(t, a, true, user3token, user3TestAddr, "bar") // Matches b
+	checkKey(t, a, true, user3token, user3TestAddr, "baz") // Matches c
 }
 
 func createReq(auth string, addr string) *http.Request {
