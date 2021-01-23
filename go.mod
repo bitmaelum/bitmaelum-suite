@@ -8,6 +8,9 @@ require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/danieljoos/wincred v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1
+	github.com/emersion/go-imap v1.0.6
+	github.com/emersion/go-message v0.11.1
+	github.com/emersion/go-smtp v0.14.0
 	github.com/ernesto-jimenez/httplogger v0.0.0-20150224132909-86cc44f6150a
 	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/gdamore/tcell/v2 v2.1.0
@@ -21,10 +24,12 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/jhillyerd/enmime v0.8.4
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/mborders/artifex v0.4.0
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
+	github.com/mileusna/spf v0.0.0-20180805155443-438749886245
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nightlyone/lockfile v1.0.0
 	github.com/olekukonko/tablewriter v0.0.4

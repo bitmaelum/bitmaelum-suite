@@ -171,7 +171,7 @@ func getMessageList(req *http.Request) (*account.MessageList, *httpError) {
 	since := getQueryInt(req, "since", 0)
 	sinceTs := time.Unix(int64(since), 0)
 	offset := getQueryInt(req, "offset", 0)
-	limit := getQueryInt(req, "limit", 100)
+	limit := getQueryInt(req, "limit", 1000)
 
 	list, err := ar.FetchListFromBox(*haddr, box, sinceTs, offset, limit)
 	if err != nil {
