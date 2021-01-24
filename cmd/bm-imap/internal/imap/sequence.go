@@ -45,7 +45,7 @@ func NewSequenceSet(s string) SequenceSet {
 			if parts[1] == "*" {
 				max = math.MaxInt32
 			} else {
-				max, _ = strconv.Atoi(parts[0])
+				max, _ = strconv.Atoi(parts[1])
 			}
 
 			set.seq = append(set.seq, Sequence{

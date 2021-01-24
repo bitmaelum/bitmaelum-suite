@@ -49,7 +49,7 @@ func NewConn(c net.Conn, v *vault.Vault) Conn {
 func (c *Conn) Handle() {
 	defer c.Close()
 
-	c.Write("*", "OK IMAP4rev1 Service Ready")
+	c.Write("*", "OK [CAPABILITY IMAP4rev1 LOGINDISABLED IDLE AUTH=PLAIN] BitMaelum IMAP Service Ready")
 
 	for {
 		line, ok := c.Read()
@@ -88,6 +88,8 @@ func (c *Conn) Handle() {
 			err = Noop(c, tag, cmd, args)
 		case "EXPUNGE":
 			err = Expunge(c, tag, cmd, args)
+		case "STATUS":
+			err = Status(c, tag, cmd, args)
 		case "LOGOUT":
 			return
 		}
@@ -116,8 +118,7 @@ func (c *Conn) Read() (string, bool) {
 
 func (c *Conn) Write(seq, msg string) {
 	fmt.Printf("OUT> %s %s\n", seq, msg)
-
-	_, _ = fmt.Fprintf(c.C, "%s %s\n", seq, msg)
+	_, _ = fmt.Fprintf(c.C, "%s %s\r\n", seq, msg)
 }
 
 func (c *Conn) UpdateImapDB(list *api.MailboxMessages) (internal.BoxInfo, int) {
@@ -141,7 +142,7 @@ func (c *Conn) UpdateImapDB(list *api.MailboxMessages) (internal.BoxInfo, int) {
 
 		// Check and count the unseen flags
 		for _, f := range info.Flags {
-			if f == "unseen" {
+			if f == "\\Unseen" {
 				unseen++
 			}
 		}

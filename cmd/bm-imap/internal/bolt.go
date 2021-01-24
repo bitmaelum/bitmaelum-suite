@@ -139,7 +139,7 @@ func (b BoltRepo) Store(bucket, boxID string, uidValidity, UID int, messageID st
 			UIDValidity: uidValidity,
 			UID:         UID,
 			MessageID:   messageID,
-			Flags:       []string{"unseen"},
+			Flags:       []string{"\\Unseen"},
 		}
 		buf, err := json.Marshal(info)
 		if err != nil {
