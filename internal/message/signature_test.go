@@ -159,6 +159,8 @@ func TestVerifyClientHeader(t *testing.T) {
 }
 
 func TestVerifyClientHeaderWithServerSignature(t *testing.T) {
+	testingClientSignature := "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+
 	_ = setupClient()
 
 	header := &Header{}
@@ -168,13 +170,13 @@ func TestVerifyClientHeaderWithServerSignature(t *testing.T) {
 
 	// Test with correct routing ID
 	header.From.Addr = "12345678"
-	header.Signatures.Client = "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+	header.Signatures.Client = testingClientSignature
 	ok := VerifyClientHeader(*header)
 	assert.True(t, ok)
 
 	// Correct sig, wrong routing ID
 	header.From.Addr = "44444444"
-	header.Signatures.Client = "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+	header.Signatures.Client = testingClientSignature
 	ok = VerifyClientHeader(*header)
 	assert.False(t, ok)
 
@@ -186,13 +188,13 @@ func TestVerifyClientHeaderWithServerSignature(t *testing.T) {
 
 	// empty from addr
 	header.From.Addr = ""
-	header.Signatures.Client = "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+	header.Signatures.Client = testingClientSignature
 	ok = VerifyClientHeader(*header)
 	assert.False(t, ok)
 
 	// Wrong from addr (not a routing)
 	header.From.Addr = "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc"
-	header.Signatures.Client = "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+	header.Signatures.Client = testingClientSignature
 	ok = VerifyClientHeader(*header)
 	assert.False(t, ok)
 }

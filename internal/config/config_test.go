@@ -32,11 +32,14 @@ import (
 )
 
 var (
-	fatal = false
-	hook  *test.Hook
+	hook *test.Hook
 )
 
 func TestClientConfig(t *testing.T) {
+	testingClientConfigPath := "/etc/bitmaelum/bitmaelum-client-config.yml"
+	testingNotExistsFilePath := "/etc/bitmaelum/not-exist.yml"
+	testingResolverRemoteURL := "https://resolver.bitmaelum.com"
+
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "")
 
 	fs = afero.NewMemMapFs()
@@ -44,26 +47,26 @@ func TestClientConfig(t *testing.T) {
 	err := LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
-	f, err := fs.Create("/etc/bitmaelum/bitmaelum-client-config.yml")
+	f, err := fs.Create(testingClientConfigPath)
 	assert.NoError(t, err)
 	err = GenerateClientConfig(f)
 	assert.NoError(t, err)
 	_ = f.Close()
 
 	Client.Resolver.Remote.URL = ""
-	err = LoadClientConfigOrPass("/etc/bitmaelum/bitmaelum-client-config.yml")
+	err = LoadClientConfigOrPass(testingClientConfigPath)
 	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
 
 	Client.Resolver.Remote.URL = ""
-	err = LoadClientConfigOrPass("/etc/bitmaelum/not-exist.yml")
+	err = LoadClientConfigOrPass(testingNotExistsFilePath)
 	assert.Error(t, err)
 	assert.Equal(t, "", Client.Resolver.Remote.URL)
 
 	Client.Resolver.Remote.URL = ""
-	err = LoadClientConfigOrPass("/etc/bitmaelum/bitmaelum-client-config.yml")
+	err = LoadClientConfigOrPass(testingClientConfigPath)
 	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
 
 	// Read from searchpath
 	if runtime.GOOS != "windows" {
@@ -73,7 +76,7 @@ func TestClientConfig(t *testing.T) {
 		Client.Resolver.Remote.URL = ""
 		err = LoadClientConfigOrPass("")
 		assert.NoError(t, err)
-		assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+		assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
 	}
 
 	// Read from non-existing env
@@ -84,20 +87,23 @@ func TestClientConfig(t *testing.T) {
 
 	// Read from existing env
 	Client.Resolver.Remote.URL = ""
-	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/bitmaelum-client-config.yml")
+	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", testingClientConfigPath)
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
 }
 
 func TestServerConfig(t *testing.T) {
+	testingNotExistsFilePath := "/etc/bitmaelum/not-exist.yml"
+	testingServerConfigPath := "/etc/bitmaelum/bitmaelum-server-config.yml"
+
 	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "")
 
 	err := LoadServerConfigOrPass("")
 	assert.Error(t, err)
 
 	fs = afero.NewMemMapFs()
-	f, err := fs.Create("/etc/bitmaelum/bitmaelum-server-config.yml")
+	f, err := fs.Create(testingServerConfigPath)
 	assert.NoError(t, err)
 	err = GenerateServerConfig(f)
 	assert.NoError(t, err)
@@ -105,19 +111,19 @@ func TestServerConfig(t *testing.T) {
 
 	// Load direct
 	Server.Work.Pow.Bits = 0
-	err = LoadServerConfigOrPass("/etc/bitmaelum/bitmaelum-server-config.yml")
+	err = LoadServerConfigOrPass(testingServerConfigPath)
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
 	// Unknown file
 	Server.Work.Pow.Bits = 0
-	err = LoadServerConfigOrPass("/etc/bitmaelum/not-exist.yml")
+	err = LoadServerConfigOrPass(testingNotExistsFilePath)
 	assert.Error(t, err)
 	assert.Equal(t, 0, Server.Work.Pow.Bits)
 
 	// Load direct
 	Server.Work.Pow.Bits = 0
-	err = LoadServerConfigOrPass("/etc/bitmaelum/bitmaelum-server-config.yml")
+	err = LoadServerConfigOrPass(testingServerConfigPath)
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
@@ -141,7 +147,7 @@ func TestServerConfig(t *testing.T) {
 
 	// Read from existing env
 	Server.Work.Pow.Bits = 0
-	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/bitmaelum-server-config.yml")
+	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", testingServerConfigPath)
 	err = LoadServerConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
@@ -167,5 +173,7 @@ func init() {
 	_, hook = test.NewNullLogger()
 	logrus.AddHook(hook)
 	logrus.SetOutput(ioutil.Discard)
-	logrus.StandardLogger().ExitFunc = func(int) { fatal = true }
+	logrus.StandardLogger().ExitFunc = func(int) {
+		// dummy function to prevent os.Exit being called by logrus
+	}
 }

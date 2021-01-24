@@ -27,6 +27,26 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 )
 
+const (
+	// APIKey key
+	APIKey = "api-key"
+
+	// AuthKey key
+	AuthKey = "auth-key"
+
+	// Resolver key
+	Resolver = "resolver"
+
+	// Subscription key
+	Subscription = "subscription"
+
+	// Ticket key
+	Ticket = "ticket"
+
+	// Webhook key
+	Webhook = "webhook"
+)
+
 // Instance is the main bitmaelum service container
 var Instance = Type{
 	definitions: make(map[string]*ServiceDefinition),
@@ -35,30 +55,36 @@ var Instance = Type{
 
 // GetAPIKeyRepo will return the current api key repository
 func (c *Type) GetAPIKeyRepo() key.APIKeyRepo {
-	return c.Get("api-key").(key.APIKeyRepo)
+	retValue, _ := c.Get(APIKey).(key.APIKeyRepo)
+	return retValue
 }
 
 // GetAuthKeyRepo will return the current auth key repository
 func (c *Type) GetAuthKeyRepo() key.AuthKeyRepo {
-	return c.Get("auth-key").(key.AuthKeyRepo)
+	retValue, _ := c.Get(AuthKey).(key.AuthKeyRepo)
+	return retValue
 }
 
 // GetResolveService will return the current resolver service
 func (c *Type) GetResolveService() *resolver.Service {
-	return c.Get("resolver").(*resolver.Service)
+	retValue, _ := c.Get(Resolver).(*resolver.Service)
+	return retValue
 }
 
 // GetSubscriptionRepo will return the current subscription repository
 func (c *Type) GetSubscriptionRepo() subscription.Repository {
-	return c.Get("subscription").(subscription.Repository)
+	retValue, _ := c.Get(Subscription).(subscription.Repository)
+	return retValue
 }
 
 // GetTicketRepo will return the current ticket repository
 func (c *Type) GetTicketRepo() ticket.Repository {
-	return c.Get("ticket").(ticket.Repository)
+	retValue, _ := c.Get(Ticket).(ticket.Repository)
+	return retValue
 }
 
 // GetWebhookRepo will return the current webhook repository
 func (c *Type) GetWebhookRepo() webhook.Repository {
-	return c.Get("webhook").(webhook.Repository)
+	retValue, _ := c.Get(Webhook).(webhook.Repository)
+	return retValue
 }

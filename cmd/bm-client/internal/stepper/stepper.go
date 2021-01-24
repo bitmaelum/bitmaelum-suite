@@ -105,41 +105,7 @@ func (s *Stepper) Run() {
 			continue
 		}
 
-		// Display running status line
-		fmt.Printf("[       ] %s ", step.Title)
-
-		// Display spinner if needed
-		spinner := internal.NewSpinner(100 * time.Millisecond)
-		if step.DisplaySpinner {
-			fmt.Printf("\033[?25l")
-			spinner.Start()
-		}
-
-		// Run the actual step function
-		result := step.RunFunc(s)
-		step.Result = &result
-
-		// Hide the spinner
-		if step.DisplaySpinner {
-			spinner.Stop()
-			fmt.Printf("\033[?25h")
-		}
-
-		// Display result
-		msg := ""
-		if result.Message != "" {
-			msg = ": " + result.Message
-		}
-		switch result.Status {
-		case SUCCESS:
-			s.Success(step.Title + msg)
-		case FAILURE:
-			s.Failure(step.Title + msg)
-		case NOTICE:
-			s.Notice(step.Title + msg)
-		case SKIPPED:
-			s.Skip(step.Title + msg)
-		}
+		result := s.runStep(step)
 
 		if result.Status == FAILURE && !result.Continue {
 			failed = true
@@ -147,13 +113,52 @@ func (s *Stepper) Run() {
 		}
 	}
 
-	if !failed {
-		s.Status = SUCCESS
+	if failed {
+		s.Status = FAILURE
+		s.cleanup()
 		return
 	}
 
-	s.Status = FAILURE
-	s.cleanup()
+	s.Status = SUCCESS
+}
+
+func (s *Stepper) runStep(step Step) StepResult {
+	// Display running status line
+	fmt.Printf("[       ] %s ", step.Title)
+
+	// Display spinner if needed
+	if step.DisplaySpinner {
+		spinner := internal.NewSpinner(100 * time.Millisecond)
+		fmt.Printf("\033[?25l")
+		spinner.Start()
+
+		defer func() {
+			spinner.Stop()
+			fmt.Printf("\033[?25h")
+		}()
+	}
+
+	// Run the actual step function
+	result := step.RunFunc(s)
+	step.Result = &result
+
+	// Display result
+	msg := ""
+	if result.Message != "" {
+		msg = ": " + result.Message
+	}
+	switch result.Status {
+	case SUCCESS:
+		s.Success(step.Title + msg)
+	case FAILURE:
+		s.Failure(step.Title + msg)
+	case NOTICE:
+		s.Notice(step.Title + msg)
+	case SKIPPED:
+		s.Skip(step.Title + msg)
+	}
+
+	return result
 }
 
 // Cleanup of the already ran steps

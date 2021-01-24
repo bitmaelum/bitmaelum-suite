@@ -28,27 +28,24 @@ import (
 
 // MigrateVault will migrate a vault from a specific version all the way to the latest version
 func MigrateVault(data []byte, fromVersion int) (*StoreType, error) {
-	storeV0 := make([]AccountInfoV1, 0)
-	storeV1 := &StoreTypeV1{}
-	storeV2 := &StoreType{}
+	var (
+		err     error
+		storeV0 = make([]AccountInfoV1, 0)
+		storeV1 = &StoreTypeV1{}
+		storeV2 = &StoreType{}
+	)
 
 	// Read the correct initial data format
 	switch fromVersion {
 	case VersionV0:
-		err := json.Unmarshal(data, &storeV0)
-		if err != nil {
-			return nil, err
-		}
+		err = json.Unmarshal(data, &storeV0)
 	case VersionV1:
-		err := json.Unmarshal(data, &storeV1)
-		if err != nil {
-			return nil, err
-		}
+		err = json.Unmarshal(data, &storeV1)
 	case VersionV2:
-		err := json.Unmarshal(data, &storeV2)
-		if err != nil {
-			return nil, err
-		}
+		err = json.Unmarshal(data, &storeV2)
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	// Iterate migrations until we reach the latest version
