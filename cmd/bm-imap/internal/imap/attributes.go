@@ -1,42 +1,55 @@
 package imap
 
 import (
+	"errors"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
 type Attribute struct {
-	Name    string
-	Section string
-	Headers []string
-	Not     bool
-	Peek    bool
+	Name     string
+	SubName  string
+	Section  string
+	Headers  []string
+	Not      bool
+	Peek     bool
+	MinRange int
+	MaxRange int
 }
 
 func (a Attribute) ToString() string {
 	ret := a.Name
 
+	if a.SubName != "" {
+		ret += "." + a.SubName
+	}
+
+
 	if len(a.Headers) == 0 {
 		if a.Section != "" {
-			ret += "." + a.Section
+			ret += "[" + a.Section + "]"
 		}
-		return ret
+	} else {
+		ret += "[" + a.Section + " ("
+
+		for _, h := range a.Headers {
+			ret += "\"" + h + "\" "
+		}
+
+		ret += ")]"
 	}
 
-	ret += "["+a.Section+" ("
-
-	for _, h := range a.Headers {
-		ret += "\"" + h + "\" "
+	if a.MaxRange > 0 {
+		ret += "<" + strconv.Itoa(a.MinRange) + "." + strconv.Itoa(a.MaxRange) + ">"
 	}
-
-	ret += ")]"
 
 	return ret
 }
 
 // When encounting one of these macro's, replace with the contents instead
 var attributeMacros = map[string][]string{
-	"ALL": {"FLAGS", "INTERNALDATE", "RFC822.SIZE", "ENVELOPE"},
+	"ALL":  {"FLAGS", "INTERNALDATE", "RFC822.SIZE", "ENVELOPE"},
 	"FAST": {"FLAGS", "INTERNALDATE", "RFC822.SIZE"},
 	"FULL": {"FLAGS", "INTERNALDATE", "RFC822.SIZE", "ENVELOPE", "BODY"},
 }
@@ -52,113 +65,62 @@ func ParseAttributes(s string) []Attribute {
 			case "HEADER":
 				attrs = append(attrs, Attribute{
 					Name:    "BODY",
-					Section: "HEADER",
+					SubName: "HEADER",
 				})
 				continue
 			case "SIZE":
 				attrs = append(attrs, Attribute{
 					Name:    "RFC822",
-					Section: "SIZE",
+					SubName: "SIZE",
 				})
 				continue
 			case "TEXT":
 				attrs = append(attrs, Attribute{
 					Name:    "BODY",
-					Section: "TEXT",
+					SubName: "TEXT",
 				})
 				continue
 			}
 		}
 
-		if strings.HasPrefix(field, "BODY.PEEK[") {
-			attr := Attribute{
-				Name: "BODY",
-				Peek: true,
-			}
-
-			if field == "BODY.PEEK[TEXT]" {
-				attr.Section = "TEXT"
+		// Handle BODY commands
+		if strings.HasPrefix(field, "BODY.PEEK[") || strings.HasPrefix(field, "BODY[") {
+			attr, err := getBodyAttribute(field)
+			if err != nil {
 				continue
 			}
 
-			re := regexp.MustCompile("\\[([\\S]+) \\((.+)\\)\\]")
-			match := re.FindStringSubmatch(field)
-			if len(match) != 3 {
-				continue
-			}
-
-			if strings.Contains(match[1], ".NOT") {
-				strings.Replace(match[1], ".NOT", "", 1)
-				attr.Not = true
-			}
-
-			attr.Section = match[1]
-			attr.Headers = strings.Split(match[2], " ")
-
-			attrs = append(attrs, attr)
+			attrs = append(attrs, *attr)
 			continue
 		}
 
-		if strings.HasPrefix(field, "BODY[") {
-			attr := Attribute{
-				Name: "BODY",
-				Peek: false,
-			}
-
-			if field == "BODY[TEXT]" {
-				attr.Section = "TEXT"
-				continue
-			}
-			if field == "BODY[MIME]" {
-				attr.Section = "MIME"
-				continue
-			}
-
-			re := regexp.MustCompile("\\[([\\S]+) \\((.+)\\)\\]")
-			match := re.FindStringSubmatch(field)
-			if len(match) != 3 {
-				continue
-			}
-
-			if strings.Contains(match[1], ".NOT") {
-				strings.Replace(match[1], ".NOT", "", 1)
-				attr.Not = true
-			}
-
-			attr.Section = match[1]
-			attr.Headers = strings.Split(strings.ToUpper(match[2]), " ")
-
-			attrs = append(attrs, attr)
-			continue
-		}
-
-		// Check for "regular" fields
+		// Check for "regular" commands
 		switch field {
 		case "BODY":
 			attrs = append(attrs, Attribute{
-				Name:    "BODY",
+				Name: "BODY",
 			})
 		case "BODYSTRUCTURE":
 			attrs = append(attrs, Attribute{
-				Name:    "BODYSTRUCTURE",
+				Name: "BODYSTRUCTURE",
 			})
 
 		case "ENVELOPE":
 			attrs = append(attrs, Attribute{
-				Name:    "ENVELOPE",
+				Name: "ENVELOPE",
 			})
 
 		case "FLAGS":
 			attrs = append(attrs, Attribute{
-				Name:    "FLAGS",
+				Name: "FLAGS",
 			})
 		case "INTERNALDATE":
 			attrs = append(attrs, Attribute{
-				Name:    "INTERNALDATE",
+				Name: "INTERNALDATE",
 			})
 		case "RFC822":
 			attrs = append(attrs, Attribute{
-				Name:    "BODY",
+				Name: "BODY",
 			})
 		case "UID":
 			attrs = append(attrs, Attribute{
@@ -168,6 +130,44 @@ func ParseAttributes(s string) []Attribute {
 	}
 
 	return attrs
+}
+
+func getBodyAttribute(field string) (*Attribute, error) {
+	attr := Attribute{
+		Name: "BODY",
+	}
+
+	// if field == "BODY.PEEK[TEXT]" {
+	// 	attr.Section = "TEXT"
+	// 	return &attr, nil
+	// }
+
+	re := regexp.MustCompile("(.+)\\[([^\\(]+)(?: \\((.+)\\))?\\](?:\\<(\\d+).(\\d+)\\>)?")
+	parts := re.FindStringSubmatch(field)
+	if len(parts) != 6 {
+		return nil, errors.New("incorrect field format")
+	}
+
+	if parts[1] == "BODY.PEEK" {
+		attr.Peek = true
+	}
+
+	if strings.Contains(parts[2], ".NOT") {
+		strings.Replace(parts[2], ".NOT", "", 1)
+		attr.Not = true
+	}
+
+	attr.Section = parts[2]
+	attr.Headers = strings.Split(strings.ToLower(parts[3]), " ")
+	if len(attr.Headers) == 1 && attr.Headers[0] == "" {
+		// Empty string means empty slice.
+		attr.Headers = []string{}
+	}
+
+	attr.MinRange, _ = strconv.Atoi(parts[4])
+	attr.MaxRange, _ = strconv.Atoi(parts[5])
+
+	return &attr, nil
 }
 
 func getFields(s string) []string {
@@ -180,14 +180,13 @@ func getFields(s string) []string {
 		}
 	}
 
-
 	// Simple state machine that deals with brackets
 	idx := 0
 	inSquareBracket := false
 	var fields = []string{}
 
 	ret := ""
-	for (idx < len(s)) {
+	for idx < len(s) {
 		if s[idx] == ' ' && !inSquareBracket {
 			fields = append(fields, ret)
 			ret = ""
