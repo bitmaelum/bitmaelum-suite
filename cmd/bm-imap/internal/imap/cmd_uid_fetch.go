@@ -68,7 +68,7 @@ func generateHeaderMap(msgInfo internal.MessageInfo, dMsg message.DecryptedMessa
 	ret["date"] = dMsg.Catalog.CreatedAt.Format(TimeFormat)
 	ret["subject"] = dMsg.Catalog.Subject
 	ret["from"] = addrToEmail(dMsg.Catalog.From.Address)
-	ret["content-type"] = "text/plain"
+//	ret["content-type"] = "text/plain"
 	ret["to"] = addrToEmail(dMsg.Catalog.To.Address)
 	ret["message-id"] = "<" + msgInfo.MessageID + "@bitmaelum.network>"
 
@@ -109,7 +109,7 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 			))
 
 		case "BODYSTRUCTURE":
-			ret = append(ret, "BODYSTRUCTURE (\"TEXT\" \"PLAIN\" (\"CHARSET\" \"UTF-8\") NIL NIL \"7bit\" 200 4 NIL NIL NIL NIL)")
+			ret = append(ret, "BODYSTRUCTURE (\"TEXT\" \"PLAIN\" (\"CHARSET\" \"UTF-8\") NIL NIL \"7bit\" 200 4)")
 
 		case "UID":
 			ret = append(ret, fmt.Sprintf("UID %d", msgInfo.UID))
@@ -128,7 +128,7 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 				for _, h := range attr.Headers {
 					v, ok := header[h]
 					if ok {
-						hdrs += strings.ToUpper(h[0:0]) + h[1:] + ": " + v + "\n"
+						hdrs += strings.ToUpper(h[0:1]) + h[1:] + ": " + v + "\n"
 					}
 				}
 				ret = append(ret, fmt.Sprintf("%s {%d}\n%s\n", attr.ToString(), len(hdrs), hdrs))
