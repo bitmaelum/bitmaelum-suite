@@ -41,7 +41,7 @@ func (a Attribute) ToString() string {
 	}
 
 	if a.MaxRange > 0 {
-		ret += "<" + strconv.Itoa(a.MinRange) + "." + strconv.Itoa(a.MaxRange) + ">"
+		ret += "<" + strconv.Itoa(a.MinRange) + ">"
 	}
 
 	return ret
@@ -54,10 +54,17 @@ var attributeMacros = map[string][]string{
 	"FULL": {"FLAGS", "INTERNALDATE", "RFC822.SIZE", "ENVELOPE", "BODY"},
 }
 
-func ParseAttributes(s string) []Attribute {
+func ParseAttributes(s string, addUid bool) []Attribute {
 	var attrs []Attribute
 
-	for _, field := range getFields(s) {
+	fields := getFields(s)
+	if addUid {
+		fields = append(fields, "UID")
+	}
+
+	uidAdded := false
+
+	for _, field := range fields {
 		// Check for RFC822.<item>
 		if strings.HasPrefix(field, "RFC822.") {
 			parts := strings.Split(field, ".")
@@ -123,9 +130,12 @@ func ParseAttributes(s string) []Attribute {
 				Name: "BODY",
 			})
 		case "UID":
-			attrs = append(attrs, Attribute{
-				Name: "UID",
-			})
+			if !uidAdded {
+				attrs = append(attrs, Attribute{
+					Name: "UID",
+				})
+				uidAdded = true
+			}
 		}
 	}
 

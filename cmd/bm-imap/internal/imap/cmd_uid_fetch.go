@@ -14,7 +14,7 @@ const TimeFormat = "Sun, 02-Jan-2006 15:04:05 -0700"
 
 func UidFetch(c *Conn, tag, cmd string, args []string) error {
 	set := NewSequenceSet(args[1])
-	attrs := ParseAttributes(strings.Join(args[2:], " "))
+	attrs := ParseAttributes(strings.Join(args[2:], " "), true)
 
 	var i = 1
 	info := c.DB.GetBoxInfo(c.Account, c.Box)
@@ -86,13 +86,11 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 	toParts := strings.Split(to, "@")
 
 	for _, attr := range attrs {
-		fmt.Printf(" -- attrName: %s\n", attr.Name)
-
 		switch attr.Name {
 		case "RFC822":
-			switch attr.Section {
+			switch attr.SubName {
 			case "SIZE":
-				ret = append(ret, fmt.Sprintf("RFC822.SIZE %d", 12345))
+				ret = append(ret, fmt.Sprintf("RFC822.SIZE %d", 200))
 			}
 
 		case "ENVELOPE":
@@ -111,13 +109,14 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 			))
 
 		case "BODYSTRUCTURE":
-			ret = append(ret, "BODYSTRUCTURE (\"TEXT\" \"PLAIN\" (\"CHARSET\" \"UTF-8\") NIL NIL \"7bit\" 12345 64 NIL NIL NIL NIL)")
+			ret = append(ret, "BODYSTRUCTURE (\"TEXT\" \"PLAIN\" (\"CHARSET\" \"UTF-8\") NIL NIL \"7bit\" 200 4 NIL NIL NIL NIL)")
 
 		case "UID":
 			ret = append(ret, fmt.Sprintf("UID %d", msgInfo.UID))
 
 		case "FLAGS":
-			ret = append(ret, fmt.Sprintf("FLAGS (%s)", strings.Join(msgInfo.Flags, " ")))
+			//ret = append(ret, fmt.Sprintf("FLAGS (%s)", strings.Join(msgInfo.Flags, " ")))
+			ret = append(ret, "FLAGS (\\Recent)")
 
 		case "INTERNALDATE":
 			ret = append(ret, fmt.Sprintf("INTERNALDATE \"%s\"", dMsg.Catalog.CreatedAt.Format(TimeFormat)))
@@ -129,7 +128,7 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 				for _, h := range attr.Headers {
 					v, ok := header[h]
 					if ok {
-						hdrs += h + ": " + v + "\n"
+						hdrs += strings.ToUpper(h[0:0]) + h[1:] + ": " + v + "\n"
 					}
 				}
 				ret = append(ret, fmt.Sprintf("%s {%d}\n%s\n", attr.ToString(), len(hdrs), hdrs))
@@ -151,13 +150,15 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 					body = body[attr.MinRange:]
 				}
 
-				ret = append(ret, fmt.Sprintf("%s {%d}\n%s", attr.ToString(), len(body), body))
+				s := string(body) + "\n\n"
+				ret = append(ret, fmt.Sprintf("%s {%d}\n%s", attr.ToString(), len(s), s))
 			case "MIME":
 			case "HEADER":
 				hdrs := ""
 				for i := range header {
 					hdrs += i + ": " + header[i] + "\n"
 				}
+				hdrs += "\n"
 
 				ret = append(ret, fmt.Sprintf("%s {%d}\n%s", attr.ToString(), len(hdrs), hdrs))
 			}

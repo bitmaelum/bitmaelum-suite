@@ -22,13 +22,14 @@ func Select(c *Conn, tag, _ string, args []string) error {
 		return err
 	}
 
-	boxInfo, unseen := c.UpdateImapDB(msgList)
+	boxInfo, _ := c.UpdateImapDB(msgList)
 
 	c.Write("*", fmt.Sprintf("%d EXISTS", len(msgList.Messages)))
 	c.Write("*", fmt.Sprintf("%d RECENT", 0))
-	c.Write("*", fmt.Sprintf("OK [UNSEEN %d]", unseen))
+	c.Write("*", fmt.Sprintf("OK [UNSEEN %d]", 1))
 	c.Write("*", fmt.Sprintf("OK [UIDNEXT %d]", boxInfo.HighestUID))
 	c.Write("*", fmt.Sprintf("OK [UIDVALIDITY %d]", boxInfo.UIDValidity))
+	c.Write("*", "OK [HIGHESTMODSEQ 1234567]")
 
 	c.Write(tag, "OK [READ-WRITE] SELECT completed")
 
