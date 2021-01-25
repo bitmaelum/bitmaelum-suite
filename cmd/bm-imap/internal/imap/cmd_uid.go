@@ -9,7 +9,7 @@ func Uid(c *Conn, tag, cmd string, args []string) error {
 		return UidFetch(c, tag, cmd, args)
 	}
 	if strings.ToUpper(args[0]) == "SEARCH" {
-		c.Write(tag, "OK UID STORE completed")
+		c.Write(tag, "OK UID SEARCH completed")
 	}
 	if strings.ToUpper(args[0]) == "COPY" {
 		// @TODO: add copy

@@ -2,6 +2,8 @@ package imap
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-imap/internal"
@@ -145,8 +147,28 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 				ret = append(ret, fmt.Sprintf("%s {%d}\n%s\n", attr.ToString(), len(hdrs), hdrs))
 
 			case "TEXT":
+				// Check if we have a maxrange, if so, only read until that number
+				r := dMsg.Catalog.Blocks[0].Reader
+				if attr.MaxRange > 0 {
+					r = io.LimitReader(r, int64(attr.MaxRange))
+				}
+
+				body, err := ioutil.ReadAll(r)
+				if err != nil {
+					continue
+				}
+
+				// Remove everything below minrange
+				if attr.MinRange > 0 {
+					body = body[attr.MinRange:]
+				}
+
+				ret = append(ret, fmt.Sprintf("%s {%d}\n%s", attr.ToString(), len(body), body))
 			case "MIME":
 			case "HEADER":
+				body := "From: joshua@bitmaelum.network\n"
+
+				ret = append(ret, fmt.Sprintf("%s {%d}\n%s", attr.ToString(), len(body), body))
 			}
 
 
@@ -157,7 +179,7 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 }
 
 func addrToEmail(address string) string {
-	address = strings.Replace(address, "@", "#", -1)
+	address = strings.Replace(address, "@", "_", -1)
 	address = strings.Replace(address, "!", "", -1)
 
 	return address + "@bitmaelum.network"
