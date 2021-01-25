@@ -15,7 +15,7 @@ func Uid(c *Conn, tag, cmd string, args []string) error {
 		for _, uid := range info.Uids {
 			s += strconv.Itoa(uid) + " "
 		}
-		c.Write("*", s)
+		c.Write("* SEARCH", s)
 
 		c.Write(tag, "OK UID SEARCH completed")
 	}

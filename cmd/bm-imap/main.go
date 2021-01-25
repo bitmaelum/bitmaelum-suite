@@ -70,7 +70,7 @@ func main() {
 
 	fmt.Println("BM-IMAP started...")
 
-	ln, err := net.Listen("tcp", "127.0.0.1:1143")
+	ln, err := net.Listen("tcp", "0.0.0.0:143")
 	if err != nil {
 		panic(err)
 	}

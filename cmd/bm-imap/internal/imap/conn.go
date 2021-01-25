@@ -49,7 +49,7 @@ func NewConn(c net.Conn, v *vault.Vault) Conn {
 func (c *Conn) Handle() {
 	defer c.Close()
 
-	c.Write("*", "OK [CAPABILITY IMAP4rev1 LOGINDISABLED IDLE AUTH=PLAIN] BitMaelum IMAP Service Ready")
+	c.Write("*", "OK [CAPABILITY IMAP4rev1 LOGINDISABLED AUTH=PLAIN] BitMaelum IMAP Service Ready")
 
 	for {
 		line, ok := c.Read()

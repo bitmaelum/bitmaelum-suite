@@ -53,7 +53,7 @@ func UidFetch(c *Conn, tag, cmd string, args []string) error {
 		// fill up found attributes
 		ret := executeAttributes(attrs, *msgInfo, *dMsg)
 
-		c.Write("*", fmt.Sprintf("%d FETCH (%s)", i, strings.Join(ret, " ")))
+		c.Write("*", fmt.Sprintf("%d FETCH (%s)", uid, strings.Join(ret, " ")))
 		i++
 	}
 	c.Write(tag, "OK FETCH completed")
@@ -61,18 +61,33 @@ func UidFetch(c *Conn, tag, cmd string, args []string) error {
 	return nil
 }
 
+func generateHeaderMap(msgInfo internal.MessageInfo, dMsg message.DecryptedMessage) map[string]string {
+	ret := make(map[string]string)
+
+	ret["x-priority"] = "3"
+	ret["date"] = dMsg.Catalog.CreatedAt.Format(TimeFormat)
+	ret["subject"] = dMsg.Catalog.Subject
+	ret["from"] = addrToEmail(dMsg.Catalog.From.Address)
+	ret["content-type"] = "text/plain"
+	ret["to"] = addrToEmail(dMsg.Catalog.To.Address)
+	ret["message-id"] = "<" + msgInfo.MessageID + "@bitmaelum.network>"
+
+	return ret
+}
+
 func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg message.DecryptedMessage) []string {
 	var ret []string
 
 	from := addrToEmail(dMsg.Catalog.From.Address)
 	to := addrToEmail(dMsg.Catalog.To.Address)
+	header := generateHeaderMap(msgInfo, dMsg)
 
 	fromParts := strings.Split(from, "@")
 	toParts := strings.Split(to, "@")
 
-
-
 	for _, attr := range attrs {
+		fmt.Printf(" -- attrName: %s\n", attr.Name)
+
 		switch attr.Name {
 		case "RFC822":
 			switch attr.Section {
@@ -112,37 +127,43 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 			case "HEADER.FIELDS":
 				hdrs := ""
 				for _, h := range attr.Headers {
-					s := ""
-					switch h {
-					case "x-priority":
-						s = fmt.Sprintf("X-Priority: 3")
-					case "content-type":
-						s = fmt.Sprintf("Content-Type: text/plain")
-					case "from":
-						s = fmt.Sprintf("From: %s <%s>", dMsg.Catalog.From.Name, from)
-					case "to":
-						s = fmt.Sprintf("To: <%s>", to)
-					case "reply-to":
-						s = fmt.Sprintf("Reply-To: <%s>", to)
-					case "subject":
-						s = fmt.Sprintf("Subject: %s", dMsg.Catalog.Subject)
-					case "date":
-						s = fmt.Sprintf("Date: %s", dMsg.Catalog.CreatedAt.Format(TimeFormat))
-					case "message-id":
-						s = "Message-ID: <" + msgInfo.MessageID + "@bitmaelum.network>\n"
-					case "received":
-						s = fmt.Sprintf("Received: from imap.bitmaelum.network\n"+
-							"        by imap.bitmaelum.network with LMTP\n"+
-							"        id %s\n"+
-							"        (envelope-from <%s>)\n"+
-							"        for <%s>; %s",
-							from, msgInfo.MessageID, from, dMsg.Catalog.CreatedAt.Format(TimeFormat))
-					case "delivery-date":
-						s = "Delivery-Date: " + dMsg.Catalog.CreatedAt.Format(TimeFormat)
+					v, ok := header[h]
+					if ok {
+						hdrs += h + ": " + v + "\n"
 					}
-					if s != "" {
-						hdrs += s + "\n"
-					}
+					/*
+						s := ""
+						switch h {
+						case "x-priority":
+							s = fmt.Sprintf("X-Priority: 3")
+						case "content-type":
+							s = fmt.Sprintf("Content-Type: text/plain")
+						case "from":
+							s = fmt.Sprintf("From: %s <%s>", dMsg.Catalog.From.Name, from)
+						case "to":
+							s = fmt.Sprintf("To: <%s>", to)
+						case "reply-to":
+							s = fmt.Sprintf("Reply-To: <%s>", to)
+						case "subject":
+							s = fmt.Sprintf("Subject: %s", dMsg.Catalog.Subject)
+						case "date":
+							s = fmt.Sprintf("Date: %s", dMsg.Catalog.CreatedAt.Format(TimeFormat))
+						case "message-id":
+							s = "Message-ID: <" + msgInfo.MessageID + "@bitmaelum.network>\n"
+						case "received":
+							s = fmt.Sprintf("Received: from imap.bitmaelum.network\n"+
+								"        by imap.bitmaelum.network with LMTP\n"+
+								"        id %s\n"+
+								"        (envelope-from <%s>)\n"+
+								"        for <%s>; %s",
+								from, msgInfo.MessageID, from, dMsg.Catalog.CreatedAt.Format(TimeFormat))
+						case "delivery-date":
+							s = "Delivery-Date: " + dMsg.Catalog.CreatedAt.Format(TimeFormat)
+						}
+						if s != "" {
+							hdrs += s + "\n"
+						}
+					*/
 				}
 				ret = append(ret, fmt.Sprintf("%s {%d}\n%s\n", attr.ToString(), len(hdrs), hdrs))
 
@@ -166,11 +187,13 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 				ret = append(ret, fmt.Sprintf("%s {%d}\n%s", attr.ToString(), len(body), body))
 			case "MIME":
 			case "HEADER":
-				body := "From: joshua@bitmaelum.network\n"
+				hdrs := ""
+				for i := range header {
+					hdrs += i + ": " + header[i] + "\n"
+				}
 
-				ret = append(ret, fmt.Sprintf("%s {%d}\n%s", attr.ToString(), len(body), body))
+				ret = append(ret, fmt.Sprintf("%s {%d}\n%s", attr.ToString(), len(hdrs), hdrs))
 			}
-
 
 		}
 	}
