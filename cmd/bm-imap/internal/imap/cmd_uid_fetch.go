@@ -131,39 +131,6 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 					if ok {
 						hdrs += h + ": " + v + "\n"
 					}
-					/*
-						s := ""
-						switch h {
-						case "x-priority":
-							s = fmt.Sprintf("X-Priority: 3")
-						case "content-type":
-							s = fmt.Sprintf("Content-Type: text/plain")
-						case "from":
-							s = fmt.Sprintf("From: %s <%s>", dMsg.Catalog.From.Name, from)
-						case "to":
-							s = fmt.Sprintf("To: <%s>", to)
-						case "reply-to":
-							s = fmt.Sprintf("Reply-To: <%s>", to)
-						case "subject":
-							s = fmt.Sprintf("Subject: %s", dMsg.Catalog.Subject)
-						case "date":
-							s = fmt.Sprintf("Date: %s", dMsg.Catalog.CreatedAt.Format(TimeFormat))
-						case "message-id":
-							s = "Message-ID: <" + msgInfo.MessageID + "@bitmaelum.network>\n"
-						case "received":
-							s = fmt.Sprintf("Received: from imap.bitmaelum.network\n"+
-								"        by imap.bitmaelum.network with LMTP\n"+
-								"        id %s\n"+
-								"        (envelope-from <%s>)\n"+
-								"        for <%s>; %s",
-								from, msgInfo.MessageID, from, dMsg.Catalog.CreatedAt.Format(TimeFormat))
-						case "delivery-date":
-							s = "Delivery-Date: " + dMsg.Catalog.CreatedAt.Format(TimeFormat)
-						}
-						if s != "" {
-							hdrs += s + "\n"
-						}
-					*/
 				}
 				ret = append(ret, fmt.Sprintf("%s {%d}\n%s\n", attr.ToString(), len(hdrs), hdrs))
 

@@ -19,6 +19,8 @@ func Uid(c *Conn, tag, cmd string, args []string) error {
 
 		c.Write(tag, "OK UID SEARCH completed")
 	}
+
+
 	if strings.ToUpper(args[0]) == "COPY" {
 		// @TODO: add copy
 		c.Write(tag, "OK UID COPY completed")

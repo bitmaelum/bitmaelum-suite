@@ -112,12 +112,12 @@ func (c *Conn) Read() (string, bool) {
 	}
 
 	msg := c.Scanner.Text()
-	fmt.Printf("IN > %s\n", msg)
+	fmt.Printf("IN[%s]>%s\n", c.C.RemoteAddr().String(), msg)
 	return msg, true
 }
 
 func (c *Conn) Write(seq, msg string) {
-	fmt.Printf("OUT> %s %s\n", seq, msg)
+	fmt.Printf("OUT[%s]> %s %s\n", c.C.RemoteAddr().String(), seq, msg)
 	_, _ = fmt.Fprintf(c.C, "%s %s\r\n", seq, msg)
 }
 
