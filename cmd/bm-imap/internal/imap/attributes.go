@@ -59,7 +59,7 @@ func ParseAttributes(s string, addUid bool) []Attribute {
 
 	fields := getFields(s)
 	if addUid {
-		fields = append(fields, "UID")
+		fields = append([]string{"UID"}, fields...)
 	}
 
 	uidAdded := false
@@ -146,11 +146,6 @@ func getBodyAttribute(field string) (*Attribute, error) {
 	attr := Attribute{
 		Name: "BODY",
 	}
-
-	// if field == "BODY.PEEK[TEXT]" {
-	// 	attr.Section = "TEXT"
-	// 	return &attr, nil
-	// }
 
 	re := regexp.MustCompile("(.+)\\[([^\\(]+)(?: \\((.+)\\))?\\](?:\\<(\\d+).(\\d+)\\>)?")
 	parts := re.FindStringSubmatch(field)

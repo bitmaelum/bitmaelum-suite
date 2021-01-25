@@ -3,6 +3,7 @@ package imap
 import (
 	"bufio"
 	"fmt"
+	"hash/crc32"
 	"net"
 	"strings"
 
@@ -31,7 +32,8 @@ type Conn struct {
 
 	DB *internal.BoltRepo
 
-	Box string // current selected box
+	SeqList []string // Current sequence list
+	Box     string   // current selected box
 }
 
 func NewConn(c net.Conn, v *vault.Vault) Conn {
@@ -49,7 +51,7 @@ func NewConn(c net.Conn, v *vault.Vault) Conn {
 func (c *Conn) Handle() {
 	defer c.Close()
 
-	c.Write("*", "OK [CAPABILITY IMAP4rev1 LOGINDISABLED AUTH=PLAIN] BitMaelum IMAP Service Ready")
+	c.Write("*", "OK [CAPABILITY IMAP4rev1 AUTH=PLAIN] BitMaelum IMAP Service Ready")
 
 	for {
 		line, ok := c.Read()
@@ -76,6 +78,8 @@ func (c *Conn) Handle() {
 			err = Capability(c, tag, cmd, args)
 		case "AUTHENTICATE":
 			err = Authenticate(c, tag, cmd, args)
+		case "LOGIN":
+			err = Login(c, tag, cmd, args)
 		case "LIST":
 			err = List(c, tag, cmd, args)
 		case "LSUB":
@@ -112,12 +116,13 @@ func (c *Conn) Read() (string, bool) {
 	}
 
 	msg := c.Scanner.Text()
-	fmt.Printf("IN[%s]>%s\n", c.C.RemoteAddr().String(), msg)
+	fmt.Printf("IN [%s]> %s\n", c.C.RemoteAddr().String(), msg)
 	return msg, true
 }
 
 func (c *Conn) Write(seq, msg string) {
 	fmt.Printf("OUT[%s]> %s %s\n", c.C.RemoteAddr().String(), seq, msg)
+
 	_, _ = fmt.Fprintf(c.C, "%s %s\r\n", seq, msg)
 }
 
@@ -131,7 +136,7 @@ func (c *Conn) UpdateImapDB(list *api.MailboxMessages) (internal.BoxInfo, int) {
 		info, err := c.DB.FetchByMessageID(c.Account, msg.ID)
 		if err != nil {
 			boxInfo.HighestUID++
-			info, err = c.DB.Store(c.Account, c.Box, 11, boxInfo.HighestUID, msg.ID)
+			info, err = c.DB.Store(c.Account, c.Box, int(crc32.ChecksumIEEE([]byte(c.Box))), boxInfo.HighestUID, msg.ID)
 			if err != nil {
 				return boxInfo, 0
 			}

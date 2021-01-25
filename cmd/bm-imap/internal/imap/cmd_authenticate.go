@@ -10,6 +10,20 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 )
 
+func Login(c *Conn, tag, _ string, args []string) error {
+	err := login(c, args[0], args[1])
+	if err != nil {
+		c.Write(tag, err.Error())
+
+		return err
+	}
+
+	fmt.Println("Logged in as ", c.Account)
+	c.Write(tag, "OK Login")
+
+	return nil
+}
+
 func Authenticate(c *Conn, tag, _ string, _ []string) error {
 	c.Write("+", "")
 
@@ -25,26 +39,34 @@ func Authenticate(c *Conn, tag, _ string, _ []string) error {
 		return errors.New("error")
 	}
 	creds := strings.Split(string(b), "\x00")
-	c.Account = creds[1] + "!"
+
+	err = login(c, creds[0], creds[1])
+	if err != nil {
+		c.Write(tag, err.Error())
+	}
+
+	fmt.Println("Authenticated as ", c.Account)
+	c.Write(tag, "OK Authenticated")
+
+	return nil
+}
+
+func login(c *Conn, user, _ string) error {
+	c.Account = user + "!"
 
 	addr, err := address.NewAddress(c.Account)
 	if err != nil {
-		c.Write(tag, "NO incorrect address format specified")
-		return errors.New("error")
+		return errors.New("NO incorrect address format specified")
 	}
 	if !c.Vault.HasAccount(*addr) {
-		c.Write(tag, "NO account not found in vault")
-		return errors.New("error")
+		return errors.New("NO account not found in vault")
 	}
 
 	_, c.Info, c.Client, err = internal.GetClientAndInfo(c.Account)
 	if err != nil {
-		return errors.New("error")
+		return errors.New("NO error")
 	}
 	c.State = StateAuthenticated
-
-	fmt.Println("Authenticated as ", c.Account)
-	c.Write(tag, "OK Authenticated")
 
 	return nil
 }

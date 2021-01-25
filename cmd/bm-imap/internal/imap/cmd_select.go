@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func Select(c *Conn, tag, _ string, args []string) error {
+func Select(c *Conn, tag, cmd string, args []string) error {
 	c.Box = args[0]
 	switch strings.ToUpper(args[0]) {
 	case "INBOX":
@@ -19,10 +19,18 @@ func Select(c *Conn, tag, _ string, args []string) error {
 
 	msgList, err := c.Client.GetMailboxMessages(c.Info.Address.Hash(), c.Box, time.Time{})
 	if err != nil {
+		fmt.Println("ERR: ", err)
 		return err
 	}
 
 	boxInfo, _ := c.UpdateImapDB(msgList)
+
+
+	c.SeqList = make([]string, len(msgList.Messages))
+	for i, msg := range msgList.Messages {
+		c.SeqList[i] = msg.ID
+	}
+	fmt.Println(c.SeqList)
 
 	c.Write("*", fmt.Sprintf("%d EXISTS", len(msgList.Messages)))
 	c.Write("*", fmt.Sprintf("%d RECENT", 0))

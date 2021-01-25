@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/crc32"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -96,8 +97,8 @@ func (b BoltRepo) GetBoxInfo(bucket, boxID string) BoxInfo {
 	if err != nil {
 		info = BoxInfo{
 			BoxID:       boxID,
-			UIDValidity: 11,
-			HighestUID:  1,
+			UIDValidity: int(crc32.ChecksumIEEE([]byte(boxID))),
+			HighestUID:  1000,
 		}
 
 		_ = b.StoreBoxInfo(bucket, info)

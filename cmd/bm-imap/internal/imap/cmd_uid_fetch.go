@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-imap/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 )
 
-const TimeFormat = "Sun, 02-Jan-2006 15:04:05 -0700"
+const TimeFormat = "02-Jan-2006 15:04:05 -0700"
 
 func UidFetch(c *Conn, tag, cmd string, args []string) error {
 	set := NewSequenceSet(args[1])
 	attrs := ParseAttributes(strings.Join(args[2:], " "), true)
 
-	var i = 1
 	info := c.DB.GetBoxInfo(c.Account, c.Box)
 	for _, uid := range info.Uids {
 		if !set.InSet(uid) {
@@ -53,8 +53,14 @@ func UidFetch(c *Conn, tag, cmd string, args []string) error {
 		// fill up found attributes
 		ret := executeAttributes(attrs, *msgInfo, *dMsg)
 
-		c.Write("*", fmt.Sprintf("%d FETCH (%s)", uid, strings.Join(ret, " ")))
-		i++
+		seq := 0
+		for i, j := range c.SeqList {
+			if msgInfo.MessageID == j {
+				seq = i
+			}
+		}
+
+		c.Write("*", fmt.Sprintf("%d FETCH (%s)", seq, strings.Join(ret, " ")))
 	}
 	c.Write(tag, "OK FETCH completed")
 
@@ -68,9 +74,20 @@ func generateHeaderMap(msgInfo internal.MessageInfo, dMsg message.DecryptedMessa
 	ret["date"] = dMsg.Catalog.CreatedAt.Format(TimeFormat)
 	ret["subject"] = dMsg.Catalog.Subject
 	ret["from"] = addrToEmail(dMsg.Catalog.From.Address)
-//	ret["content-type"] = "text/plain"
 	ret["to"] = addrToEmail(dMsg.Catalog.To.Address)
 	ret["message-id"] = "<" + msgInfo.MessageID + "@bitmaelum.network>"
+
+	ret["return-path"] = addrToEmail(dMsg.Catalog.From.Address)
+	ret["delivered-to"] = addrToEmail(dMsg.Catalog.To.Address)
+
+	ret["received"] = "from imap.bitmaelum.network\n" +
+		"     by imap.bitmaelum.network with LMTP\n" +
+		"     id +FOOBAR\n" +
+		"     (envelope-from <" + addrToEmail(dMsg.Catalog.From.Address) + "+>)\n" +
+		"     for <" + addrToEmail(dMsg.Catalog.To.Address) + ">; Mon, 25 Jan 2021 15:01:31 +0100"
+
+	ret["envelope-to"] = addrToEmail(dMsg.Catalog.To.Address)
+	ret["delivery-date"] = dMsg.Catalog.CreatedAt.Format(TimeFormat)
 
 	return ret
 }
@@ -115,7 +132,7 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 			ret = append(ret, fmt.Sprintf("UID %d", msgInfo.UID))
 
 		case "FLAGS":
-			//ret = append(ret, fmt.Sprintf("FLAGS (%s)", strings.Join(msgInfo.Flags, " ")))
+			// ret = append(ret, fmt.Sprintf("FLAGS (%s)", strings.Join(msgInfo.Flags, " ")))
 			ret = append(ret, "FLAGS (\\Recent)")
 
 		case "INTERNALDATE":
@@ -128,7 +145,7 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 				for _, h := range attr.Headers {
 					v, ok := header[h]
 					if ok {
-						hdrs += strings.ToUpper(h[0:1]) + h[1:] + ": " + v + "\n"
+						hdrs += http.CanonicalHeaderKey(h) + ": " + v + "\n"
 					}
 				}
 				ret = append(ret, fmt.Sprintf("%s {%d}\n%s\n", attr.ToString(), len(hdrs), hdrs))
@@ -156,7 +173,7 @@ func executeAttributes(attrs []Attribute, msgInfo internal.MessageInfo, dMsg mes
 			case "HEADER":
 				hdrs := ""
 				for i := range header {
-					hdrs += i + ": " + header[i] + "\n"
+					hdrs += http.CanonicalHeaderKey(i) + ": " + header[i] + "\n"
 				}
 				hdrs += "\n"
 
