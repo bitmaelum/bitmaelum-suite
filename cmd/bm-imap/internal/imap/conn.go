@@ -2,13 +2,16 @@ package imap
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"hash/crc32"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-imap/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/mitchellh/go-homedir"
 )
@@ -32,8 +35,14 @@ type Conn struct {
 
 	DB *internal.BoltRepo
 
-	SeqList []string // Current sequence list
-	Box     string   // current selected box
+	Box     string           // current selected box
+	Index   []MessageIndex   // message index list for current selected box
+	BoxInfo internal.BoxInfo // BoxInfo
+}
+
+type MessageIndex struct {
+	MessageID string
+	UID       int
 }
 
 func NewConn(c net.Conn, v *vault.Vault) Conn {
@@ -126,34 +135,86 @@ func (c *Conn) Write(seq, msg string) {
 	_, _ = fmt.Fprintf(c.C, "%s %s\r\n", seq, msg)
 }
 
-func (c *Conn) UpdateImapDB(list *api.MailboxMessages) (internal.BoxInfo, int) {
+func (c *Conn) GetUIDForMessage(msgID string) int {
 	boxInfo := c.DB.GetBoxInfo(c.Account, c.Box)
 
-	boxInfo.Uids = make([]int, len(list.Messages))
+	info, err := c.DB.FetchByMessageID(c.Account, msgID)
+	if err == nil {
+		return info.UID
+	}
 
-	unseen := 0
-	for i, msg := range list.Messages {
-		info, err := c.DB.FetchByMessageID(c.Account, msg.ID)
-		if err != nil {
-			boxInfo.HighestUID++
-			info, err = c.DB.Store(c.Account, c.Box, int(crc32.ChecksumIEEE([]byte(c.Box))), boxInfo.HighestUID, msg.ID)
-			if err != nil {
-				return boxInfo, 0
-			}
-		}
-
-		// Store this message in the box
-		boxInfo.Uids[i] = info.UID
-
-		// Check and count the unseen flags
-		for _, f := range info.Flags {
-			if f == "\\Unseen" {
-				unseen++
-			}
-		}
+	boxInfo.HighestUID++
+	info, err = c.DB.Store(c.Account, c.Box, int(crc32.ChecksumIEEE([]byte(c.Box))), boxInfo.HighestUID, msgID)
+	if err != nil {
+		return boxInfo.HighestUID
 	}
 
 	_ = c.DB.StoreBoxInfo(c.Account, boxInfo)
+	return info.UID
+}
 
-	return boxInfo, unseen
+func (c *Conn) updateMessageIndex() {
+	var index []MessageIndex
+
+	// fetch a list of all messages from the given box on the server
+	msgList, err := c.Client.GetMailboxMessages(c.Info.Address.Hash(), c.Box, time.Time{})
+	if err != nil {
+		return
+	}
+
+	for _, msg := range msgList.Messages {
+		// Decrypt message if possible
+		em := message.EncryptedMessage{
+			ID:      msg.ID,
+			Header:  &msg.Header,
+			Catalog: msg.Catalog,
+
+			GenerateBlockReader:      c.Client.GenerateAPIBlockReader(c.Info.Address.Hash()),
+			GenerateAttachmentReader: c.Client.GenerateAPIAttachmentReader(c.Info.Address.Hash()),
+		}
+
+		_, err := em.Decrypt(c.Info.GetActiveKey().PrivKey)
+		if err != nil {
+			continue
+		}
+
+		index = append(index, MessageIndex{
+			MessageID: msg.ID,
+			UID:       c.GetUIDForMessage(msg.ID),
+		})
+	}
+
+	c.Index = index
+}
+
+func (c *Conn) FindByUID(uid int) (*MessageIndex, error) {
+	for _, idx := range c.Index {
+		if idx.UID == uid {
+			return &idx, nil
+		}
+	}
+
+	return nil, errors.New("not found")
+}
+
+func (c *Conn) FindByMsgID(msgID string) (*MessageIndex, error) {
+	for _, idx := range c.Index {
+		if idx.MessageID == msgID {
+			return &idx, nil
+		}
+	}
+
+	return nil, errors.New("not found")
+}
+
+func (c *Conn) FindBySeq(seq int) (*MessageIndex, error) {
+	return &c.Index[seq], nil
+}
+
+
+func (c *Conn) ChangeBox(box string) {
+	c.Box = box
+	c.BoxInfo = c.DB.GetBoxInfo(c.Account, c.Box)
+
+	c.updateMessageIndex()
 }

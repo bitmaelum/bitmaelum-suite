@@ -17,14 +17,14 @@ func UidFetch(c *Conn, tag, cmd string, args []string) error {
 	set := NewSequenceSet(args[1])
 	attrs := ParseAttributes(strings.Join(args[2:], " "), true)
 
-	info := c.DB.GetBoxInfo(c.Account, c.Box)
-	for _, uid := range info.Uids {
-		if !set.InSet(uid) {
+	output := false
+	for seq, idx := range c.Index {
+		if !set.InSet(idx.UID) {
 			continue
 		}
 
 		// Get message info based on box, UIDvalidity and UID
-		msgInfo, err := c.DB.Fetch(c.Account, c.Box, info.UIDValidity, uid)
+		msgInfo, err := c.DB.Fetch(c.Account, c.Box, c.BoxInfo.UIDValidity, idx.UID)
 		if err != nil {
 			continue
 		}
@@ -53,16 +53,15 @@ func UidFetch(c *Conn, tag, cmd string, args []string) error {
 		// fill up found attributes
 		ret := executeAttributes(attrs, *msgInfo, *dMsg)
 
-		seq := 0
-		for i, j := range c.SeqList {
-			if msgInfo.MessageID == j {
-				seq = i
-			}
-		}
-
-		c.Write("*", fmt.Sprintf("%d FETCH (%s)", seq, strings.Join(ret, " ")))
+		c.Write("*", fmt.Sprintf("%d FETCH (%s)", seq+1, strings.Join(ret, " ")))
+		output = true
 	}
-	c.Write(tag, "OK FETCH completed")
+
+	if output {
+		c.Write(tag, "OK FETCH completed")
+	} else {
+		c.Write(tag, "NO FETCH no uids found")
+	}
 
 	return nil
 }
@@ -191,5 +190,4 @@ func addrToEmail(address string) string {
 	address = strings.Replace(address, "!", "", -1)
 
 	return address + "@bitmaelum.network"
-
 }

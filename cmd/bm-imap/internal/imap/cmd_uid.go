@@ -11,9 +11,8 @@ func Uid(c *Conn, tag, cmd string, args []string) error {
 	}
 	if strings.ToUpper(args[0]) == "SEARCH" {
 		s := ""
-		info := c.DB.GetBoxInfo(c.Account, c.Box)
-		for _, uid := range info.Uids {
-			s += strconv.Itoa(uid) + " "
+		for _, idx := range c.Index {
+			s += strconv.Itoa(idx.UID) + " "
 		}
 		c.Write("* SEARCH", s)
 
@@ -26,6 +25,7 @@ func Uid(c *Conn, tag, cmd string, args []string) error {
 		c.Write(tag, "OK UID COPY completed")
 	}
 	if strings.ToUpper(args[0]) == "STORE" {
+		// @TODO: add store
 		c.Write(tag, "OK UID STORE completed")
 	}
 
