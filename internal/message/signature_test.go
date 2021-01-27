@@ -222,7 +222,6 @@ func TestVerifyClientHeaderWithOnbehalfSignature(t *testing.T) {
 	ok = VerifyClientHeader(*header)
 	assert.False(t, ok)
 
-
 	header = &Header{}
 	_ = testing2.ReadJSON("../../testdata/header-004.json", &header)
 
