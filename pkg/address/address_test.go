@@ -146,3 +146,40 @@ func TestJSON(t *testing.T) {
 	err = json.Unmarshal(b, &c)
 	assert.Error(t, err)
 }
+
+
+func TestSanitazion(t *testing.T) {
+	a, _ := NewAddress("jay!")
+	assert.Equal(t, "jay!", a.String())
+	assert.Equal(t, "jay", a.Local)
+	assert.Equal(t, "", a.Org)
+	assert.Equal(t, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", a.OrgHash().String())
+	assert.Equal(t, "bfef4adc39f01b033fe749bb5f28f10b581fef319d34445d21a7bc63fe732fa3", a.LocalHash().String())
+	assert.Equal(t, "e3c57837799cbbcaea93913a5ce9d05c21abd5ce0eb0e583c7ee19533d0b8d4b", a.Hash().String())
+
+	b, _ := NewAddress("jay@org!")
+	assert.Equal(t, "jay@org!", b.String())
+	assert.Equal(t, "jay", b.Local)
+	assert.Equal(t, "org", b.Org)
+	assert.Equal(t, "e87cb45c05ad389d58904ea398345c24b50f46c15d412d0f671e66b766247d39", b.OrgHash().String())
+	assert.Equal(t, "bfef4adc39f01b033fe749bb5f28f10b581fef319d34445d21a7bc63fe732fa3", b.LocalHash().String())
+	assert.Equal(t, "7e0f626bc680f4e79c950132bf34bc90bc21233a5649b11355278893501eb5b9", b.Hash().String())
+
+	addresses := []string{
+		"ja.y@org!",
+		"j.a.y@org!",
+		"j.a.y@o..rg!",
+		"j.a.y@o..r---g!",
+		"j.a.y@o..r-..--g.....!",
+	}
+
+	for _, addr := range addresses {
+		c, _ := NewAddress(addr)
+		assert.Equal(t, c.String(), b.String())
+		assert.Equal(t, c.Local, b.Local)
+		assert.Equal(t, c.Org, b.Org)
+		assert.Equal(t, c.OrgHash().String(), b.OrgHash().String())
+		assert.Equal(t, c.LocalHash().String(), b.LocalHash().String())
+		assert.Equal(t, c.Hash().String(), b.Hash().String())
+	}
+}
