@@ -147,7 +147,6 @@ func TestJSON(t *testing.T) {
 	assert.Error(t, err)
 }
 
-
 func TestSanitazion(t *testing.T) {
 	a, _ := NewAddress("jay!")
 	assert.Equal(t, "jay!", a.String())
