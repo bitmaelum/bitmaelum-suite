@@ -15,12 +15,8 @@
         "txid": "",
         "encrypted_key": "Zm9vYmFy"
     },
-    "authorized_by": {
-        "signature": "V/cdCpxF6Ktv7hDvvDzJm9okoJMo8ikx1lnaWyFNbkKGAWADQVexdMLtP2OeqMa8f9EVqWFimb3uznzeJ9EfHKvjg33vzfOfsYRmsRVtMyDyypb9ilFCzI2px3IevsWut8TQ78aQ7eNTUe++LCGQgKOyAwNuUR9ctQqh88KlCS2udFw0FF9P94xZrAaxiA0LSDigAyMzANQGG55BxKg+PSdPZDBh+zNLBfG2fTS4zKa4hzhycE4pVexQPqmsBgnHws9YQqQTouxDovym/7FRRAc8bqxzrWS0F0OCZcj0twS8qXSFwof/FGJTKrE1Kr4nNXNdqxHnFonWaWRwOv/uUA==",
-        "public_key": "ed25519 MCowBQYDK2VwAyEA4KhfZWs/+B9Xx6eU+zN+A1USGtXsCs5zJNRq8JOM9EA="
-    },
     "signatures": {
-        "client": "hviVRC4zb+RK7f1iHc8Cu/acH1QyI4uIrjqm4OukfGb/z3zFSvLS2G0bDmkBt1kPiSZYTgR33zZRC/kIV1YGAw==",
+        "client": "Se4sVKA8DkVfwcIJ3HIqVIds6+ewQC86pwUWX10K4fS8860AhlWJd75XnL4AFs9ofSIwEgVr7D+OvY2eyh8ECw==",
         "server": "yjBaPd8nWoz6wCJx8kmh7jeU0QcoT9C2oA8Qsh9cq1PRNeE0PLIpDjI4jb3ftP+3PdCRF5TWNOzk8OYbwJkpAg=="
     }
 }

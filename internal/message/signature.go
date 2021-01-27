@@ -166,7 +166,7 @@ func getSignerPublicKey(header Header) (*bmcrypto.PubKey, error) {
 		}
 
 		// Check if the authorized_by is filled
-		if header.AuthorizedBy.PublicKey == nil || header.AuthorizedBy.Signature == "" {
+		if header.AuthorizedBy == nil || header.AuthorizedBy.PublicKey == nil || header.AuthorizedBy.Signature == "" {
 			return nil, errors.New("no authorization key found")
 		}
 
