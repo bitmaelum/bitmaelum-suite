@@ -23,6 +23,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
@@ -137,7 +138,7 @@ func VerifyClientHeader(header Header) bool { // No header at all
 	}
 
 	// Verify signature
-	ok, err := bmcrypto.Verify(signedByPublicKey, h[:], []byte(targetSignature))
+	ok, err := bmcrypto.Verify(*signedByPublicKey, h[:], []byte(targetSignature))
 	if err != nil {
 		return false
 	}
@@ -145,49 +146,54 @@ func VerifyClientHeader(header Header) bool { // No header at all
 	return ok
 }
 
-func getSignerPublicKey(header Header) (bmcrypto.PubKey, error) {
+func getSignerPublicKey(header Header) (*bmcrypto.PubKey, error) {
 	switch header.From.SignedBy {
 	case SignedByTypeServer:
 		// Resolve the routing to fetch the public key since the From Addr is the routing ID
 		rs := container.Instance.GetResolveService()
 		routing, err := rs.ResolveRouting(header.From.Addr.String())
 		if err != nil {
-			return bmcrypto.PubKey{}, err
+			return nil, err
 		}
-		return routing.PublicKey, err
+		return &routing.PublicKey, err
 
 	case SignedByTypeAuthorized:
 		// Fetch public key from routing
 		rs := container.Instance.GetResolveService()
 		addr, err := rs.ResolveAddress(header.From.Addr)
 		if err != nil {
-			return bmcrypto.PubKey{}, err
+			return nil, err
+		}
+
+		// Check if the authorized_by is filled
+		if header.AuthorizedBy == nil || header.AuthorizedBy.PublicKey == nil || header.AuthorizedBy.Signature == "" {
+			return nil, errors.New("no authorization key found")
 		}
 
 		msg := hash.New(header.AuthorizedBy.PublicKey.String())
 		sig, err := base64.StdEncoding.DecodeString(header.AuthorizedBy.Signature)
 		if err != nil {
-			return bmcrypto.PubKey{}, err
+			return nil, err
 		}
 
 		// Test if the authorized public key is actually signed by the authorizer
 		ok, err := bmcrypto.Verify(addr.PublicKey, msg.Byte(), sig)
 		if err != nil || !ok {
 			// Cannot validate the authorized key
-			return bmcrypto.PubKey{}, err
+			return nil, err
 		}
 
 		// The signature is correct (the key is signed by the originating authorizer). The can safely be used for verifying our client signature
-		return *header.AuthorizedBy.PublicKey, nil
+		return header.AuthorizedBy.PublicKey, nil
 
 	default:
 		// Fetch public key from routing
 		rs := container.Instance.GetResolveService()
 		addr, err := rs.ResolveAddress(header.From.Addr)
 		if err != nil {
-			return bmcrypto.PubKey{}, err
+			return nil, err
 		}
-		return addr.PublicKey, nil
+		return &addr.PublicKey, nil
 	}
 }
 
