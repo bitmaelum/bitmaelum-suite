@@ -70,7 +70,9 @@ func (a *Address) MarshalJSON() ([]byte, error) {
 
 // NewAddress returns a valid address structure based on the given address
 func NewAddress(address string) (*Address, error) {
-	if !addressRegex.MatchString(strings.ToLower(address)) {
+	address = sanitizeAddress(address)
+
+	if !addressRegex.MatchString(address) {
 		return nil, errIncorrectAddress(address)
 	}
 
@@ -80,6 +82,14 @@ func NewAddress(address string) (*Address, error) {
 		Local: matches[1],
 		Org:   matches[2],
 	}, nil
+}
+
+// Sanitizes the address by removing any dashes and dots
+func sanitizeAddress(address string) string {
+	address = strings.ToLower(address)
+	address = strings.ReplaceAll(address, ".", "")
+	address = strings.ReplaceAll(address, "-", "")
+	return address
 }
 
 // IsValidAddress returns true when the given string is a valid BitMaelum address
