@@ -2,7 +2,7 @@
 .SILENT:
 
 # Make sure that globstar is active, this allows bash to use ./**/*.go
-SHELL=/bin/bash -O globstar -c
+SHELL=/bin/bash -O globstar
 
 # Default repository
 REPO="github.com/bitmaelum/bitmaelum-suite"
@@ -69,37 +69,47 @@ lint: ## Formats your go code to specified standards
 ## Runs all tests for the whole repository
 test: test_goimports test_license test_vet test_golint test_staticcheck test_ineffassign test_gocyclo test_unit
 
-test_license:
-	echo "Check licenses"
-	shopt -s globstar
-	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2021 -check $(LICENSE_CHECK_DIRS)
+test_goimports:	
+	source .github/workflows/github.sh  ; \
+	section "Test imports and code style" ; \
+	out=`$(GO_GOIMPORTS_BIN) -l ./cmd/bm-server` ; \
+	echo $${out} ; \
+	test -z `echo $${out}`
 
-test_goimports:
-	echo "Check goimports"
-	$(GO_GOIMPORTS_BIN) -l .
+test_license:
+	source .github/workflows/github.sh ;\
+	section "Test for licenses" ;\
+	shopt -s globstar ;\
+	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2021 -check $(LICENSE_CHECK_DIRS) 
 
 test_vet:
-	echo "Check vet"
+	source .github/workflows/github.sh ;\
+	section "Test go vet" ;\
 	go vet ./...
 
 test_staticcheck:
-	echo "Check static"
+	source .github/workflows/github.sh ;\
+	section "Test imports and code style" ;\
 	$(GO_STATCHECK_BIN) ./...
 
 test_golint:
-	echo "Check lint"
-	$(GO_LINT_BIN) ./...
+	source .github/workflows/github.sh ;\
+	section "Checking linting" ;\
+	$(GO_LINT_BIN) -set_exit_status ./...
 
 test_ineffassign:
-	echo "Check ineffassign"
+	source .github/workflows/github.sh ;\
+	section "Test ineffassign" ;\
 	$(GO_INEFF_BIN) ./...
 
 test_gocyclo:
-	echo "Check gocyclo"
+	source .github/workflows/github.sh ;\
+	section "Testing cyclomatic complexity" ;\
 	$(GO_GOCYCLO_BIN) -over 15 .
 
 test_unit:
-	echo "Check unit tests"
+	source .github/workflows/github.sh ;\
+	section "Test unittests" ;\
 	go test ./...
 
 clean: ## Clean releases
