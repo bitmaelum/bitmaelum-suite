@@ -28,7 +28,9 @@ jobs:
         source .github/workflows/github.sh
         section "Checking go imports"
         go get -u golang.org/x/tools/cmd/goimports
-        test -z "$(goimports -l .)"
+        OUT=`goimports -l .`
+        echo $OUT
+        test -z "$OUT"
     - name: Go vet
       run: |
         source .github/workflows/github.sh
@@ -51,7 +53,7 @@ jobs:
     - name: Go cyclo
       run: |
         source .github/workflows/github.sh
-        section "Checking cyclomatic complexity
+        section "Checking cyclomatic complexity"
         go get -u github.com/fzipp/gocyclo/cmd/gocyclo
         GOPATH=`go env GOPATH`
         $GOPATH/bin/gocyclo -over 15 .
