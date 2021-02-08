@@ -61,10 +61,11 @@ type Header struct {
 
 	// Information about the catalog of this message
 	Catalog struct {
-		Size          uint64       `json:"size"`           // Size of the catalog file
-		Checksum      ChecksumList `json:"checksum"`       // Checksum of the catalog file
-		TransactionID string       `json:"txid,omitempty"` // Transaction ID (if used) for encryption
-		EncryptedKey  []byte       `json:"encrypted_key"`  // The actual encrypted key, only to be decrypted by the private key of the recipient
+		Size          uint64       `json:"size"`             // Size of the catalog file
+		Checksum      ChecksumList `json:"checksum"`         // Checksum of the catalog file
+		Crypto        string       `json:"crypto,omitempty"` // Crypto used (not used in newer releases)
+		TransactionID string       `json:"txid,omitempty"`   // Transaction ID (if used) for encryption
+		EncryptedKey  []byte       `json:"encrypted_key"`    // The actual encrypted key, only to be decrypted by the private key of the recipient
 	} `json:"catalog"`
 
 	AuthorizedBy *AuthorizedByType `json:"authorized_by,omitempty"` // Using a pointer type since this section can be completely omitted

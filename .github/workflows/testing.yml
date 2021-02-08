@@ -4,7 +4,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.13.x, 1.14.x, 1.15.x, "1.16.0-beta1" ]
+        go-version: [1.13.x, 1.14.x, 1.15.x, "1.16.0-rc1" ]
         os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
@@ -17,34 +17,50 @@ jobs:
       uses: actions/checkout@v2
     - name: Go license
       run: |
+        source .github/workflows/github.sh
+        section "Checking license headers"
         go get -u github.com/google/addlicense
         GOPATH=`go env GOPATH`
         shopt -s globstar
         $GOPATH/bin/addlicense -c "BitMaelum Authors" -l mit -y 2021 -check internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go
     - name: Go imports
       run: |
+        source .github/workflows/github.sh
+        section "Checking go imports"
         go get -u golang.org/x/tools/cmd/goimports
-        test -z "$(goimports -l .)"
+        OUT=`goimports -l .`
+        echo $OUT
+        test -z "$OUT"
     - name: Go vet
       run: |
+        source .github/workflows/github.sh
+        section "Vetting files"
         go vet ./...
     - name: Go static check
       run: |
+        source .github/workflows/github.sh
+        section "Static analysis"
         go get honnef.co/go/tools/cmd/staticcheck
         GOPATH=`go env GOPATH`
         $GOPATH/bin/staticcheck ./...
     - name: Go ineffassign
       run: |
+        source .github/workflows/github.sh
+        section "Checking ineffassign"
         go get -u github.com/gordonklaus/ineffassign
         GOPATH=`go env GOPATH`
         $GOPATH/bin/ineffassign ./...
     - name: Go cyclo
       run: |
+        source .github/workflows/github.sh
+        section "Checking cyclomatic complexity"
         go get -u github.com/fzipp/gocyclo/cmd/gocyclo
         GOPATH=`go env GOPATH`
         $GOPATH/bin/gocyclo -over 15 .
     - name: Go test
       run: |
+        source .github/workflows/github.sh
+        section "Running unit tests"
         go test -race -coverprofile=coverage.txt -covermode=atomic ./...
     - name: Upload coverage report
       uses: codecov/codecov-action@v1
