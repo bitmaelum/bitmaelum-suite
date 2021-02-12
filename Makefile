@@ -2,7 +2,7 @@
 .SILENT:
 
 # Make sure that globstar is active, this allows bash to use ./**/*.go
-SHELL=/bin/bash -O globstar
+SHELL=/usr/bin/env bash -O globstar
 
 # Default repository
 REPO="github.com/bitmaelum/bitmaelum-suite"
