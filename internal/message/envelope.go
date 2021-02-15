@@ -129,11 +129,13 @@ func (e *Envelope) AddCatalog(cat *Catalog) error {
 	e.BlockReaders = make(map[string]*io.Reader)
 	e.AttachmentReaders = make(map[string]*io.Reader)
 
-	for _, block := range cat.Blocks {
+	for i := range cat.Blocks {
+		block := cat.Blocks[i]
 		e.BlockReaders[block.ID] = &block.Reader
 	}
 
-	for _, att := range cat.Attachments {
+	for i := range cat.Attachments {
+		att := cat.Attachments[i]
 		e.AttachmentReaders[att.ID] = &att.Reader
 	}
 

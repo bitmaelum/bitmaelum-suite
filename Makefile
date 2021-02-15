@@ -2,13 +2,13 @@
 .SILENT:
 
 # Make sure that globstar is active, this allows bash to use ./**/*.go
-SHELL=/bin/bash -O globstar
+SHELL=/usr/bin/env bash -O globstar
 
 # Default repository
 REPO="github.com/bitmaelum/bitmaelum-suite"
 
 # Our defined apps and tools
-APPS := bm-server bm-client bm-config bm-mail bm-send bm-json
+APPS := bm-server bm-client bm-config bm-mail bm-send bm-json bm-bridge
 TOOLS := hash-address jwt proof-of-work update-resolver vault-edit resolve-auth update-pow jwt-validate toaster
 
 # These files are checked for license headers

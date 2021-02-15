@@ -36,6 +36,22 @@ type Message struct {
 	Catalog []byte         `json:"c"`
 }
 
+// RemoveMessage deletes a message on the server
+func (api *API) RemoveMessage(addr hash.Hash, messageID string) error {
+	url := fmt.Sprintf("/account/%s/message/%s", addr.String(), messageID)
+	resp, statusCode, err := api.Delete(url)
+	if err != nil {
+		logrus.Trace(err)
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return GetErrorFromResponse(resp)
+	}
+
+	return nil
+}
+
 // GetMessage retrieves a message header + catalog from a message
 func (api *API) GetMessage(addr hash.Hash, messageID string) (*Message, error) {
 	in := &Message{}
@@ -55,8 +71,8 @@ func (api *API) GetMessage(addr hash.Hash, messageID string) (*Message, error) {
 }
 
 // GetMessageBlock retrieves a message block
-func (api *API) GetMessageBlock(addr hash.Hash, messageID, blockID string) ([]byte, error) {
-	body, statusCode, err := api.Get(fmt.Sprintf("/account/%s/message/%s/block/%s", addr.String(), messageID, blockID))
+func (api *API) GetMessageBlock(addr hash.Hash, messageID, blockID string) (io.ReadCloser, error) {
+	r, statusCode, err := api.GetReader(fmt.Sprintf("/account/%s/message/%s/block/%s", addr.String(), messageID, blockID))
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +81,7 @@ func (api *API) GetMessageBlock(addr hash.Hash, messageID, blockID string) ([]by
 		return nil, errNoSuccess
 	}
 
-	return body, nil
+	return r, nil
 }
 
 // GetMessageAttachment retrieves a message attachment reader
@@ -85,12 +101,12 @@ func (api *API) GetMessageAttachment(addr hash.Hash, messageID, attachmentID str
 // GenerateAPIBlockReader returns a reader function that will create a reader from the given message and block ID.
 func (api *API) GenerateAPIBlockReader(addr hash.Hash) func(messageID, blockID string) io.Reader {
 	return func(messageID, blockID string) io.Reader {
-		block, err := api.GetMessageBlock(addr, messageID, blockID)
+		r, err := api.GetMessageBlock(addr, messageID, blockID)
 		if err != nil {
 			return bytes.NewReader([]byte{})
 		}
 
-		return bytes.NewReader(block)
+		return r
 	}
 }
 

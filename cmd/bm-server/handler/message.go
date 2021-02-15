@@ -35,6 +35,26 @@ const (
 	incorrectBlock string = "incorrect block ID"
 )
 
+// DeleteMessage will delete a message
+func DeleteMessage(w http.ResponseWriter, req *http.Request) {
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
+		return
+	}
+
+	messageID := mux.Vars(req)["message"]
+
+	ar := container.Instance.GetAccountRepo()
+	err = ar.RemoveMessage(*haddr, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	_ = httputils.JSONOut(w, http.StatusOK, nil)
+}
+
 // GetMessage will return a message header and catalog
 func GetMessage(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
@@ -46,8 +66,16 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 	messageID := mux.Vars(req)["message"]
 
 	ar := container.Instance.GetAccountRepo()
-	header, _ := ar.FetchMessageHeader(*haddr, messageID)
-	catalog, _ := ar.FetchMessageCatalog(*haddr, messageID)
+	header, err := ar.FetchMessageHeader(*haddr, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+	catalog, err := ar.FetchMessageCatalog(*haddr, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
 
 	output := &api.Message{
 		ID:      messageID,

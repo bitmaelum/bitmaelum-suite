@@ -46,6 +46,7 @@ type DecryptedMessage struct {
 // Decrypt will decrypt the current encrypted message with the given public key and return a decrypted copy
 func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage, error) {
 	dm := DecryptedMessage{
+		ID:     em.ID,
 		Header: em.Header,
 	}
 
