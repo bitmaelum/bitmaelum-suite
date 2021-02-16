@@ -60,7 +60,7 @@ func main() {
 
 	internal.ParseOptions(&opts)
 	if opts.Version {
-		internal.WriteVersionInfo("BitMaelum BRIDGE", os.Stdout)
+		internal.WriteVersionInfo("BitMaelum email-bridge", os.Stdout)
 		fmt.Println()
 		os.Exit(0)
 	}
