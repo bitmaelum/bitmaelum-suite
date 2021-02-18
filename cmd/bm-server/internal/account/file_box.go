@@ -22,6 +22,7 @@ package account
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -74,7 +75,8 @@ func (r *fileRepo) GetBoxInfo(addr hash.Hash, box int) (*BoxInfo, error) {
 		mbi.Total = 0
 	} else {
 		for _, file := range files {
-			if file.IsDir() {
+			// File should be symlink. In the old days, it was a directory instead
+			if file.IsDir() || file.Mode()&os.ModeSymlink != 0 {
 				mbi.Total++
 				mbi.Messages = append(mbi.Messages, file.Name())
 			}

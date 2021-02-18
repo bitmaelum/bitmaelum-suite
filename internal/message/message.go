@@ -70,20 +70,24 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 
 	// Add our block readers
 	for idx, blk := range dm.Catalog.Blocks {
-		r, err := createReader(blk.IV, blk.Key, blk.Compression, em.GenerateBlockReader(em.ID, blk.ID))
-		if err != nil {
-			continue
+		if em.GenerateBlockReader != nil {
+			r, err := createReader(blk.IV, blk.Key, blk.Compression, em.GenerateBlockReader(em.ID, blk.ID))
+			if err != nil {
+				continue
+			}
+			dm.Catalog.Blocks[idx].Reader = r
 		}
-		dm.Catalog.Blocks[idx].Reader = r
 	}
 
 	// Add our attachment readers
 	for idx, att := range dm.Catalog.Attachments {
-		r, err := createReader(att.IV, att.Key, att.Compression, em.GenerateAttachmentReader(em.ID, att.ID))
-		if err != nil {
-			continue
+		if em.GenerateAttachmentReader != nil {
+			r, err := createReader(att.IV, att.Key, att.Compression, em.GenerateAttachmentReader(em.ID, att.ID))
+			if err != nil {
+				continue
+			}
+			dm.Catalog.Attachments[idx].Reader = r
 		}
-		dm.Catalog.Attachments[idx].Reader = r
 	}
 
 	return &dm, nil

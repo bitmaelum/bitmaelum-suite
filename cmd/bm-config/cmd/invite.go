@@ -55,6 +55,11 @@ server. Only the specified address can register the account`,
 			return
 		}
 
+		if config.Routing.RoutingID == "" {
+			outError("cannot find routing ID for server", asJSON)
+			return
+		}
+
 		validUntil := internal.TimeNow().Add(duration)
 		token, err := signature.NewInviteToken(addr.Hash(), config.Routing.RoutingID, validUntil, config.Routing.KeyPair.PrivKey)
 		if err != nil {

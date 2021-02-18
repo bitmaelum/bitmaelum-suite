@@ -20,42 +20,38 @@
 package layout
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/app"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/app"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/components"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
+var AccountList *tview.List
+var OrganisationList *tview.List
+
 // NewAccountScreen creats a new account screen
-func NewAccountScreen(app app.Type) tview.Primitive {
+func NewAccountScreen() tview.Primitive {
+	AccountList = tview.NewList().ShowSecondaryText(false)
+	AccountList.SetBorder(true).SetTitle("Accounts")
 
-	list := tview.NewList().ShowSecondaryText(false)
-	list.SetBorder(true).SetTitle("Accounts")
-	for _, acc := range app.Vault.Store.Accounts {
-		list.AddItem(acc.Name+" <"+acc.Address.String()+">", "", rune(0), nil)
-	}
+	OrganisationList = tview.NewList().ShowSecondaryText(false)
+	OrganisationList.SetBorder(true).SetTitle("Organisations")
 
-	list2 := tview.NewList().ShowSecondaryText(false)
-	list2.SetBorder(true).SetTitle("Organisations")
-	for _, org := range app.Vault.Store.Organisations {
-		list2.AddItem(org.FullName+" <...@"+org.Addr+">", "", rune(0), nil)
-	}
-
-	menuBar := components.NewMenubar(app.App)
+	menuBar := components.NewMenubar(app.MailApp.App)
 	menuBar.SetSlot(0, "New Acc", func() {})
 	menuBar.SetSlot(1, "New Org", func() {})
 	menuBar.SetSlot(2, "Bar", func() {})
 	menuBar.SetSlot(9, "Back", func() {
-		app.Pages.SwitchToPage("main_menu")
+		app.MailApp.Pages.SwitchToPage("main_menu")
 	})
 
 	grid := tview.NewGrid().SetColumns(0, 0).SetRows(0, 1)
-	grid.AddItem(list, 0, 0, 1, 1, 0, 0, true)
-	grid.AddItem(list2, 0, 1, 1, 1, 0, 0, false)
+	grid.AddItem(AccountList, 0, 0, 1, 1, 0, 0, true)
+	grid.AddItem(OrganisationList, 0, 1, 1, 1, 0, 0, false)
 	grid.AddItem(menuBar, 1, 0, 1, 2, 0, 0, true)
 
 	curActiveElement := 0
-	elements := []tview.Primitive{list, list2}
+	elements := []tview.Primitive{AccountList, OrganisationList}
 
 	grid.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTab {
@@ -65,7 +61,7 @@ func NewAccountScreen(app app.Type) tview.Primitive {
 			}
 			p := elements[curActiveElement]
 
-			app.App.SetFocus(p)
+			app.MailApp.App.SetFocus(p)
 			return nil
 		}
 

@@ -1,3 +1,23 @@
+## 0.1.1 (2021-???-??)
+
+Added bm-bridge: This program will act as an IMAP/SMTP service between the bitmaelum network and regular email.
+Added bm-mail: This allows you to read your mail through a textual user interface (incomplete)
+
+### Security
+- <a href="https://github.com/bitmaelum/bitmaelum-suite/commit/3ce19bd0403202d8103f6ea4d964de2e1cccc9df">view commit</a>  &bull; Organisations have to be whitelisted before they are accepted on the server
+
+### Changes
+- bm-bridge: Added bm-bridge to connect bitmaelum to IMAP and SMTP (acalatrava)
+- bm-client: Updated the account and organisation creation output to display the running steps
+- bm-client: Added commands to manage organisation validations
+- bm-client: Added command to query the resolver
+- bm-client: Reading accounts in go-routines, this speeds up the reading of accounts a lot!
+- lots of code cleanups (Eduaro Gomes)
+- Updated makefile to display success/failures a lot better
+- Dots and dashes are accepted in mail addresses, but not used
+
+
+
 ## 0.1.0 (2021-jan-21) 
 
 Finalized "hello-world" release

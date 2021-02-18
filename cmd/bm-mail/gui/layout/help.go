@@ -23,13 +23,13 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/app"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/app"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/components"
 	"github.com/rivo/tview"
 )
 
 // NewHelpScreen creates a new help screen
-func NewHelpScreen(app app.Type) tview.Primitive {
+func NewHelpScreen() tview.Primitive {
 
 	// Load text into help window
 	res, _ := http.Get("http://www.gutenberg.org/cache/epub/17192/pg17192.txt")
@@ -45,12 +45,12 @@ func NewHelpScreen(app app.Type) tview.Primitive {
 	help.SetTitle(" BitMaelum Help ")
 
 	// Create menu bar
-	menuBar := components.NewMenubar(app.App)
+	menuBar := components.NewMenubar(app.MailApp.App)
 	menuBar.SetSlot(0, "fooo", func() {
-		app.Pages.SwitchToPage("accounts")
+		app.MailApp.Pages.SwitchToPage("accounts")
 	})
 	menuBar.SetSlot(9, "Back", func() {
-		app.Pages.SwitchToPage("main_menu")
+		app.MailApp.Pages.SwitchToPage("main_menu")
 	})
 
 	// Create a Flex layout that centers the logo and subtitle.
