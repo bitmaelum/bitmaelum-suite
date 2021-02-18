@@ -115,7 +115,7 @@ func authenticate() (*vault.AccountInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return info, nil
 }
 
