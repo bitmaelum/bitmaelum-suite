@@ -26,7 +26,10 @@ import (
 	"github.com/rivo/tview"
 )
 
+// AccountList is the list of all accounts
 var AccountList *tview.List
+
+// OrganisationList is the list of all organisations
 var OrganisationList *tview.List
 
 // NewAccountScreen creats a new account screen

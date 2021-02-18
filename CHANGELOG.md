@@ -15,7 +15,7 @@ Added bm-mail: This allows you to read your mail through a textual user interfac
 - lots of code cleanups (Eduaro Gomes)
 - Updated makefile to display success/failures a lot better
 - Dots and dashes are accepted in mail addresses, but not used
-
+- Implemented initial encrypted store that is saved server-side. This can be used for settings, contacts, subscriptions and such. 
 
 
 ## 0.1.0 (2021-jan-21) 

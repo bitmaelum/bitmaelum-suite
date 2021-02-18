@@ -17,19 +17,46 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package cmd
 
-import "time"
+import (
+	"fmt"
+	"os"
 
-var timeNow = time.Now
+	"github.com/spf13/cobra"
+)
 
-// SetMockTime will set the mocked time. Use in tests only
-func SetMockTime(t func() time.Time) {
-	timeNow = t
+var accountStorePutCmd = &cobra.Command{
+	Use:   "put",
+	Short: "Store contents into the store",
+	Run: func(cmd *cobra.Command, args []string) {
+		client, info, err := authenticate(*astAccount)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		err = client.StorePutValue(*info.StoreKey, info.Address.Hash(), *aspPath, *aspValue)
+		if err != nil {
+			fmt.Println("error while setting store path")
+			os.Exit(1)
+		}
+
+		fmt.Println("value stored")
+	},
 }
 
-// TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
-func TimeNow() time.Time {
-	ct := timeNow().Unix()
-	return time.Unix(ct, 0).UTC()
+var (
+	aspPath  *string
+	aspValue *string
+)
+
+func init() {
+	accountStoreCmd.AddCommand(accountStorePutCmd)
+
+	aspPath = accountStorePutCmd.PersistentFlags().String("path", "", "Path to store on")
+	aspValue = accountStorePutCmd.PersistentFlags().String("value", "", "Value to store")
+
+	_ = accountStorePutCmd.MarkPersistentFlagRequired("path")
+	_ = accountStorePutCmd.MarkPersistentFlagRequired("value")
 }

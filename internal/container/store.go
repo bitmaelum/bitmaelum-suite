@@ -17,19 +17,28 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package container
 
-import "time"
+import (
+	"sync"
 
-var timeNow = time.Now
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+	"github.com/bitmaelum/bitmaelum-suite/internal/store"
+)
 
-// SetMockTime will set the mocked time. Use in tests only
-func SetMockTime(t func() time.Time) {
-	timeNow = t
+var (
+	storeOnce       sync.Once
+	storeRepository store.Repository
+)
+
+func setupStoreRepo() (interface{}, error) {
+	storeOnce.Do(func() {
+		storeRepository = store.NewBoltRepository(config.Server.Paths.Accounts)
+	})
+
+	return storeRepository, nil
 }
 
-// TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
-func TimeNow() time.Time {
-	ct := timeNow().Unix()
-	return time.Unix(ct, 0).UTC()
+func init() {
+	Instance.SetShared("store", setupStoreRepo)
 }

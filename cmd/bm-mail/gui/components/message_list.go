@@ -28,6 +28,7 @@ import (
 	"github.com/rivo/tview"
 )
 
+// MessageList holds a list of messages
 type MessageList struct {
 	*tview.Box
 
@@ -48,6 +49,7 @@ func NewMessageList() *MessageList {
 	return m
 }
 
+// SetSelectFunc will set the handler that will be called when a message is selected
 func (m *MessageList) SetSelectFunc(f func(ml MessageList, idx int)) {
 	m.selectFunc = f
 }
@@ -120,6 +122,7 @@ func (m *MessageList) printColumns(screen tcell.Screen, x, y int, col tcell.Colo
 	}
 }
 
+// InputHandler will be called when the focussed message list has input
 func (m *MessageList) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 	return m.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 		_, _, _, height := m.GetInnerRect()

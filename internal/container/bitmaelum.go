@@ -22,6 +22,7 @@ package container
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
+	"github.com/bitmaelum/bitmaelum-suite/internal/store"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
@@ -87,4 +88,9 @@ func (c *Type) GetTicketRepo() ticket.Repository {
 func (c *Type) GetWebhookRepo() webhook.Repository {
 	retValue, _ := c.Get(Webhook).(webhook.Repository)
 	return retValue
+}
+
+// GetStoreRepo will return the current store repository
+func (c *Type) GetStoreRepo() store.Repository {
+	return c.Get("store").(store.Repository)
 }

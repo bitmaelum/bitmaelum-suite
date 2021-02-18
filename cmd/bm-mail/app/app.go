@@ -54,4 +54,5 @@ type BmMailAppType struct {
 	MessageView        *tview.TextView
 }
 
+// MailApp is the general mail app structure
 var MailApp *BmMailAppType

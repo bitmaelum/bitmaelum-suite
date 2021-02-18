@@ -17,19 +17,40 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package store
 
-import "time"
+import (
+	"testing"
+	"time"
 
-var timeNow = time.Now
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/stretchr/testify/assert"
+)
 
-// SetMockTime will set the mocked time. Use in tests only
-func SetMockTime(t func() time.Time) {
-	timeNow = t
+func TestNewEntry(t *testing.T) {
+	internal.SetMockTime(func() time.Time {
+		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
+	})
+
+	e := NewEntry([]byte("foobar"))
+	assert.Equal(t, []byte("foobar"), e.Data)
+	assert.Equal(t, int64(1262349296), e.Timestamp)
 }
 
-// TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
-func TimeNow() time.Time {
-	ct := timeNow().Unix()
-	return time.Unix(ct, 0).UTC()
+func TestMarshalling(t *testing.T) {
+	internal.SetMockTime(func() time.Time {
+		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
+	})
+
+	e := NewEntry([]byte("foobar"))
+	b, err := e.MarshalBinary()
+	assert.NoError(t, err)
+	assert.Equal(t, "{\"path\":\"\",\"parent\":null,\"data\":\"Zm9vYmFy\",\"timestamp\":1262349296,\"has_children\":false,\"entries\":null,\"signature\":null}", string(b))
+
+	e2 := &EntryType{}
+	err = e2.UnmarshalBinary(b)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("foobar"), e2.Data)
+	assert.Equal(t, int64(1262349296), e2.Timestamp)
+
 }

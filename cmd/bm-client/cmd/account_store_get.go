@@ -17,47 +17,54 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package container
+package cmd
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
-	"sync"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
-	"github.com/bitmaelum/bitmaelum-suite/internal/key"
-	"github.com/go-redis/redis/v7"
+	"github.com/spf13/cobra"
 )
 
-var (
-	authKeyOnce       sync.Once
-	authKeyRepository key.AuthKeyRepo
-)
-
-func setupAuthKeyRepo() (interface{}, error) {
-	authKeyOnce.Do(func() {
-		// If redis.host is set on the config file it will use redis instead of bolt
-		if config.Server.Redis.Host != "" {
-			opts := redis.Options{
-				Addr: config.Server.Redis.Host,
-				DB:   config.Server.Redis.Db,
-			}
-
-			authKeyRepository = key.NewAuthKeyRedisRepository(&opts)
-			return
+var accountStoreGetCmd = &cobra.Command{
+	Use:   "get",
+	Short: "Retrieve contents from the store",
+	Run: func(cmd *cobra.Command, args []string) {
+		client, info, err := authenticate(*astAccount)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
-		// If redis is not set then it will use BoltDB as default
-
-		// Use temp dir if no dir is given
-		if config.Server.Bolt.DatabasePath == "" {
-			config.Server.Bolt.DatabasePath = os.TempDir()
+		entry, err := client.StoreGetPath(*info.StoreKey, info.Address.Hash(), *asgPath, *asgRecursive, time.Unix(*asgSince, 0))
+		if err != nil {
+			fmt.Println("cannot find store key")
+			os.Exit(1)
 		}
-		authKeyRepository = key.NewAuthBoltRepository(config.Server.Bolt.DatabasePath)
-	})
 
-	return authKeyRepository, nil
+		b, err := json.MarshalIndent(entry, "", "  ")
+		if err != nil {
+			fmt.Println("cannot marshal entry data")
+			os.Exit(1)
+		}
+		fmt.Println(string(b))
+	},
 }
 
+var (
+	asgPath      *string
+	asgRecursive *bool
+	asgSince     *int64
+)
+
 func init() {
-	Instance.SetShared("auth-key", setupAuthKeyRepo)
+	accountStoreCmd.AddCommand(accountStoreGetCmd)
+
+	asgPath = accountStoreGetCmd.PersistentFlags().String("path", "", "Path to get")
+	asgRecursive = accountStoreGetCmd.PersistentFlags().Bool("recursive", false, "Recursive fetch")
+	asgSince = accountStoreGetCmd.PersistentFlags().Int64("since", 0, "Timestamp to filter from")
+
+	_ = accountStorePutCmd.MarkPersistentFlagRequired("path")
 }

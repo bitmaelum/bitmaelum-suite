@@ -34,12 +34,11 @@ import (
 	"github.com/rivo/tview"
 )
 
+// Refresh will refresh all components that might have changed
 func Refresh() {
-
-	// Resync the vault if needed
 	if app.MailApp.Vault != nil && app.MailApp.StaleVault {
-		RefreshAccountList()
-		RefreshAccountScreen()
+		refreshAccountList()
+		refreshAccountScreen()
 
 		app.MailApp.StaleVault = false
 	}
@@ -56,7 +55,7 @@ func Refresh() {
 		}
 
 		// Update all things which uses the address
-		RefreshBoxes()
+		refreshBoxes()
 
 		app.MailApp.StaleAddr = false
 	}
@@ -70,7 +69,7 @@ func Refresh() {
 		}
 
 		// Update all things which uses the box
-		RefreshMessageList()
+		refreshMessageList()
 		app.MailApp.StaleBox = false
 	}
 
@@ -119,7 +118,7 @@ func authenticate() (*vault.AccountInfo, error) {
 	return info, nil
 }
 
-func RefreshBoxes() {
+func refreshBoxes() {
 	if app.MailApp.CurrentAddr == nil {
 		return
 	}
@@ -155,7 +154,7 @@ func (s sortedAccounts) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func RefreshAccountList() {
+func refreshAccountList() {
 	if app.MailApp.Vault == nil {
 		return
 	}
@@ -173,7 +172,7 @@ func RefreshAccountList() {
 	app.MailApp.App.SetFocus(app.MailApp.MessageAccountTree)
 }
 
-func RefreshAccountScreen() {
+func refreshAccountScreen() {
 	if app.MailApp.Vault == nil {
 		AccountList.Clear()
 		OrganisationList.Clear()
@@ -188,7 +187,7 @@ func RefreshAccountScreen() {
 	}
 }
 
-func RefreshMessageList() {
+func refreshMessageList() {
 	info, err := app.MailApp.Vault.GetAccountInfo(*app.MailApp.CurrentAddr)
 	if err != nil {
 		return
