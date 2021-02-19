@@ -61,14 +61,13 @@ jobs:
         shell: bash
         run: |
           mkdir -p build
-          msi="$(basename "${{ steps.download_binaries.outputs.zip }}" ".zip").msi"
-          printf "::set-output name=msi::%s\n" "$msi"
-          go-msi make --msi "$PWD/$msi" --out "$PWD/build" --version "${GITHUB_REF#refs/tags/}" --arch x64
 
           # Convert license to rtf
           go-msi to-rtf --src LICENSE --out LICENSE.rtf
 
-          go-msi make --msi "$PWD/$msi" --out "$PWD/build" --version "v0.1.1-1" --arch x64
+          msi="$(basename "${{ steps.download_binaries.outputs.zip }}" ".zip").msi"
+          printf "::set-output name=msi::%s\n" "$msi"
+          go-msi make --msi "$PWD/$msi" --out "$PWD/build" --version "${GITHUB_REF#refs/tags/}" --arch x64
       - name: Decode cert
         shell: bash
         run: |
