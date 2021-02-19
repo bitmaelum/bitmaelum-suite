@@ -1,4 +1,4 @@
-## 0.1.1 (2021-???-??)
+## 0.1.1 (2021-feb-19)
 
 Added bm-bridge: This program will act as an IMAP/SMTP service between the bitmaelum network and regular email.
 Added bm-mail: This allows you to read your mail through a textual user interface (incomplete)
