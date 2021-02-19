@@ -1,7 +1,11 @@
+## 0.1.1-1 (2021-feb-19)
+
+- Hotfix on the MSI packaging
+
 ## 0.1.1 (2021-feb-19)
 
-Added bm-bridge: This program will act as an IMAP/SMTP service between the bitmaelum network and regular email.
-Added bm-mail: This allows you to read your mail through a textual user interface (incomplete)
+- Added bm-bridge: This program will act as an IMAP/SMTP service between the bitmaelum network and regular email.
+- Added bm-mail: This allows you to read your mail through a textual user interface (incomplete)
 
 ### Security
 - <a href="https://github.com/bitmaelum/bitmaelum-suite/commit/3ce19bd0403202d8103f6ea4d964de2e1cccc9df">view commit</a>  &bull; Organisations have to be whitelisted before they are accepted on the server

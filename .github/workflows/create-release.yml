@@ -68,7 +68,7 @@ jobs:
           # Convert license to rtf
           go-msi to-rtf --src LICENSE --out LICENSE.rtf
 
-          go-msi make --msi "$PWD/$msi" --out "$PWD/build" --version "v0.0.8" --arch x64
+          go-msi make --msi "$PWD/$msi" --out "$PWD/build" --version "v0.1.1-1" --arch x64
       - name: Decode cert
         shell: bash
         run: |
