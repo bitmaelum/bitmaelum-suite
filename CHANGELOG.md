@@ -1,6 +1,14 @@
+## 0.1.2 (2012-xxx-xx)
+
+- Default opening notepad on windows when editting config or messages
+
+
+
 ## 0.1.1-1 (2021-feb-19)
 
 - Hotfix on the MSI packaging
+
+
 
 ## 0.1.1 (2021-feb-19)
 
@@ -20,6 +28,7 @@
 - Updated makefile to display success/failures a lot better
 - Dots and dashes are accepted in mail addresses, but not used
 - Implemented initial encrypted store that is saved server-side. This can be used for settings, contacts, subscriptions and such. 
+
 
 
 ## 0.1.0 (2021-jan-21) 
