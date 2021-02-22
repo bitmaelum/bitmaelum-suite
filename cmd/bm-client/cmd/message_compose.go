@@ -20,7 +20,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -36,8 +35,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
 )
-
-var errNoEditorFound = errors.New("cannot find editor")
 
 var composeCmd = &cobra.Command{
 	Use:     "compose",
