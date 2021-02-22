@@ -25,6 +25,8 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 )
 
 // JSONFileEditor will open a text editor where you can manually edit the given src json
@@ -46,7 +48,7 @@ func JSONFileEditor(src interface{}, dst interface{}) error {
 		return err
 	}
 
-	editor, err := getEditor()
+	editor, err := FindEditor(config.Client.Composer.Editor)
 	if err != nil {
 		return err
 	}
@@ -84,7 +86,7 @@ func JSONFileEditor(src interface{}, dst interface{}) error {
 
 // EditFile allows you to inplace edit a file until the editor returns success status
 func EditFile(file string) error {
-	editor, err := getEditor()
+	editor, err := FindEditor(config.Client.Composer.Editor)
 	if err != nil {
 		return err
 	}
@@ -107,14 +109,17 @@ func EditFile(file string) error {
 	}
 }
 
-// getEditor Get default editor
-func getEditor() (string, error) {
+// FindEditor Finds an editor
+func FindEditor(editorPath string) (string, error) {
+	if editorPath != "" {
+		return editorPath, nil
+	}
+
 	if os.Getenv("EDITOR") != "" {
 		return os.Getenv("EDITOR"), nil
 	}
 
-	editors := []string{"/usr/bin/editor", "/usr/bin/nano"}
-	for _, editor := range editors {
+	for _, editor := range getEditorPaths() {
 		_, err := os.Stat(editor)
 		if err == nil {
 			return editor, nil

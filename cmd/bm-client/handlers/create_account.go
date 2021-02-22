@@ -136,7 +136,7 @@ words in order to recreate the key:
 `)
 	info := s.Ctx.Value(ctxInfo).(*vault.AccountInfo)
 	kp := info.GetActiveKey().KeyPair
-	fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(&kp), 78))
+	fmt.Print(bminternal.WordWrap(bmcrypto.GetMnemonic(&kp), 78))
 	fmt.Print(`
 	
 Write these words down and store them in a secure environment. They are the 
@@ -239,7 +239,7 @@ func checkAccountInVault(s *stepper.Stepper) stepper.StepResult {
 
 func generateKeyPair(s *stepper.Stepper) stepper.StepResult {
 	kt := s.Ctx.Value(ctxKeyType).(bmcrypto.KeyType)
-	kp, err := bminternal.GenerateKeypairWithRandomSeed(kt)
+	kp, err := bmcrypto.GenerateKeypairWithRandomSeed(kt)
 	if err != nil {
 		return stepper.StepResult{
 			Status:  stepper.FAILURE,

@@ -17,13 +17,12 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package bmcrypto
 
 import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,11 +50,11 @@ func TestRandomSeedToMnemonic(t *testing.T) {
 }
 
 func TestGetMnemonic(t *testing.T) {
-	kp := bmcrypto.KeyPair{
+	kp := KeyPair{
 		Generator:   "FOOBAR",
 		FingerPrint: "",
-		PrivKey:     bmcrypto.PrivKey{},
-		PubKey:      bmcrypto.PubKey{},
+		PrivKey:     PrivKey{},
+		PubKey:      PubKey{},
 	}
 
 	s := GetMnemonic(&kp)
@@ -74,7 +73,7 @@ func TestGenerateKeypairFromMnemonic(t *testing.T) {
 }
 
 func TestGenerateKeypair(t *testing.T) {
-	kt, err := bmcrypto.FindKeyType("ed25519")
+	kt, err := FindKeyType("ed25519")
 	assert.NoError(t, err)
 
 	kp, err := GenerateKeypairWithRandomSeed(kt)

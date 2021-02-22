@@ -27,6 +27,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/console"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -70,7 +71,7 @@ This command creates a new routing file if one does not exist.`,
 			seed, err := hex.DecodeString(r.KeyPair.Generator)
 			checkError(err)
 
-			mnemonic, err = internal.RandomSeedToMnemonic(seed)
+			mnemonic, err = bmcrypto.RandomSeedToMnemonic(seed)
 			checkError(err)
 		}
 

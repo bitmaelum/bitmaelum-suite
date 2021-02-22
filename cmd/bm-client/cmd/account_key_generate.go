@@ -54,7 +54,7 @@ var accountKeyGenerateCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		kp, err := internal.GenerateKeypairWithRandomSeed(kt)
+		kp, err := bmcrypto.GenerateKeypairWithRandomSeed(kt)
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -74,7 +74,7 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-		fmt.Print(internal.WordWrap(internal.GetMnemonic(kp), 78))
+		fmt.Print(internal.WordWrap(bmcrypto.GetMnemonic(kp), 78))
 		fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 

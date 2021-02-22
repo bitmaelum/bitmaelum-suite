@@ -123,7 +123,7 @@ words in order to recreate the key:
 `)
 	info := s.Ctx.Value(ctxOrgInfo).(*vault.OrganisationInfo)
 	kp := info.GetActiveKey().KeyPair
-	fmt.Print(bminternal.WordWrap(bminternal.GetMnemonic(&kp), 78))
+	fmt.Print(bminternal.WordWrap(bmcrypto.GetMnemonic(&kp), 78))
 	fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 
@@ -215,7 +215,7 @@ func doProofOfWorkOrg(s *stepper.Stepper) stepper.StepResult {
 
 func generateOrganisationKeyPair(s *stepper.Stepper) stepper.StepResult {
 	kt := s.Ctx.Value(ctxOrgKeyType).(bmcrypto.KeyType)
-	kp, err := bminternal.GenerateKeypairWithRandomSeed(kt)
+	kp, err := bmcrypto.GenerateKeypairWithRandomSeed(kt)
 	if err != nil {
 		return stepper.StepResult{
 			Status:  stepper.FAILURE,

@@ -22,7 +22,6 @@ package vault
 import (
 	"errors"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
@@ -62,7 +61,7 @@ func (v *Vault) DecryptContainer(container *EncryptedContainer) error {
 				return errGenerateStoreKey
 			}
 
-			kp, err := internal.GenerateKeypairWithRandomSeed(kt)
+			kp, err := bmcrypto.GenerateKeypairWithRandomSeed(kt)
 			if err != nil {
 				return errGenerateStoreKey
 			}

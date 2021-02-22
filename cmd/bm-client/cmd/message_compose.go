@@ -25,9 +25,11 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -122,27 +124,13 @@ var composeCmd = &cobra.Command{
 	},
 }
 
-func findEditorPath() (string, error) {
-	var editorPath = config.Client.Composer.Editor
-	if editorPath != "" {
-		return editorPath, nil
-	}
-
-	editorPath = os.Getenv("EDITOR")
-	if editorPath != "" {
-		return editorPath, nil
-	}
-
-	return "", errNoEditorFound
-}
-
 func hasEditorConfigured() bool {
-	_, err := findEditorPath()
+	_, err := internal.FindEditor(config.Client.Composer.Editor)
 	return err == nil
 }
 
 func readFromRegularEditor() (string, error) {
-	p, err := findEditorPath()
+	p, err := internal.FindEditor(config.Client.Composer.Editor)
 	if err != nil {
 		return "", err
 	}
@@ -168,7 +156,11 @@ func readFromRegularEditor() (string, error) {
 }
 
 func readFromStdinEditor() (string, error) {
-	fmt.Print("\U00002709 Enter your message and press CTRL-D when done.\n")
+	if runtime.GOOS == "windows" {
+		fmt.Print("\U00002709 Enter your message and press 'CTRL-Z <enter>' when done.\n")
+	} else {
+		fmt.Print("\U00002709 Enter your message and press 'CTRL-D' when done.\n")
+	}
 
 	data, err := ioutil.ReadAll(os.Stdin)
 	return string(data), err
