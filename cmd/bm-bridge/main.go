@@ -31,6 +31,7 @@ import (
 
 	common "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/kardianos/service"
 
 	imapgw "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal/imap/backend"
 	smtpgw "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal/smtp/backend"
@@ -50,12 +51,31 @@ type options struct {
 	Vault          string `long:"vault" description:"Custom vault file" default:""`
 	Version        bool   `short:"v" long:"version" description:"Display version information"`
 	Debug          bool   `long:"debug" description:"It will print all the communications to this imap/smtp server"`
+	Service        bool   `long:"service" description:"Execute as a service"`
 }
 
 // Opts are the options set through the command line
 var opts options
 
-func main() {
+type program struct {
+	context    context.Context
+	cancelFunc context.CancelFunc
+}
+
+func (p *program) Start(s service.Service) error {
+	// Start should not block. Do the actual work async.
+	go p.Run()
+	return nil
+}
+
+func (p *program) Stop(s service.Service) error {
+	// Stop should not block. Return with a few seconds.
+	p.context.Done()
+	<-time.After(time.Second * 2)
+	return nil
+}
+
+func (p *program) Run() {
 	rand.Seed(time.Now().UnixNano())
 
 	internal.ParseOptions(&opts)
@@ -92,6 +112,8 @@ func main() {
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	p.cancelFunc = cancel
+	p.context = ctx
 
 	// Wait for signals and cancel context
 	go setupSignals(cancel)
@@ -113,6 +135,26 @@ func main() {
 
 	<-ctx.Done()
 
+}
+
+func main() {
+	prg := &program{}
+	internal.ParseOptions(&opts)
+
+	if opts.Service {
+		s, err := service.New(prg, internal.GetBMBridgeService("", "", ""))
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		err = s.Run()
+		if err != nil {
+			logrus.Error(err)
+		}
+		return
+	}
+
+	prg.Run()
 }
 
 func setupSignals(cancel context.CancelFunc) {
