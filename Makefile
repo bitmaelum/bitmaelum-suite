@@ -5,7 +5,7 @@
 SHELL=/usr/bin/env bash -O globstar
 
 # Default repository
-REPO="github.com/bitmaelum/bitmaelum-suite"
+REPO=github.com/bitmaelum/bitmaelum-suite
 
 # Our defined apps and tools
 APPS := bm-server bm-client bm-config bm-mail bm-send bm-json bm-bridge
@@ -29,20 +29,11 @@ COMMIT=$(shell git rev-parse HEAD)
 VERSIONTAG="v0.0.0"
 LD_FLAGS = -ldflags "-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMIT}' -X '${PKG}.VersionTag=${VERSIONTAG}'"
 
-
 # Set environment variables from GO env if not set explicitly already
-ifndef $(GOPATH)
-    GOPATH=$(shell go env GOPATH)
-    export GOPATH
-endif
-ifndef $(GOOS)
-    GOOS=$(shell go env GOOS)
-    export GOOS
-endif
-ifndef $(GOARCH)
-    GOARCH=$(shell go env GOARCH)
-    export GOARCH
-endif
+GOPATH ?= $(shell go env GOPATH)
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+
 
 # paths to binaries
 GO_STATCHECK_BIN = $(GOPATH)/bin/staticcheck
@@ -128,7 +119,8 @@ $(TOOLS):
 # Build GOOS/GOARCH apps in separate release directory
 $(CROSS_APPS):
 	$(info -   Building app $(subst cross-,,$@) (${GOOS}-${GOARCH}))
-	CGO_ENABLED=0 go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/cmd/$(subst cross-,,$@)
+	if [[ "${GOOS}" == "windows" ]]; then SUFFIX=".exe"; else SUFFIX="" ; fi; \
+	CGO_ENABLED=0 go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@)$${SUFFIX} $(REPO)/cmd/$(subst cross-,,$@)
 
 # Build GOOS/GOARCH tools in separate release directory
 $(CROSS_TOOLS):
@@ -136,14 +128,14 @@ $(CROSS_TOOLS):
 	go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/tools/$(subst cross-,,$@)
 
 $(BUILD_ALL_PLATFORMS):
-	make -j $(CROSS_APPS)
-	#make -j $(CROSS_TOOLS)
+	make -j $(CROSS_APPS) GOOS=${GOOS} GOARCH=${GOARCH}
+	#make -j $(CROSS_TOOLS) GOOS=${GOOS} GOARCH=${GOARCH}
 
 $(PLATFORMS):
 	$(eval GOOS=$(firstword $(subst -, ,$@)))
 	$(eval GOARCH=$(lastword $(subst -, ,$@)))
 	$(info - Cross platform build $(GOOS) / $(GOARCH))
-	make -j build-all-$(GOOS)-$(GOARCH)
+	make -j build-all-$(GOOS)-$(GOARCH) GOOS=$(GOOS) GOARCH=$(GOARCH)
 
 info:
 	$(info Building BitMaelum apps and tools)
