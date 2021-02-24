@@ -136,6 +136,7 @@ func LoadServerConfigOrPass(configPath string) error {
 // Expands the given path and loads the configuration
 func readConfigPath(p, src string, loader func(r io.Reader) error, loadedPath *string) error {
 	p, _ = homedir.Expand(p)
+	p, _ = filepath.Abs(p)
 
 	triedPaths = append(triedPaths, p+" ("+src+")")
 

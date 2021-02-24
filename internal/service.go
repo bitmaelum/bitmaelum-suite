@@ -22,73 +22,99 @@ package internal
 import (
 	"os"
 	"os/exec"
+	"os/user"
 	"runtime"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/kardianos/service"
 )
 
 const (
 	windowsOS = "windows"
+	linuxOS   = "linux"
+	macOS     = "darwin"
 )
+
+type options struct {
+	ImapHost string `long:"imaphost" description:"Host:Port to imap server from" required:"false"`
+	SMTPHost string `long:"smtphost" description:"Host:Port to smtp server from" required:"false"`
+	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
+	Password string `short:"p" long:"password" description:"Vault password" default:""`
+}
+
+var opts options
 
 // GetBMServerService will return the service info
 func GetBMServerService(executable string) *service.Config {
-	options := make(service.KeyValue)
-	options["Restart"] = "on-success"
-	options["SuccessExitStatus"] = "1 2 8 SIGKILL"
+	ParseOptions(&opts)
 
-	svcConfig := &service.Config{
-		Name:        "BM-Server",
-		DisplayName: "BitMaelum server",
-		Description: "BitMaelum server service",
-		Arguments:   []string{"--service"},
-		Dependencies: []string{
-			"Requires=network.target",
-			"After=network-online.target syslog.target"},
-		Option: options,
+	var arguments []string
+	arguments = append(arguments, "--service")
+
+	config.LoadServerConfig(opts.Config)
+	arguments = append(arguments, "--config="+config.LoadedServerConfigPath)
+
+	return getServiceConfig("BM-Server", "BitMaelum server", "BitMaelum server service", executable, arguments)
+}
+
+// GetBMBridgeService will return the service info
+func GetBMBridgeService(executable string) *service.Config {
+	ParseOptions(&opts)
+
+	if opts.ImapHost == "" {
+		opts.ImapHost = "127.0.0.1:1143"
 	}
 
-	if executable != "" {
-		svcConfig.Executable = executable
-		if runtime.GOOS == windowsOS {
-			svcConfig.Executable = executable + ".exe"
-		}
-
-		if _, err := os.Stat(svcConfig.Executable); os.IsNotExist(err) {
-			svcConfig.Executable, err = exec.LookPath(svcConfig.Executable)
-			if err != nil {
-				return nil
-			}
-		}
-
+	if opts.SMTPHost == "" {
+		opts.SMTPHost = "127.0.0.1:1025"
 	}
+
+	var arguments []string
+	arguments = append(arguments, "--service")
+	arguments = append(arguments, "--imaphost="+opts.ImapHost)
+	arguments = append(arguments, "--smtphost="+opts.SMTPHost)
+
+	if opts.Password != "" {
+		arguments = append(arguments, "--password="+opts.Password)
+	}
+
+	config.LoadClientConfig(opts.Config)
+	arguments = append(arguments, "--config="+config.LoadedClientConfigPath)
+
+	// Run as current user
+	user, err := user.Current()
+	if err != nil {
+		return nil
+	}
+
+	svcConfig := getServiceConfig("BM-Bridge", "BitMaelum email bridge", "BitMaelum email bridge service", executable, arguments)
+
+	svcConfig.UserName = user.Username
 
 	return svcConfig
 }
 
-// GetBMBridgeService will return the service info
-func GetBMBridgeService(executable, imaphost, smtphost string) *service.Config {
+func getServiceConfig(name, displayName, description, executable string, arguments []string) *service.Config {
 	options := make(service.KeyValue)
 	options["Restart"] = "on-success"
 	options["SuccessExitStatus"] = "1 2 8 SIGKILL"
 
-	if imaphost == "" {
-		imaphost = "127.0.0.1:1143"
-	}
-
-	if smtphost == "" {
-		smtphost = "127.0.0.1:1025"
-	}
-
 	svcConfig := &service.Config{
-		Name:        "BM-Bridge",
-		DisplayName: "BitMaelum email bridge",
-		Description: "BitMaelum email bridge service",
-		Arguments:   []string{"--service", "--imaphost=" + imaphost, "--smtphost=" + smtphost},
-		Dependencies: []string{
+		Name:        name,
+		DisplayName: displayName,
+		Description: description,
+		Arguments:   arguments,
+		Option:      options,
+	}
+
+	switch runtime.GOOS {
+	case linuxOS:
+		svcConfig.Dependencies = []string{
 			"Requires=network.target",
-			"After=network-online.target syslog.target"},
-		Option: options,
+			"After=network-online.target syslog.target"}
+
+	case windowsOS:
+		svcConfig.Dependencies = []string{"Tcpip"}
 	}
 
 	if executable != "" {

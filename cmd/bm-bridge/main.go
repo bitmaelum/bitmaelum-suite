@@ -142,7 +142,7 @@ func main() {
 	internal.ParseOptions(&opts)
 
 	if opts.Service {
-		s, err := service.New(prg, internal.GetBMBridgeService("", "", ""))
+		s, err := service.New(prg, internal.GetBMBridgeService(""))
 		if err != nil {
 			logrus.Fatal(err)
 		}

@@ -39,9 +39,9 @@ func getServiceName(cmd *cobra.Command) *service.Config {
 	}
 
 	if i, _ := cmd.Flags().GetBool("bm-bridge"); i {
-		imaphost, _ := cmd.Flags().GetString("imaphost")
-		smtphost, _ := cmd.Flags().GetString("smtphost")
-		return internal.GetBMBridgeService("bm-bridge", imaphost, smtphost)
+		//imaphost, _ := cmd.Flags().GetString("imaphost")
+		//smtphost, _ := cmd.Flags().GetString("smtphost")
+		return internal.GetBMBridgeService("bm-bridge")
 	}
 
 	cmd.Help()

@@ -53,6 +53,7 @@ func installService(svc *service.Config) error {
 func init() {
 	serviceInstallCmd.Flags().String("imaphost", "", "Set the host for the IMAP server (bm-bridge)")
 	serviceInstallCmd.Flags().String("smtphost", "", "Set the host for the SMTP server (bm-bridge)")
+	serviceInstallCmd.Flags().String("password", "", "Specify the vault password (usually not needed)")
 	serviceInstallCmd.Flags().Bool("bm-server", false, "Manage bm-server service")
 	serviceInstallCmd.Flags().Bool("bm-bridge", false, "Manage bm-bridge service")
 
