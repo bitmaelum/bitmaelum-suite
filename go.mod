@@ -3,6 +3,7 @@ module github.com/bitmaelum/bitmaelum-suite
 go 1.13
 
 require (
+	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/c2h5oh/datasize v0.0.0-20200825124411-48ed595a09d2
 	github.com/cloudflare/gokey v0.1.0
 	github.com/coreos/go-semver v0.3.0
@@ -50,7 +51,7 @@ require (
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/mod v0.4.1 // indirect
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
-	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
+	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
 	golang.org/x/text v0.3.4 // indirect
 	golang.org/x/tools v0.1.0 // indirect

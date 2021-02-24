@@ -17,50 +17,22 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package cmd
+package main
 
 import (
-	"os"
-
+	"github.com/Freman/eventloghook"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
-	"github.com/kardianos/service"
-	"github.com/spf13/cobra"
+	"github.com/sirupsen/logrus"
 )
 
-// serviceCmd represents the serviceCmd command
-var serviceCmd = &cobra.Command{
-	Use:   "service",
-	Short: "Service management",
-}
-
-func getServiceName(cmd *cobra.Command) *service.Config {
-	if i, _ := cmd.Flags().GetBool("bm-server"); i {
-		return internal.GetBMServerService("")
-	}
-
-	if i, _ := cmd.Flags().GetBool("bm-bridge"); i {
-		return internal.GetBMBridgeService("")
-	}
-
-	cmd.Help()
-	os.Exit(0)
-	return nil
-}
-
-func getServiceNameForInstall(cmd *cobra.Command) *service.Config {
-	if i, _ := cmd.Flags().GetBool("bm-server"); i {
-		return internal.GetBMServerService("bm-server")
-	}
-
-	if i, _ := cmd.Flags().GetBool("bm-bridge"); i {
-		return internal.GetBMBridgeService("bm-bridge")
-	}
-
-	cmd.Help()
-	os.Exit(0)
-	return nil
-}
-
 func init() {
-	rootCmd.AddCommand(serviceCmd)
+	internal.ParseOptions(&opts)
+
+	if opts.Service {
+		elog, err = eventlog.Open("BitMaelum Server")
+		if err == nil {
+			defer elog.Close()
+			logrus.AddHook(eventloghook.NewHook(elog))
+		}
+	}
 }

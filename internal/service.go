@@ -40,6 +40,7 @@ type options struct {
 	SMTPHost string `long:"smtphost" description:"Host:Port to smtp server from" required:"false"`
 	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
 	Password string `short:"p" long:"password" description:"Vault password" default:""`
+	UserName string `long:"username" description:"Username to run the service as" default:""`
 }
 
 var opts options
@@ -54,7 +55,17 @@ func GetBMServerService(executable string) *service.Config {
 	config.LoadServerConfig(opts.Config)
 	arguments = append(arguments, "--config="+config.LoadedServerConfigPath)
 
-	return getServiceConfig("BM-Server", "BitMaelum server", "BitMaelum server service", executable, arguments)
+	svcConfig := getServiceConfig("BM-Server", "BitMaelum server", "BitMaelum server service", executable, arguments)
+
+	if svcConfig == nil {
+		return nil
+	}
+
+	if opts.UserName != "" {
+		svcConfig.UserName = opts.UserName
+	}
+
+	return svcConfig
 }
 
 // GetBMBridgeService will return the service info
@@ -81,7 +92,7 @@ func GetBMBridgeService(executable string) *service.Config {
 	config.LoadClientConfig(opts.Config)
 	arguments = append(arguments, "--config="+config.LoadedClientConfigPath)
 
-	// Run as current user
+	// Get current user
 	user, err := user.Current()
 	if err != nil {
 		return nil
@@ -89,7 +100,15 @@ func GetBMBridgeService(executable string) *service.Config {
 
 	svcConfig := getServiceConfig("BM-Bridge", "BitMaelum email bridge", "BitMaelum email bridge service", executable, arguments)
 
-	svcConfig.UserName = user.Username
+	if svcConfig == nil {
+		return nil
+	}
+
+	if opts.UserName != "" {
+		svcConfig.UserName = opts.UserName
+	} else {
+		svcConfig.UserName = user.Username
+	}
 
 	return svcConfig
 }

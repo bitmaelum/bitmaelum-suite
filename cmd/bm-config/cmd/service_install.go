@@ -22,6 +22,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/kardianos/service"
 	"github.com/sirupsen/logrus"
@@ -34,7 +35,7 @@ var serviceInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs the service into the system",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := installService(getServiceName(cmd), cmd)
+		err := installService(getServiceNameForInstall(cmd))
 		if err != nil {
 			logrus.Fatalf("Unable to install service: %v", err)
 		}
@@ -43,9 +44,9 @@ var serviceInstallCmd = &cobra.Command{
 	},
 }
 
-func installService(svc *service.Config, cmd *cobra.Command) error {
-	if i, _ := cmd.Flags().GetBool("bm-bridge"); i {
-		// We need the user password
+func installService(svc *service.Config) error {
+	if svc.UserName != "" && runtime.GOOS == "windows" {
+		// On windows we need the user password
 		fmt.Print("\nPlease enter the password for your username \"" + svc.UserName + "\": ")
 		b, _ := term.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Println("")
@@ -64,7 +65,8 @@ func installService(svc *service.Config, cmd *cobra.Command) error {
 func init() {
 	serviceInstallCmd.Flags().String("imaphost", "", "Set the host for the IMAP server (bm-bridge)")
 	serviceInstallCmd.Flags().String("smtphost", "", "Set the host for the SMTP server (bm-bridge)")
-	serviceInstallCmd.Flags().String("password", "", "Specify the vault password (not needed if running the service)")
+	serviceInstallCmd.Flags().String("password", "", "Specify the vault password (not needed if running the service as a user. This is not the user password, but the vault password)")
+	serviceInstallCmd.Flags().String("username", "", "Set the username to run the service as")
 	serviceInstallCmd.Flags().Bool("bm-server", false, "Manage bm-server service")
 	serviceInstallCmd.Flags().Bool("bm-bridge", false, "Manage bm-bridge service")
 
