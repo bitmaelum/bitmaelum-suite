@@ -21,10 +21,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/kardianos/service"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 // serviceInstallCmd represents the serviceInstallCmd command
@@ -32,7 +34,7 @@ var serviceInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs the service into the system",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := installService(getServiceName(cmd))
+		err := installService(getServiceName(cmd), cmd)
 		if err != nil {
 			logrus.Fatalf("Unable to install service: %v", err)
 		}
@@ -41,7 +43,16 @@ var serviceInstallCmd = &cobra.Command{
 	},
 }
 
-func installService(svc *service.Config) error {
+func installService(svc *service.Config, cmd *cobra.Command) error {
+	if i, _ := cmd.Flags().GetBool("bm-bridge"); i {
+		// We need the user password
+		fmt.Print("\nPlease enter the password for your username \"" + svc.UserName + "\": ")
+		b, _ := term.ReadPassword(int(os.Stdin.Fd()))
+		fmt.Println("")
+
+		svc.Option["Password"] = string(b)
+	}
+
 	s, err := service.New(nil, svc)
 	if err != nil {
 		return err
@@ -53,7 +64,7 @@ func installService(svc *service.Config) error {
 func init() {
 	serviceInstallCmd.Flags().String("imaphost", "", "Set the host for the IMAP server (bm-bridge)")
 	serviceInstallCmd.Flags().String("smtphost", "", "Set the host for the SMTP server (bm-bridge)")
-	serviceInstallCmd.Flags().String("password", "", "Specify the vault password (usually not needed)")
+	serviceInstallCmd.Flags().String("password", "", "Specify the vault password (not needed if running the service)")
 	serviceInstallCmd.Flags().Bool("bm-server", false, "Manage bm-server service")
 	serviceInstallCmd.Flags().Bool("bm-bridge", false, "Manage bm-bridge service")
 
