@@ -34,11 +34,11 @@ var serviceCmd = &cobra.Command{
 }
 
 func getServiceName(cmd *cobra.Command) *service.Config {
-	if i, _ := cmd.Flags().GetBool("bm-server"); i {
+	if i, _ := cmd.InheritedFlags().GetBool("bm-server"); i {
 		return internal.GetBMServerService("")
 	}
 
-	if i, _ := cmd.Flags().GetBool("bm-bridge"); i {
+	if i, _ := cmd.InheritedFlags().GetBool("bm-bridge"); i {
 		return internal.GetBMBridgeService("")
 	}
 
@@ -48,11 +48,11 @@ func getServiceName(cmd *cobra.Command) *service.Config {
 }
 
 func getServiceNameForInstall(cmd *cobra.Command) *service.Config {
-	if i, _ := cmd.Flags().GetBool("bm-server"); i {
+	if i, _ := cmd.InheritedFlags().GetBool("bm-server"); i {
 		return internal.GetBMServerService("bm-server")
 	}
 
-	if i, _ := cmd.Flags().GetBool("bm-bridge"); i {
+	if i, _ := cmd.InheritedFlags().GetBool("bm-bridge"); i {
 		return internal.GetBMBridgeService("bm-bridge")
 	}
 
@@ -62,5 +62,8 @@ func getServiceNameForInstall(cmd *cobra.Command) *service.Config {
 }
 
 func init() {
+	serviceCmd.PersistentFlags().Bool("bm-server", false, "Manage bm-server service")
+	serviceCmd.PersistentFlags().Bool("bm-bridge", false, "Manage bm-bridge service")
+
 	rootCmd.AddCommand(serviceCmd)
 }

@@ -32,12 +32,23 @@ var serviceRemoveCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Remove the service from the system",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := removeService(getServiceName(cmd))
+		fmt.Print("Stopping service... ")
+		err := stopService(getServiceName(cmd))
 		if err != nil {
+			fmt.Println("ERR")
+			logrus.Fatalf("Unable to stop service: %v", err)
+		}
+
+		fmt.Println("OK")
+
+		fmt.Print("Removing service... ")
+		err = removeService(getServiceName(cmd))
+		if err != nil {
+			fmt.Println("ERR")
 			logrus.Fatalf("Unable to remove service: %v", err)
 		}
 
-		fmt.Println("Service removed")
+		fmt.Println("OK")
 	},
 }
 
@@ -51,8 +62,5 @@ func removeService(svc *service.Config) error {
 }
 
 func init() {
-	serviceRemoveCmd.Flags().Bool("bm-server", false, "Manage bm-server service")
-	serviceRemoveCmd.Flags().Bool("bm-bridge", false, "Manage bm-bridge service")
-
 	serviceCmd.AddCommand(serviceRemoveCmd)
 }

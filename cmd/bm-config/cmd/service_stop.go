@@ -32,12 +32,14 @@ var serviceStopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stops the service",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Print("Stopping service... ")
 		err := stopService(getServiceName(cmd))
 		if err != nil {
+			fmt.Println("ERR")
 			logrus.Fatalf("Unable to stop service: %v", err)
 		}
 
-		fmt.Println("Service stopped")
+		fmt.Println("OK")
 	},
 }
 
@@ -51,8 +53,5 @@ func stopService(svc *service.Config) error {
 }
 
 func init() {
-	serviceStopCmd.Flags().Bool("bm-server", false, "Manage bm-server service")
-	serviceStopCmd.Flags().Bool("bm-bridge", false, "Manage bm-bridge service")
-
 	serviceCmd.AddCommand(serviceStopCmd)
 }

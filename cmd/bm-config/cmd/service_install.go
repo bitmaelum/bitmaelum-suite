@@ -35,12 +35,27 @@ var serviceInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs the service into the system",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Print("Installing service... ")
+
 		err := installService(getServiceNameForInstall(cmd))
 		if err != nil {
+			fmt.Println("ERR")
 			logrus.Fatalf("Unable to install service: %v", err)
 		}
 
-		fmt.Println("Service installed")
+		fmt.Println("OK")
+
+		if i, _ := cmd.Flags().GetBool("start"); i {
+			fmt.Print("Starting service... ")
+
+			err = startService(getServiceName(cmd))
+			if err != nil {
+				fmt.Println("ERR")
+				logrus.Fatalf("Unable to start service: %v", err)
+			}
+
+			fmt.Println("OK")
+		}
 	},
 }
 
@@ -65,10 +80,9 @@ func installService(svc *service.Config) error {
 func init() {
 	serviceInstallCmd.Flags().String("imaphost", "", "Set the host for the IMAP server (bm-bridge)")
 	serviceInstallCmd.Flags().String("smtphost", "", "Set the host for the SMTP server (bm-bridge)")
-	serviceInstallCmd.Flags().String("password", "", "Specify the vault password (not needed if running the service as a user. This is not the user password, but the vault password)")
+	serviceInstallCmd.Flags().String("password", "", "Specify the vault password (bm-bridge) (probably not needed if running the service as a user. This is not the user password, but the vault password)")
 	serviceInstallCmd.Flags().String("username", "", "Set the username to run the service as")
-	serviceInstallCmd.Flags().Bool("bm-server", false, "Manage bm-server service")
-	serviceInstallCmd.Flags().Bool("bm-bridge", false, "Manage bm-bridge service")
+	serviceInstallCmd.Flags().Bool("start", false, "Start the service after install")
 
 	serviceCmd.AddCommand(serviceInstallCmd)
 }

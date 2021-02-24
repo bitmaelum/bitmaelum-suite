@@ -51,8 +51,5 @@ func startService(svc *service.Config) error {
 }
 
 func init() {
-	serviceStartCmd.Flags().Bool("bm-server", false, "Manage bm-server service")
-	serviceStartCmd.Flags().Bool("bm-bridge", false, "Manage bm-bridge service")
-
 	serviceCmd.AddCommand(serviceStartCmd)
 }
