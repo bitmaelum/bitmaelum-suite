@@ -32,12 +32,14 @@ var serviceStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Starts the service",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Print("Starting service... ")
 		err := startService(getServiceName(cmd))
 		if err != nil {
+			fmt.Println("ERR")
 			logrus.Fatalf("Unable to start service: %v", err)
 		}
 
-		fmt.Println("Service started")
+		fmt.Println("OK")
 	},
 }
 

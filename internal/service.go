@@ -36,11 +36,12 @@ const (
 )
 
 type options struct {
-	ImapHost string `long:"imaphost" description:"Host:Port to imap server from" required:"false"`
-	SMTPHost string `long:"smtphost" description:"Host:Port to smtp server from" required:"false"`
-	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
-	Password string `short:"p" long:"password" description:"Vault password" default:""`
-	UserName string `long:"username" description:"Username to run the service as" default:""`
+	ImapHost       string `long:"imaphost" description:"Host:Port to imap server from" required:"false"`
+	SMTPHost       string `long:"smtphost" description:"Host:Port to smtp server from" required:"false"`
+	Config         string `short:"c" long:"config" description:"Path to your configuration file"`
+	Password       string `short:"p" long:"password" description:"Vault password" default:""`
+	UserName       string `long:"username" description:"Username to run the service as" default:""`
+	GatewayAccount string `long:"gatewayaccount" description:"Account to use to check for pending outgoing mails" required:"false"`
 }
 
 var opts options
@@ -84,6 +85,10 @@ func GetBMBridgeService(executable string) *service.Config {
 	arguments = append(arguments, "--service")
 	arguments = append(arguments, "--imaphost="+opts.ImapHost)
 	arguments = append(arguments, "--smtphost="+opts.SMTPHost)
+
+	if opts.GatewayAccount == "" {
+		arguments = append(arguments, "--gatewayaccount="+opts.GatewayAccount)
+	}
 
 	if opts.Password != "" {
 		arguments = append(arguments, "--password="+opts.Password)
