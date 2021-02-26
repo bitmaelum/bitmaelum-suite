@@ -83,11 +83,12 @@ func GetBMBridgeService(executable string) *service.Config {
 
 	var arguments []string
 	arguments = append(arguments, "--service")
-	arguments = append(arguments, "--imaphost="+opts.ImapHost)
 	arguments = append(arguments, "--smtphost="+opts.SMTPHost)
 
 	if opts.GatewayAccount != "" {
 		arguments = append(arguments, "--gatewayaccount="+opts.GatewayAccount)
+	} else {
+		arguments = append(arguments, "--imaphost="+opts.ImapHost)
 	}
 
 	if opts.Password != "" {

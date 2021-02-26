@@ -263,10 +263,14 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}", handler.RetrieveMessagesFromBox).Methods("GET")
 	// Message fetching
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetClientToServerTicket).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}", handler.DeleteMessage).Methods("DELETE")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}", handler.GetMessage).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/block/{block:[A-Za-z0-9-]+}", handler.GetMessageBlock).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/attachment/{attachment:[A-Za-z0-9-]+}", handler.GetMessageAttachment).Methods("GET")
+	// Message handling
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}", handler.DeleteMessage).Methods("DELETE")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/move", handler.MoveMessage).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/copy", handler.CopyMessage).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/delete", handler.RemoveMessageFromBox).Methods("POST")
 	// Api keys
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey", handler.CreateAPIKey).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey", handler.ListAPIKeys).Methods("GET")

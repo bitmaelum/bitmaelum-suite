@@ -41,6 +41,19 @@ func (u *User) Username() string {
 	return strings.Replace(u.Account, "!", "", -1)
 }
 
+func getNameFromID(boxID int) string {
+	switch boxID {
+	case 1:
+		return folderInbox
+	case 2:
+		return folderSent
+	case 3:
+		return folderTrash
+	default:
+		return "BOX_" + strconv.Itoa(boxID)
+	}
+}
+
 // ListMailboxes for the user
 func (u *User) ListMailboxes(subscribed bool) (mailboxes []backend.Mailbox, err error) {
 	mbl, err := u.Client.GetMailboxList(u.Info.Address.Hash())
@@ -49,18 +62,7 @@ func (u *User) ListMailboxes(subscribed bool) (mailboxes []backend.Mailbox, err 
 	}
 
 	for _, box := range mbl.Boxes {
-		boxName := strconv.Itoa(box.ID)
-		switch box.ID {
-		case 1:
-			boxName = folderInbox
-		case 2:
-			boxName = folderSent
-		case 3:
-			boxName = folderTrash
-		default:
-			boxName = "BOX_" + boxName
-		}
-		mailbox, err := u.GetMailbox(boxName)
+		mailbox, err := u.GetMailbox(getNameFromID(box.ID))
 		if err != nil {
 			return nil, err
 		}
@@ -78,25 +80,14 @@ func (u *User) GetMailbox(name string) (backend.Mailbox, error) {
 	}
 
 	for _, box := range mbl.Boxes {
-		boxName := strconv.Itoa(box.ID)
-		switch box.ID {
-		case 1:
-			boxName = folderInbox
-		case 2:
-			boxName = folderSent
-		case 3:
-			boxName = folderTrash
-		default:
-			boxName = "BOX_" + boxName
-		}
-		if name == boxName {
+		if name == getNameFromID(box.ID) {
 			messages, err := refreshMailbox(u, box.ID, nil)
 			if err != nil {
 				return nil, err
 			}
 
 			mailbox := &Mailbox{
-				name:     boxName,
+				name:     getNameFromID(box.ID),
 				id:       box.ID,
 				user:     u,
 				Messages: messages,

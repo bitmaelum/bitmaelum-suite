@@ -52,6 +52,80 @@ func (api *API) RemoveMessage(addr hash.Hash, messageID string) error {
 	return nil
 }
 
+// RemoveMessageFromBox deletes a message on the server
+func (api *API) RemoveMessageFromBox(addr hash.Hash, messageID string, boxID int) error {
+	type inputRemoveMessage struct {
+		From int `json:"from"`
+	}
+
+	input := &inputRemoveMessage{
+		From: boxID,
+	}
+
+	url := fmt.Sprintf("/account/%s/message/%s/delete", addr.String(), messageID)
+	resp, statusCode, err := api.PostJSON(url, input)
+	if err != nil {
+		logrus.Trace(err)
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return GetErrorFromResponse(resp)
+	}
+
+	return nil
+}
+
+// CopyMessage copies a message to a mailbox
+func (api *API) CopyMessage(addr hash.Hash, messageID string, to int) error {
+	type inputCopyMessage struct {
+		To int `json:"to"`
+	}
+
+	input := &inputCopyMessage{
+		To: to,
+	}
+
+	url := fmt.Sprintf("/account/%s/message/%s/copy", addr.String(), messageID)
+	resp, statusCode, err := api.PostJSON(url, input)
+	if err != nil {
+		logrus.Trace(err)
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return GetErrorFromResponse(resp)
+	}
+
+	return nil
+}
+
+// MoveMessage moves a message frome one mailbox to another
+func (api *API) MoveMessage(addr hash.Hash, messageID string, from, to int) error {
+	type inputMoveMessage struct {
+		From int `json:"from"`
+		To   int `json:"to"`
+	}
+
+	input := &inputMoveMessage{
+		From: from,
+		To:   to,
+	}
+
+	url := fmt.Sprintf("/account/%s/message/%s/move", addr.String(), messageID)
+	resp, statusCode, err := api.PostJSON(url, input)
+	if err != nil {
+		logrus.Trace(err)
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return GetErrorFromResponse(resp)
+	}
+
+	return nil
+}
+
 // GetMessage retrieves a message header + catalog from a message
 func (api *API) GetMessage(addr hash.Hash, messageID string) (*Message, error) {
 	in := &Message{}

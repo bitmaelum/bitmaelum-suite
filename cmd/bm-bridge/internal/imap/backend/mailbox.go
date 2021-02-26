@@ -20,10 +20,19 @@
 package imapgw
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/emersion/go-imap"
+	"github.com/emersion/go-imap/backend"
 	"github.com/emersion/go-imap/backend/backendutil"
+	"github.com/sirupsen/logrus"
 )
 
 // Delimiter for mailboxes
@@ -211,15 +220,63 @@ func (mbox *Mailbox) UpdateMessagesFlags(uid bool, seqset *imap.SeqSet, op imap.
 		}
 
 		msg.Flags = backendutil.UpdateFlags(msg.Flags, op, flags)
+
+		logrus.Info(filepath.Join(os.TempDir(), "bm-bridge"))
+
+		if _, err := os.Stat(filepath.Join(os.TempDir(), "bm-bridge")); os.IsNotExist(err) {
+			logrus.Info("create tmpdir")
+			os.Mkdir(filepath.Join(os.TempDir(), "bm-bridge"), os.ModeDir)
+		}
+
+		tmpfn := filepath.Join(os.TempDir(), "bm-bridge", msg.ID)
+		buf := &bytes.Buffer{}
+		enc := json.NewEncoder(buf)
+		enc.Encode(msg.Flags)
+		err := ioutil.WriteFile(tmpfn, buf.Bytes(), 0666)
+		if err != nil {
+			logrus.Error(err)
+		}
 	}
 
 	return nil
 }
 
-// CopyMessages is not implemented yet
-func (mbox *Mailbox) CopyMessages(uid bool, seqset *imap.SeqSet, destName string) error {
-	return errUnimplemented
+func getIDFromName(boxName string) int {
+	switch boxName {
+	case folderInbox:
+		return 1
+	case folderSent:
+		return 2
+	case folderTrash:
+		return 3
+	default:
+		boxID, _ := strconv.Atoi(strings.TrimPrefix(boxName, "BOX_"))
+		return boxID
+	}
+}
 
+// CopyMessages will copy a message
+func (mbox *Mailbox) CopyMessages(uid bool, seqset *imap.SeqSet, destName string) error {
+	boxID := getIDFromName(destName)
+	if boxID == 0 {
+		return backend.ErrNoSuchMailbox
+	}
+
+	for i, msg := range mbox.Messages {
+		var id uint32
+		if uid {
+			id = msg.UID
+		} else {
+			id = uint32(i + 1)
+		}
+		if !seqset.Contains(id) {
+			continue
+		}
+
+		mbox.user.Client.MoveMessage(mbox.user.Info.Address.Hash(), msg.ID, mbox.id, boxID)
+	}
+
+	return nil
 }
 
 // Expunge will delete a message
@@ -230,7 +287,7 @@ func (mbox *Mailbox) Expunge() error {
 		deleted := false
 		for _, flag := range msg.Flags {
 			if flag == imap.DeletedFlag {
-				err := mbox.user.Client.RemoveMessage(mbox.user.Info.Address.Hash(), msg.ID)
+				err := mbox.user.Client.RemoveMessageFromBox(mbox.user.Info.Address.Hash(), msg.ID, mbox.id)
 				if err != nil {
 					return err
 				}

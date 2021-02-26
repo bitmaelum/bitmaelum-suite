@@ -20,7 +20,12 @@
 package imapgw
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
@@ -129,6 +134,14 @@ func refreshMailbox(u *User, boxid int, currentMessages []*Message) ([]*Message,
 			UID:  uint32(i),
 			ID:   msg.ID,
 			User: u,
+		}
+
+		// Get the flags
+		tmpfn := filepath.Join(os.TempDir(), "bm-bridge", msg.ID)
+		contents, err := ioutil.ReadFile(tmpfn)
+		if err == nil {
+			dec := json.NewDecoder(bytes.NewReader(contents))
+			dec.Decode(&message.Flags)
 		}
 
 		messages = append(messages, &message)
