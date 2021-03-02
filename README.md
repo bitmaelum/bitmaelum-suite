@@ -4,8 +4,7 @@
 ![BitMaelum CI](https://github.com/bitmaelum/bitmaelum-suite/workflows/BitMaelum%20CI/badge.svg?branch=develop)
 [![codecov](https://codecov.io/gh/bitmaelum/bitmaelum-suite/branch/develop/graph/badge.svg)](https://codecov.io/gh/bitmaelum/bitmaelum-suite)
 ![License](https://img.shields.io/github/license/bitmaelum/bitmaelum-suite)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/bitmaelum/bitmaelum-suite)         
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4122/badge)](https://bestpractices.coreinfrastructure.org/projects/4122)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/bitmaelum/bitmaelum-suite) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4122/badge)](https://bestpractices.coreinfrastructure.org/projects/4122)
 [![Gitter](https://badges.gitter.im/bitmaelum/community.svg)](https://gitter.im/bitmaelum/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=bitmaelum_bitmaelum-suite&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=bitmaelum_bitmaelum-suite)
          
