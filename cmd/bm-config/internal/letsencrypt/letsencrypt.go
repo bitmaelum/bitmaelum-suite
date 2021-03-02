@@ -130,7 +130,7 @@ func (le *LetsEncrypt) CheckRenewal(cert *x509.Certificate, days int) bool {
 	d := time.Duration(days) * 24 * time.Hour
 	renewAfter := cert.NotAfter.Add(-1 * d).Unix()
 
-	return renewAfter < internal.TimeNow().Unix()
+	return renewAfter > internal.TimeNow().Unix()
 }
 
 // LoadCertificate loads a certificate from the given path or returns nil when no certificate is found.
@@ -173,7 +173,7 @@ func (le *LetsEncrypt) FinalizeOrder(order *acme.Order, domain string, privCertK
 	}
 
 	// Let LetsEncrypt sign the CSR and return the certificate
-	certs, _, err := le.AcmeClient.CreateOrderCert(le.Ctx, order.FinalizeURL, csr, false)
+	certs, _, err := le.AcmeClient.CreateOrderCert(le.Ctx, order.FinalizeURL, csr, true)
 	if err != nil {
 		return "", "", err
 	}

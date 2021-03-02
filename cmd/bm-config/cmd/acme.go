@@ -112,7 +112,7 @@ func do(useStaging bool, httpPort string) {
 
 		if le.CheckRenewal(cert, days) {
 			fmt.Println(" * Domain does not need to be renewed yet.")
-			os.Exit(0)
+			os.Exit(2)
 		}
 		fmt.Printf(" * Domain \"%s\" valid until %s\n", cert.Subject.CommonName, cert.NotAfter.Format(time.RFC822))
 	}
