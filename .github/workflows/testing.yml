@@ -77,9 +77,7 @@ jobs:
         section "Running unit tests"
         go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
-    - name: Upload coverage report
-      uses: codecov/codecov-action@v1
+    - name: Upload coverage report to coverall
+      uses: shogo82148/actions-goveralls@v1
       with:
-        file: ./coverage.txt
-        flags: unittests
-        name: codecov-umbrella
+        path-to-profile: coverage.txt
