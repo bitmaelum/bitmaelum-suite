@@ -31,8 +31,12 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	bmmessage "github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/message"
+	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/sirupsen/logrus"
 )
 
 // Fetcher struct
@@ -42,6 +46,8 @@ type Fetcher struct {
 	Client  *api.API
 	Vault   *vault.Vault
 }
+
+const destinationBlock = "destination"
 
 // CheckMail will check if there is new mail waiting to be sent to the outside
 func (fe *Fetcher) CheckMail() {
@@ -55,15 +61,16 @@ func (fe *Fetcher) CheckMail() {
 	}
 }
 
-func (fe *Fetcher) sendMailForMessage(message api.MailboxMessagesMessage) error {
+func (fe *Fetcher) sendMailForMessage(mailboxMessage api.MailboxMessagesMessage) error {
 	// get the message
-	msg, err := fe.Client.GetMessage(fe.Info.Address.Hash(), message.ID)
+	logrus.Infof("processing incoming message %s", mailboxMessage.ID)
+	msg, err := fe.Client.GetMessage(fe.Info.Address.Hash(), mailboxMessage.ID)
 	if err != nil {
 		return err
 	}
 
 	// Decrypt message
-	em := bmmessage.EncryptedMessage{
+	em := message.EncryptedMessage{
 		ID:      msg.ID,
 		Header:  &msg.Header,
 		Catalog: msg.Catalog,
@@ -74,32 +81,41 @@ func (fe *Fetcher) sendMailForMessage(message api.MailboxMessagesMessage) error 
 
 	dm, err := em.Decrypt(fe.Info.GetActiveKey().PrivKey)
 	if err != nil {
+		logrus.Debugf("error while decrypting message - %s", err.Error())
 		return err
 	}
 
 	// Check if there is a mimeparts and destination block because we need that to reconstruct the mime message
 	for _, block := range dm.Catalog.Blocks {
-		if block.Type == "destination" {
+		if block.Type == destinationBlock {
 			// Use this block as destination address
 			recipientAddress := make([]byte, block.Size)
 			if block.Reader != nil {
 				recipientAddress, _ = ioutil.ReadAll(block.Reader)
 			}
 
-			if err := processMIMEMessage(string(recipientAddress), dm.Catalog, message.ID); err == nil {
-				// Delete the message
-				fe.Client.RemoveMessage(fe.Info.Address.Hash(), message.ID)
+			if err := processMIMEMessage(string(recipientAddress), dm.Catalog, mailboxMessage.ID); err != nil {
+				logrus.Debugf("error delivering message %s - %v", mailboxMessage.ID, err)
+				err = fe.sendPostmasterResponse(dm.Catalog.From.Address, dm.Catalog, err)
+				if err != nil {
+					logrus.Debugf("error sending postmaster - %v", err)
+				}
 			}
+
+			// Delete the message
+			fe.Client.RemoveMessage(fe.Info.Address.Hash(), mailboxMessage.ID)
+			logrus.Infof("message %s processed", mailboxMessage.ID)
 
 			return err
 		}
 	}
 
+	logrus.Debugf("the message %s does not contain a \"destination\" block. ignoring", mailboxMessage.ID)
 	// Delete the message
-	return fe.Client.RemoveMessage(fe.Info.Address.Hash(), message.ID)
+	return fe.Client.RemoveMessage(fe.Info.Address.Hash(), mailboxMessage.ID)
 }
 
-func processMIMEMessage(toMail string, catalog *bmmessage.Catalog, msgID string) error {
+func processMIMEMessage(toMail string, catalog *message.Catalog, msgID string) error {
 	mimeMsg := &MimeMessage{
 		From: &mail.Address{
 			Name:    catalog.From.Name,
@@ -110,12 +126,17 @@ func processMIMEMessage(toMail string, catalog *bmmessage.Catalog, msgID string)
 			Address: toMail,
 		}},
 
-		ID:      "<" + msgID + "@bitmaelum.network>",
+		ID:      "<" + msgID + DefaultDomain + ">",
 		Subject: catalog.Subject,
 		Date:    catalog.CreatedAt,
 	}
 
 	for _, block := range catalog.Blocks {
+		if block.Type == destinationBlock {
+			// ignore the "destination" block
+			continue
+		}
+
 		blockContent := make([]byte, block.Size)
 
 		if block.Reader != nil {
@@ -147,6 +168,7 @@ func processMIMEMessage(toMail string, catalog *bmmessage.Catalog, msgID string)
 			return err
 		}
 
+		logrus.Tracef("sending mail to SMTP host %s - from: %s - to: %s", mx[0].Host, mimeMsg.From.Address, toMail)
 		return sendSMTP(mx[0].Host, mimeMsg.From.Address, []string{toMail}, mime)
 	}
 
@@ -191,4 +213,48 @@ func sendSMTP(host, from string, to []string, msg []byte) error {
 		return err
 	}
 	return c.Quit()
+}
+
+func (fe *Fetcher) sendPostmasterResponse(destination string, catalog *message.Catalog, msgError error) error {
+	svc := container.Instance.GetResolveService()
+
+	senderInfo, _ := svc.ResolveAddress(fe.Info.Address.Hash())
+
+	// Check to address
+	toAddr, err := address.NewAddress(destination)
+	if err != nil {
+		return err
+	}
+
+	recipientInfo, err := svc.ResolveAddress(toAddr.Hash())
+	if err != nil {
+		return err
+	}
+
+	// Setup addressing
+	addressing := message.NewAddressing(message.SignedByTypeOrigin)
+	addressing.AddSender(fe.Info.Address, nil, fe.Info.Name, fe.Info.GetActiveKey().PrivKey, senderInfo.RoutingInfo.Routing)
+	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
+
+	var blocks []string
+	blocks = append(blocks, "default,I was unable to send mail with subject \""+catalog.Subject+"\". The error was: "+msgError.Error())
+
+	// Compose mail
+	envelope, err := message.Compose(addressing, "Unable to deliver mail", blocks, nil)
+	if err != nil {
+		return err
+	}
+
+	// Send mail
+	client, err := api.NewAuthenticated(*fe.Info.Address, fe.Info.GetActiveKey().PrivKey, senderInfo.RoutingInfo.Routing, nil)
+	if err != nil {
+		return err
+	}
+
+	err = messages.Send(*client, envelope)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

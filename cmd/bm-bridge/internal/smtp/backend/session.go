@@ -39,6 +39,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/emersion/go-smtp"
 	"github.com/mileusna/spf"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -68,11 +69,13 @@ func (s *Session) Mail(from string, opts smtp.MailOptions) error {
 	// is from outside bitmaelum network
 	if s.IsGateway {
 		if !isEmailValid(from) {
+			logrus.Tracef("discarding incoming mail from %s, invalid address", from)
 			return errInvalidAddress
 		}
 
 		// Check that the mails comes from outside
 		if strings.HasSuffix(s.From, common.DefaultDomain) {
+			logrus.Tracef("discarding incoming mail from %s, the email is coming from inside", from)
 			return nil
 		}
 
@@ -110,6 +113,7 @@ func (s *Session) Rcpt(to string) error {
 			return nil
 		}
 
+		logrus.Tracef("discarding incoming mail to %s, address is not for ", common.DefaultDomain)
 		return errInvalidAddress
 	}
 
@@ -143,8 +147,11 @@ func (s *Session) Data(r io.Reader) error {
 		parts := strings.Split(s.From, "@")
 		res := spf.CheckHost(net.ParseIP(strings.Split(s.RemoteAddr.String(), ":")[0]), parts[1], s.From, "")
 		if res != spf.Pass {
+			logrus.Tracef("discarding incoming mail from %s, SPF did not pass", s.From)
 			return errSPFnotPass
 		}
+
+		logrus.Infof("processing incoming email. From: %s, To: %s", s.From, s.To)
 	}
 
 	return s.sendTo(r)

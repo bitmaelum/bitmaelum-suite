@@ -33,6 +33,7 @@ import (
 
 	"net/mail"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
@@ -131,7 +132,13 @@ func (msg *MimeMessage) EncodeToMime() ([]byte, error) {
 				parts[0] = "text/plain"
 			}
 			mimeMsg = mimeMsg + "--" + dummyBoundary + "\r\n"
-			mimeMsg = mimeMsg + "Content-Type: " + parts[0] + "\r\n\r\n" + parts[1] + "\r\n\r\n"
+			if strings.HasPrefix(parts[0], "text") {
+				mimeMsg = mimeMsg + "Content-Type: " + parts[0] + "\r\n\r\n" + parts[1] + "\r\n\r\n"
+			} else {
+				mimeMsg = mimeMsg + "Content-Type: application/octet-stream; name=\"" + parts[0] + ".dat\"\r\n"
+				mimeMsg = mimeMsg + "Content-Disposition: attachment; filename=\"" + parts[0] + ".dat\"\r\n"
+				mimeMsg = mimeMsg + "Content-Transfer-Encoding: base64\r\n\r\n" + string(internal.Encode([]byte(parts[1]))) + "\r\n"
+			}
 		}
 		for name, attachment := range msg.Attachments {
 			mimeMsg = mimeMsg + "--" + dummyBoundary + "\r\n"

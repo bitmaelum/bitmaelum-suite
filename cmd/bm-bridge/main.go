@@ -30,10 +30,10 @@ import (
 	"time"
 
 	common "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 
 	imapgw "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal/imap/backend"
 	smtpgw "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal/smtp/backend"
-	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/emersion/go-imap/server"
@@ -58,15 +58,15 @@ var opts options
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	bminternal.ParseOptions(&opts)
+	internal.ParseOptions(&opts)
 	if opts.Version {
-		bminternal.WriteVersionInfo("BitMaelum IMAP", os.Stdout)
+		internal.WriteVersionInfo("BitMaelum email-bridge", os.Stdout)
 		fmt.Println()
 		os.Exit(0)
 	}
 
 	if opts.ImapHost == "" && opts.SMTPHost == "" {
-		fmt.Println(" either imaphost or smtphost needs to be specified")
+		fmt.Println(" error: either --imaphost or --smtphost needs to be specified")
 		os.Exit(0)
 	}
 
@@ -81,7 +81,13 @@ func main() {
 
 	v := vault.OpenDefaultVault()
 
-	fmt.Println(" * BM-BRIDGE *")
+	loglevel := "info"
+	if opts.Debug {
+		loglevel = "trace"
+	}
+	internal.SetLogging("", loglevel, "stdout")
+
+	logrus.Info("Starting " + internal.VersionString("bm-bridge"))
 
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
@@ -90,15 +96,19 @@ func main() {
 	// Wait for signals and cancel context
 	go setupSignals(cancel)
 
-	// Start the SMTP server
-	go startSMTPServer(v, cancel)
+	// Start the SMTP server if needed
+	if opts.GatewayAccount != "" || opts.SMTPHost != "" {
+		go startSMTPServer(v, cancel)
+	}
+
+	// Start the IMAP server if needed
+	if opts.ImapHost != "" {
+		go startImapServer(v, cancel)
+	}
 
 	if opts.GatewayAccount != "" {
 		// If gateway mode then start to fetch for pending mails
 		go startFetcher(ctx, cancel, v, opts.GatewayAccount)
-	} else {
-		// If local mode then start the imap server too
-		go startImapServer(v, cancel)
 	}
 
 	<-ctx.Done()
@@ -113,7 +123,7 @@ func setupSignals(cancel context.CancelFunc) {
 
 		for {
 			s := <-sigChannel
-			fmt.Printf("Signal %s received. Terminating.\n", s)
+			logrus.Infof("Signal %s received. Terminating.\n", s)
 			cancel()
 		}
 	}()
@@ -128,10 +138,10 @@ func startImapServer(v *vault.Vault, cancel context.CancelFunc) {
 		s.Debug = os.Stdout
 	}
 
-	fmt.Println(" [*] IMAP starting")
+	logrus.Info("Starting IMAP server")
 
 	if err := s.ListenAndServe(); err != nil {
-		log.Fatal("error while accepting connection: " + err.Error() + "\n")
+		logrus.Fatal("error while accepting connection: " + err.Error() + "\n")
 		cancel()
 	}
 }
@@ -143,22 +153,21 @@ func startSMTPServer(v *vault.Vault, cancel context.CancelFunc) {
 	s.Domain = "bitmaelum.network"
 	s.ReadTimeout = 10 * time.Second
 	s.WriteTimeout = 10 * time.Second
-	s.MaxMessageBytes = 1024 * 1024
+	s.MaxMessageBytes = 10 * 1024 * 1024 // 10 MB
 	s.MaxRecipients = 1
 	s.AllowInsecureAuth = true
 	if opts.Debug {
 		s.Debug = os.Stdout
 	}
 
-	fmt.Print(" [*] SMTP starting ")
 	if opts.GatewayAccount != "" {
-		fmt.Println("(GW mode)")
+		logrus.Infof("Starting SMTP server (gw mode)")
 	} else {
-		fmt.Println("(Local mode)")
+		logrus.Infof("Starting SMTP server")
 	}
 
 	if err := s.ListenAndServe(); err != nil {
-		log.Fatal("error while accepting connection: " + err.Error() + "\n")
+		logrus.Fatal("error while accepting connection: " + err.Error() + "\n")
 		cancel()
 	}
 }

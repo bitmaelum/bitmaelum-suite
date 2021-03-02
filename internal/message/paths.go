@@ -35,7 +35,10 @@ import (
  *   - A message can be just uploaded by another server (or locally) and waiting inside the incoming queue
  */
 
-var errUnknownSection = errors.New("unknown section")
+var (
+	errUnknownSection = errors.New("unknown section")
+	errInvalidMsgID   = errors.New("msgID not valid")
+)
 
 // Section of the path we want to
 type Section int
@@ -51,6 +54,11 @@ const (
 
 // GetPath will return the actual path based on the section, messageID and file inside the message
 func GetPath(section Section, msgID, file string) (string, error) {
+	// Only accept UUIDv4 msgIDs
+	if msgID != "" && !uuidv4Regex.MatchString(msgID) {
+		return "", errInvalidMsgID
+	}
+
 	switch section {
 	case SectionIncoming:
 		return filepath.Join(config.Server.Paths.Incoming, msgID, file), nil
