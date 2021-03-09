@@ -46,6 +46,64 @@ config:
 
 `
 
+const bridgeConfigTemplate string = `# BitMaelum Bridge Configuration Template. Edit for your own needs.
+config:
+    vault:
+        # where are our accounts stored?
+        path: "~/.bitmaelum/accounts.vault.json"
+
+    server:
+        smtp: 
+            # Enable SMTP server to allow outgoing messages
+            enabled: true
+
+            # Host and port to listen for incoming connections
+            host: "localhost"
+            port: 1025
+
+            # Run the SMTP server in gateway mode for the specified domain (for incoming mail)
+            gateway: false
+            domain: ""
+
+            # Account from the vault to use to process incoming or outgoing mail (only for gateway mode)
+            account: ""
+
+            # Display SMTP communication between client and server
+            debug: false
+
+        imap: 
+            # Enable IMAP4 server to allow outgoing messages
+            enabled: true
+
+            # Host and port to listen for incoming connections
+            host: "localhost"
+            port: 1143
+
+            # Path to store a database that contains message flags (flags.db file). This
+            # file should persists across reboots
+            path: "~/.bitmaelum/bm-bridge"
+
+            # Display IMAP communication between client and server
+            debug: false
+            
+    resolver:
+        # SQLite local resolver cache 
+        sqlite:
+            # Enable sqlite resolving
+            enabled: false
+            # Note: DSN currently does not support ~ homedir expansion
+            dsn: "file:/tmp/keyresolve.db"
+        # Remove resolver
+        remote:
+            # Enable remote resolving
+            enabled: true
+            # URL to the remote resolver
+            url: "https://resolver.bitmaelum.com"
+            # Allow insecure connections (to selfsigned certs)
+            allow_insecure: false
+    
+`
+
 const serverConfigTemplate string = `# BitMaelum Server Configuration Template. Edit for your own needs.
 config:
     # Logging of information
@@ -185,6 +243,13 @@ func GenerateClientConfig(w io.Writer) error {
 // GenerateServerConfig Generates a default server configuration
 func GenerateServerConfig(w io.Writer) error {
 	_, err := w.Write([]byte(serverConfigTemplate))
+
+	return err
+}
+
+// GenerateBridgeConfig Generates a default bridge configuration
+func GenerateBridgeConfig(w io.Writer) error {
+	_, err := w.Write([]byte(bridgeConfigTemplate))
 
 	return err
 }

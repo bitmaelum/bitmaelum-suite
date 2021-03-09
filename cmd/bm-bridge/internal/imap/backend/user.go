@@ -30,10 +30,11 @@ import (
 
 // User holds the user info
 type User struct {
-	Account string
-	Vault   *vault.Vault
-	Info    *vault.AccountInfo
-	Client  *api.API
+	Account  string
+	Vault    *vault.Vault
+	Info     *vault.AccountInfo
+	Client   *api.API
+	Database Storable
 }
 
 // Username from account

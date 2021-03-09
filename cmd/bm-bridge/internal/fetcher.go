@@ -31,6 +31,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
@@ -126,7 +127,7 @@ func processMIMEMessage(toMail string, catalog *message.Catalog, msgID string) e
 			Address: toMail,
 		}},
 
-		ID:      "<" + msgID + DefaultDomain + ">",
+		ID:      "<" + msgID + config.Bridge.Server.SMTP.Domain + ">",
 		Subject: catalog.Subject,
 		Date:    catalog.CreatedAt,
 	}

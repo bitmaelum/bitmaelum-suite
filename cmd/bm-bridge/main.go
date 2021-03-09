@@ -85,16 +85,15 @@ func (p *program) Run() {
 		os.Exit(0)
 	}
 
-	if opts.ImapHost == "" && opts.SMTPHost == "" {
-		fmt.Println(" error: either --imaphost or --smtphost needs to be specified")
-		os.Exit(0)
-	}
+	config.LoadBridgeConfig(opts.Config)
 
-	config.LoadClientConfig(opts.Config)
+	if !config.Bridge.Server.SMTP.Enabled && !config.Bridge.Server.IMAP.Enabled {
+		logrus.Fatal("neither smtp nor imap are enabled in config file")
+	}
 
 	// Set default vault info if set in config
 	vault.VaultPassword = opts.Password
-	vault.VaultPath = config.Client.Vault.Path
+	vault.VaultPath = config.Bridge.Vault.Path
 	if opts.Vault != "" {
 		vault.VaultPath = opts.Vault
 	}
@@ -119,18 +118,22 @@ func (p *program) Run() {
 	go setupSignals(cancel)
 
 	// Start the SMTP server if needed
-	if opts.GatewayAccount != "" || opts.SMTPHost != "" {
+	//if opts.GatewayAccount != "" || opts.SMTPHost != "" {
+	if config.Bridge.Server.SMTP.Enabled {
 		go startSMTPServer(v, cancel)
 	}
 
 	// Start the IMAP server if needed
-	if opts.ImapHost != "" {
+	//if opts.ImapHost != "" {
+	if config.Bridge.Server.IMAP.Enabled {
 		go startImapServer(v, cancel)
 	}
 
-	if opts.GatewayAccount != "" {
+	//if opts.GatewayAccount != "" {
+	if config.Bridge.Server.SMTP.Gateway {
 		// If gateway mode then start to fetch for pending mails
-		go startFetcher(ctx, cancel, v, opts.GatewayAccount)
+		//go startFetcher(ctx, cancel, v, opts.GatewayAccount)
+		go startFetcher(ctx, cancel, v, config.Bridge.Server.SMTP.Account)
 	}
 
 	<-ctx.Done()

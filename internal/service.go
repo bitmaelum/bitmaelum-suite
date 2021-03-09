@@ -71,32 +71,21 @@ func GetBMServerService(executable string) *service.Config {
 
 // GetBMBridgeService will return the service info
 func GetBMBridgeService(executable string) *service.Config {
-	ParseOptions(&opts)
-
-	if opts.ImapHost == "" {
-		opts.ImapHost = "127.0.0.1:1143"
-	}
-
-	if opts.SMTPHost == "" {
-		opts.SMTPHost = "127.0.0.1:1025"
-	}
-
 	var arguments []string
-	arguments = append(arguments, "--service")
-	arguments = append(arguments, "--smtphost="+opts.SMTPHost)
 
-	if opts.GatewayAccount != "" {
-		arguments = append(arguments, "--gatewayaccount="+opts.GatewayAccount)
-	} else {
-		arguments = append(arguments, "--imaphost="+opts.ImapHost)
+	if executable != "" {
+		// install mode
+		ParseOptions(&opts)
+
+		arguments = append(arguments, "--service")
+
+		if opts.Password != "" {
+			arguments = append(arguments, "--password="+opts.Password)
+		}
+
+		config.LoadBridgeConfig(opts.Config)
+		arguments = append(arguments, "--config="+config.LoadedBridgeConfigPath)
 	}
-
-	if opts.Password != "" {
-		arguments = append(arguments, "--password="+opts.Password)
-	}
-
-	config.LoadClientConfig(opts.Config)
-	arguments = append(arguments, "--config="+config.LoadedClientConfigPath)
 
 	// Get current user
 	user, err := user.Current()

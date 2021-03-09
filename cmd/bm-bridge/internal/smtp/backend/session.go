@@ -29,6 +29,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+
 	common "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
@@ -123,14 +125,14 @@ func (s *Session) Rcpt(to string) error {
 			return errInvalidDomain
 		}
 	} else {
-		if !strings.HasSuffix(to, common.DefaultDomain) {
+		if !strings.HasSuffix(to, config.Bridge.Server.SMTP.Domain) {
 			// If recipient is outside bitmaelum network then send the message to
 			// the default gateway address
 			if !isEmailValid(to) {
 				return errInvalidAddress
 			}
 
-			s.To = common.GatewayAddress
+			s.To = config.Bridge.Server.SMTP.Account
 			return nil
 		}
 	}
@@ -208,7 +210,7 @@ func (s *Session) sendTo(r io.Reader) error {
 	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 
 	blocks = decodedMessage.Blocks
-	if s.To == common.GatewayAddress {
+	if s.To == config.Bridge.Server.SMTP.Account {
 		if decodedMessage.To == nil || len(decodedMessage.To) < 1 {
 			return errIncorrectFormat
 		}

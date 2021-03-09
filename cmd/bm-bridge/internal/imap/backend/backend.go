@@ -20,23 +20,20 @@
 package imapgw
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
 
 	common "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/mailbox"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/backend"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -73,12 +70,14 @@ func (be *Backend) Login(_ *imap.ConnInfo, username, password string) (backend.U
 		return nil, errAccountNotFound
 	}
 
-	user := &User{Account: account, Vault: be.Vault}
+	user := &User{Account: account, Vault: be.Vault, Database: NewBolt(&config.Bridge.Server.IMAP.Path)}
 
 	user.Info, user.Client, err = common.GetClientAndInfo(be.Vault, account)
 	if err != nil {
 		return nil, err
 	}
+
+	logrus.Infof("User %s logged in", username)
 
 	return user, nil
 }
@@ -131,17 +130,10 @@ func refreshMailbox(u *User, boxid int, currentMessages []*Message) ([]*Message,
 		}
 
 		message := Message{
-			UID:  uint32(i),
-			ID:   msg.ID,
-			User: u,
-		}
-
-		// Get the flags
-		tmpfn := filepath.Join(os.TempDir(), "bm-bridge", msg.ID)
-		contents, err := ioutil.ReadFile(tmpfn)
-		if err == nil {
-			dec := json.NewDecoder(bytes.NewReader(contents))
-			dec.Decode(&message.Flags)
+			UID:   uint32(i),
+			ID:    msg.ID,
+			User:  u,
+			Flags: u.Database.Retrieve(msg.ID),
 		}
 
 		messages = append(messages, &message)

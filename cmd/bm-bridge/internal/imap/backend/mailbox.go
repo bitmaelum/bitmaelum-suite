@@ -20,11 +20,6 @@
 package imapgw
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -113,7 +108,7 @@ func (mbox *Mailbox) unseenSeqNum() uint32 {
 func (mbox *Mailbox) Status(items []imap.StatusItem) (*imap.MailboxStatus, error) {
 	status := imap.NewMailboxStatus(mbox.name, items)
 	status.Flags = mbox.flags()
-	status.PermanentFlags = []string{"\\*"}
+	status.PermanentFlags = []string{"\\Seen \\Answered \\Flagged \\Deleted \\*"}
 	status.UnseenSeqNum = mbox.unseenSeqNum()
 
 	for _, name := range items {
@@ -208,6 +203,7 @@ func (mbox *Mailbox) CreateMessage(flags []string, date time.Time, body imap.Lit
 
 // UpdateMessagesFlags will update flags
 func (mbox *Mailbox) UpdateMessagesFlags(uid bool, seqset *imap.SeqSet, op imap.FlagsOp, flags []string) error {
+
 	for i, msg := range mbox.Messages {
 		var id uint32
 		if uid {
@@ -221,21 +217,9 @@ func (mbox *Mailbox) UpdateMessagesFlags(uid bool, seqset *imap.SeqSet, op imap.
 
 		msg.Flags = backendutil.UpdateFlags(msg.Flags, op, flags)
 
-		logrus.Info(filepath.Join(os.TempDir(), "bm-bridge"))
+		logrus.Infof("Updating flags for message %s", msg.ID)
+		msg.User.Database.Store(msg.ID, msg.Flags)
 
-		if _, err := os.Stat(filepath.Join(os.TempDir(), "bm-bridge")); os.IsNotExist(err) {
-			logrus.Info("create tmpdir")
-			os.Mkdir(filepath.Join(os.TempDir(), "bm-bridge"), os.ModeDir)
-		}
-
-		tmpfn := filepath.Join(os.TempDir(), "bm-bridge", msg.ID)
-		buf := &bytes.Buffer{}
-		enc := json.NewEncoder(buf)
-		enc.Encode(msg.Flags)
-		err := ioutil.WriteFile(tmpfn, buf.Bytes(), 0666)
-		if err != nil {
-			logrus.Error(err)
-		}
 	}
 
 	return nil
@@ -287,6 +271,7 @@ func (mbox *Mailbox) Expunge() error {
 		deleted := false
 		for _, flag := range msg.Flags {
 			if flag == imap.DeletedFlag {
+				logrus.Infof("Deleting message %s", msg.ID)
 				err := mbox.user.Client.RemoveMessageFromBox(mbox.user.Info.Address.Hash(), msg.ID, mbox.id)
 				if err != nil {
 					return err

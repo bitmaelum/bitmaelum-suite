@@ -37,6 +37,7 @@ import (
 type Service struct {
 	repo         Repository
 	routingCache *lru.Cache
+	addressCache *lru.Cache
 }
 
 // AddressInfo is a structure returned by the external resolver system
@@ -70,19 +71,43 @@ func KeyRetrievalService(repo Repository) *Service {
 		c = nil
 	}
 
+	a, err := lru.New(64)
+	if err != nil {
+		a = nil
+	}
+
 	return &Service{
 		repo:         repo,
 		routingCache: c,
+		addressCache: a,
 	}
 }
 
 // ResolveAddress resolves an address.
 func (s *Service) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
-	logrus.Debugf("Resolving address %s", addr.String())
-	info, err := s.repo.ResolveAddress(addr)
-	if err != nil {
-		logrus.Debugf("Error while resolving address %s: %s", addr.String(), err)
-		return nil, err
+	var info *AddressInfo
+	// Fetch from cache if available
+	if s.addressCache != nil {
+		res, ok := s.addressCache.Get(addr.String())
+		if ok {
+			info = res.(*AddressInfo)
+			logrus.Debugf("Resolving cached %s", addr.String())
+		}
+	}
+
+	if info == nil {
+		logrus.Debugf("Resolving address %s", addr.String())
+		var err error
+		info, err = s.repo.ResolveAddress(addr)
+		if err != nil {
+			logrus.Debugf("Error while resolving address %s: %s", addr.String(), err)
+			return nil, err
+		}
+
+		// Store in cache if available
+		if s.addressCache != nil {
+			_ = s.addressCache.Add(addr.String(), info)
+		}
 	}
 
 	// Resolve routing info, we often need it

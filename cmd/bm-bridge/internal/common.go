@@ -35,9 +35,11 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -78,6 +80,7 @@ func GetClientAndInfo(v *vault.Vault, acc string) (*vault.AccountInfo, *api.API,
 	resolver := container.Instance.GetResolveService()
 	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 	if err != nil {
+		logrus.Error(err)
 		return nil, nil, errRoutingNotFound
 	}
 
@@ -94,12 +97,12 @@ func AddrToEmail(address string) string {
 	address = strings.Replace(address, "@", "_", -1)
 	address = strings.Replace(address, "!", "", -1)
 
-	return address + DefaultDomain
+	return address + config.Bridge.Server.SMTP.Domain
 }
 
 // EmailToAddr will translate a (mocked?) domain on the DefaultDomain to an address string
 func EmailToAddr(email string) string {
-	address := strings.Replace(email, DefaultDomain, "!", -1)
+	address := strings.Replace(email, config.Bridge.Server.SMTP.Domain, "!", -1)
 	address = strings.Replace(address, "_", "@", -1)
 	return address
 }

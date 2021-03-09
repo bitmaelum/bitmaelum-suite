@@ -40,17 +40,22 @@ This command creates default templates that you can use as a starting point.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		genC, _ := cmd.Flags().GetBool("client")
 		genS, _ := cmd.Flags().GetBool("server")
+		genB, _ := cmd.Flags().GetBool("bridge")
 
 		// If not client or server selected, generate them both
-		genBoth := !genC && !genS
+		genAll := !genC && !genS && !genB
 
-		if genBoth || genC {
+		if genAll || genC {
 			createFile("./"+config.ClientConfigFile, config.GenerateClientConfig)
 			fmt.Println("Generated client configuration file")
 		}
-		if genBoth || genS {
+		if genAll || genS {
 			createFile("./"+config.ServerConfigFile, config.GenerateServerConfig)
 			fmt.Println("Generated server configuration file")
+		}
+		if genAll || genB {
+			createFile("./"+config.BridgeConfigFile, config.GenerateBridgeConfig)
+			fmt.Println("Generated bridge configuration file")
 		}
 	},
 }
@@ -77,4 +82,5 @@ func init() {
 
 	initConfigCmd.Flags().Bool("client", false, "Generate only the client configuration")
 	initConfigCmd.Flags().Bool("server", false, "Generate only the server configuration")
+	initConfigCmd.Flags().Bool("bridge", false, "Generate only the bridge configuration")
 }
