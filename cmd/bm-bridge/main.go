@@ -22,6 +22,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -198,8 +199,13 @@ func startSMTPServer(v *vault.Vault, cancel context.CancelFunc) {
 	s.MaxMessageBytes = 10 * 1024 * 1024 // 10 MB
 	s.MaxRecipients = 1
 	s.AllowInsecureAuth = true
+
+	// This is needed since package SPF will use log
+	log.SetOutput(ioutil.Discard)
+
 	if config.Bridge.Server.SMTP.Debug {
 		s.Debug = os.Stdout
+		log.SetOutput(os.Stdout)
 	}
 
 	if config.Bridge.Server.SMTP.Gateway {

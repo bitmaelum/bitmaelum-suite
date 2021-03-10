@@ -58,6 +58,9 @@ const (
 
 	// DefaultGatewayAccount is the gateway address to send external email messages to
 	DefaultGatewayAccount = "mailgateway!"
+
+	// DestinationBlock is the block used to set the final destination of a relayed email message
+	DestinationBlock = "destination"
 )
 
 // MimeMessage contains the struct to encode or decode a mime message

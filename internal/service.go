@@ -23,10 +23,12 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
 	"runtime"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/kardianos/service"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -132,15 +134,22 @@ func getServiceConfig(name, displayName, description, executable string, argumen
 	}
 
 	if executable != "" {
-		svcConfig.Executable = executable
 		if runtime.GOOS == windowsOS {
-			svcConfig.Executable = executable + ".exe"
+			executable = executable + ".exe"
 		}
+		svcConfig.Executable = executable
 
 		if _, err := os.Stat(svcConfig.Executable); os.IsNotExist(err) {
+			// file not found, try on path
 			svcConfig.Executable, err = exec.LookPath(svcConfig.Executable)
 			if err != nil {
-				return nil
+				// file not found, try on the same path where we are
+				dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+				svcConfig.Executable = filepath.Join(dir, executable)
+				if _, err := os.Stat(svcConfig.Executable); os.IsNotExist(err) {
+					logrus.Fatalf("Please run this command on the same path where \"%s\" is located or add it to your path", executable)
+					return nil
+				}
 			}
 		}
 

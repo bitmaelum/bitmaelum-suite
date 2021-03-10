@@ -76,7 +76,7 @@ func (s *Session) Mail(from string, opts smtp.MailOptions) error {
 		}
 
 		// Check that the mails comes from outside
-		if strings.HasSuffix(s.From, "@"+config.Bridge.Server.SMTP.Domain) {
+		if isEmailFromBitMaelumNetwork(s.From) {
 			logrus.Tracef("SMTP: discarding incoming mail from %s, the email is coming from inside", from)
 			return nil
 		}
@@ -164,6 +164,30 @@ func (s *Session) Data(r io.Reader) error {
 	return s.sendTo(r)
 }
 
+func isDomainHostedOnBitMaelumNetwork(domainName string) bool {
+	// @TODO: We should probably check the DNS to check somehow if the domain is being actually hosted in the BitMaelum network
+	if domainName == config.Bridge.Server.SMTP.Domain || domainName == common.DefaultDomain {
+		return true
+	}
+	return false
+}
+
+func isEmailFromBitMaelumNetwork(emailAddress string) bool {
+	atIndex := strings.LastIndex(emailAddress, "@")
+	return isDomainHostedOnBitMaelumNetwork(emailAddress[atIndex+1:])
+}
+
+func isGatewayDestination(t string) bool {
+	switch t {
+	case config.Bridge.Server.SMTP.GatewayAccount:
+		return true
+	case common.DefaultGatewayAccount:
+		return true
+	}
+
+	return false
+}
+
 // sendTo sends the mail to the bitmaelum network
 func (s *Session) sendTo(r io.Reader) error {
 	// Set up blocks & attachments
@@ -215,11 +239,11 @@ func (s *Session) sendTo(r io.Reader) error {
 	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 
 	blocks = decodedMessage.Blocks
-	if s.To == config.Bridge.Server.SMTP.GatewayAccount {
+	if isGatewayDestination(s.To) {
 		if decodedMessage.To == nil || len(decodedMessage.To) < 1 {
 			return errIncorrectFormat
 		}
-		blocks = append(blocks, "destination,"+decodedMessage.To[0].Address)
+		blocks = append(blocks, common.DestinationBlock+","+decodedMessage.To[0].Address)
 	}
 
 	for filename, base64Data := range decodedMessage.Attachments {
@@ -274,7 +298,7 @@ func isEmailValid(e string) bool {
 	if !emailRegex.MatchString(e) {
 		return false
 	}
-	if strings.HasSuffix(e, "@"+config.Bridge.Server.SMTP.Domain) {
+	if isEmailFromBitMaelumNetwork(e) {
 		return true
 	}
 	parts := strings.Split(e, "@")
