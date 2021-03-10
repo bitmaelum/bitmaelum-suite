@@ -43,13 +43,14 @@ type BridgeConfig struct {
 
 	Server struct {
 		SMTP struct {
-			Enabled bool   `yaml:"enabled"`
-			Host    string `yaml:"host"`
-			Port    int    `yaml:"port"`
-			Gateway bool   `yaml:"gateway"`
-			Domain  string `yaml:"domain"`
-			Account string `yaml:"account"`
-			Debug   bool   `yaml:"debug"`
+			Enabled        bool   `yaml:"enabled"`
+			Host           string `yaml:"host"`
+			Port           int    `yaml:"port"`
+			Gateway        bool   `yaml:"gateway"`
+			Domain         string `yaml:"domain"`
+			Organization   string `yaml:"organization"`
+			GatewayAccount string `yaml:"gateway_account"`
+			Debug          bool   `yaml:"debug"`
 		} `yaml:"smtp"`
 
 		IMAP struct {

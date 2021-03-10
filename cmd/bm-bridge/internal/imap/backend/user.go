@@ -34,7 +34,7 @@ type User struct {
 	Vault    *vault.Vault
 	Info     *vault.AccountInfo
 	Client   *api.API
-	Database Storable
+	Database *Storable
 }
 
 // Username from account

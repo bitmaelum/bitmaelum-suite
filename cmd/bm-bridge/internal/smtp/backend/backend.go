@@ -27,6 +27,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/emersion/go-smtp"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -60,7 +61,15 @@ func (be *Backend) Login(state *smtp.ConnectionState, username, password string)
 		username = username + "!"
 	}
 
-	return be.getSessionFromAccount(username)
+	session, err := be.getSessionFromAccount(username)
+
+	if err != nil {
+		logrus.Errorf("SMTP: user %s error when login - %s", username, err.Error())
+	} else {
+		logrus.Infof("SMTP: user %s logged in", username)
+	}
+
+	return session, err
 }
 
 // AnonymousLogin will accept mails if this server allows to be a email<->bitmaelum gateway
@@ -73,6 +82,9 @@ func (be *Backend) AnonymousLogin(state *smtp.ConnectionState) (smtp.Session, er
 
 		session.IsGateway = true
 		session.RemoteAddr = state.RemoteAddr
+
+		logrus.Infof("SMTP: external connection received from %s", state.RemoteAddr.String())
+
 		return session, err
 	}
 

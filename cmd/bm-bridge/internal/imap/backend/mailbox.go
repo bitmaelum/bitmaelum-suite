@@ -217,8 +217,8 @@ func (mbox *Mailbox) UpdateMessagesFlags(uid bool, seqset *imap.SeqSet, op imap.
 
 		msg.Flags = backendutil.UpdateFlags(msg.Flags, op, flags)
 
-		logrus.Infof("Updating flags for message %s", msg.ID)
-		msg.User.Database.Store(msg.ID, msg.Flags)
+		logrus.Infof("IMAP: updating flags for message %s", msg.ID)
+		(*msg.User.Database).Store(msg.ID, msg.Flags)
 
 	}
 
@@ -271,7 +271,7 @@ func (mbox *Mailbox) Expunge() error {
 		deleted := false
 		for _, flag := range msg.Flags {
 			if flag == imap.DeletedFlag {
-				logrus.Infof("Deleting message %s", msg.ID)
+				logrus.Infof("IMAP: deleting message %s", msg.ID)
 				err := mbox.user.Client.RemoveMessageFromBox(mbox.user.Info.Address.Hash(), msg.ID, mbox.id)
 				if err != nil {
 					return err

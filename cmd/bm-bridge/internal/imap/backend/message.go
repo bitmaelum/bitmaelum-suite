@@ -145,7 +145,7 @@ func (m *Message) Fetch(seqNum uint32, items []imap.FetchItem, user *User) (*ima
 		case imap.FetchBody, imap.FetchBodyStructure:
 			hdr, body, _ := m.headerAndBody()
 			fetched.BodyStructure, _ = backendutil.FetchBodyStructure(hdr, body, item == imap.FetchBodyStructure)
-			logrus.Infof("Fetching message %s", m.ID)
+			logrus.Infof("IMAP: fetching message %s", m.ID)
 		case imap.FetchFlags:
 			fetched.Flags = m.Flags
 		case imap.FetchInternalDate:

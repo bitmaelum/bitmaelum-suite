@@ -27,7 +27,6 @@ import (
 
 	common "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/mailbox"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -55,7 +54,8 @@ const (
 
 // Backend will hold the Vault to use
 type Backend struct {
-	Vault *vault.Vault
+	Vault    *vault.Vault
+	Database *Storable
 }
 
 // Login is called when logging in to IMAP. Any password is valid as long as the account is found in the vault
@@ -70,22 +70,23 @@ func (be *Backend) Login(_ *imap.ConnInfo, username, password string) (backend.U
 		return nil, errAccountNotFound
 	}
 
-	user := &User{Account: account, Vault: be.Vault, Database: NewBolt(&config.Bridge.Server.IMAP.Path)}
+	user := &User{Account: account, Vault: be.Vault, Database: be.Database}
 
 	user.Info, user.Client, err = common.GetClientAndInfo(be.Vault, account)
 	if err != nil {
 		return nil, err
 	}
 
-	logrus.Infof("User %s logged in", username)
+	logrus.Infof("IMAP: user %s logged in", username)
 
 	return user, nil
 }
 
 // New will create a new Backend
-func New(v *vault.Vault) *Backend {
+func New(v *vault.Vault, d Storable) *Backend {
 	return &Backend{
-		Vault: v,
+		Vault:    v,
+		Database: &d,
 	}
 }
 
@@ -133,7 +134,7 @@ func refreshMailbox(u *User, boxid int, currentMessages []*Message) ([]*Message,
 			UID:   uint32(i),
 			ID:    msg.ID,
 			User:  u,
-			Flags: u.Database.Retrieve(msg.ID),
+			Flags: (*u.Database).Retrieve(msg.ID),
 		}
 
 		messages = append(messages, &message)

@@ -61,12 +61,26 @@ config:
             host: "localhost"
             port: 1025
 
-            # Run the SMTP server in gateway mode for the specified domain (for incoming mail)
+            # Run the SMTP server in gateway mode for the specified domain. Gateway mode is used to
+            # translate regular emails to BitMaelum addresses. The BitMaelum team is running a SMTP 
+            # in gateway mode on the domain "bitmaelum.network" and using "mailgateway!" as the gateway
+            # account. But if you want to use your own domain you can run this bridge in gateway mode,
+            # set your own domain name and gateway account, and set the appropriate DNS pointing to this
+            # SMTP server to allow for incoming mail. When a message is received to "something@yourdomain.com"
+            # the bridge will send the message to the BitMaelum account "something!". However if you also
+            # set the organization variable then the mails received to "something@yourdomain.com" will be
+            # delivered to the address "something@yourorganization!" making the bridge a fully replacement
+            # for your mail system.
             gateway: false
             domain: ""
+            organization: ""
 
-            # Account from the vault to use to process incoming or outgoing mail (only for gateway mode)
-            account: ""
+            # Account from the vault to use to process incoming or outgoing mail. This is the account
+            # that will relay the messages from BitMaelum network to regular email. So, when using the
+            # gateway mode, you need to have this account on your vault.
+            # The default gateway_account is "mailgateway!" that will translate BitMaelum addresses to
+            # email addresses like this "account!" <-> "account@bitmaelum.network".
+            gateway_account: ""
 
             # Display SMTP communication between client and server
             debug: false

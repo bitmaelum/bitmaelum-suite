@@ -43,15 +43,12 @@ import (
 )
 
 type options struct {
-	ImapHost       string `long:"imaphost" description:"Host:Port to imap server from" required:"false"`
-	SMTPHost       string `long:"smtphost" description:"Host:Port to smtp server from" required:"false"`
-	GatewayAccount string `long:"gatewayaccount" description:"Account to be used for a email->bitmaelum gateway. If empty it will require authentication to send mails." default:""`
-	Config         string `short:"c" long:"config" description:"Path to your configuration file"`
-	Password       string `short:"p" long:"password" description:"Vault password" default:""`
-	Vault          string `long:"vault" description:"Custom vault file" default:""`
-	Version        bool   `short:"v" long:"version" description:"Display version information"`
-	Debug          bool   `long:"debug" description:"It will print all the communications to this imap/smtp server"`
-	Service        bool   `long:"service" description:"Execute as a service"`
+	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
+	Password string `short:"p" long:"password" description:"Vault password" default:""`
+	Vault    string `long:"vault" description:"Custom vault file" default:""`
+	Version  bool   `short:"v" long:"version" description:"Display version information"`
+	Debug    bool   `long:"debug" description:"It will print all the communications to this imap/smtp server"`
+	Service  bool   `long:"service" description:"Execute as a service"`
 }
 
 // Opts are the options set through the command line
@@ -91,6 +88,10 @@ func (p *program) Run() {
 		logrus.Fatal("neither smtp nor imap are enabled in config file")
 	}
 
+	if config.Bridge.Server.SMTP.Domain == "" {
+		config.Bridge.Server.SMTP.Domain = common.DefaultDomain
+	}
+
 	// Set default vault info if set in config
 	vault.VaultPassword = opts.Password
 	vault.VaultPath = config.Bridge.Vault.Path
@@ -118,22 +119,18 @@ func (p *program) Run() {
 	go setupSignals(cancel)
 
 	// Start the SMTP server if needed
-	//if opts.GatewayAccount != "" || opts.SMTPHost != "" {
 	if config.Bridge.Server.SMTP.Enabled {
 		go startSMTPServer(v, cancel)
 	}
 
 	// Start the IMAP server if needed
-	//if opts.ImapHost != "" {
 	if config.Bridge.Server.IMAP.Enabled {
 		go startImapServer(v, cancel)
 	}
 
-	//if opts.GatewayAccount != "" {
 	if config.Bridge.Server.SMTP.Gateway {
 		// If gateway mode then start to fetch for pending mails
-		//go startFetcher(ctx, cancel, v, opts.GatewayAccount)
-		go startFetcher(ctx, cancel, v, config.Bridge.Server.SMTP.Account)
+		go startFetcher(ctx, cancel, v, config.Bridge.Server.SMTP.GatewayAccount)
 	}
 
 	<-ctx.Done()
@@ -175,11 +172,11 @@ func setupSignals(cancel context.CancelFunc) {
 }
 
 func startImapServer(v *vault.Vault, cancel context.CancelFunc) {
-	be := imapgw.New(v)
+	be := imapgw.New(v, imapgw.NewBolt(&config.Bridge.Server.IMAP.Path))
 	s := server.New(be)
-	s.Addr = opts.ImapHost
+	s.Addr = fmt.Sprintf("%s:%d", config.Bridge.Server.IMAP.Host, config.Bridge.Server.IMAP.Port)
 	s.AllowInsecureAuth = true // We should run on TLS
-	if opts.Debug {
+	if config.Bridge.Server.IMAP.Debug {
 		s.Debug = os.Stdout
 	}
 
@@ -192,20 +189,20 @@ func startImapServer(v *vault.Vault, cancel context.CancelFunc) {
 }
 
 func startSMTPServer(v *vault.Vault, cancel context.CancelFunc) {
-	be := smtpgw.New(v, opts.GatewayAccount)
+	be := smtpgw.New(v, config.Bridge.Server.SMTP.GatewayAccount)
 	s := smtp.NewServer(be)
-	s.Addr = opts.SMTPHost
-	s.Domain = "bitmaelum.network"
+	s.Addr = fmt.Sprintf("%s:%d", config.Bridge.Server.SMTP.Host, config.Bridge.Server.SMTP.Port)
+	s.Domain = config.Bridge.Server.SMTP.Domain
 	s.ReadTimeout = 10 * time.Second
 	s.WriteTimeout = 10 * time.Second
 	s.MaxMessageBytes = 10 * 1024 * 1024 // 10 MB
 	s.MaxRecipients = 1
 	s.AllowInsecureAuth = true
-	if opts.Debug {
+	if config.Bridge.Server.SMTP.Debug {
 		s.Debug = os.Stdout
 	}
 
-	if opts.GatewayAccount != "" {
+	if config.Bridge.Server.SMTP.Gateway {
 		logrus.Infof("Starting SMTP server (gw mode)")
 	} else {
 		logrus.Infof("Starting SMTP server")
