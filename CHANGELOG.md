@@ -1,7 +1,9 @@
 ## 0.1.2 (2012-xxx-xx)
 
 - Default opening notepad on windows when editting config or messages
-
+- Service support: Now you can install both bm-bridge and bm-server as system services using bm-config
+- bm-bridge: It now uses a config file instead of parameters
+- bm-bridge: Support for mail relay (aka gateway mode) for organizations, this way an organization can "host" using the BitMaelum protocol.
 
 
 ## 0.1.1-1 (2021-feb-19)
