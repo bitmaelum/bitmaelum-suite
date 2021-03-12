@@ -22,6 +22,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -31,6 +32,7 @@ import (
 
 	common "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/kardianos/service"
 
 	imapgw "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal/imap/backend"
 	smtpgw "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal/smtp/backend"
@@ -42,20 +44,36 @@ import (
 )
 
 type options struct {
-	ImapHost       string `long:"imaphost" description:"Host:Port to imap server from" required:"false"`
-	SMTPHost       string `long:"smtphost" description:"Host:Port to smtp server from" required:"false"`
-	GatewayAccount string `long:"gatewayaccount" description:"Account to be used for a email->bitmaelum gateway. If empty it will require authentication to send mails." default:""`
-	Config         string `short:"c" long:"config" description:"Path to your configuration file"`
-	Password       string `short:"p" long:"password" description:"Vault password" default:""`
-	Vault          string `long:"vault" description:"Custom vault file" default:""`
-	Version        bool   `short:"v" long:"version" description:"Display version information"`
-	Debug          bool   `long:"debug" description:"It will print all the communications to this imap/smtp server"`
+	Config   string `short:"c" long:"config" description:"Path to your configuration file"`
+	Password string `short:"p" long:"password" description:"Vault password" default:""`
+	Vault    string `long:"vault" description:"Custom vault file" default:""`
+	Version  bool   `short:"v" long:"version" description:"Display version information"`
+	Debug    bool   `long:"debug" description:"It will print all the communications to this imap/smtp server"`
+	Service  bool   `long:"service" description:"Execute as a service"`
 }
 
 // Opts are the options set through the command line
 var opts options
 
-func main() {
+type program struct {
+	context    context.Context
+	cancelFunc context.CancelFunc
+}
+
+func (p *program) Start(s service.Service) error {
+	// Start should not block. Do the actual work async.
+	go p.Run()
+	return nil
+}
+
+func (p *program) Stop(s service.Service) error {
+	// Stop should not block. Return with a few seconds.
+	p.context.Done()
+	<-time.After(time.Second * 2)
+	return nil
+}
+
+func (p *program) Run() {
 	rand.Seed(time.Now().UnixNano())
 
 	internal.ParseOptions(&opts)
@@ -65,16 +83,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	if opts.ImapHost == "" && opts.SMTPHost == "" {
-		fmt.Println(" error: either --imaphost or --smtphost needs to be specified")
-		os.Exit(0)
+	config.LoadBridgeConfig(opts.Config)
+
+	if !config.Bridge.Server.SMTP.Enabled && !config.Bridge.Server.IMAP.Enabled {
+		logrus.Fatal("neither smtp nor imap are enabled in config file")
 	}
 
-	config.LoadClientConfig(opts.Config)
+	if config.Bridge.Server.SMTP.Domain == "" {
+		config.Bridge.Server.SMTP.Domain = common.DefaultDomain
+	}
 
 	// Set default vault info if set in config
 	vault.VaultPassword = opts.Password
-	vault.VaultPath = config.Client.Vault.Path
+	vault.VaultPath = config.Bridge.Vault.Path
 	if opts.Vault != "" {
 		vault.VaultPath = opts.Vault
 	}
@@ -92,27 +113,49 @@ func main() {
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	p.cancelFunc = cancel
+	p.context = ctx
 
 	// Wait for signals and cancel context
 	go setupSignals(cancel)
 
 	// Start the SMTP server if needed
-	if opts.GatewayAccount != "" || opts.SMTPHost != "" {
+	if config.Bridge.Server.SMTP.Enabled {
 		go startSMTPServer(v, cancel)
 	}
 
 	// Start the IMAP server if needed
-	if opts.ImapHost != "" {
+	if config.Bridge.Server.IMAP.Enabled {
 		go startImapServer(v, cancel)
 	}
 
-	if opts.GatewayAccount != "" {
+	if config.Bridge.Server.SMTP.Gateway {
 		// If gateway mode then start to fetch for pending mails
-		go startFetcher(ctx, cancel, v, opts.GatewayAccount)
+		go startFetcher(ctx, cancel, v, config.Bridge.Server.SMTP.GatewayAccount)
 	}
 
 	<-ctx.Done()
 
+}
+
+func main() {
+	prg := &program{}
+	internal.ParseOptions(&opts)
+
+	if opts.Service {
+		s, err := service.New(prg, internal.GetBMBridgeService(""))
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		err = s.Run()
+		if err != nil {
+			logrus.Error(err)
+		}
+		return
+	}
+
+	prg.Run()
 }
 
 func setupSignals(cancel context.CancelFunc) {
@@ -130,11 +173,11 @@ func setupSignals(cancel context.CancelFunc) {
 }
 
 func startImapServer(v *vault.Vault, cancel context.CancelFunc) {
-	be := imapgw.New(v)
+	be := imapgw.New(v, imapgw.NewBolt(&config.Bridge.Server.IMAP.Path))
 	s := server.New(be)
-	s.Addr = opts.ImapHost
+	s.Addr = fmt.Sprintf("%s:%d", config.Bridge.Server.IMAP.Host, config.Bridge.Server.IMAP.Port)
 	s.AllowInsecureAuth = true // We should run on TLS
-	if opts.Debug {
+	if config.Bridge.Server.IMAP.Debug {
 		s.Debug = os.Stdout
 	}
 
@@ -147,20 +190,25 @@ func startImapServer(v *vault.Vault, cancel context.CancelFunc) {
 }
 
 func startSMTPServer(v *vault.Vault, cancel context.CancelFunc) {
-	be := smtpgw.New(v, opts.GatewayAccount)
+	be := smtpgw.New(v, config.Bridge.Server.SMTP.GatewayAccount)
 	s := smtp.NewServer(be)
-	s.Addr = opts.SMTPHost
-	s.Domain = "bitmaelum.network"
+	s.Addr = fmt.Sprintf("%s:%d", config.Bridge.Server.SMTP.Host, config.Bridge.Server.SMTP.Port)
+	s.Domain = config.Bridge.Server.SMTP.Domain
 	s.ReadTimeout = 10 * time.Second
 	s.WriteTimeout = 10 * time.Second
 	s.MaxMessageBytes = 10 * 1024 * 1024 // 10 MB
 	s.MaxRecipients = 1
 	s.AllowInsecureAuth = true
-	if opts.Debug {
+
+	// This is needed since package SPF will use log
+	log.SetOutput(ioutil.Discard)
+
+	if config.Bridge.Server.SMTP.Debug {
 		s.Debug = os.Stdout
+		log.SetOutput(os.Stdout)
 	}
 
-	if opts.GatewayAccount != "" {
+	if config.Bridge.Server.SMTP.Gateway {
 		logrus.Infof("Starting SMTP server (gw mode)")
 	} else {
 		logrus.Infof("Starting SMTP server")

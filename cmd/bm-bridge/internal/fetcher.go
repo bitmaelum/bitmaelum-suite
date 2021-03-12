@@ -31,6 +31,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
@@ -46,8 +47,6 @@ type Fetcher struct {
 	Client  *api.API
 	Vault   *vault.Vault
 }
-
-const destinationBlock = "destination"
 
 // CheckMail will check if there is new mail waiting to be sent to the outside
 func (fe *Fetcher) CheckMail() {
@@ -87,7 +86,7 @@ func (fe *Fetcher) sendMailForMessage(mailboxMessage api.MailboxMessagesMessage)
 
 	// Check if there is a mimeparts and destination block because we need that to reconstruct the mime message
 	for _, block := range dm.Catalog.Blocks {
-		if block.Type == destinationBlock {
+		if block.Type == DestinationBlock {
 			// Use this block as destination address
 			recipientAddress := make([]byte, block.Size)
 			if block.Reader != nil {
@@ -95,22 +94,23 @@ func (fe *Fetcher) sendMailForMessage(mailboxMessage api.MailboxMessagesMessage)
 			}
 
 			if err := processMIMEMessage(string(recipientAddress), dm.Catalog, mailboxMessage.ID); err != nil {
-				logrus.Debugf("error delivering message %s - %v", mailboxMessage.ID, err)
+				logrus.Infof("error delivering message %s - %v", mailboxMessage.ID, err)
 				err = fe.sendPostmasterResponse(dm.Catalog.From.Address, dm.Catalog, err)
 				if err != nil {
 					logrus.Debugf("error sending postmaster - %v", err)
 				}
+			} else {
+				logrus.Infof("message %s processed, sent to %s", mailboxMessage.ID, recipientAddress)
 			}
 
 			// Delete the message
 			fe.Client.RemoveMessage(fe.Info.Address.Hash(), mailboxMessage.ID)
-			logrus.Infof("message %s processed", mailboxMessage.ID)
 
 			return err
 		}
 	}
 
-	logrus.Debugf("the message %s does not contain a \"destination\" block. ignoring", mailboxMessage.ID)
+	logrus.Infof("the message %s does not contain a \"%s\" block. ignoring", mailboxMessage.ID, DestinationBlock)
 	// Delete the message
 	return fe.Client.RemoveMessage(fe.Info.Address.Hash(), mailboxMessage.ID)
 }
@@ -126,13 +126,13 @@ func processMIMEMessage(toMail string, catalog *message.Catalog, msgID string) e
 			Address: toMail,
 		}},
 
-		ID:      "<" + msgID + DefaultDomain + ">",
+		ID:      "<" + msgID + "@" + config.Bridge.Server.SMTP.Domain + ">",
 		Subject: catalog.Subject,
 		Date:    catalog.CreatedAt,
 	}
 
 	for _, block := range catalog.Blocks {
-		if block.Type == destinationBlock {
+		if block.Type == DestinationBlock {
 			// ignore the "destination" block
 			continue
 		}

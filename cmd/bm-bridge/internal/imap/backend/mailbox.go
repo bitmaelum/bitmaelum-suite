@@ -20,10 +20,14 @@
 package imapgw
 
 import (
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/emersion/go-imap"
+	"github.com/emersion/go-imap/backend"
 	"github.com/emersion/go-imap/backend/backendutil"
+	"github.com/sirupsen/logrus"
 )
 
 // Delimiter for mailboxes
@@ -104,7 +108,7 @@ func (mbox *Mailbox) unseenSeqNum() uint32 {
 func (mbox *Mailbox) Status(items []imap.StatusItem) (*imap.MailboxStatus, error) {
 	status := imap.NewMailboxStatus(mbox.name, items)
 	status.Flags = mbox.flags()
-	status.PermanentFlags = []string{"\\*"}
+	status.PermanentFlags = []string{"\\Seen \\Answered \\Flagged \\Deleted \\*"}
 	status.UnseenSeqNum = mbox.unseenSeqNum()
 
 	for _, name := range items {
@@ -199,6 +203,7 @@ func (mbox *Mailbox) CreateMessage(flags []string, date time.Time, body imap.Lit
 
 // UpdateMessagesFlags will update flags
 func (mbox *Mailbox) UpdateMessagesFlags(uid bool, seqset *imap.SeqSet, op imap.FlagsOp, flags []string) error {
+
 	for i, msg := range mbox.Messages {
 		var id uint32
 		if uid {
@@ -211,15 +216,51 @@ func (mbox *Mailbox) UpdateMessagesFlags(uid bool, seqset *imap.SeqSet, op imap.
 		}
 
 		msg.Flags = backendutil.UpdateFlags(msg.Flags, op, flags)
+
+		logrus.Infof("IMAP: updating flags for message %s", msg.ID)
+		(*msg.User.Database).Store(msg.ID, msg.Flags)
+
 	}
 
 	return nil
 }
 
-// CopyMessages is not implemented yet
-func (mbox *Mailbox) CopyMessages(uid bool, seqset *imap.SeqSet, destName string) error {
-	return errUnimplemented
+func getIDFromName(boxName string) int {
+	switch boxName {
+	case folderInbox:
+		return 1
+	case folderSent:
+		return 2
+	case folderTrash:
+		return 3
+	default:
+		boxID, _ := strconv.Atoi(strings.TrimPrefix(boxName, "BOX_"))
+		return boxID
+	}
+}
 
+// CopyMessages will copy a message
+func (mbox *Mailbox) CopyMessages(uid bool, seqset *imap.SeqSet, destName string) error {
+	boxID := getIDFromName(destName)
+	if boxID == 0 {
+		return backend.ErrNoSuchMailbox
+	}
+
+	for i, msg := range mbox.Messages {
+		var id uint32
+		if uid {
+			id = msg.UID
+		} else {
+			id = uint32(i + 1)
+		}
+		if !seqset.Contains(id) {
+			continue
+		}
+
+		mbox.user.Client.MoveMessage(mbox.user.Info.Address.Hash(), msg.ID, mbox.id, boxID)
+	}
+
+	return nil
 }
 
 // Expunge will delete a message
@@ -230,7 +271,8 @@ func (mbox *Mailbox) Expunge() error {
 		deleted := false
 		for _, flag := range msg.Flags {
 			if flag == imap.DeletedFlag {
-				err := mbox.user.Client.RemoveMessage(mbox.user.Info.Address.Hash(), msg.ID)
+				logrus.Infof("IMAP: deleting message %s", msg.ID)
+				err := mbox.user.Client.RemoveMessageFromBox(mbox.user.Info.Address.Hash(), msg.ID, mbox.id)
 				if err != nil {
 					return err
 				}

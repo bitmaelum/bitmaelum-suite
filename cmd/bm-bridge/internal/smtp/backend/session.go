@@ -29,6 +29,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
+
 	common "github.com/bitmaelum/bitmaelum-suite/cmd/bm-bridge/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
@@ -43,7 +45,7 @@ import (
 )
 
 var (
-	errInvalidDomain  = errors.New("you can only send to " + common.DefaultDomain)
+	errInvalidDomain  = errors.New("you can only send to @" + config.Bridge.Server.SMTP.Domain)
 	errInvalidFrom    = errors.New("invalid from address, account not found on vault")
 	errInvalidAddress = errors.New("invalid email address")
 	errSPFnotPass     = errors.New("the SPF record not passed validation, are you a spammer? your days are over [https://github.com/bitmaelum/bitmaelum-suite/wiki/How-does-it-differ]")
@@ -69,13 +71,13 @@ func (s *Session) Mail(from string, opts smtp.MailOptions) error {
 	// is from outside bitmaelum network
 	if s.IsGateway {
 		if !isEmailValid(from) {
-			logrus.Tracef("discarding incoming mail from %s, invalid address", from)
+			logrus.Tracef("SMTP: discarding incoming mail from %s, invalid address", from)
 			return errInvalidAddress
 		}
 
 		// Check that the mails comes from outside
-		if strings.HasSuffix(s.From, common.DefaultDomain) {
-			logrus.Tracef("discarding incoming mail from %s, the email is coming from inside", from)
+		if isEmailFromBitMaelumNetwork(s.From) {
+			logrus.Tracef("SMTP: discarding incoming mail from %s, the email is coming from inside", from)
 			return nil
 		}
 
@@ -108,12 +110,12 @@ func (s *Session) Rcpt(to string) error {
 	// belongs to bitmaelum network
 	if s.IsGateway {
 		// Check that the mails goes to @bitmaelum.network
-		if strings.HasSuffix(to, common.DefaultDomain) {
+		if strings.HasSuffix(to, "@"+config.Bridge.Server.SMTP.Domain) {
 			s.To = common.EmailToAddr(to)
 			return nil
 		}
 
-		logrus.Tracef("discarding incoming mail to %s, address is not for ", common.DefaultDomain)
+		logrus.Tracef("SMTP: discarding incoming mail to %s, address is not for ", config.Bridge.Server.SMTP.Domain)
 		return errInvalidAddress
 	}
 
@@ -123,14 +125,19 @@ func (s *Session) Rcpt(to string) error {
 			return errInvalidDomain
 		}
 	} else {
-		if !strings.HasSuffix(to, common.DefaultDomain) {
+		if !strings.HasSuffix(to, "@"+config.Bridge.Server.SMTP.Domain) {
 			// If recipient is outside bitmaelum network then send the message to
 			// the default gateway address
 			if !isEmailValid(to) {
 				return errInvalidAddress
 			}
 
-			s.To = common.GatewayAddress
+			if config.Bridge.Server.SMTP.GatewayAccount == "" {
+				s.To = common.DefaultGatewayAccount
+			} else {
+				s.To = config.Bridge.Server.SMTP.GatewayAccount
+			}
+
 			return nil
 		}
 	}
@@ -147,14 +154,38 @@ func (s *Session) Data(r io.Reader) error {
 		parts := strings.Split(s.From, "@")
 		res := spf.CheckHost(net.ParseIP(strings.Split(s.RemoteAddr.String(), ":")[0]), parts[1], s.From, "")
 		if res != spf.Pass {
-			logrus.Tracef("discarding incoming mail from %s, SPF did not pass", s.From)
+			logrus.Tracef("SMTP: discarding incoming mail from %s, SPF did not pass", s.From)
 			return errSPFnotPass
 		}
-
-		logrus.Infof("processing incoming email. From: %s, To: %s", s.From, s.To)
 	}
 
+	logrus.Infof("SMTP: processing incoming email. From: %s, To: %s", s.From, s.To)
+
 	return s.sendTo(r)
+}
+
+func isDomainHostedOnBitMaelumNetwork(domainName string) bool {
+	// @TODO: We should probably check the DNS to check somehow if the domain is being actually hosted in the BitMaelum network
+	if domainName == config.Bridge.Server.SMTP.Domain || domainName == common.DefaultDomain {
+		return true
+	}
+	return false
+}
+
+func isEmailFromBitMaelumNetwork(emailAddress string) bool {
+	atIndex := strings.LastIndex(emailAddress, "@")
+	return isDomainHostedOnBitMaelumNetwork(emailAddress[atIndex+1:])
+}
+
+func isGatewayDestination(t string) bool {
+	switch t {
+	case config.Bridge.Server.SMTP.GatewayAccount:
+		return true
+	case common.DefaultGatewayAccount:
+		return true
+	}
+
+	return false
 }
 
 // sendTo sends the mail to the bitmaelum network
@@ -208,11 +239,11 @@ func (s *Session) sendTo(r io.Reader) error {
 	addressing.AddRecipient(toAddr, nil, &recipientInfo.PublicKey)
 
 	blocks = decodedMessage.Blocks
-	if s.To == common.GatewayAddress {
+	if isGatewayDestination(s.To) {
 		if decodedMessage.To == nil || len(decodedMessage.To) < 1 {
 			return errIncorrectFormat
 		}
-		blocks = append(blocks, "destination,"+decodedMessage.To[0].Address)
+		blocks = append(blocks, common.DestinationBlock+","+decodedMessage.To[0].Address)
 	}
 
 	for filename, base64Data := range decodedMessage.Attachments {
@@ -267,7 +298,7 @@ func isEmailValid(e string) bool {
 	if !emailRegex.MatchString(e) {
 		return false
 	}
-	if strings.HasSuffix(e, common.DefaultDomain) {
+	if isEmailFromBitMaelumNetwork(e) {
 		return true
 	}
 	parts := strings.Split(e, "@")

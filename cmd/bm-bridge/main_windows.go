@@ -17,42 +17,22 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package config
+package main
 
 import (
-	"bytes"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/Freman/eventloghook"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/sirupsen/logrus"
 )
 
-func TestTemplates(t *testing.T) {
-	var buf = bytes.Buffer{}
-	err := GenerateServerConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
+func init() {
+	internal.ParseOptions(&opts)
 
-	assert.Empty(t, Server.Logging.Level)
-	err = Server.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "trace", Server.Logging.Level)
-
-	err = GenerateClientConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
-
-	assert.Empty(t, Client.Resolver.Remote.URL)
-	err = Client.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
-
-	err = GenerateBridgeConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
-
-	assert.Empty(t, Bridge.Server.SMTP.Host)
-	err = Bridge.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "localhost", Bridge.Server.SMTP.Host)
-
+	if opts.Service {
+		elog, err = eventlog.Open("BitMaelum Bridge")
+		if err == nil {
+			defer elog.Close()
+			logrus.AddHook(eventloghook.NewHook(elog))
+		}
+	}
 }

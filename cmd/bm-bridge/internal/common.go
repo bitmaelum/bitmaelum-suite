@@ -35,9 +35,11 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -45,16 +47,21 @@ var (
 	errRoutingNotFound = errors.New("cannot find routing ID for this account")
 )
 
-const dateLayout = "Mon, 02 Jan 2006 15:04:05 -0700"
+const (
+	dateLayout = "Mon, 02 Jan 2006 15:04:05 -0700"
 
-// DefaultDomain is the default (dummy?) domain to be used to translate
-// the BitMaelum address to/from
-const DefaultDomain = "@bitmaelum.network"
+	// the boundary used when converting mails to MIME format
+	dummyBoundary = "stop-using-email-and-start-using-bitmaelum"
 
-// GatewayAddress is the gateway address to send external email messages to
-const GatewayAddress = "mailgateway!"
+	// DefaultDomain to be used to translate messages to regular emails
+	DefaultDomain = "bitmaelum.network"
 
-const dummyBoundary = "stop-using-email-and-start-using-bitmaelum"
+	// DefaultGatewayAccount is the gateway address to send external email messages to
+	DefaultGatewayAccount = "mailgateway!"
+
+	// DestinationBlock is the block used to set the final destination of a relayed email message
+	DestinationBlock = "destination"
+)
 
 // MimeMessage contains the struct to encode or decode a mime message
 // the attachments are in the format "filename" -> base64 data
@@ -78,6 +85,7 @@ func GetClientAndInfo(v *vault.Vault, acc string) (*vault.AccountInfo, *api.API,
 	resolver := container.Instance.GetResolveService()
 	routingInfo, err := resolver.ResolveRouting(info.RoutingID)
 	if err != nil {
+		logrus.Error(err)
 		return nil, nil, errRoutingNotFound
 	}
 
@@ -91,15 +99,23 @@ func GetClientAndInfo(v *vault.Vault, acc string) (*vault.AccountInfo, *api.API,
 
 // AddrToEmail will translate an address string to a valid email using DefaultDomain
 func AddrToEmail(address string) string {
+	if config.Bridge.Server.SMTP.Organization != "" {
+		return address[:strings.IndexByte(address, '@')] + "@" + config.Bridge.Server.SMTP.Domain
+	}
+
 	address = strings.Replace(address, "@", "_", -1)
 	address = strings.Replace(address, "!", "", -1)
 
-	return address + DefaultDomain
+	return address + "@" + config.Bridge.Server.SMTP.Domain
 }
 
-// EmailToAddr will translate a (mocked?) domain on the DefaultDomain to an address string
+// EmailToAddr will translate a domain on the DefaultDomain to an address string
 func EmailToAddr(email string) string {
-	address := strings.Replace(email, DefaultDomain, "!", -1)
+	if config.Bridge.Server.SMTP.Organization != "" {
+		return strings.Replace(email, config.Bridge.Server.SMTP.Domain, config.Bridge.Server.SMTP.Organization+"!", -1)
+	}
+
+	address := strings.Replace(email, "@"+config.Bridge.Server.SMTP.Domain, "!", -1)
 	address = strings.Replace(address, "_", "@", -1)
 	return address
 }

@@ -32,6 +32,7 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/backend"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -53,7 +54,8 @@ const (
 
 // Backend will hold the Vault to use
 type Backend struct {
-	Vault *vault.Vault
+	Vault    *vault.Vault
+	Database *Storable
 }
 
 // Login is called when logging in to IMAP. Any password is valid as long as the account is found in the vault
@@ -68,20 +70,23 @@ func (be *Backend) Login(_ *imap.ConnInfo, username, password string) (backend.U
 		return nil, errAccountNotFound
 	}
 
-	user := &User{Account: account, Vault: be.Vault}
+	user := &User{Account: account, Vault: be.Vault, Database: be.Database}
 
 	user.Info, user.Client, err = common.GetClientAndInfo(be.Vault, account)
 	if err != nil {
 		return nil, err
 	}
 
+	logrus.Infof("IMAP: user %s logged in", username)
+
 	return user, nil
 }
 
 // New will create a new Backend
-func New(v *vault.Vault) *Backend {
+func New(v *vault.Vault, d Storable) *Backend {
 	return &Backend{
-		Vault: v,
+		Vault:    v,
+		Database: &d,
 	}
 }
 
@@ -126,9 +131,10 @@ func refreshMailbox(u *User, boxid int, currentMessages []*Message) ([]*Message,
 		}
 
 		message := Message{
-			UID:  uint32(i),
-			ID:   msg.ID,
-			User: u,
+			UID:   uint32(i),
+			ID:    msg.ID,
+			User:  u,
+			Flags: (*u.Database).Retrieve(msg.ID),
 		}
 
 		messages = append(messages, &message)

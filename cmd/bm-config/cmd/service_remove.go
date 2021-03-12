@@ -17,42 +17,50 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package config
+package cmd
 
 import (
-	"bytes"
-	"testing"
+	"fmt"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/kardianos/service"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
-func TestTemplates(t *testing.T) {
-	var buf = bytes.Buffer{}
-	err := GenerateServerConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
+// serviceRemoveCmd represents the serviceRemoveCmd command
+var serviceRemoveCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "Remove the service from the system",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Print("Stopping service... ")
+		err := stopService(getServiceName(cmd))
+		if err != nil {
+			fmt.Println("ERR")
+			logrus.Fatalf("Unable to stop service: %v", err)
+		}
 
-	assert.Empty(t, Server.Logging.Level)
-	err = Server.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "trace", Server.Logging.Level)
+		fmt.Println("OK")
 
-	err = GenerateClientConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
+		fmt.Print("Removing service... ")
+		err = removeService(getServiceName(cmd))
+		if err != nil {
+			fmt.Println("ERR")
+			logrus.Fatalf("Unable to remove service: %v", err)
+		}
 
-	assert.Empty(t, Client.Resolver.Remote.URL)
-	err = Client.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+		fmt.Println("OK")
+	},
+}
 
-	err = GenerateBridgeConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
+func removeService(svc *service.Config) error {
+	s, err := service.New(nil, svc)
+	if err != nil {
+		return err
+	}
 
-	assert.Empty(t, Bridge.Server.SMTP.Host)
-	err = Bridge.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "localhost", Bridge.Server.SMTP.Host)
+	return service.Control(s, "uninstall")
+}
 
+func init() {
+	serviceCmd.AddCommand(serviceRemoveCmd)
 }

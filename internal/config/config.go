@@ -36,6 +36,7 @@ var (
 	errConfigNotFound       = errors.New("cannot find config file")
 	errClientConfigNotFound = errors.New("client config file not found")
 	errServerConfigNotFound = errors.New("server config file not found")
+	errBridgeConfigNotFound = errors.New("bridge config file not found")
 )
 
 var triedPaths []string
@@ -45,12 +46,15 @@ var (
 	ClientConfigFile string = "bitmaelum-client-config.yml"
 	// ServerConfigFile Filename of server configuration
 	ServerConfigFile string = "bitmaelum-server-config.yml"
+	// BridgeConfigFile Filename of bridge configuration
+	BridgeConfigFile string = "bitmaelum-bridge-config.yml"
 )
 
 // Absolute paths of the loaded configurations
 var (
 	LoadedClientConfigPath string
 	LoadedServerConfigPath string
+	LoadedBridgeConfigPath string
 )
 
 // LoadClientConfig loads client configuration from given path or panic if cannot load
@@ -73,6 +77,17 @@ func LoadServerConfig(configPath string) {
 		}
 
 		logrus.Fatalf("could not load server configuration. You can generate a new configuration with: 'bm-config init-config --server'")
+	}
+}
+
+// LoadBridgeConfig loads bridge configuration from given path or panic if cannot load
+func LoadBridgeConfig(configPath string) {
+	err := LoadBridgeConfigOrPass(configPath)
+	if err != nil {
+		for _, p := range triedPaths {
+			logrus.Errorf("Tried path: %s", p)
+		}
+		logrus.Fatalf("could not load bridge configuration. You can generate a new configuration with: 'bm-config init-config --bridge'")
 	}
 }
 
@@ -133,9 +148,36 @@ func LoadServerConfigOrPass(configPath string) error {
 	return errServerConfigNotFound
 }
 
+// LoadBridgeConfigOrPass loads bridge configuration, but return false if not able
+func LoadBridgeConfigOrPass(configPath string) error {
+	var err error
+
+	// Try custom path first
+	if configPath != "" {
+		return readConfigPath(configPath, "from commandline", Bridge.LoadConfig, &LoadedBridgeConfigPath)
+	}
+
+	configPath = os.Getenv("BITMAELUM_BRIDGE_CONFIG")
+	if configPath != "" {
+		return readConfigPath(configPath, "from BITMAELUM_BRIDGE_CONFIG environment", Bridge.LoadConfig, &LoadedBridgeConfigPath)
+	}
+
+	// try on our search paths
+	for _, p := range getSearchPaths() {
+		p = filepath.Join(p, BridgeConfigFile)
+		err = readConfigPath(p, "from hardcoded search path", Bridge.LoadConfig, &LoadedBridgeConfigPath)
+		if err == nil || err != errConfigNotFound {
+			return err
+		}
+	}
+
+	return errBridgeConfigNotFound
+}
+
 // Expands the given path and loads the configuration
 func readConfigPath(p, src string, loader func(r io.Reader) error, loadedPath *string) error {
 	p, _ = homedir.Expand(p)
+	p, _ = filepath.Abs(p)
 
 	triedPaths = append(triedPaths, p+" ("+src+")")
 

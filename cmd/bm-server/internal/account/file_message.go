@@ -175,6 +175,80 @@ func (r *fileRepo) RemoveMessage(addr hash.Hash, msgID string) error {
 	return nil
 }
 
+// CopyMessage copies a message to a box
+func (r *fileRepo) CopyMessage(addr hash.Hash, msgID string, boxID int) error {
+	m := r.getPath(addr, filepath.Join(messageDir, msgID))
+	// Check if message exists
+	_, err := r.fs.Stat(m)
+	if err != nil {
+		return err
+	}
+
+	// Check if box exists
+	var boxExists bool
+	boxes, err := r.GetAllBoxes(addr)
+	if err != nil {
+		return err
+	}
+	for _, box := range boxes {
+		if box.ID == boxID {
+			boxExists = true
+			break
+		}
+	}
+	if !boxExists {
+		return errors.New("box not found")
+	}
+
+	return r.AddToBox(addr, boxID, msgID)
+}
+
+// MoveMessage copies a message to a box
+func (r *fileRepo) MoveMessage(addr hash.Hash, msgID string, fromBoxID, toBoxID int) error {
+	m := r.getPath(addr, filepath.Join(messageDir, msgID))
+	// Check if message exists
+	_, err := r.fs.Stat(m)
+	if err != nil {
+		return err
+	}
+
+	// Check if box exists
+	var boxExists int
+	boxes, err := r.GetAllBoxes(addr)
+	if err != nil {
+		return err
+	}
+	for _, box := range boxes {
+		if box.ID == fromBoxID || box.ID == toBoxID {
+			boxExists++
+			if boxExists > 1 {
+				break
+			}
+		}
+	}
+	if boxExists < 2 {
+		return errors.New("box not found")
+	}
+
+	err = r.AddToBox(addr, toBoxID, msgID)
+	if err == nil {
+		return r.RemoveFromBox(addr, fromBoxID, msgID)
+	}
+
+	return err
+}
+
+// ExistsInBox checks if the message exists on the box
+func (r *fileRepo) ExistsInBox(addr hash.Hash, boxID int, msgID string) bool {
+	boxPath := r.getPath(addr, filepath.Join(getBoxAsString(boxID), msgID))
+
+	if _, err := r.fs.Stat(boxPath); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
 // AddToBox Symlinks the message to the box
 func (r *fileRepo) AddToBox(addr hash.Hash, boxID int, msgID string) error {
 	// Check if we can symlink

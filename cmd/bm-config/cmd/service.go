@@ -17,42 +17,53 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package config
+package cmd
 
 import (
-	"bytes"
-	"testing"
+	"os"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/kardianos/service"
+	"github.com/spf13/cobra"
 )
 
-func TestTemplates(t *testing.T) {
-	var buf = bytes.Buffer{}
-	err := GenerateServerConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
+// serviceCmd represents the serviceCmd command
+var serviceCmd = &cobra.Command{
+	Use:   "service",
+	Short: "Service management",
+}
 
-	assert.Empty(t, Server.Logging.Level)
-	err = Server.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "trace", Server.Logging.Level)
+func getServiceName(cmd *cobra.Command) *service.Config {
+	if i, _ := cmd.InheritedFlags().GetBool("bm-server"); i {
+		return internal.GetBMServerService("")
+	}
 
-	err = GenerateClientConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
+	if i, _ := cmd.InheritedFlags().GetBool("bm-bridge"); i {
+		return internal.GetBMBridgeService("")
+	}
 
-	assert.Empty(t, Client.Resolver.Remote.URL)
-	err = Client.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	cmd.Help()
+	os.Exit(0)
+	return nil
+}
 
-	err = GenerateBridgeConfig(&buf)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, buf.String())
+func getServiceNameForInstall(cmd *cobra.Command) *service.Config {
+	if i, _ := cmd.InheritedFlags().GetBool("bm-server"); i {
+		return internal.GetBMServerService("bm-server")
+	}
 
-	assert.Empty(t, Bridge.Server.SMTP.Host)
-	err = Bridge.LoadConfig(&buf)
-	assert.NoError(t, err)
-	assert.Equal(t, "localhost", Bridge.Server.SMTP.Host)
+	if i, _ := cmd.InheritedFlags().GetBool("bm-bridge"); i {
+		return internal.GetBMBridgeService("bm-bridge")
+	}
 
+	cmd.Help()
+	os.Exit(0)
+	return nil
+}
+
+func init() {
+	serviceCmd.PersistentFlags().Bool("bm-server", false, "Manage bm-server service")
+	serviceCmd.PersistentFlags().Bool("bm-bridge", false, "Manage bm-bridge service")
+
+	rootCmd.AddCommand(serviceCmd)
 }

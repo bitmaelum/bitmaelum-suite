@@ -42,17 +42,37 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/kardianos/service"
 	"github.com/sirupsen/logrus"
 )
 
 type options struct {
 	Config  string `short:"c" long:"config" description:"Configuration file"`
 	Version bool   `short:"v" long:"version" description:"Display version information"`
+	Service bool   `long:"service" description:"Execute as a service"`
 }
 
 var opts options
 
-func main() {
+type program struct {
+	context    context.Context
+	cancelFunc context.CancelFunc
+}
+
+func (p *program) Start(s service.Service) error {
+	// Start should not block. Do the actual work async.
+	go p.Run()
+	return nil
+}
+
+func (p *program) Stop(s service.Service) error {
+	// Stop should not block. Return with a few seconds.
+	p.context.Done()
+	<-time.After(time.Second * 2)
+	return nil
+}
+
+func (p *program) Run() {
 	rand.Seed(time.Now().UnixNano())
 
 	internal.ParseOptions(&opts)
@@ -74,6 +94,8 @@ func main() {
 	// setup context so we can easily stop all components of the server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	p.cancelFunc = cancel
+	p.context = ctx
 
 	// Wait for signals and cancel context
 	setupSignals(cancel)
@@ -96,6 +118,26 @@ func main() {
 	logrus.Tracef("Waiting until context tells us it's done")
 	<-ctx.Done()
 	logrus.Tracef("Context is done. Exiting")
+}
+
+func main() {
+	prg := &program{}
+	internal.ParseOptions(&opts)
+
+	if opts.Service {
+		s, err := service.New(prg, internal.GetBMServerService(""))
+		if err != nil {
+			logrus.Fatal(err)
+		}
+
+		err = s.Run()
+		if err != nil {
+			logrus.Error(err)
+		}
+		return
+	}
+
+	prg.Run()
 }
 
 func initDispatcher() {
@@ -221,10 +263,14 @@ func setupRouter() *mux.Router {
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/box/{box:[0-9]+}", handler.RetrieveMessagesFromBox).Methods("GET")
 	// Message fetching
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/ticket", handler.GetClientToServerTicket).Methods("POST")
-	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}", handler.DeleteMessage).Methods("DELETE")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}", handler.GetMessage).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/block/{block:[A-Za-z0-9-]+}", handler.GetMessageBlock).Methods("GET")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/attachment/{attachment:[A-Za-z0-9-]+}", handler.GetMessageAttachment).Methods("GET")
+	// Message handling
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}", handler.DeleteMessage).Methods("DELETE")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/move", handler.MoveMessage).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/copy", handler.CopyMessage).Methods("POST")
+	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/message/{message:[A-Za-z0-9-]+}/delete", handler.RemoveMessageFromBox).Methods("POST")
 	// Api keys
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey", handler.CreateAPIKey).Methods("POST")
 	authRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/apikey", handler.ListAPIKeys).Methods("GET")
