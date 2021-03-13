@@ -57,6 +57,7 @@ type AddressRepository interface {
 	ResolveAddress(hash hash.Hash) (*AddressInfo, error)
 	UploadAddress(addr address.Address, info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork, orgToken string) error
 	DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error
+	CheckReserved(hash hash.Hash) ([]string, error)
 }
 
 // RoutingRepository is the interface to manage route resolving

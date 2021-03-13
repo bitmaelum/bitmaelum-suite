@@ -32,6 +32,7 @@ type mockRepo struct {
 	organisation map[string]OrganisationInfo
 }
 
+
 // NewMockRepository creates a simple mock repository for testing purposes
 func NewMockRepository() (Repository, error) {
 	r := &mockRepo{}
@@ -107,4 +108,8 @@ func (r *mockRepo) GetConfig() (*ProofOfWorkConfig, error) {
 			Organisation: 22,
 		},
 	}, nil
+}
+
+func (r *mockRepo) CheckReserved(hash hash.Hash) ([]string, error) {
+	return []string{"foo.bar"}, nil
 }

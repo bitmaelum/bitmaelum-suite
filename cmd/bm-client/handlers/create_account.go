@@ -20,9 +20,12 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"net"
 	"os"
+	"text/template"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
@@ -50,6 +53,8 @@ const (
 	ctxProof
 	ctxToken
 	ctxKeyPair
+	ctxDomains
+	ctxReserved
 )
 
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
@@ -73,6 +78,11 @@ func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.K
 	s.AddStep(stepper.Step{
 		Title:   "Checking if address is already known in the resolver service",
 		RunFunc: checkAddressInResolver,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:   "Checking if address is a reserved name",
+		RunFunc: checkReservedAddress,
 	})
 
 	s.AddStep(stepper.Step{
@@ -103,6 +113,13 @@ func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.K
 		Title:      "Placing your new account into the vault",
 		OnlyIfFunc: accountNotFoundInContext,
 		RunFunc:    addAccountToVault,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          "Checking domains for reservation proof",
+		RunFunc:        checkReservedDomains,
+		OnlyIfFunc:     func (s stepper.Stepper) bool { return s.Ctx.Value(ctxReserved) == false },
+		DisplaySpinner: true,
 	})
 
 	s.AddStep(stepper.Step{
@@ -161,6 +178,96 @@ func verifyAddress(s *stepper.Stepper) stepper.StepResult {
 
 	return stepper.StepResult{
 		Status: stepper.SUCCESS,
+	}
+}
+
+func checkReservedAddress(s *stepper.Stepper) stepper.StepResult {
+	addr := s.Ctx.Value(ctxAddr).(*address.Address)
+
+	ks := container.Instance.GetResolveService()
+	domains, _ := ks.CheckReserved(addr.Hash())
+
+	s.Ctx = context.WithValue(s.Ctx, ctxReserved, len(domains) > 0)
+	s.Ctx = context.WithValue(s.Ctx, ctxDomains, domains)
+
+	if len(domains) > 0 {
+		return stepper.StepResult{
+			Status:  stepper.NOTICE,
+			Message: "Yes. DNS verification is needed in order to register this name",
+		}
+	}
+
+	return stepper.StepResult{
+		Status: stepper.SUCCESS,
+		Message: "Not reserved",
+	}
+}
+
+func checkReservedDomains(s *stepper.Stepper) stepper.StepResult {
+	var kp *bmcrypto.KeyPair
+
+	af := s.Ctx.Value(ctxAccountFound) != nil
+	if af {
+		info := s.Ctx.Value(ctxInfo).(*vault.AccountInfo)
+		k := info.GetActiveKey().KeyPair
+		kp = &k
+	} else {
+		kp = s.Ctx.Value(ctxKeyPair).(*bmcrypto.KeyPair)
+	}
+
+	domains := s.Ctx.Value(ctxDomains).([]string)
+
+	for _, domain := range domains {
+		// Check domain
+		entries, err := net.LookupTXT("_bitmaelum." + domain)
+		if err != nil {
+			continue
+		}
+
+		for _, entry := range entries {
+			fmt.Println(" --> " + entry)
+			if entry == kp.PubKey.Fingerprint() {
+				return stepper.StepResult{
+					Status:  stepper.SUCCESS,
+					Message: "found reservation at " + domain,
+				}
+			}
+		}
+	}
+
+	messageTemplate := `could not find proof in the DNS.
+
+In order to register this reserved address, make sure you add the following information to the DNS:
+
+    _bitmaelum TXT {{ .Fingerprint }}
+
+This entry could be added to any of the following domains: {{ .Domains }}. Once we have found the entry, we can 
+register the account onto the keyserver. For more information, please visit https://bitmaelum.com/reserved
+`
+
+	type tplData struct {
+		Fingerprint string
+		Domains []string
+	}
+
+	data := tplData{
+		Fingerprint: kp.PubKey.Fingerprint(),
+		Domains:     domains,
+	}
+
+	msg := ""
+	tmpl, err := template.New("template").Parse(messageTemplate)
+	if err != nil {
+		msg = fmt.Sprintf("%v", data)   // when things fail
+	} else {
+		var buf bytes.Buffer
+		err = tmpl.Execute(&buf, data)
+		msg = buf.String()
+	}
+
+	return stepper.StepResult{
+		Status:  stepper.FAILURE,
+		Message: msg,
 	}
 }
 
