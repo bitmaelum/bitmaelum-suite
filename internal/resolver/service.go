@@ -219,6 +219,7 @@ func (s *Service) GetConfig() ProofOfWorkConfig {
 	}
 }
 
+// CheckReserved will check if the hash is reserved and returns the domains that can validate the reservation
 func (s *Service) CheckReserved(hash hash.Hash) ([]string, error) {
 	return s.repo.CheckReserved(hash)
 }

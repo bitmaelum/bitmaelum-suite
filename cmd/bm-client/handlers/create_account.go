@@ -255,13 +255,11 @@ register the account onto the keyserver. For more information, please visit http
 		Domains:     domains,
 	}
 
-	msg := ""
+	msg := fmt.Sprintf("%v", data)   // when things fail
 	tmpl, err := template.New("template").Parse(messageTemplate)
-	if err != nil {
-		msg = fmt.Sprintf("%v", data)   // when things fail
-	} else {
+	if err == nil {
 		var buf bytes.Buffer
-		err = tmpl.Execute(&buf, data)
+		_ = tmpl.Execute(&buf, data)
 		msg = buf.String()
 	}
 
