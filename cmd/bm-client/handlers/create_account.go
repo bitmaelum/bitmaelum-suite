@@ -245,28 +245,38 @@ This entry could be added to any of the following domains: {{ .Domains }}. Once 
 register the account onto the keyserver. For more information, please visit https://bitmaelum.com/reserved
 `
 
+	msg := generateFromTemplate(messageTemplate, kp.PubKey.Fingerprint(), domains)
+
+	return stepper.StepResult{
+		Status:  stepper.FAILURE,
+		Message: msg,
+	}
+}
+
+func generateFromTemplate(messageTemplate string, fingerprint string, domains []string) string {
 	type tplData struct {
 		Fingerprint string
 		Domains     []string
 	}
 
 	data := tplData{
-		Fingerprint: kp.PubKey.Fingerprint(),
+		Fingerprint: fingerprint,
 		Domains:     domains,
 	}
 
 	msg := fmt.Sprintf("%v", data) // when things fail
 	tmpl, err := template.New("template").Parse(messageTemplate)
-	if err == nil {
-		var buf bytes.Buffer
-		_ = tmpl.Execute(&buf, data)
-		msg = buf.String()
+	if err != nil {
+		return msg
 	}
 
-	return stepper.StepResult{
-		Status:  stepper.FAILURE,
-		Message: msg,
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, data)
+	if err != nil {
+		return msg
 	}
+
+	return buf.String()
 }
 
 func checkAddressInResolver(s *stepper.Stepper) stepper.StepResult {

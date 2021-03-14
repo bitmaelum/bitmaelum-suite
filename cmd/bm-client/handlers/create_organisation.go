@@ -20,12 +20,10 @@
 package handlers
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net"
 	"os"
-	"text/template"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/stepper"
@@ -369,23 +367,7 @@ This entry could be added to any of the following domains: {{ .Domains }}. Once 
 register the organisation onto the keyserver. For more information, please visit https://bitmaelum.com/reserved
 `
 
-	type tplData struct {
-		Fingerprint string
-		Domains     []string
-	}
-
-	data := tplData{
-		Fingerprint: kp.PubKey.Fingerprint(),
-		Domains:     domains,
-	}
-
-	msg := fmt.Sprintf("%v", data) // when things fail
-	tmpl, err := template.New("template").Parse(messageTemplate)
-	if err == nil {
-		var buf bytes.Buffer
-		_ = tmpl.Execute(&buf, data)
-		msg = buf.String()
-	}
+	msg := generateFromTemplate(messageTemplate, kp.PubKey.Fingerprint(), domains)
 
 	return stepper.StepResult{
 		Status:  stepper.FAILURE,
