@@ -32,7 +32,6 @@ type mockRepo struct {
 	organisation map[string]OrganisationInfo
 }
 
-
 // NewMockRepository creates a simple mock repository for testing purposes
 func NewMockRepository() (Repository, error) {
 	r := &mockRepo{}

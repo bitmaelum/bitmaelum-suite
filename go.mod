@@ -16,7 +16,6 @@ require (
 	github.com/gdamore/tcell/v2 v2.2.0
 	github.com/gen2brain/beeep v0.0.0-20200526185328-e9c15c258e28
 	github.com/go-redis/redis/v7 v7.4.0
-	github.com/godbus/dbus v4.1.0+incompatible // indirect
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gookit/color v1.3.8
@@ -25,7 +24,6 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/jhillyerd/enmime v0.8.4
 	github.com/kardianos/service v1.2.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
@@ -52,7 +50,7 @@ require (
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210313202042-bd2e13477e9c
+	golang.org/x/sys v0.0.0-20210313202042-bd2e13477e9c // indirect
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d
 	golang.org/x/tools v0.1.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0

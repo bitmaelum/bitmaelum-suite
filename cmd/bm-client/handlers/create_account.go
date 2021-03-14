@@ -118,7 +118,7 @@ func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.K
 	s.AddStep(stepper.Step{
 		Title:          "Checking domains for reservation proof",
 		RunFunc:        checkReservedDomains,
-		OnlyIfFunc:     func (s stepper.Stepper) bool { return s.Ctx.Value(ctxReserved) == false },
+		OnlyIfFunc:     func(s stepper.Stepper) bool { return s.Ctx.Value(ctxReserved) == false },
 		DisplaySpinner: true,
 	})
 
@@ -198,7 +198,7 @@ func checkReservedAddress(s *stepper.Stepper) stepper.StepResult {
 	}
 
 	return stepper.StepResult{
-		Status: stepper.SUCCESS,
+		Status:  stepper.SUCCESS,
 		Message: "Not reserved",
 	}
 }
@@ -247,7 +247,7 @@ register the account onto the keyserver. For more information, please visit http
 
 	type tplData struct {
 		Fingerprint string
-		Domains []string
+		Domains     []string
 	}
 
 	data := tplData{
@@ -255,7 +255,7 @@ register the account onto the keyserver. For more information, please visit http
 		Domains:     domains,
 	}
 
-	msg := fmt.Sprintf("%v", data)   // when things fail
+	msg := fmt.Sprintf("%v", data) // when things fail
 	tmpl, err := template.New("template").Parse(messageTemplate)
 	if err == nil {
 		var buf bytes.Buffer

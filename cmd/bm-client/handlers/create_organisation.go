@@ -111,7 +111,7 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 	s.AddStep(stepper.Step{
 		Title:          "Checking domains for reservation proof",
 		RunFunc:        checkOrganisationReservedDomains,
-		OnlyIfFunc:     func (s stepper.Stepper) bool { return s.Ctx.Value(ctxOrgReserved) == false },
+		OnlyIfFunc:     func(s stepper.Stepper) bool { return s.Ctx.Value(ctxOrgReserved) == false },
 		DisplaySpinner: true,
 	})
 
@@ -323,7 +323,7 @@ func checkOrganisationReservedAddress(s *stepper.Stepper) stepper.StepResult {
 	}
 
 	return stepper.StepResult{
-		Status: stepper.SUCCESS,
+		Status:  stepper.SUCCESS,
 		Message: "Not reserved",
 	}
 }
@@ -371,7 +371,7 @@ register the organisation onto the keyserver. For more information, please visit
 
 	type tplData struct {
 		Fingerprint string
-		Domains []string
+		Domains     []string
 	}
 
 	data := tplData{
@@ -379,7 +379,7 @@ register the organisation onto the keyserver. For more information, please visit
 		Domains:     domains,
 	}
 
-	msg := fmt.Sprintf("%v", data)   // when things fail
+	msg := fmt.Sprintf("%v", data) // when things fail
 	tmpl, err := template.New("template").Parse(messageTemplate)
 	if err == nil {
 		var buf bytes.Buffer
@@ -392,4 +392,3 @@ register the organisation onto the keyserver. For more information, please visit
 		Message: msg,
 	}
 }
-

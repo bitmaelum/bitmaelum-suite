@@ -224,7 +224,6 @@ func (s *Service) CheckReserved(hash hash.Hash) ([]string, error) {
 	return s.repo.CheckReserved(hash)
 }
 
-
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
