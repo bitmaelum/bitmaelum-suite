@@ -4,6 +4,8 @@
 - Service support: Now you can install both bm-bridge and bm-server as system services using bm-config
 - bm-bridge: It now uses a config file instead of parameters
 - bm-bridge: Support for mail relay (aka gateway mode) for organizations, this way an organization can "host" using the BitMaelum protocol.
+- bm-client: reserved certain accounts and organisations for registration (see https://github.com/bitmaelum/bitmaelum-suite/wiki/reserved-addresses)
+
 
 
 ## 0.1.1-1 (2021-feb-19)
