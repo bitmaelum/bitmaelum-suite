@@ -108,3 +108,7 @@ func (r *mockRepo) GetConfig() (*ProofOfWorkConfig, error) {
 		},
 	}, nil
 }
+
+func (r *mockRepo) CheckReserved(hash hash.Hash) ([]string, error) {
+	return []string{"foo.bar"}, nil
+}

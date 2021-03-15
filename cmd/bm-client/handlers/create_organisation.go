@@ -22,6 +22,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
@@ -46,6 +47,8 @@ const (
 	ctxOrgName
 	ctxOrgInfo
 	ctxOrgProof
+	ctxOrgDomains
+	ctxOrgReserved
 )
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
@@ -65,6 +68,11 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 	s.AddStep(stepper.Step{
 		Title:   "Checking if organisation is already known in the resolver service",
 		RunFunc: checkOrganisationInResolver,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:   "Checking if address is a reserved name",
+		RunFunc: checkOrganisationReservedAddress,
 	})
 
 	s.AddStep(stepper.Step{
@@ -96,6 +104,13 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 		Title:      "Placing your new organisation into the vault",
 		OnlyIfFunc: organisationNotFoundInContext,
 		RunFunc:    addOrganisationToVault,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:          "Checking domains for reservation proof",
+		RunFunc:        checkOrganisationReservedDomains,
+		OnlyIfFunc:     func(s stepper.Stepper) bool { return s.Ctx.Value(ctxOrgReserved) == false },
+		DisplaySpinner: true,
 	})
 
 	s.AddStep(stepper.Step{
@@ -286,4 +301,76 @@ func uploadOrganisationToResolver(s *stepper.Stepper) stepper.StepResult {
 
 func organisationNotFoundInContext(s stepper.Stepper) bool {
 	return s.Ctx.Value(ctxOrganisationFound) != nil
+}
+
+func checkOrganisationReservedAddress(s *stepper.Stepper) stepper.StepResult {
+	orgAddr := s.Ctx.Value(ctxOrgAddr).(string)
+	orgHash := hash.New(orgAddr)
+
+	ks := container.Instance.GetResolveService()
+	domains, _ := ks.CheckReserved(orgHash)
+
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgReserved, len(domains) > 0)
+	s.Ctx = context.WithValue(s.Ctx, ctxOrgDomains, domains)
+
+	if len(domains) > 0 {
+		return stepper.StepResult{
+			Status:  stepper.NOTICE,
+			Message: "Yes. DNS verification is needed in order to register this organisation",
+		}
+	}
+
+	return stepper.StepResult{
+		Status:  stepper.SUCCESS,
+		Message: "Not reserved",
+	}
+}
+
+func checkOrganisationReservedDomains(s *stepper.Stepper) stepper.StepResult {
+	var kp *bmcrypto.KeyPair
+
+	af := s.Ctx.Value(ctxOrganisationFound) != nil
+	if af {
+		info := s.Ctx.Value(ctxOrgInfo).(*vault.OrganisationInfo)
+		k := info.GetActiveKey().KeyPair
+		kp = &k
+	} else {
+		kp = s.Ctx.Value(ctxOrgKeyPair).(*bmcrypto.KeyPair)
+	}
+
+	domains := s.Ctx.Value(ctxOrgDomains).([]string)
+
+	for _, domain := range domains {
+		// Check domain
+		entries, err := net.LookupTXT("_bitmaelum." + domain)
+		if err != nil {
+			continue
+		}
+
+		for _, entry := range entries {
+			if entry == kp.PubKey.Fingerprint() {
+				return stepper.StepResult{
+					Status:  stepper.SUCCESS,
+					Message: "found reservation at " + domain,
+				}
+			}
+		}
+	}
+
+	messageTemplate := `could not find proof in the DNS.
+
+In order to register this reserved organisation, make sure you add the following information to the DNS:
+
+    _bitmaelum TXT {{ .Fingerprint }}
+
+This entry could be added to any of the following domains: {{ .Domains }}. Once we have found the entry, we can 
+register the organisation onto the keyserver. For more information, please visit https://bitmaelum.com/reserved
+`
+
+	msg := generateFromTemplate(messageTemplate, kp.PubKey.Fingerprint(), domains)
+
+	return stepper.StepResult{
+		Status:  stepper.FAILURE,
+		Message: msg,
+	}
 }

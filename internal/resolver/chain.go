@@ -169,3 +169,15 @@ func (r *ChainRepository) GetConfig() (*ProofOfWorkConfig, error) {
 
 	return nil, ErrConfigNotFound
 }
+
+// CheckReserved will check if the hash is a reserved hash
+func (r *ChainRepository) CheckReserved(hash hash.Hash) ([]string, error) {
+	for idx := range r.repos {
+		domains, err := r.repos[idx].CheckReserved(hash)
+		if err == nil {
+			return domains, nil
+		}
+	}
+
+	return []string{}, nil
+}

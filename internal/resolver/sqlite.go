@@ -242,3 +242,7 @@ func (r *sqliteRepo) GetConfig() (*ProofOfWorkConfig, error) {
 		},
 	}, nil
 }
+
+func (r *sqliteRepo) CheckReserved(hash hash.Hash) ([]string, error) {
+	return []string{}, nil
+}

@@ -63,8 +63,8 @@ test: test_goimports test_license test_vet test_golint test_staticcheck test_ine
 test_goimports:	
 	source .github/workflows/github.sh  ; \
 	section "Test imports and code style" ; \
-	out=`$(GO_GOIMPORTS_BIN) -l ./cmd/bm-server` ; \
-	echo $${out} ; \
+	out=`$(GO_GOIMPORTS_BIN) -rel .` ; \
+	echo "$${out}" ; \
 	test -z `echo $${out}`
 
 test_license:
@@ -80,7 +80,7 @@ test_vet:
 
 test_staticcheck:
 	source .github/workflows/github.sh ;\
-	section "Test imports and code style" ;\
+	section "Test static checks" ;\
 	$(GO_STATCHECK_BIN) ./...
 
 test_golint:

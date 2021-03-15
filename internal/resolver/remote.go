@@ -394,3 +394,15 @@ func (r *remoteRepo) GetConfig() (*ProofOfWorkConfig, error) {
 
 	return cfg, nil
 }
+
+func (r *remoteRepo) CheckReserved(hash hash.Hash) ([]string, error) {
+	url := r.BaseURL + "/reserved/" + hash.String()
+
+	var domains = make([]string, 100)
+	err := r.resolve(url, &domains)
+	if err != nil {
+		return nil, err
+	}
+
+	return domains, nil
+}
