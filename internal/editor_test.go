@@ -36,3 +36,7 @@ func TestFindEditor(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "foo-edit.exe", ed)
 }
+
+func TestGetEditorPaths(t *testing.T) {
+	assert.Greater(t, getEditorPaths(), 0)
+}
