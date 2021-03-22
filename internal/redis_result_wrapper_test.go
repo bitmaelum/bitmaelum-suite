@@ -51,9 +51,11 @@ func TestRedisBridge(t *testing.T) {
 
 	i, err = bridge.Exists(ctx, "foo")
 	assert.NoError(t, err)
+	assert.Equal(t, i, int64(0))
 
 	s, err = bridge.Set(ctx, "foo", "bar", time.Duration(1*time.Hour))
 	assert.NoError(t, err)
+	assert.Equal(t, s, "OK")
 
 	i, err = bridge.Exists(ctx, "foo")
 	assert.NoError(t, err)
@@ -69,6 +71,7 @@ func TestRedisBridge(t *testing.T) {
 
 	i, err = bridge.SAdd(ctx, "foo", "bar", "baz")
 	assert.NoError(t, err)
+	assert.Equal(t, i, int64(2))
 
 	sl, err = bridge.SMembers(ctx, "foo")
 	assert.NoError(t, err)
@@ -76,6 +79,7 @@ func TestRedisBridge(t *testing.T) {
 
 	i, err = bridge.SRem(ctx, "foo", "baz")
 	assert.NoError(t, err)
+	assert.Equal(t, i, int64(1))
 
 	sl, err = bridge.SMembers(ctx, "foo")
 	assert.NoError(t, err)
