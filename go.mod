@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
+	github.com/alicebob/miniredis/v2 v2.14.3
 	github.com/c2h5oh/datasize v0.0.0-20200825124411-48ed595a09d2
 	github.com/cloudflare/gokey v0.1.0
 	github.com/coreos/go-semver v0.3.0
@@ -47,12 +48,11 @@ require (
 	github.com/zalando/go-keyring v0.1.1
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210313202042-bd2e13477e9c // indirect
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d
-	golang.org/x/tools v0.1.0 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
