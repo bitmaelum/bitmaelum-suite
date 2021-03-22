@@ -100,7 +100,7 @@ func (api *API) CopyMessage(addr hash.Hash, messageID string, to int) error {
 	return nil
 }
 
-// MoveMessage moves a message frome one mailbox to another
+// MoveMessage moves a message from one mailbox to another
 func (api *API) MoveMessage(addr hash.Hash, messageID string, from, to int) error {
 	type inputMoveMessage struct {
 		From int `json:"from"`
