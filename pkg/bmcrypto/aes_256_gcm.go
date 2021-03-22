@@ -33,7 +33,6 @@ var (
 	keyGenerator = randomKeyGenerator
 )
 
-
 const (
 	keySize = 32
 )
