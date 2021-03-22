@@ -38,5 +38,5 @@ func TestFindEditor(t *testing.T) {
 }
 
 func TestGetEditorPaths(t *testing.T) {
-	assert.Greater(t, getEditorPaths(), 0)
+	assert.Greater(t, len(getEditorPaths()), 0)
 }
