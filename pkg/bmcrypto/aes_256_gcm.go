@@ -24,11 +24,15 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"io"
 )
 
 // keyGenerator can be used for mocking purposes
-var keyGenerator = randomKeyGenerator
+var (
+	keyGenerator = randomKeyGenerator
+)
+
 
 const (
 	keySize = 32
@@ -158,6 +162,10 @@ func GetAesEncryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error
 		return nil, err
 	}
 
+	if len(iv) != block.BlockSize() {
+		return nil, errors.New("IV is not of blocksize")
+	}
+
 	stream := cipher.NewCFBEncrypter(block, iv)
 	return &cipher.StreamReader{S: stream, R: r}, err
 }
@@ -167,6 +175,10 @@ func GetAesDecryptorReader(iv []byte, key []byte, r io.Reader) (io.Reader, error
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return nil, err
+	}
+
+	if len(iv) != block.BlockSize() {
+		return nil, errors.New("IV is not of blocksize")
 	}
 
 	stream := cipher.NewCFBDecrypter(block, iv)

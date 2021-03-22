@@ -43,7 +43,7 @@ func TestEncryptDecryptJson(t *testing.T) {
 		Bar: 42,
 	}
 
-	// MOck nonce generator for encrypt
+	// Mock nonce generator for encrypt
 	keyGenerator = mockGenerator
 
 	// Key we are using to encrypt
@@ -166,4 +166,54 @@ func TestEncryptor(t *testing.T) {
 	b, err = ioutil.ReadAll(r4)
 	assert.NoError(t, err)
 	assert.Equal(t, "foo bar baz", string(b))
+}
+
+func TestGenerateIvAndKey(t *testing.T) {
+	iv, key, err := GenerateIvAndKey()
+	assert.NoError(t, err)
+	assert.Len(t, iv, 16)
+	assert.Len(t, key, 32)
+}
+
+func TestKeySizes(t *testing.T) {
+	iv := []byte{0xa4, 0xc0, 0x44, 0xc6, 0x3c, 0xdd, 0x9c, 0xe6, 0xae, 0x62, 0xd7, 0xf3, 0x84, 0x6a, 0x21, 0x2e}
+	key := []byte{0xf2, 0x3f, 0x97, 0x75, 0xc6, 0x40, 0xfa, 0x3e, 0xf7, 0x49, 0xc2, 0x7, 0x87, 0xcf, 0xfb, 0xac, 0x10, 0xb0, 0xc4, 0xcc, 0xf0, 0xee, 0xb3, 0xe9, 0xb8, 0x9e, 0x7c, 0xfb, 0xce, 0x58, 0xc2, 0x2f}
+
+	r1 := bytes.NewBufferString("foo bar baz")
+	_, err := GetAesEncryptorReader(iv, []byte{0xf2, 0x3f, 0x97, 0x75, 0xc6, 0x40, 0xfa, 0x3e, 0xf7}, r1)
+	assert.Error(t, err)
+
+	r1 = bytes.NewBufferString("foo bar baz")
+	_, err = GetAesEncryptorReader([]byte{0xf2, 0x3f, 0x97, 0x75, 0xc6, 0x40, 0xfa, 0x3e, 0xf7}, key, r1)
+	assert.Error(t, err)
+
+
+	r1 = bytes.NewBufferString("foo bar baz")
+	_, err = GetAesDecryptorReader(iv, []byte{0xf2, 0x3f, 0x97, 0x75, 0xc6, 0x40, 0xfa, 0x3e, 0xf7}, r1)
+	assert.Error(t, err)
+
+	r1 = bytes.NewBufferString("foo bar baz")
+	_, err = GetAesDecryptorReader([]byte{0xf2, 0x3f, 0x97, 0x75, 0xc6, 0x40, 0xfa, 0x3e, 0xf7}, key, r1)
+	assert.Error(t, err)
+}
+
+func TestCreateCatalogKey(t *testing.T) {
+	// MOck nonce generator for encrypt
+	keyGenerator = mockGenerator
+
+	b, err := CreateCatalogKey()
+	assert.NoError(t, err)
+	assert.Equal(t, []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}, b)
+}
+
+func TestJSONEncryptDecrypt(t *testing.T) {
+	key := []byte{0xf2, 0x3f, 0x97, 0x75, 0xc6, 0x40, 0xfa, 0x3e, 0xf7, 0x49, 0xc2, 0x7, 0x87, 0xcf, 0xfb, 0xac, 0x10, 0xb0, 0xc4, 0xcc, 0xf0, 0xee, 0xb3, 0xe9, 0xb8, 0x9e, 0x7c, 0xfb, 0xce, 0x58, 0xc2, 0x2f}
+
+	b, err := JSONEncrypt(key, make(chan int))
+	assert.Error(t, err)
+	assert.Nil(t, b)
+
+	var v string
+	err = JSONDecrypt(key, []byte("foobar"), &v)
+	assert.Error(t, err)
 }
