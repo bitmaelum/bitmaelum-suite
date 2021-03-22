@@ -35,7 +35,6 @@ func TestAPI_GetAPIKey(t *testing.T) {
 	}))
 	defer server.Close()
 
-
 	api, err := NewAnonymous(server.URL, nil)
 	assert.NoError(t, err)
 
@@ -50,7 +49,6 @@ func TestAPI_GetAPIKey_IncorrectStatusCode(t *testing.T) {
 		rw.WriteHeader(500)
 	}))
 	defer server.Close()
-
 
 	api, err := NewAnonymous(server.URL, nil)
 	assert.NoError(t, err)
@@ -96,7 +94,6 @@ func TestAPI_GetAPIKey_Correct(t *testing.T) {
 	assert.Equal(t, apiKey.Admin, false)
 	assert.Equal(t, apiKey.Desc, "description")
 }
-
 
 // // GetAPIKey gets a single key
 // func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*key.APIKeyType, error) {
