@@ -26,7 +26,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestSetMockTime(t *testing.T) {
 	mockTimeNow := func() time.Time {
 		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
