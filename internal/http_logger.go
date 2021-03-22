@@ -66,9 +66,14 @@ func (l *HTTPLogger) LogRequest(req *http.Request) {
 		_, _ = io.Copy(dest, req.Body)
 	}
 
+	blen := len(b.String())
+	if b.String() == "" {
+		b.WriteString("<empty body>")
+	}
+
 	req.Body = save
 
-	logrus.Tracef("log: %s", b.String())
+	logrus.Tracef("log: (%d) %s", blen, b.String())
 }
 
 // LogResponse will log the response
