@@ -232,7 +232,6 @@ func setupRouter() *mux.Router {
 	publicRouter.HandleFunc("/", handler.HomePage).Methods("GET")
 	publicRouter.HandleFunc("/account", handler.CreateAccount).Methods("POST")
 	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/keys", handler.RetrieveKeys).Methods("GET")
-	publicRouter.HandleFunc("/account/{addr:[A-Za-z0-9]{64}}/org", handler.RetrieveOrganisation).Methods("GET")
 
 	// Server to server message upload
 	publicRouter.HandleFunc("/ticket", handler.GetServerToServerTicket).Methods("POST")

@@ -37,7 +37,7 @@ type ChainRepository struct {
 }
 
 // NewChainRepository Return a new chain repository
-func NewChainRepository() *ChainRepository {
+func NewChainRepository() Repository {
 	return &ChainRepository{
 		repos: []Repository{},
 	}
@@ -75,9 +75,9 @@ func (r *ChainRepository) ResolveRouting(routingID string) (*RoutingInfo, error)
 }
 
 // ResolveOrganisation resolves organisation
-func (r *ChainRepository) ResolveOrganisation(hash hash.Hash) (*OrganisationInfo, error) {
+func (r *ChainRepository) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
 	for idx := range r.repos {
-		info, err := r.repos[idx].ResolveOrganisation(hash)
+		info, err := r.repos[idx].ResolveOrganisation(orgHash)
 		if err == nil {
 			return info, nil
 		}
@@ -114,18 +114,6 @@ func (r *ChainRepository) UploadRouting(info *RoutingInfo, privKey bmcrypto.Priv
 func (r *ChainRepository) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error {
 	for idx := range r.repos {
 		err := r.repos[idx].UploadOrganisation(info, privKey, pow)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// DeleteAddress from repos
-func (r *ChainRepository) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
-	for idx := range r.repos {
-		err := r.repos[idx].DeleteAddress(info, privKey)
 		if err != nil {
 			return err
 		}
@@ -171,13 +159,37 @@ func (r *ChainRepository) GetConfig() (*ProofOfWorkConfig, error) {
 }
 
 // CheckReserved will check if the hash is a reserved hash
-func (r *ChainRepository) CheckReserved(hash hash.Hash) ([]string, error) {
+func (r *ChainRepository) CheckReserved(h hash.Hash) ([]string, error) {
 	for idx := range r.repos {
-		domains, err := r.repos[idx].CheckReserved(hash)
+		domains, err := r.repos[idx].CheckReserved(h)
 		if err == nil {
 			return domains, nil
 		}
 	}
 
 	return []string{}, nil
+}
+
+// DeleteAddress will remove the address from the key resolver
+func (r *ChainRepository) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
+	for idx := range r.repos {
+		err := r.repos[idx].DeleteAddress(info, privKey)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// UndeleteAddress will undelete the address on the key resolver
+func (r *ChainRepository) UndeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
+	for idx := range r.repos {
+		err := r.repos[idx].UndeleteAddress(info, privKey)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

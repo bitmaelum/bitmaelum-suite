@@ -146,31 +146,6 @@ func checkOrganisation(input inputCreateAccount, w http.ResponseWriter) (*bmcryp
 	return &orgInfo.PublicKey, nil
 }
 
-// RetrieveOrganisation is the handler that will retrieve organisation settings
-func RetrieveOrganisation(w http.ResponseWriter, req *http.Request) {
-	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
-	if err != nil {
-		httputils.ErrorOut(w, http.StatusBadRequest, "incorrect address")
-		return
-	}
-
-	// Check if account exists
-	ar := container.Instance.GetAccountRepo()
-	if !ar.Exists(*haddr) {
-		httputils.ErrorOut(w, http.StatusNotFound, "address not found")
-		return
-	}
-
-	settings, err := ar.FetchOrganisationSettings(*haddr)
-	if err != nil {
-		httputils.ErrorOut(w, http.StatusNotFound, "organisation settings not found")
-		return
-	}
-
-	// Return public keys
-	httputils.JSONOut(w, http.StatusOK, settings)
-}
-
 // RetrieveKeys is the handler that will retrieve public keys directly from the mail server
 func RetrieveKeys(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])

@@ -34,8 +34,7 @@ import (
 )
 
 const (
-	keysFile         = ".keys.json"
-	organisationFile = ".organisation.json"
+	keysFile = ".keys.json"
 )
 
 // PubKeys holds a list of public keys

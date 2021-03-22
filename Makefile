@@ -63,7 +63,7 @@ test: test_goimports test_license test_vet test_golint test_staticcheck test_ine
 test_goimports:	
 	source .github/workflows/github.sh  ; \
 	section "Test imports and code style" ; \
-	out=`$(GO_GOIMPORTS_BIN) -rel .` ; \
+	out=`$(GO_GOIMPORTS_BIN) -l .` ; \
 	echo "$${out}" ; \
 	test -z `echo $${out}`
 

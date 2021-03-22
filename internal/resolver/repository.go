@@ -54,10 +54,12 @@ type ConfigRepository interface {
 
 // AddressRepository is the interface to manage address resolving
 type AddressRepository interface {
-	ResolveAddress(hash hash.Hash) (*AddressInfo, error)
+	ResolveAddress(addrHash hash.Hash) (*AddressInfo, error)
 	UploadAddress(addr address.Address, info *AddressInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork, orgToken string) error
 	DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error
-	CheckReserved(hash hash.Hash) ([]string, error)
+	UndeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error
+
+	CheckReserved(addrOrOrgHash hash.Hash) ([]string, error)
 }
 
 // RoutingRepository is the interface to manage route resolving
@@ -69,7 +71,7 @@ type RoutingRepository interface {
 
 // OrganisationRepository is the interface to manage organisation resolving
 type OrganisationRepository interface {
-	ResolveOrganisation(hash hash.Hash) (*OrganisationInfo, error)
+	ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error)
 	UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, pow proofofwork.ProofOfWork) error
 	DeleteOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey) error
 }
