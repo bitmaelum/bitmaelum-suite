@@ -20,27 +20,19 @@
 package internal
 
 import (
+	"os"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func TestFindEditor(t *testing.T) {
+	ed, err := FindEditor("edit.exe")
+	assert.NoError(t, err)
+	assert.Equal(t, "edit.exe", ed)
 
-func TestSetMockTime(t *testing.T) {
-	mockTimeNow := func() time.Time {
-		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
-	}
-
-	SetMockTime(mockTimeNow)
-
-	assert.Equal(t, "2010-01-01 12:34:56 +0000 UTC", TimeNow().String())
-}
-
-func TestTimeNow(t *testing.T) {
-	timeNow = func() time.Time {
-		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
-	}
-
-	assert.Equal(t, "2010-01-01 12:34:56 +0000 UTC", TimeNow().String())
+	_ = os.Setenv("EDITOR", "foo-edit.exe")
+	ed, err = FindEditor("")
+	assert.NoError(t, err)
+	assert.Equal(t, "foo-edit.exe", ed)
 }
