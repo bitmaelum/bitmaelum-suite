@@ -17,29 +17,50 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package bmcrypto
 
 import (
+	"crypto/elliptic"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSetMockTime(t *testing.T) {
-	mockTimeNow := func() time.Time {
-		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
-	}
+func TestKeyEcdsa_NewEcdsaKey(t *testing.T) {
+	kt := NewEcdsaKey(elliptic.P224())
 
-	SetMockTime(mockTimeNow)
+	assert.False(t, kt.CanEncrypt())
+	assert.True(t, kt.CanKeyExchange())
+	assert.False(t, kt.CanDualKeyExchange())
+	assert.Equal(t, "ecdsa", kt.String())
 
-	assert.Equal(t, "2010-01-01 12:34:56 +0000 UTC", TimeNow().String())
+	assert.Equal(t, "ES384", kt.JWTSignMethod().Alg())
+
+	privKey, pubKey, err := GenerateKeyPair(NewEd25519Key())
+	assert.NoError(t, err)
+
+	msg := []byte("secretmessage")
+
+	b, txid, c, err := kt.Encrypt(*pubKey, msg)
+	assert.NoError(t, err)
+	assert.NotNil(t, txid)
+	assert.NotEqual(t, msg, b)
+	assert.Equal(t, "ecdsa+aes", c)
+
+	b, err = kt.Decrypt(*privKey, txid, b)
+	assert.NoError(t, err)
+	assert.Equal(t, b, msg)
 }
 
-func TestTimeNow(t *testing.T) {
-	timeNow = func() time.Time {
-		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
-	}
+func TestKeyEcdsa_DualKeyExchange(t *testing.T) {
+	kt := NewEcdsaKey(elliptic.P224())
 
-	assert.Equal(t, "2010-01-01 12:34:56 +0000 UTC", TimeNow().String())
+	_, pubKey, err := kt.GenerateKeyPair(randReader)
+	assert.NotNil(t, pubKey)
+	assert.NoError(t, err)
+
+	b, txid, err := kt.DualKeyExchange(*pubKey)
+	assert.Error(t, err, errCannotuseForDualKeyExchange)
+	assert.Nil(t, b)
+	assert.Nil(t, txid)
 }
