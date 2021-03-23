@@ -114,6 +114,7 @@ func (api *API) GetAPIKey(addrHash hash.Hash, ID string) (*key.APIKeyType, error
 		return nil, err
 	}
 
+	// @TODO: we use 200's even with error response body's
 	if statusCode < 200 || statusCode > 299 {
 		return nil, errNoSuccess
 	}
