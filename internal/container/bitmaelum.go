@@ -28,24 +28,14 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
 )
 
+// API keys
 const (
-	// APIKey key
-	APIKey = "api-key"
-
-	// AuthKey key
-	AuthKey = "auth-key"
-
-	// Resolver key
-	Resolver = "resolver"
-
-	// Subscription key
+	APIKey       = "api-key"
+	AuthKey      = "auth-key"
+	Resolver     = "resolver"
 	Subscription = "subscription"
-
-	// Ticket key
-	Ticket = "ticket"
-
-	// Webhook key
-	Webhook = "webhook"
+	Ticket       = "ticket"
+	Webhook      = "webhook"
 )
 
 // Instance is the main bitmaelum service container

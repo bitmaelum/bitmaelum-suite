@@ -28,49 +28,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var accountKeyAdvertiseCmd = &cobra.Command{
-	Use:   "advertise",
-	Short: "Advertise new key to the key resolver",
+var accountDeactivateCmd = &cobra.Command{
+	Use:   "deactivate",
+	Short: "Deactivates an account on the key resolver",
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
-		info, err := vault.GetAccount(v, *akAccount)
+		info, err := vault.GetAccount(v, *adcAccount)
 		if err != nil {
 			fmt.Println("cannot find account in vault")
 			os.Exit(1)
 		}
 
-		vkp, err := info.FindKey(*akaKey)
-		if err != nil {
-			fmt.Println("cannot find key in account")
-			os.Exit(1)
-		}
-
-		info.SetActiveKey(&vkp.KeyPair)
-
-		// Save vault
-		err = v.Persist()
-		if err != nil {
-			fmt.Println("cannot save vault")
-			os.Exit(1)
-		}
-
 		ks := container.Instance.GetResolveService()
-		err = ks.UploadAddressInfo(*info, "")
+		err = ks.DeactivateAccount(*info)
 		if err != nil {
-			fmt.Println("cannot advertise key")
+			fmt.Println("cannot deactivate account on the resolver")
 			os.Exit(1)
 		}
 
 	},
 }
 
-var akaKey *string
+var adcAccount *string
 
 func init() {
-	accountKeyCmd.AddCommand(accountKeyAdvertiseCmd)
+	accountCmd.AddCommand(accountDeactivateCmd)
 
-	akaKey = accountKeyAdvertiseCmd.Flags().StringP("key", "k", "", "fingerprint of the key to advertise")
-
-	_ = accountKeyAdvertiseCmd.MarkPersistentFlagRequired("account")
+	adcAccount = accountDeactivateCmd.Flags().String("account", "", "Account to create")
+	_ = accountDeactivateCmd.MarkPersistentFlagRequired("account")
 }

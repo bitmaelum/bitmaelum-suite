@@ -73,7 +73,7 @@ func NewSqliteRepository(dsn string) (Repository, error) {
 
 // createTableIfNotExist creates the key table if it doesn't exist already in the database
 func createTableIfNotExist(db *sqliteRepo) {
-	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (hash VARCHAR(64) PRIMARY KEY, pubkey TEXT, routing_id VARCHAR(64))", addressTableName)
+	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (hash VARCHAR(64) PRIMARY KEY, pubkey TEXT, routing_id VARCHAR(64), deleted BOOL)", addressTableName)
 	runTableQuery(db, query)
 
 	query = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (routing_id VARCHAR(64) PRIMARY KEY, pubkey TEXT, routing TEXT)", routingTableName)
@@ -99,7 +99,7 @@ func (r *sqliteRepo) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
 		rt string
 	)
 
-	query := fmt.Sprintf("SELECT hash, pubkey, routing_id FROM %s WHERE hash LIKE ?", addressTableName)
+	query := fmt.Sprintf("SELECT hash, pubkey, routing_id FROM %s WHERE hash LIKE ? AND deleted=0", addressTableName)
 	err := r.conn.QueryRow(query, addr.String()).Scan(&h, &p, &rt)
 	if err != nil {
 		return nil, err
@@ -165,8 +165,8 @@ func (r *sqliteRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, 
 	}, nil
 }
 
-func (r *sqliteRepo) UploadAddress(addr address.Address, info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork, orgToken string) error {
-	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , routing_id) VALUES (?, ?, ?)", addressTableName)
+func (r *sqliteRepo) UploadAddress(_ address.Address, info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork, _ string) error {
+	query := fmt.Sprintf("INSERT INTO %s(hash, pubkey , routing_id, deleted) VALUES (?, ?, ?, 0)", addressTableName)
 	st, err := r.conn.Prepare(query)
 	if err != nil {
 		return err
@@ -195,17 +195,6 @@ func (r *sqliteRepo) UploadOrganisation(info *OrganisationInfo, _ bmcrypto.PrivK
 	}
 
 	_, err = st.Exec(info.Hash, info.PublicKey.String())
-	return err
-}
-
-func (r *sqliteRepo) DeleteAddress(info *AddressInfo, _ bmcrypto.PrivKey) error {
-	query := fmt.Sprintf("DELETE FROM %s WHERE hash LIKE ?", addressTableName)
-	st, err := r.conn.Prepare(query)
-	if err != nil {
-		return err
-	}
-
-	_, err = st.Exec(info.Hash)
 	return err
 }
 
@@ -243,6 +232,29 @@ func (r *sqliteRepo) GetConfig() (*ProofOfWorkConfig, error) {
 	}, nil
 }
 
-func (r *sqliteRepo) CheckReserved(hash hash.Hash) ([]string, error) {
+func (r *sqliteRepo) CheckReserved(_ hash.Hash) ([]string, error) {
 	return []string{}, nil
+}
+
+func (r *sqliteRepo) DeleteAddress(info *AddressInfo, _ bmcrypto.PrivKey) error {
+	query := fmt.Sprintf("UPDATE %s SET deleted=1 WHERE hash LIKE ?", addressTableName)
+	st, err := r.conn.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	_, err = st.Exec(info.Hash)
+	return err
+}
+
+func (r *sqliteRepo) UndeleteAddress(info *AddressInfo, _ bmcrypto.PrivKey) error {
+	query := fmt.Sprintf("UPDATE %s SET deleted=0 WHERE hash LIKE ?", addressTableName)
+	st, err := r.conn.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	_, err = st.Exec(info.Hash)
+	return err
+
 }

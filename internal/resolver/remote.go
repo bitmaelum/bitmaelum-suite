@@ -175,7 +175,7 @@ func (r *remoteRepo) UploadAddress(addr address.Address, info *AddressInfo, priv
 	}
 
 	url := r.BaseURL + "/address/" + info.Hash
-	return r.upload(url, data, generateAddressSignature(info, privKey, serial))
+	return r.post(url, data, generateAddressSignature(info, privKey, serial))
 }
 
 func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
@@ -193,7 +193,7 @@ func (r *remoteRepo) UploadRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) 
 	}
 
 	url := r.BaseURL + "/routing/" + info.Hash
-	return r.upload(url, data, generateRoutingSignature(info, privKey, serial))
+	return r.post(url, data, generateRoutingSignature(info, privKey, serial))
 }
 
 func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto.PrivKey, proof proofofwork.ProofOfWork) error {
@@ -217,10 +217,10 @@ func (r *remoteRepo) UploadOrganisation(info *OrganisationInfo, privKey bmcrypto
 	}
 
 	url := r.BaseURL + "/organisation/" + info.Hash
-	return r.upload(url, data, generateOrganisationSignature(info, privKey, serial))
+	return r.post(url, data, generateOrganisationSignature(info, privKey, serial))
 }
 
-func (r *remoteRepo) upload(url string, v interface{}, sig string) error {
+func (r *remoteRepo) post(url string, v interface{}, sig string) error {
 	byteBuf, err := json.Marshal(&v)
 	if err != nil {
 		return err
@@ -251,21 +251,6 @@ func (r *remoteRepo) upload(url string, v interface{}, sig string) error {
 	}
 
 	return errors.New(string(body))
-}
-
-func (r *remoteRepo) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
-	// Do a prefetch so we can get the current serial number
-	addr, err := hash.NewFromHash(info.Hash)
-	if err != nil {
-		return err
-	}
-	kd, err := r.fetchAddress(*addr)
-	if err != nil {
-		return err
-	}
-
-	url := r.BaseURL + "/address/" + info.Hash
-	return r.delete(url, generateAddressSignature(info, privKey, kd.Serial))
 }
 
 func (r *remoteRepo) DeleteRouting(info *RoutingInfo, privKey bmcrypto.PrivKey) error {
@@ -321,32 +306,6 @@ func (r *remoteRepo) delete(url, sig string) error {
 	return errors.New(string(body))
 }
 
-func logHTTP(v interface{}, err error) {
-	if err != nil {
-		logrus.Tracef("%s\n\n", err)
-		return
-	}
-
-	var data []byte
-
-	switch v := v.(type) {
-	case *http.Request:
-		if v != nil {
-			data, err = httputil.DumpRequest(v, true)
-		}
-	case *http.Response:
-		if v != nil {
-			data, err = httputil.DumpResponse(v, true)
-		}
-	}
-	if err != nil {
-		logrus.Tracef("%s\n\n", err)
-		return
-	}
-
-	logrus.Tracef("%s\n\n", data)
-}
-
 func (r *remoteRepo) fetchAddress(addr hash.Hash) (*AddressDownload, error) {
 	url := r.BaseURL + "/address/" + addr.String()
 
@@ -395,8 +354,8 @@ func (r *remoteRepo) GetConfig() (*ProofOfWorkConfig, error) {
 	return cfg, nil
 }
 
-func (r *remoteRepo) CheckReserved(hash hash.Hash) ([]string, error) {
-	url := r.BaseURL + "/reserved/" + hash.String()
+func (r *remoteRepo) CheckReserved(addrOrOrgHash hash.Hash) ([]string, error) {
+	url := r.BaseURL + "/reserved/" + addrOrOrgHash.String()
 
 	var domains = make([]string, 100)
 	err := r.resolve(url, &domains)
@@ -405,4 +364,48 @@ func (r *remoteRepo) CheckReserved(hash hash.Hash) ([]string, error) {
 	}
 
 	return domains, nil
+}
+
+func (r *remoteRepo) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
+	// Do a prefetch so we can get the current serial number
+	addrHash := hash.Hash(info.Hash)
+	kd, err := r.fetchAddress(addrHash)
+	if err != nil {
+		return err
+	}
+
+	url := r.BaseURL + "/address/" + info.Hash + "/delete"
+	return r.post(url, nil, generateAddressSignature(info, privKey, kd.Serial))
+}
+
+func (r *remoteRepo) UndeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
+	// Undelete always uses serial 0
+	url := r.BaseURL + "/address/" + info.Hash + "/undelete"
+	return r.post(url, nil, generateAddressSignature(info, privKey, 0))
+}
+
+func logHTTP(v interface{}, err error) {
+	if err != nil {
+		logrus.Tracef("%s\n\n", err)
+		return
+	}
+
+	var data []byte
+
+	switch v := v.(type) {
+	case *http.Request:
+		if v != nil {
+			data, err = httputil.DumpRequest(v, true)
+		}
+	case *http.Response:
+		if v != nil {
+			data, err = httputil.DumpResponse(v, true)
+		}
+	}
+	if err != nil {
+		logrus.Tracef("%s\n\n", err)
+		return
+	}
+
+	logrus.Tracef("%s\n\n", data)
 }

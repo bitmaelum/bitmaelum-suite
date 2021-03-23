@@ -40,19 +40,19 @@ func setupResolverService() (interface{}, error) {
 		if config.Server.Resolver.Sqlite.Enabled {
 			r, err := getSQLiteRepository(config.Server.Resolver.Sqlite.Dsn)
 			if err == nil {
-				_ = repo.Add(r)
+				_ = repo.(*resolver.ChainRepository).Add(r)
 			}
 		}
 
 		// We add either the client or the server resolver
 		if config.Client.Resolver.Remote.Enabled {
-			_ = repo.Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHTTP, config.Client.Resolver.Remote.AllowInsecure))
+			_ = repo.(*resolver.ChainRepository).Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHTTP, config.Client.Resolver.Remote.AllowInsecure))
 		}
 		if config.Server.Resolver.Remote.Enabled {
-			_ = repo.Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false, config.Server.Resolver.Remote.AllowInsecure))
+			_ = repo.(*resolver.ChainRepository).Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false, config.Server.Resolver.Remote.AllowInsecure))
 		}
 		if config.Bridge.Resolver.Remote.Enabled {
-			_ = repo.Add(*getRemoteRepository(config.Bridge.Resolver.Remote.URL, false, config.Bridge.Resolver.Remote.AllowInsecure))
+			_ = repo.(*resolver.ChainRepository).Add(*getRemoteRepository(config.Bridge.Resolver.Remote.URL, false, config.Bridge.Resolver.Remote.AllowInsecure))
 		}
 
 		resolveService = resolver.KeyRetrievalService(repo)

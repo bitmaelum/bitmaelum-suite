@@ -220,8 +220,8 @@ func (s *Service) GetConfig() ProofOfWorkConfig {
 }
 
 // CheckReserved will check if the hash is reserved and returns the domains that can validate the reservation
-func (s *Service) CheckReserved(hash hash.Hash) ([]string, error) {
-	return s.repo.CheckReserved(hash)
+func (s *Service) CheckReserved(addrOrOrgHash hash.Hash) ([]string, error) {
+	return s.repo.CheckReserved(addrOrOrgHash)
 }
 
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver
@@ -258,4 +258,30 @@ func generateOrganisationSignature(info *OrganisationInfo, privKey bmcrypto.Priv
 	}
 
 	return base64.StdEncoding.EncodeToString(signature)
+}
+
+// ActivateAccount will activate an account (public key) on the keyserver. This works only if the key has been previously deactivated and not yet purged
+func (s *Service) ActivateAccount(info vault.AccountInfo) error {
+	addrInfo := AddressInfo{
+		Hash:        info.Address.Hash().String(),
+		PublicKey:   info.GetActiveKey().PubKey,
+		RoutingID:   info.RoutingID,
+		Pow:         info.Pow.String(),
+		RoutingInfo: RoutingInfo{},
+	}
+
+	return s.repo.UndeleteAddress(&addrInfo, info.GetActiveKey().PrivKey)
+}
+
+// DeactivateAccount will deactivate an account (public key) on the keyserver. It can be activated again if the key is not yet purged
+func (s *Service) DeactivateAccount(info vault.AccountInfo) error {
+	addrInfo := AddressInfo{
+		Hash:        info.Address.Hash().String(),
+		PublicKey:   info.GetActiveKey().PubKey,
+		RoutingID:   info.RoutingID,
+		Pow:         info.Pow.String(),
+		RoutingInfo: RoutingInfo{},
+	}
+
+	return s.repo.DeleteAddress(&addrInfo, info.GetActiveKey().PrivKey)
 }

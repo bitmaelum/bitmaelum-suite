@@ -17,30 +17,44 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package account
+package cmd
 
 import (
-	"encoding/json"
+	"fmt"
+	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/spf13/cobra"
 )
 
-func (r *fileRepo) StoreOrganisationSettings(addr hash.Hash, settings OrganisationSettings) error {
-	data, err := json.MarshalIndent(settings, "", "  ")
-	if err != nil {
-		return err
-	}
+var accountActivateCmd = &cobra.Command{
+	Use:   "activate",
+	Short: "Activates an account on the key resolver",
+	Run: func(cmd *cobra.Command, args []string) {
+		v := vault.OpenDefaultVault()
 
-	// And store
-	return r.store(addr, organisationFile, data)
+		info, err := vault.GetAccount(v, *aacAccount)
+		if err != nil {
+			fmt.Println("cannot find account in vault")
+			os.Exit(1)
+		}
+
+		ks := container.Instance.GetResolveService()
+		err = ks.ActivateAccount(*info)
+		if err != nil {
+			fmt.Println("cannot activate account on the resolver")
+			os.Exit(1)
+		}
+
+	},
 }
 
-func (r *fileRepo) FetchOrganisationSettings(addr hash.Hash) (*OrganisationSettings, error) {
-	settings := &OrganisationSettings{}
-	err := r.fetchJSON(addr, keysFile, settings)
-	if err != nil {
-		return nil, err
-	}
+var aacAccount *string
 
-	return settings, nil
+func init() {
+	accountCmd.AddCommand(accountActivateCmd)
+
+	aacAccount = accountActivateCmd.Flags().String("account", "", "Account to create")
+	_ = accountActivateCmd.MarkPersistentFlagRequired("account")
 }

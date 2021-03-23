@@ -45,6 +45,34 @@ func (api *API) GetPublicKey(addr hash.Hash) (string, error) {
 	return output.PublicKey, nil
 }
 
+// Activate will undelete / activate an account on the resolver again
+func (api *API) Activate(info vault.AccountInfo) error {
+	resp, statusCode, err := api.PostJSON("/account/"+info.Address.Hash().String()+"/undelete", nil)
+	if err != nil {
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return GetErrorFromResponse(resp)
+	}
+
+	return nil
+}
+
+// Deactivate will delete / deactivate an account on the resolver
+func (api *API) Deactivate(info vault.AccountInfo) error {
+	resp, statusCode, err := api.PostJSON("/account/"+info.Address.Hash().String()+"/delete", nil)
+	if err != nil {
+		return err
+	}
+
+	if statusCode < 200 || statusCode > 299 {
+		return GetErrorFromResponse(resp)
+	}
+
+	return nil
+}
+
 // CreateAccount creates new account on server
 func (api *API) CreateAccount(info vault.AccountInfo, token string) error {
 	type inputCreateAccount struct {

@@ -30,7 +30,7 @@ func TestChainRepository(t *testing.T) {
 
 	m, err := NewMockRepository()
 	assert.NoError(t, err)
-	err = r.Add(m)
+	err = r.(*ChainRepository).Add(m)
 	assert.NoError(t, err)
 
 	testRepoAddress(t, r)

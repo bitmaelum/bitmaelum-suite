@@ -67,7 +67,6 @@ type Repository interface {
 	KeyRepository
 	BoxRepository
 	MessageRepository
-	OrganisationRepository
 }
 
 // AddressRepository creates, checks or deletes complete accounts. Address is not the correct word for this.
@@ -82,12 +81,6 @@ type KeyRepository interface {
 	// Public key
 	StoreKey(addr hash.Hash, key bmcrypto.PubKey) error
 	FetchKeys(addr hash.Hash) ([]bmcrypto.PubKey, error)
-}
-
-// OrganisationRepository gets and sets organisation settings into an account
-type OrganisationRepository interface {
-	StoreOrganisationSettings(addr hash.Hash, settings OrganisationSettings) error
-	FetchOrganisationSettings(addr hash.Hash) (*OrganisationSettings, error)
 }
 
 // BoxRepository deals with message boxes insides an account
