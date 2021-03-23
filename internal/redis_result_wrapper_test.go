@@ -20,23 +20,68 @@
 package internal
 
 import (
-	"os"
+	"context"
 	"testing"
+	"time"
 
+	"github.com/alicebob/miniredis/v2"
+	"github.com/go-redis/redis/v7"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFindEditor(t *testing.T) {
-	ed, err := FindEditor("edit.exe")
+func TestRedisBridge(t *testing.T) {
+	rd, err := miniredis.Run()
 	assert.NoError(t, err)
-	assert.Equal(t, "edit.exe", ed)
+	defer rd.Close()
 
-	_ = os.Setenv("EDITOR", "foo-edit.exe")
-	ed, err = FindEditor("")
+	client := redis.NewClient(&redis.Options{
+		Addr: rd.Addr(),
+	})
+	bridge := RedisBridge{
+		Client: *client,
+	}
+
+	var (
+		i  int64
+		s  string
+		sl []string
+	)
+
+	ctx := context.TODO()
+
+	i, err = bridge.Exists(ctx, "foo")
 	assert.NoError(t, err)
-	assert.Equal(t, "foo-edit.exe", ed)
-}
+	assert.Equal(t, i, int64(0))
 
-func TestGetEditorPaths(t *testing.T) {
-	assert.Greater(t, len(getEditorPaths()), 0)
+	s, err = bridge.Set(ctx, "foo", "bar", time.Duration(1*time.Hour))
+	assert.NoError(t, err)
+	assert.Equal(t, s, "OK")
+
+	i, err = bridge.Exists(ctx, "foo")
+	assert.NoError(t, err)
+	assert.Equal(t, i, int64(1))
+
+	s, err = bridge.Get(ctx, "foo")
+	assert.NoError(t, err)
+	assert.Equal(t, s, "bar")
+
+	i, err = bridge.Del(ctx, "foo", "bar")
+	assert.NoError(t, err)
+	assert.Equal(t, i, int64(1))
+
+	i, err = bridge.SAdd(ctx, "foo", "bar", "baz")
+	assert.NoError(t, err)
+	assert.Equal(t, i, int64(2))
+
+	sl, err = bridge.SMembers(ctx, "foo")
+	assert.NoError(t, err)
+	assert.Equal(t, sl, []string{"bar", "baz"})
+
+	i, err = bridge.SRem(ctx, "foo", "baz")
+	assert.NoError(t, err)
+	assert.Equal(t, i, int64(1))
+
+	sl, err = bridge.SMembers(ctx, "foo")
+	assert.NoError(t, err)
+	assert.Equal(t, sl, []string{"bar"})
 }

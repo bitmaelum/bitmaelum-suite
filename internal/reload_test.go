@@ -20,23 +20,9 @@
 package internal
 
 import (
-	"os"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestFindEditor(t *testing.T) {
-	ed, err := FindEditor("edit.exe")
-	assert.NoError(t, err)
-	assert.Equal(t, "edit.exe", ed)
-
-	_ = os.Setenv("EDITOR", "foo-edit.exe")
-	ed, err = FindEditor("")
-	assert.NoError(t, err)
-	assert.Equal(t, "foo-edit.exe", ed)
-}
-
-func TestGetEditorPaths(t *testing.T) {
-	assert.Greater(t, len(getEditorPaths()), 0)
+func TestReload(t *testing.T) {
+	Reload()
 }
