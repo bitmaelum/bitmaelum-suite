@@ -81,8 +81,8 @@ func (k *KeyEd25519) ParsePrivateKeyInterface(key interface{}) ([]byte, error) {
 
 // GenerateKeyPair will generate a new keypair for this keytype. io.Reader can be deterministic if needed
 func (k *KeyEd25519) GenerateKeyPair(r io.Reader) (*PrivKey, *PubKey, error) {
-	// Read 192 bits
-	randBuf := make([]byte, 24)
+	// Read 256 bits
+	randBuf := make([]byte, 32)
 	_, err := io.ReadFull(r, randBuf)
 	if err != nil {
 		return nil, nil, err

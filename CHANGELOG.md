@@ -1,11 +1,12 @@
-## 0.1.x (2012-xxx-xx)
+## 0.1.x (2021-xxx-xx)
 
 - Default opening notepad on windows when editting config or messages
 - Service support: Now you can install both bm-bridge and bm-server as system services using bm-config
 - bm-client: accounts can be activated and deactivated on the key resolver. Deactivated accounts will be removed after a while (not yet defined)
 
 # Security
-- no issues found or fixed
+- increased the ed25519 random seed from 192 to 256bits
+- make sure the ed25519 keyexchange always outputs a 32byte key. Shorter keys were possible due to the non-zero extend of big.Int.
 
 # Changes
 - bm-bridge: It now uses a config file instead of parameters

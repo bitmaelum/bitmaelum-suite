@@ -64,7 +64,6 @@ func (k *KeyEcdsa) String() string {
 // ParsePrivateKeyData will parse a string representation of a key and returns the given key
 func (k *KeyEcdsa) ParsePrivateKeyData(buf []byte) (interface{}, error) {
 	return x509.ParsePKCS8PrivateKey(buf)
-	// return x509.ParseECPrivateKey(buf)
 }
 
 // ParsePrivateKeyInterface will parse a interface and returns the key representation
@@ -181,7 +180,17 @@ func (k *KeyEcdsa) KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 		pubK.K.(*ecdsa.PublicKey).Y,
 		privK.K.(*ecdsa.PrivateKey).D.Bytes(),
 	)
-	return ke.Bytes(), nil
+
+	b := ke.Bytes()
+	if len(b) == 32 {
+		// Length is 32 bytes, so we can return as-is
+		return b, nill
+	}
+
+	// Make sure we zero-extend the result (big.Int) to 32 bytes (big endian)
+	var ret [32]byte
+	copy(ret[32-len(b):], b)
+	return ret[:], nil
 }
 
 // DualKeyExchange allows for a ECIES key exchange
