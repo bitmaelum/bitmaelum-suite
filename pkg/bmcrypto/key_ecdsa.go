@@ -184,7 +184,7 @@ func (k *KeyEcdsa) KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 	b := ke.Bytes()
 	if len(b) == 32 {
 		// Length is 32 bytes, so we can return as-is
-		return b, nill
+		return b, nil
 	}
 
 	// Make sure we zero-extend the result (big.Int) to 32 bytes (big endian)
