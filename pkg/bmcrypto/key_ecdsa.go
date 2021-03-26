@@ -181,15 +181,23 @@ func (k *KeyEcdsa) KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 		privK.K.(*ecdsa.PrivateKey).D.Bytes(),
 	)
 
+	// Get the length of the key
+	keyLen := k.Curve.Params().BitSize / 8
+
 	b := ke.Bytes()
-	if len(b) == 32 {
-		// Length is 32 bytes, so we can return as-is
+	if len(b) == keyLen {
+		// Length is 48 bytes, so we can return as-is
 		return b, nil
 	}
 
+	// Sanity check
+	if keyLen > len(b) {
+		panic("key length is larger. This would mean we might have ended up with a truncated key.")
+	}
+
 	// Make sure we zero-extend the result (big.Int) to 32 bytes (big endian)
-	var ret [32]byte
-	copy(ret[32-len(b):], b)
+	var ret = make([]byte, keyLen)
+	copy(ret[keyLen-len(b):], b)
 	return ret[:], nil
 }
 

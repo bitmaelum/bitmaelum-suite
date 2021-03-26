@@ -54,7 +54,7 @@ func MnemonicToRandomSeed(mnemonic string) ([]byte, error) {
 // GenerateKeypairWithRandomSeed generates a seed and generates a keypair which can be reconstructed again with the same seed
 func GenerateKeypairWithRandomSeed(kt KeyType) (*KeyPair, error) {
 	// Generate large enough random string
-	seed, err := bip39.NewEntropy(192)
+	seed, err := bip39.NewEntropy(256)
 	if err != nil {
 		return nil, err
 	}
