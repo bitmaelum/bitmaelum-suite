@@ -81,15 +81,23 @@ func (k *KeyEd25519) ParsePrivateKeyInterface(key interface{}) ([]byte, error) {
 
 // GenerateKeyPair will generate a new keypair for this keytype. io.Reader can be deterministic if needed
 func (k *KeyEd25519) GenerateKeyPair(r io.Reader) (*PrivKey, *PubKey, error) {
-	// Read 256 bits
-	randBuf := make([]byte, 32)
-	_, err := io.ReadFull(r, randBuf)
-	if err != nil {
+	b := make([]byte, 32)
+
+	// Reader could hold either 24 bytes (192bit seed) or new style 32 bytes (256 bit seed)
+	n, err := io.ReadFull(r, b)
+
+	// Something other than EOF happened
+	if err != nil && err != io.ErrUnexpectedEOF {
 		return nil, nil, err
 	}
 
-	// Stretch 192 bits to 256 bits
-	rd := hkdf.New(sha256.New, randBuf[:], []byte{}, []byte{})
+	// Not the correct number of bytes read
+	if n != 24 && n != 32 {
+		return nil, nil, err
+	}
+
+	// Stretch to 256 bits if smaller.. or just hkdf anyways
+	rd := hkdf.New(sha256.New, b[:n], []byte{}, []byte{})
 	expBuf := make([]byte, 32)
 	_, err = io.ReadFull(rd, expBuf)
 	if err != nil {
