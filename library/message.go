@@ -2,6 +2,7 @@ package bitmaelumClient
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
@@ -9,7 +10,13 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
+const mainResolver = "https://resolver.bitmaelum.com"
+
 func (b *BitMaelumClient) SendSimpleMessage(fromAcc, fromName, to, privKey, subject, body string) error {
+	// force to use the main resolver for now
+	config.Client.Resolver.Remote.Enabled = true
+	config.Client.Resolver.Remote.URL = mainResolver
+
 	svc := container.Instance.GetResolveService()
 
 	// Check sender
