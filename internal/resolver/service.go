@@ -45,6 +45,7 @@ type AddressInfo struct {
 	Hash        string          `json:"hash"`       // Hash of the email address
 	PublicKey   bmcrypto.PubKey `json:"public_key"` // PublicKey of the user
 	RoutingID   string          `json:"routing"`    // Routing ID
+	RedirHash   string          `json:"redir_hash"`    // Routing ID
 	Pow         string          `json:"pow"`        // Proof of work
 	RoutingInfo RoutingInfo     `json:"_"`          // Don't store
 }
@@ -164,7 +165,7 @@ func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, err
 }
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
-func (s *Service) UploadAddressInfo(info vault.AccountInfo, orgToken string) error {
+func (s *Service) UploadAddressInfo(info vault.AccountInfo) error {
 	// Read current key, so we can find the correct privkey for authentication
 	privKey := info.GetActiveKey().PrivKey
 	currentInfo, err := s.repo.ResolveAddress(info.Address.Hash())
@@ -182,7 +183,13 @@ func (s *Service) UploadAddressInfo(info vault.AccountInfo, orgToken string) err
 		PublicKey: info.GetActiveKey().PubKey,
 		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
-	}, privKey, *info.Pow, orgToken)
+
+
+		if info.RedirAddress != nil {
+			input.RedirHash = info.RedirAddress.Hash()
+		}
+
+	}, privKey, *info.Pow)
 }
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers
