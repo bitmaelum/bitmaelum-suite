@@ -55,10 +55,12 @@ const (
 	ctxKeyPair
 	ctxDomains
 	ctxReserved
+	ctxRedir
+	ctxRedirStr
 )
 
 // CreateAccount creates a new account locally in the vault, stores it on the mail server and pushes the public key to the resolver
-func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.KeyType) {
+func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.KeyType, targetStr string) {
 	s := stepper.New()
 
 	// Set some initial values in the context. We read and write to the context to deal with variables instead of using globals.
@@ -67,6 +69,7 @@ func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.K
 	s.Ctx = context.WithValue(s.Ctx, ctxName, name)
 	s.Ctx = context.WithValue(s.Ctx, ctxTokenStr, tokenStr)
 	s.Ctx = context.WithValue(s.Ctx, ctxKeyType, kt)
+	s.Ctx = context.WithValue(s.Ctx, ctxRedirStr, targetStr)
 
 	// Add all the steps from the account creation procedure
 
@@ -86,8 +89,15 @@ func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.K
 	})
 
 	s.AddStep(stepper.Step{
-		Title:   "Checking if token is valid and extracting data",
-		RunFunc: checkToken,
+		Title:      "Checking if linked account exists",
+		OnlyIfFunc: func(s stepper.Stepper) bool { return s.Ctx.Value(ctxRedirStr) != nil },
+		RunFunc:    checkLinkedAddressInResolver,
+	})
+
+	s.AddStep(stepper.Step{
+		Title:      "Checking if token is valid and extracting data",
+		OnlyIfFunc: func(s stepper.Stepper) bool { return s.Ctx.Value(ctxTokenStr) != nil },
+		RunFunc:    checkToken,
 	})
 
 	s.AddStep(stepper.Step{
@@ -125,6 +135,7 @@ func CreateAccount(v *vault.Vault, addrStr, name, tokenStr string, kt bmcrypto.K
 	s.AddStep(stepper.Step{
 		Title:          "Sending your account to the server",
 		DisplaySpinner: true,
+		OnlyIfFunc:     func(s stepper.Stepper) bool { return s.Ctx.Value(ctxTokenStr) != nil },
 		RunFunc:        uploadAccountToServer,
 	})
 
@@ -279,6 +290,35 @@ func generateFromTemplate(messageTemplate string, fingerprint string, domains []
 	return buf.String()
 }
 
+func checkLinkedAddressInResolver(s *stepper.Stepper) stepper.StepResult {
+	addrStr := s.Ctx.Value(ctxRedirStr).(string)
+	addr, err := address.NewAddress(addrStr)
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "it seems that target is not a valid address",
+		}
+	}
+
+	// Store address into context
+	redirAddr := s.Ctx.Value(ctxRedirStr).(*address.Address)
+	s.Ctx = context.WithValue(s.Ctx, ctxRedir, redirAddr)
+
+	ks := container.Instance.GetResolveService()
+	_, err = ks.ResolveAddress(addr.Hash())
+	if err != nil {
+		return stepper.StepResult{
+			Status:  stepper.FAILURE,
+			Message: "address not found",
+		}
+	}
+
+	return stepper.StepResult{
+		Status:  stepper.SUCCESS,
+		Message: "address was found",
+	}
+}
+
 func checkAddressInResolver(s *stepper.Stepper) stepper.StepResult {
 	addr := s.Ctx.Value(ctxAddr).(*address.Address)
 
@@ -391,11 +431,23 @@ func addAccountToVault(s *stepper.Stepper) stepper.StepResult {
 	name := s.Ctx.Value(ctxName).(string)
 	kp := s.Ctx.Value(ctxKeyPair).(*bmcrypto.KeyPair)
 	proof := s.Ctx.Value(ctxProof).(*pow.ProofOfWork)
-	token := s.Ctx.Value(ctxToken).(*signature.Token)
+
+	var targetAddr *address.Address
+	tmp, ok := s.Ctx.Value(ctxRedir).(*address.Address)
+	if ok {
+		targetAddr = tmp
+	}
+
+	var routingID string
+	token, ok := s.Ctx.Value(ctxToken).(*signature.Token)
+	if ok {
+		routingID = token.RoutingID
+	}
 
 	info := &vault.AccountInfo{
-		Address: addr,
-		Name:    name,
+		Address:      addr,
+		RedirAddress: targetAddr,
+		Name:         name,
 		Keys: []vault.KeyPair{
 			{
 				KeyPair: *kp,
@@ -403,7 +455,7 @@ func addAccountToVault(s *stepper.Stepper) stepper.StepResult {
 			},
 		},
 		Pow:       proof,
-		RoutingID: token.RoutingID,
+		RoutingID: routingID,
 	}
 
 	v.AddAccount(*info)
@@ -469,16 +521,10 @@ func uploadAccountToServer(s *stepper.Stepper) stepper.StepResult {
 }
 
 func uploadAccountToResolver(s *stepper.Stepper) stepper.StepResult {
-	addr := s.Ctx.Value(ctxAddr).(*address.Address)
 	info := s.Ctx.Value(ctxInfo).(*vault.AccountInfo)
-	tokenStr := s.Ctx.Value(ctxTokenStr).(string)
-
-	if !addr.HasOrganisationPart() {
-		tokenStr = ""
-	}
 
 	ks := container.Instance.GetResolveService()
-	err := ks.UploadAddressInfo(*info, tokenStr)
+	err := ks.UploadAddressInfo(*info)
 	if err != nil {
 		return stepper.StepResult{
 			Status:  stepper.FAILURE,

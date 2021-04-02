@@ -90,7 +90,7 @@ WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
 			info.SetActiveKey(kp)
 
 			ks := container.Instance.GetResolveService()
-			err = ks.UploadAddressInfo(*info, "")
+			err = ks.UploadAddressInfo(*info)
 		}
 
 		// Error or we didn't advertise

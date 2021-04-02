@@ -69,7 +69,7 @@ func (r *mockRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, er
 	return nil, ErrKeyNotFound
 }
 
-func (r *mockRepo) UploadAddress(addr address.Address, info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork, orgToken string) error {
+func (r *mockRepo) UploadAddress(addr address.Address, info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork) error {
 	r.address[info.Hash] = *info
 	return nil
 }
