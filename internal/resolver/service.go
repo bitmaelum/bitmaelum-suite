@@ -153,7 +153,7 @@ func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	return info, nil
 }
 
-// ResolveOrganisation resolves a route.
+// ResolveOrganisation resolves an organisation object.
 func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
 	logrus.Debugf("Resolving %s", orgHash)
 	info, err := s.repo.ResolveOrganisation(orgHash)
@@ -178,18 +178,19 @@ func (s *Service) UploadAddressInfo(info vault.AccountInfo) error {
 		privKey = kp.PrivKey
 	}
 
-	return s.repo.UploadAddress(*info.Address, &AddressInfo{
+	addrObj := &AddressInfo{
 		Hash:      info.Address.Hash().String(),
 		PublicKey: info.GetActiveKey().PubKey,
-		RoutingID: info.RoutingID,
 		Pow:       info.Pow.String(),
+	}
+	if info.RedirAddress != nil {
+		addrObj.RedirHash = info.RedirAddress.Hash().String()
+	}
+	if info.RoutingID != "" {
+		addrObj.RoutingID = info.RoutingID
+	}
 
-
-		if info.RedirAddress != nil {
-			input.RedirHash = info.RedirAddress.Hash()
-		}
-
-	}, privKey, *info.Pow)
+	return s.repo.UploadAddress(*info.Address, addrObj, privKey, *info.Pow)
 }
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers
