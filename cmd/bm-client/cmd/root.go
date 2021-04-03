@@ -47,7 +47,7 @@ var rootCmd = &cobra.Command{
 		if _, exist := cmd.Annotations["dont_load_config"]; !exist {
 			config.LoadClientConfig(internal.Opts.Config)
 
-			if internal.Opts.Debug == true {
+			if internal.Opts.Debug {
 				config.Client.Server.DebugHTTP = true
 			}
 

@@ -45,7 +45,7 @@ type AddressInfo struct {
 	Hash        string          `json:"hash"`       // Hash of the email address
 	PublicKey   bmcrypto.PubKey `json:"public_key"` // PublicKey of the user
 	RoutingID   string          `json:"routing"`    // Routing ID
-	RedirHash   string          `json:"redir_hash"`    // Routing ID
+	RedirHash   string          `json:"redir_hash"` // Routing ID
 	Pow         string          `json:"pow"`        // Proof of work
 	RoutingInfo RoutingInfo     `json:"_"`          // Don't store
 }
