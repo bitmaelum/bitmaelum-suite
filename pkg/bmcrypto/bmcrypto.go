@@ -49,6 +49,20 @@ type KeyPair struct {
 	PubKey      PubKey  `json:"pub_key"`     // PEM encoded public key
 }
 
+type CryptoType string
+
+const (
+	Rsav15     CryptoType = "rsa"
+	RsaOAEP    CryptoType = "rsa/oaep"
+	Ed25519AES CryptoType = "ed25519+aes"
+	EcdsaAES   CryptoType = "ecdsa+aes"
+)
+
+type EncryptionSettings struct {
+	Type          CryptoType
+	TransactionID string
+}
+
 // FindKeyType finds the keytype based on the given string
 func FindKeyType(typ string) (KeyType, error) {
 	for _, kt := range KeyTypes {
@@ -89,21 +103,21 @@ func KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 }
 
 // Encrypt a message with the given key
-func Encrypt(pubKey PubKey, message []byte) ([]byte, string, string, error) {
+func Encrypt(pubKey PubKey, msg []byte) ([]byte, *EncryptionSettings, error) {
 	if !pubKey.Type.CanEncrypt() && !pubKey.Type.CanKeyExchange() {
-		return nil, "", "", errCannotUseForEncryption
+		return nil, nil, errCannotUseForEncryption
 	}
 
-	return pubKey.Type.Encrypt(pubKey, message)
+	return pubKey.Type.Encrypt(pubKey, msg)
 }
 
 // Decrypt a message with the given key
-func Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
+func Decrypt(key PrivKey, settings *EncryptionSettings, ciphertext []byte) ([]byte, error) {
 	if !key.Type.CanEncrypt() && !key.Type.CanKeyExchange() {
 		return nil, errCannotUseForEncryption
 	}
 
-	return key.Type.Decrypt(key, txID, message)
+	return key.Type.Decrypt(key, settings, ciphertext)
 }
 
 // CreateKeypair create a new keypair

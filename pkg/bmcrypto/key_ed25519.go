@@ -139,21 +139,27 @@ func (k *KeyEd25519) Sign(reader io.Reader, key PrivKey, message []byte) ([]byte
 	return ed25519.Sign(key.K.(ed25519.PrivateKey), message), nil
 }
 
-// Encrypt will encrypt the given bytes with the public key. Will return the ciphertext, a transaction ID (if needed), the crypto used and an error
-func (k *KeyEd25519) Encrypt(key PubKey, message []byte) ([]byte, string, string, error) {
+// Encrypt will encrypt the given message with the public key.
+func (k *KeyEd25519) Encrypt(key PubKey, msg []byte) ([]byte, *EncryptionSettings, error) {
 	secret, txID, err := DualKeyExchange(key)
 	if err != nil {
-		return nil, "", "", err
+		return nil, nil, err
 	}
 
-	encryptedMessage, err := MessageEncrypt(secret, message)
-
-	return encryptedMessage, txID.ToHex(), "ed25519+aes", err
+	encryptedMessage, err := MessageEncrypt(secret, msg)
+	return encryptedMessage, &EncryptionSettings{
+		Type:          Ed25519AES,
+		TransactionID: txID.ToHex(),
+	}, nil
 }
 
 // Decrypt will decrypt the given bytes with the private key
-func (k *KeyEd25519) Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
-	tx, err := TxIDFromString(txID)
+func (k *KeyEd25519) Decrypt(key PrivKey, settings *EncryptionSettings, cipherText []byte) ([]byte, error) {
+	if settings.Type != Ed25519AES {
+		return nil, errors.New("Cannot decrypt this encryption type")
+	}
+
+	tx, err := TxIDFromString(settings.TransactionID)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +169,7 @@ func (k *KeyEd25519) Decrypt(key PrivKey, txID string, message []byte) ([]byte, 
 		return nil, err
 	}
 
-	return MessageDecrypt(secret, message)
+	return MessageDecrypt(secret, cipherText)
 }
 
 // ParsePublicKeyData will parse a interface and returns the key representation
