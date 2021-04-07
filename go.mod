@@ -36,6 +36,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/onsi/gomega v1.10.4 // indirect
+	github.com/pkg/errors v0.8.1
 	github.com/rivo/tview v0.0.0-20210312174852-ae9464cc3598
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.5.1
