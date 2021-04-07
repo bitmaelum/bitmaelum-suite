@@ -56,7 +56,11 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 	}
 
 	// Decrypt the encryption key
-	key, err := bmcrypto.Decrypt(privKey, em.Header.Catalog.TransactionID, em.Header.Catalog.EncryptedKey)
+	settings := &bmcrypto.EncryptionSettings{
+		Type:          bmcrypto.CryptoType(em.Header.Catalog.Crypto),
+		TransactionID: em.Header.Catalog.TransactionID,
+	}
+	key, err := bmcrypto.Decrypt(privKey, settings, em.Header.Catalog.EncryptedKey)
 	if err != nil {
 		return nil, err
 	}
