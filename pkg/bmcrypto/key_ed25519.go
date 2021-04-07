@@ -147,6 +147,10 @@ func (k *KeyEd25519) Encrypt(key PubKey, msg []byte) ([]byte, *EncryptionSetting
 	}
 
 	encryptedMessage, err := MessageEncrypt(secret, msg)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	return encryptedMessage, &EncryptionSettings{
 		Type:          Ed25519AES,
 		TransactionID: txID.ToHex(),
@@ -156,7 +160,7 @@ func (k *KeyEd25519) Encrypt(key PubKey, msg []byte) ([]byte, *EncryptionSetting
 // Decrypt will decrypt the given bytes with the private key
 func (k *KeyEd25519) Decrypt(key PrivKey, settings *EncryptionSettings, cipherText []byte) ([]byte, error) {
 	if settings.Type != Ed25519AES {
-		return nil, errors.New("Cannot decrypt this encryption type")
+		return nil, errors.New("cannot decrypt this encryption type")
 	}
 
 	tx, err := TxIDFromString(settings.TransactionID)

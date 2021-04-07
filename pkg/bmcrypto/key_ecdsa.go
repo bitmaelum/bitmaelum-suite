@@ -140,6 +140,9 @@ func (k *KeyEcdsa) Encrypt(key PubKey, msg []byte) ([]byte, *EncryptionSettings,
 	}
 
 	encryptedMessage, err := MessageEncrypt(secret, msg)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return encryptedMessage, &EncryptionSettings{
 		Type:          EcdsaAES,

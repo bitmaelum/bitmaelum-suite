@@ -49,15 +49,18 @@ type KeyPair struct {
 	PubKey      PubKey  `json:"pub_key"`     // PEM encoded public key
 }
 
+// CryptoType is a type that defines which crypto is used
 type CryptoType string
 
+// Different crypto types used
 const (
-	Rsav15     CryptoType = "rsa"
-	RsaOAEP    CryptoType = "rsa/oaep"
-	Ed25519AES CryptoType = "ed25519+aes"
-	EcdsaAES   CryptoType = "ecdsa+aes"
+	Rsav15     CryptoType = "rsa"         // PKCS1v1.5 (obsolete)
+	RsaOAEP    CryptoType = "rsa/oaep"    // PKCS1 OAEP (default)
+	Ed25519AES CryptoType = "ed25519+aes" // ED25519 ECEIS + AES
+	EcdsaAES   CryptoType = "ecdsa+aes"   // ECDSA ECEIS + AES
 )
 
+// EncryptionSettings is a structure that passes information about the given encryption
 type EncryptionSettings struct {
 	Type          CryptoType
 	TransactionID string

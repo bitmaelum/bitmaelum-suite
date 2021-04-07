@@ -50,7 +50,6 @@ func TestEncrypt(t *testing.T) {
 	assert.Error(t, err)
 	assert.Empty(t, plaintext)
 
-
 	// ED25519 Dual Key-Exchange + Encryption
 	priv25519Key, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
 	pub25519Key, _ := PublicKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
