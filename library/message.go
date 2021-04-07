@@ -21,7 +21,6 @@ package bitmaelumClient
 
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
-	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/messages"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
@@ -29,10 +28,7 @@ import (
 )
 
 func (b *BitMaelumClient) SendSimpleMessage(to, subject, body string) error {
-
-	svc := container.Instance.GetResolveService()
-
-	senderInfo, _ := svc.ResolveAddress(b.client.Address.Hash())
+	senderInfo, _ := b.resolverService.ResolveAddress(b.client.Address.Hash())
 
 	// Check recipient
 	toAddr, err := address.NewAddress(to)
@@ -40,7 +36,7 @@ func (b *BitMaelumClient) SendSimpleMessage(to, subject, body string) error {
 		return errors.Wrap(err, "check recipient address")
 	}
 
-	recipientInfo, err := svc.ResolveAddress(toAddr.Hash())
+	recipientInfo, err := b.resolverService.ResolveAddress(toAddr.Hash())
 	if err != nil {
 		return errors.Wrap(err, "resolve recipient address")
 	}

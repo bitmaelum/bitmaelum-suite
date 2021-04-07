@@ -22,6 +22,7 @@ package bitmaelumClient
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -38,18 +39,23 @@ type client struct {
 }
 
 type BitMaelumClient struct {
-	client      client
-	resolverURL string
+	client          client
+	resolverService *resolver.Service
 }
 
 func NewBitMaelumClient() *BitMaelumClient {
+	config.Client.Resolver.Remote.Enabled = true
+	config.Client.Resolver.Remote.URL = defaultResolver
+
 	return &BitMaelumClient{
-		resolverURL: defaultResolver,
+		resolverService: container.Instance.GetResolveService(),
 	}
 }
 
 func (b *BitMaelumClient) SetResolver(url string) {
-	b.resolverURL = url
+	config.Client.Resolver.Remote.Enabled = true
+	config.Client.Resolver.Remote.URL = url
+	b.resolverService = container.Instance.GetResolveService()
 }
 
 func (b *BitMaelumClient) SetClientFromVault(accountAddress string) error {
@@ -61,7 +67,8 @@ func (b *BitMaelumClient) SetClientFromVault(accountAddress string) error {
 		if acc.Address.String() == accountAddress {
 			b.client.Address = acc.Address
 			b.client.Name = acc.Name
-			*b.client.PrivateKey = acc.GetActiveKey().PrivKey
+			privK := acc.GetActiveKey().PrivKey
+			b.client.PrivateKey = &privK
 			return nil
 		}
 	}
@@ -103,17 +110,13 @@ func (b *BitMaelumClient) SetClientFromPrivateKey(accountAddress, name, privKey 
 func (b *BitMaelumClient) parseAccountAndName(accountAddress, name string) error {
 	var err error
 
-	config.Client.Resolver.Remote.Enabled = true
-	config.Client.Resolver.Remote.URL = b.resolverURL
-
 	b.client.Address, err = address.NewAddress(accountAddress)
 	if err != nil {
 		return errors.Wrap(err, "parsing account address")
 	}
 
 	// Verify client exists
-	svc := container.Instance.GetResolveService()
-	_, err = svc.ResolveAddress(b.client.Address.Hash())
+	_, err = b.resolverService.ResolveAddress(b.client.Address.Hash())
 	if err != nil {
 		return errors.Wrap(err, "resolving client address")
 	}

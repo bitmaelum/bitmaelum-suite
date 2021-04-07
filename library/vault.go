@@ -33,13 +33,12 @@ func (b *BitMaelumClient) OpenVault(path, password string) (interface{}, error) 
 	result := make([]map[string]interface{}, len(b.client.Vault.Store.Accounts))
 
 	for i, acc := range b.client.Vault.Store.Accounts {
-		puk := acc.GetActiveKey().PubKey
-		pubkey := puk.String()
+		pubK := acc.GetActiveKey().PubKey
 
 		result[i] = map[string]interface{}{
 			"address":    acc.Address.String(),
 			"name":       acc.Name,
-			"public_key": pubkey,
+			"public_key": pubK.String(),
 		}
 	}
 
