@@ -99,18 +99,20 @@ type ServerConfig struct {
 		DatabasePath string `yaml:"database_path"`
 	} `yaml:"bolt"`
 
-	Resolver struct {
-		Sqlite struct {
-			Enabled bool   `yaml:"enabled"`
-			Dsn     string `yaml:"dsn"`
-		} `yaml:"sqlite"`
-
+	DefaultResolver string `yaml:"default_resolver"`
+	Resolvers       struct {
 		Remote struct {
-			Enabled       bool   `yaml:"enabled"`
 			URL           string `yaml:"url"`
 			AllowInsecure bool   `yaml:"allow_insecure"`
 		} `yaml:"remote"`
-	} `yaml:"resolver"`
+		Sqlite struct {
+			Path string `yaml:"path"`
+		} `yaml:"sqlite"`
+		BoltDB struct {
+			Path string `yaml:"path"`
+		} `yaml:"boltdb"`
+		Chain []string `yaml:"chain"`
+	} `yaml:"resolvers"`
 }
 
 // LoadConfig loads the server configuration from the given path
@@ -142,6 +144,9 @@ func (c *ServerConfig) LoadConfig(r io.Reader) error {
 	c.Server.KeyFile, _ = homedir.Expand(c.Server.KeyFile)
 	c.Server.RoutingFile, _ = homedir.Expand(c.Server.RoutingFile)
 	c.Bolt.DatabasePath, _ = homedir.Expand(c.Bolt.DatabasePath)
+
+	c.Resolvers.Sqlite.Path, _ = homedir.Expand(c.Resolvers.Sqlite.Path)
+	c.Resolvers.BoltDB.Path, _ = homedir.Expand(c.Resolvers.BoltDB.Path)
 
 	return nil
 }

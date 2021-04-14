@@ -36,14 +36,24 @@ config:
         debug_http: false
 
     # How can we resolve public keys and accounts
-    resolver:
+    default_resolver: remote
+    resolvers:
         remote:
-            # Enable remote resolving
-            enabled: true
+            # URL to call
             url: "https://resolver.bitmaelum.com"
             # Allow insecure connections (to selfsigned certs)
             allow_insecure: false
-
+        # Sqlite will resolve from a BoltDB database. Used mostly for testing
+        boltdb:
+            path: ~/resolver-bolt.db
+        # Sqlite will resolve from a SQLite database. Used mostly for testing
+        sqlite:
+            path: ~/resolver.db
+        # Chain will resolve from multiple resolvers chained together		
+        chain:
+            - remote
+            - sqlite
+            - boltdb
 `
 
 const bridgeConfigTemplate string = `# BitMaelum Bridge Configuration Template. Edit for your own needs.
@@ -100,21 +110,25 @@ config:
             # Display IMAP communication between client and server
             debug: false
             
-    resolver:
-        # SQLite local resolver cache 
-        sqlite:
-            # Enable sqlite resolving
-            enabled: false
-            # Note: DSN currently does not support ~ homedir expansion
-            dsn: "file:/tmp/keyresolve.db"
-        # Remove resolver
-        remote:
-            # Enable remote resolving
-            enabled: true
-            # URL to the remote resolver
-            url: "https://resolver.bitmaelum.com"
-            # Allow insecure connections (to selfsigned certs)
-            allow_insecure: false
+        # How can we resolve public keys and accounts
+        default_resolver: remote
+        resolvers:
+            remote:
+                # URL to call
+                url: "https://resolver.bitmaelum.com"
+                # Allow insecure connections (to selfsigned certs)
+                allow_insecure: false
+            # Sqlite will resolve from a BoltDB database. Used mostly for testing
+            boltdb:
+                path: ~/resolver-bolt.db
+            # Sqlite will resolve from a SQLite database. Used mostly for testing
+            sqlite:
+                path: ~/resolver.db
+            # Chain will resolve from multiple resolvers chained together		
+            chain:
+                - remote
+                - sqlite
+                - boltdb
     
 `
 
@@ -229,21 +243,25 @@ config:
         # Redis Database Number (defaults to 0)
         db: 0
 
-    resolver:
-        # SQLite local resolver cache 
-        sqlite:
-            # Enable sqlite resolving
-            enabled: false
-            # Note: DSN currently does not support ~ homedir expansion
-            dsn: "file:/tmp/keyresolve.db"
-        # Remove resolver
+    # How can we resolve public keys and accounts
+    default_resolver: remote
+    resolvers:
         remote:
-            # Enable remote resolving
-            enabled: true
-            # URL to the remote resolver
+            # URL to call
             url: "https://resolver.bitmaelum.com"
             # Allow insecure connections (to selfsigned certs)
             allow_insecure: false
+        # Sqlite will resolve from a BoltDB database. Used mostly for testing
+        boltdb:
+            path: ~/resolver-bolt.db
+        # Sqlite will resolve from a SQLite database. Used mostly for testing
+        sqlite:
+            path: ~/resolver.db
+        # Chain will resolve from multiple resolvers chained together		
+        chain:
+            - remote
+            - sqlite
+            - boltdb
 
 `
 

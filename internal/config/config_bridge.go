@@ -62,18 +62,20 @@ type BridgeConfig struct {
 		} `yaml:"imap"`
 	} `yaml:"server"`
 
-	Resolver struct {
-		Sqlite struct {
-			Enabled bool   `yaml:"enabled"`
-			Dsn     string `yaml:"dsn"`
-		} `yaml:"sqlite"`
-
+	DefaultResolver string `yaml:"default_resolver"`
+	Resolvers       struct {
 		Remote struct {
-			Enabled       bool   `yaml:"enabled"`
 			URL           string `yaml:"url"`
 			AllowInsecure bool   `yaml:"allow_insecure"`
 		} `yaml:"remote"`
-	}
+		Sqlite struct {
+			Path string `yaml:"path"`
+		} `yaml:"sqlite"`
+		BoltDB struct {
+			Path string `yaml:"path"`
+		} `yaml:"boltdb"`
+		Chain []string `yaml:"chain"`
+	} `yaml:"resolvers"`
 }
 
 // LoadConfig loads the client configuration from the given path
@@ -96,6 +98,9 @@ func (c *BridgeConfig) LoadConfig(r io.Reader) error {
 	// Expand homedirs in configuration
 	c.Vault.Path, _ = homedir.Expand(c.Vault.Path)
 	c.Server.IMAP.Path, _ = homedir.Expand(c.Server.IMAP.Path)
+
+	c.Resolvers.Sqlite.Path, _ = homedir.Expand(c.Resolvers.Sqlite.Path)
+	c.Resolvers.BoltDB.Path, _ = homedir.Expand(c.Resolvers.BoltDB.Path)
 
 	return nil
 }
