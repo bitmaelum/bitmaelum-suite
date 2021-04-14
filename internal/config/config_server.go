@@ -108,9 +108,6 @@ type ServerConfig struct {
 		Sqlite struct {
 			Path string `yaml:"path"`
 		} `yaml:"sqlite"`
-		BoltDB struct {
-			Path string `yaml:"path"`
-		} `yaml:"boltdb"`
 		Chain []string `yaml:"chain"`
 	} `yaml:"resolvers"`
 }
@@ -144,9 +141,9 @@ func (c *ServerConfig) LoadConfig(r io.Reader) error {
 	c.Server.KeyFile, _ = homedir.Expand(c.Server.KeyFile)
 	c.Server.RoutingFile, _ = homedir.Expand(c.Server.RoutingFile)
 	c.Bolt.DatabasePath, _ = homedir.Expand(c.Bolt.DatabasePath)
-
 	c.Resolvers.Sqlite.Path, _ = homedir.Expand(c.Resolvers.Sqlite.Path)
-	c.Resolvers.BoltDB.Path, _ = homedir.Expand(c.Resolvers.BoltDB.Path)
+
+	loadedConfig = "server"
 
 	return nil
 }

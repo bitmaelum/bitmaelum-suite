@@ -71,9 +71,6 @@ type BridgeConfig struct {
 		Sqlite struct {
 			Path string `yaml:"path"`
 		} `yaml:"sqlite"`
-		BoltDB struct {
-			Path string `yaml:"path"`
-		} `yaml:"boltdb"`
 		Chain []string `yaml:"chain"`
 	} `yaml:"resolvers"`
 }
@@ -100,7 +97,8 @@ func (c *BridgeConfig) LoadConfig(r io.Reader) error {
 	c.Server.IMAP.Path, _ = homedir.Expand(c.Server.IMAP.Path)
 
 	c.Resolvers.Sqlite.Path, _ = homedir.Expand(c.Resolvers.Sqlite.Path)
-	c.Resolvers.BoltDB.Path, _ = homedir.Expand(c.Resolvers.BoltDB.Path)
+
+	loadedConfig = "bridge"
 
 	return nil
 }

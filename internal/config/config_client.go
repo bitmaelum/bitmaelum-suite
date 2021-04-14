@@ -59,9 +59,6 @@ type ClientConfig struct {
 		Sqlite struct {
 			Path string `yaml:"path"`
 		} `yaml:"sqlite"`
-		BoltDB struct {
-			Path string `yaml:"path"`
-		} `yaml:"boltdb"`
 		Chain []string `yaml:"chain"`
 	} `yaml:"resolvers"`
 }
@@ -86,8 +83,8 @@ func (c *ClientConfig) LoadConfig(r io.Reader) error {
 	// Expand homedirs in configuration
 	c.Vault.Path, _ = homedir.Expand(c.Vault.Path)
 	c.Resolvers.Sqlite.Path, _ = homedir.Expand(c.Resolvers.Sqlite.Path)
-	c.Resolvers.BoltDB.Path, _ = homedir.Expand(c.Resolvers.BoltDB.Path)
 
+	loadedConfig = "client"
 
 	return nil
 }

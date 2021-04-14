@@ -38,14 +38,12 @@ config:
     # How can we resolve public keys and accounts
     default_resolver: remote
     resolvers:
+        # Remote uses a remote URL call for resolving
         remote:
             # URL to call
             url: "https://resolver.bitmaelum.com"
             # Allow insecure connections (to selfsigned certs)
             allow_insecure: false
-        # Sqlite will resolve from a BoltDB database. Used mostly for testing
-        boltdb:
-            path: ~/resolver-bolt.db
         # Sqlite will resolve from a SQLite database. Used mostly for testing
         sqlite:
             path: ~/resolver.db
@@ -53,7 +51,6 @@ config:
         chain:
             - remote
             - sqlite
-            - boltdb
 `
 
 const bridgeConfigTemplate string = `# BitMaelum Bridge Configuration Template. Edit for your own needs.
@@ -113,14 +110,12 @@ config:
         # How can we resolve public keys and accounts
         default_resolver: remote
         resolvers:
+            # Remote uses a remote URL call for resolving
             remote:
                 # URL to call
                 url: "https://resolver.bitmaelum.com"
                 # Allow insecure connections (to selfsigned certs)
                 allow_insecure: false
-            # Sqlite will resolve from a BoltDB database. Used mostly for testing
-            boltdb:
-                path: ~/resolver-bolt.db
             # Sqlite will resolve from a SQLite database. Used mostly for testing
             sqlite:
                 path: ~/resolver.db
@@ -128,7 +123,6 @@ config:
             chain:
                 - remote
                 - sqlite
-                - boltdb
     
 `
 
@@ -246,14 +240,12 @@ config:
     # How can we resolve public keys and accounts
     default_resolver: remote
     resolvers:
+        # Remote uses a remote URL call for resolving
         remote:
             # URL to call
             url: "https://resolver.bitmaelum.com"
             # Allow insecure connections (to selfsigned certs)
             allow_insecure: false
-        # Sqlite will resolve from a BoltDB database. Used mostly for testing
-        boltdb:
-            path: ~/resolver-bolt.db
         # Sqlite will resolve from a SQLite database. Used mostly for testing
         sqlite:
             path: ~/resolver.db
@@ -261,7 +253,6 @@ config:
         chain:
             - remote
             - sqlite
-            - boltdb
 
 `
 

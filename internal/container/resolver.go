@@ -20,6 +20,7 @@
 package container
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
@@ -35,35 +36,128 @@ var (
 )
 
 func setupResolverService() (interface{}, error) {
+	var repo resolver.Repository
+	var err error
+
 	resolveOnce.Do(func() {
-		repo := resolver.NewChainRepository()
-		if config.Server.Resolver.Sqlite.Enabled {
-			r, err := getSQLiteRepository(config.Server.Resolver.Sqlite.Dsn)
-			if err == nil {
-				_ = repo.(*resolver.ChainRepository).Add(r)
-			}
+		switch config.Server.DefaultResolver {
+		default:
+			fallthrough
+		case "remote":
+			repo, err = getRepo("remote")
+		case "sqlite":
+			repo, err = getRepo("sqlite")
+		case "chain":
+			repo, err = getRepo("chain")
 		}
 
-		// We add either the client or the server resolver
-		if config.Client.Resolver.Remote.Enabled {
-			_ = repo.(*resolver.ChainRepository).Add(*getRemoteRepository(config.Client.Resolver.Remote.URL, config.Client.Server.DebugHTTP, config.Client.Resolver.Remote.AllowInsecure))
-		}
-		if config.Server.Resolver.Remote.Enabled {
-			_ = repo.(*resolver.ChainRepository).Add(*getRemoteRepository(config.Server.Resolver.Remote.URL, false, config.Server.Resolver.Remote.AllowInsecure))
-		}
-		if config.Bridge.Resolver.Remote.Enabled {
-			_ = repo.(*resolver.ChainRepository).Add(*getRemoteRepository(config.Bridge.Resolver.Remote.URL, false, config.Bridge.Resolver.Remote.AllowInsecure))
+		if err != nil {
+			return
 		}
 
 		resolveService = resolver.KeyRetrievalService(repo)
 	})
 
+	// No correct resolver found, default to remote resolver
+	if resolveService == nil {
+		repo, err = getRepo("remote")
+		if err != nil {
+			return nil, err
+		}
+
+		resolveService = resolver.KeyRetrievalService(repo)
+	}
+
 	return resolveService, nil
 }
 
-func getRemoteRepository(url string, debug, allowInsecure bool) *resolver.Repository {
+func getRepo(repoName string) (resolver.Repository, error) {
+	var (
+		repo resolver.Repository
+		err error
+	)
+
+	switch (repoName) {
+	case "remote":
+		var (
+			url string
+			debug bool
+			allowInsecure bool
+		)
+
+		if config.IsLoaded("client") {
+			url = config.Client.Resolvers.Remote.URL
+			debug = config.Client.Server.DebugHTTP
+			allowInsecure = config.Client.Resolvers.Remote.AllowInsecure
+		}
+		if config.IsLoaded("server") {
+			url = config.Server.Resolvers.Remote.URL
+			debug = false
+			allowInsecure = config.Server.Resolvers.Remote.AllowInsecure
+		}
+		if config.IsLoaded("bridge") {
+			url = config.Bridge.Resolvers.Remote.URL
+			debug = false
+			allowInsecure = config.Bridge.Resolvers.Remote.AllowInsecure
+		}
+
+		repo, err = getRemoteRepository(url, debug, allowInsecure)
+
+	case "sqlite":
+		if config.IsLoaded("client") {
+			repo, err = getSQLiteRepository(config.Client.Resolvers.Sqlite.Path)
+		}
+		if config.IsLoaded("server") {
+			repo, err = getSQLiteRepository(config.Server.Resolvers.Sqlite.Path)
+		}
+		if config.IsLoaded("bridge") {
+			repo, err = getSQLiteRepository(config.Bridge.Resolvers.Sqlite.Path)
+		}
+
+	case "chain":
+		repo := resolver.NewChainRepository()
+
+		var resolvers []string
+		if config.IsLoaded("client") {
+			resolvers = config.Client.Resolvers.Chain
+		}
+		if config.IsLoaded("server") {
+			resolvers = config.Server.Resolvers.Chain
+		}
+		if config.IsLoaded("bridge") {
+			resolvers = config.Bridge.Resolvers.Chain
+		}
+
+		idx := 0
+		for _, resolverName := range resolvers {
+			chainedRepo, err := getRepo(resolverName)
+			if err != nil {
+				return nil, err
+			}
+
+			_ = repo.(*resolver.ChainRepository).Add(chainedRepo)
+			idx++
+		}
+
+		if idx == 0 {
+			return nil, errors.New("the chain repo is empty")
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if repo == nil {
+		return nil, errors.New("resolver not correctly configured")
+	}
+
+	return repo, nil
+}
+
+func getRemoteRepository(url string, debug, allowInsecure bool) (resolver.Repository, error) {
 	repo := resolver.NewRemoteRepository(url, debug, allowInsecure)
-	return &repo
+	return repo, nil
 }
 
 func getSQLiteRepository(dsn string) (resolver.Repository, error) {
