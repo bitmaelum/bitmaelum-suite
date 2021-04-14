@@ -17,44 +17,34 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package cmd
+package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/spf13/cobra"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
-var otpCmd = &cobra.Command{
-	Use:   "otp",
-	Short: "Generate a OTP to authenticate to a server",
-	Long:  `It will generate a OTP code that can be used to authenticate to a third party server`,
-	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenDefaultVault()
+func main() {
+	if len(os.Args) != 2 {
+		fmt.Printf("Usage: %s <type>", os.Args[0])
+		os.Exit(1)
+	}
 
-		info, err := vault.GetAccount(v, *otpAccount)
-		if err != nil {
-			fmt.Println("cannot find account in vault")
-			os.Exit(1)
-		}
+	keyType := os.Args[1]
 
-		handlers.OtpGenerate(info, otpServer)
-	},
-}
+	fmt.Printf("Generating key for %s...\n", keyType)
+	kt, err := bmcrypto.FindKeyType(keyType)
+	if err != nil {
+		panic(err)
+	}
 
-var (
-	otpServer  *string
-	otpAccount *string
-)
+	priv, pub, err := bmcrypto.GenerateKeyPair(kt);
+	if err != nil {
+		panic(err)
+	}
 
-func init() {
-	rootCmd.AddCommand(otpCmd)
-
-	otpAccount = otpCmd.Flags().String("account", "a", "Account to be used for authentication")
-	otpServer = otpCmd.Flags().String("server", "s", "Server domain name to get public key from")
-
-	_ = otpCmd.MarkFlagRequired("server")
+	fmt.Println("Priv: ", priv.String());
+	fmt.Println("Pub : ", pub.String());
 }
