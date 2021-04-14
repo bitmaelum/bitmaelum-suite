@@ -30,6 +30,8 @@ import (
 // We can have multiple resolvers to resolve a single address. We could resolve locally, remotely through
 // resolver-services, or through DHT. We chain them all together with the ChainRepository
 
+const defaultRemoteURL = "https://resolver.bitmaelum.com"
+
 var (
 	resolveOnce    sync.Once
 	resolveService *resolver.Service
@@ -44,11 +46,11 @@ func setupResolverService() (interface{}, error) {
 		default:
 			fallthrough
 		case "remote":
-			repo, err = getRepo("remote")
+			repo, err = getRemoteRepository()
 		case "sqlite":
-			repo, err = getRepo("sqlite")
+			repo, err = getSQLiteRepository()
 		case "chain":
-			repo, err = getRepo("chain")
+			repo, err = getChainRepository()
 		}
 
 		if err != nil {
@@ -60,7 +62,7 @@ func setupResolverService() (interface{}, error) {
 
 	// No correct resolver found, default to remote resolver
 	if resolveService == nil {
-		repo, err = getRepo("remote")
+		repo, err = getRemoteRepository()
 		if err != nil {
 			return nil, err
 		}
@@ -71,98 +73,96 @@ func setupResolverService() (interface{}, error) {
 	return resolveService, nil
 }
 
-func getRepo(repoName string) (resolver.Repository, error) {
+func getRemoteRepository() (resolver.Repository, error) {
 	var (
-		repo resolver.Repository
-		err error
+		url           string
+		debug         bool
+		allowInsecure bool
 	)
 
-	switch (repoName) {
-	case "remote":
-		var (
-			url string
-			debug bool
-			allowInsecure bool
-		)
-
-		if config.IsLoaded("client") {
-			url = config.Client.Resolvers.Remote.URL
-			debug = config.Client.Server.DebugHTTP
-			allowInsecure = config.Client.Resolvers.Remote.AllowInsecure
-		}
-		if config.IsLoaded("server") {
-			url = config.Server.Resolvers.Remote.URL
-			debug = false
-			allowInsecure = config.Server.Resolvers.Remote.AllowInsecure
-		}
-		if config.IsLoaded("bridge") {
-			url = config.Bridge.Resolvers.Remote.URL
-			debug = false
-			allowInsecure = config.Bridge.Resolvers.Remote.AllowInsecure
-		}
-
-		repo, err = getRemoteRepository(url, debug, allowInsecure)
-
-	case "sqlite":
-		if config.IsLoaded("client") {
-			repo, err = getSQLiteRepository(config.Client.Resolvers.Sqlite.Path)
-		}
-		if config.IsLoaded("server") {
-			repo, err = getSQLiteRepository(config.Server.Resolvers.Sqlite.Path)
-		}
-		if config.IsLoaded("bridge") {
-			repo, err = getSQLiteRepository(config.Bridge.Resolvers.Sqlite.Path)
-		}
-
-	case "chain":
-		repo := resolver.NewChainRepository()
-
-		var resolvers []string
-		if config.IsLoaded("client") {
-			resolvers = config.Client.Resolvers.Chain
-		}
-		if config.IsLoaded("server") {
-			resolvers = config.Server.Resolvers.Chain
-		}
-		if config.IsLoaded("bridge") {
-			resolvers = config.Bridge.Resolvers.Chain
-		}
-
-		idx := 0
-		for _, resolverName := range resolvers {
-			chainedRepo, err := getRepo(resolverName)
-			if err != nil {
-				return nil, err
-			}
-
-			_ = repo.(*resolver.ChainRepository).Add(chainedRepo)
-			idx++
-		}
-
-		if idx == 0 {
-			return nil, errors.New("the chain repo is empty")
-		}
+	if config.IsLoaded("client") {
+		url = config.Client.Resolvers.Remote.URL
+		debug = config.Client.Server.DebugHTTP
+		allowInsecure = config.Client.Resolvers.Remote.AllowInsecure
+	}
+	if config.IsLoaded("server") {
+		url = config.Server.Resolvers.Remote.URL
+		debug = false
+		allowInsecure = config.Server.Resolvers.Remote.AllowInsecure
+	}
+	if config.IsLoaded("bridge") {
+		url = config.Bridge.Resolvers.Remote.URL
+		debug = false
+		allowInsecure = config.Bridge.Resolvers.Remote.AllowInsecure
 	}
 
-	if err != nil {
-		return nil, err
+	// Set default URL if none is given
+	if url == "" {
+		url = defaultRemoteURL
 	}
 
-	if repo == nil {
-		return nil, errors.New("resolver not correctly configured")
+	return resolver.NewRemoteRepository(url, debug, allowInsecure), nil
+}
+
+func getSQLiteRepository() (resolver.Repository, error) {
+	var path string
+
+	if config.IsLoaded("client") {
+		path = config.Client.Resolvers.Sqlite.Path
+	}
+	if config.IsLoaded("server") {
+		path = config.Server.Resolvers.Sqlite.Path
+	}
+	if config.IsLoaded("bridge") {
+		path = config.Bridge.Resolvers.Sqlite.Path
+	}
+
+	return resolver.NewSqliteRepository(path)
+}
+
+func getChainRepository() (resolver.Repository, error) {
+	repo := resolver.NewChainRepository()
+
+	var resolvers []string
+	if config.IsLoaded("client") {
+		resolvers = config.Client.Resolvers.Chain
+	}
+	if config.IsLoaded("server") {
+		resolvers = config.Server.Resolvers.Chain
+	}
+	if config.IsLoaded("bridge") {
+		resolvers = config.Bridge.Resolvers.Chain
+	}
+
+	var (
+		chainedRepo resolver.Repository
+		err         error
+	)
+
+	idx := 0
+	for _, resolverName := range resolvers {
+		switch resolverName {
+		default:
+			fallthrough
+		case "remote":
+			chainedRepo, err = getRemoteRepository()
+		case "sqlite":
+			chainedRepo, err = getSQLiteRepository()
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		_ = repo.(*resolver.ChainRepository).Add(chainedRepo)
+		idx++
+	}
+
+	if idx == 0 {
+		return nil, errors.New("the chain repo is empty")
 	}
 
 	return repo, nil
-}
-
-func getRemoteRepository(url string, debug, allowInsecure bool) (resolver.Repository, error) {
-	repo := resolver.NewRemoteRepository(url, debug, allowInsecure)
-	return repo, nil
-}
-
-func getSQLiteRepository(dsn string) (resolver.Repository, error) {
-	repo, err := resolver.NewSqliteRepository(dsn)
-	return repo, err
 }
 
 func init() {

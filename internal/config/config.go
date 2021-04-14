@@ -61,7 +61,7 @@ var loadedConfig string
 
 // IsLoaded will return true when the loaded configuration is the same as the config given
 func IsLoaded(config string) bool {
-	return config == loadedConfig;
+	return config == loadedConfig
 }
 
 // LoadClientConfig loads client configuration from given path or panic if cannot load

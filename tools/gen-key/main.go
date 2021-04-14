@@ -40,11 +40,11 @@ func main() {
 		panic(err)
 	}
 
-	priv, pub, err := bmcrypto.GenerateKeyPair(kt);
+	priv, pub, err := bmcrypto.GenerateKeyPair(kt)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Priv: ", priv.String());
-	fmt.Println("Pub : ", pub.String());
+	fmt.Println("Priv: ", priv.String())
+	fmt.Println("Pub : ", pub.String())
 }

@@ -78,7 +78,6 @@ func OtpGenerate(info *vault.AccountInfo, otpServer *string) {
 
 func printOtpLoop(secret []byte, server string) {
 
-
 	for {
 		otp := computeOTPFromSecret(secret, 8)
 
