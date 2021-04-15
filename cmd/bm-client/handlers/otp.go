@@ -45,12 +45,10 @@ func OtpGenerate(info *vault.AccountInfo, otpServer *string) {
 	// Get
 	recs, err := net.LookupTXT("_bitmaelum." + *otpServer)
 	if err != nil {
-
 		logrus.Fatal(err)
 	}
 
 	resolver := container.Instance.GetResolveService()
-
 	for _, txt := range recs {
 		orgHash, err := hash.NewFromHash(strings.ToLower(txt))
 		if err != nil {
@@ -59,6 +57,10 @@ func OtpGenerate(info *vault.AccountInfo, otpServer *string) {
 
 		oi, err := resolver.ResolveOrganisation(*orgHash)
 		if err == nil {
+			if !oi.PublicKey.Type.CanKeyExchange() {
+				continue
+			}
+
 			// Generate secret on the client and compute OTP
 			secret, err := bmcrypto.KeyExchange(info.GetActiveKey().PrivKey, oi.PublicKey)
 			if err != nil {
@@ -75,6 +77,7 @@ func OtpGenerate(info *vault.AccountInfo, otpServer *string) {
 }
 
 func printOtpLoop(secret []byte, server string) {
+
 
 	for {
 		otp := computeOTPFromSecret(secret, 8)
@@ -113,6 +116,7 @@ func computeOTPFromSecret(secret []byte, length int) string {
 	// "Dynamic truncation" in RFC 4226
 	// http://tools.ietf.org/html/rfc4226#section-5.4
 	offset := sum[len(sum)-1] & 0xf
+
 	value := int64(((int(sum[offset]) & 0x7f) << 24) |
 		((int(sum[offset+1] & 0xff)) << 16) |
 		((int(sum[offset+2] & 0xff)) << 8) |
@@ -121,6 +125,5 @@ func computeOTPFromSecret(secret []byte, length int) string {
 	// Get the modulus to get the length we need
 	mod := int32(value % int64(math.Pow10(length)))
 
-	otp := fmt.Sprintf("%0*d", length, mod)
-	return otp
+	return fmt.Sprintf("%0*d", length, mod)
 }

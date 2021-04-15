@@ -25,6 +25,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/jorrizza/ed2curve25519 v0.1.0
 	github.com/kardianos/service v1.2.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
