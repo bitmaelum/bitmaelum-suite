@@ -108,7 +108,7 @@ func parseCommands(idx *int, messageList []message.EncryptedMessage, decryptedMs
 	}
 	cmds = append(cmds, "(Q)uit")
 
-	if len(messageList) > 1 {
+	if len(messageList) > 1 || len(decryptedMsg.Catalog.Attachments) > 0 {
 		fmt.Printf("(%d/%d): %s > ", *idx+1, len(messageList), strings.Join(cmds, ", "))
 	} else {
 		return true, true
