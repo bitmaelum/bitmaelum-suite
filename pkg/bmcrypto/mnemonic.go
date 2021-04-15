@@ -64,6 +64,8 @@ func GenerateKeypairWithRandomSeed(kt KeyType) (*KeyPair, error) {
 
 // GenerateKeypairFromMnemonic generates a keypair based on the given mnemonic
 func GenerateKeypairFromMnemonic(mnemonic string) (*KeyPair, error) {
+	mnemonic = strings.ToLower(mnemonic)
+
 	words := strings.SplitN(mnemonic, " ", 2)
 
 	kt, err := FindKeyType(words[0])

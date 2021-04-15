@@ -176,6 +176,8 @@ func (k *KeyEd25519) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
 	switch key := key.(type) {
 	case ed25519.PublicKey:
 		return x509.MarshalPKIXPublicKey(key)
+	case ed25519.PrivateKey:
+		return x509.MarshalPKIXPublicKey(key.Public())
 	}
 
 	return nil, errIncorrectKey

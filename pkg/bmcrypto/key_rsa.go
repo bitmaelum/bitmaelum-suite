@@ -203,6 +203,8 @@ func (k *KeyRsa) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
 		if key.Size()*8 == k.BitSize {
 			return x509.MarshalPKIXPublicKey(key)
 		}
+	case *rsa.PrivateKey:
+		return x509.MarshalPKIXPublicKey(key.Public())
 	}
 
 	return nil, errIncorrectKey
