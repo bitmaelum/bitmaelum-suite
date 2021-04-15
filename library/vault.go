@@ -25,14 +25,14 @@ import "github.com/bitmaelum/bitmaelum-suite/internal/vault"
 func (b *BitMaelumClient) OpenVault(path, password string) (interface{}, error) {
 	var err error
 
-	b.client.Vault, err = vault.Open(path, password)
+	b.user.Vault, err = vault.Open(path, password)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]map[string]interface{}, len(b.client.Vault.Store.Accounts))
+	result := make([]map[string]interface{}, len(b.user.Vault.Store.Accounts))
 
-	for i, acc := range b.client.Vault.Store.Accounts {
+	for i, acc := range b.user.Vault.Store.Accounts {
 		pubK := acc.GetActiveKey().PubKey
 
 		result[i] = map[string]interface{}{

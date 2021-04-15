@@ -20,6 +20,8 @@
 package bitmaelumClient
 
 import (
+	"strings"
+
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
@@ -31,15 +33,16 @@ import (
 
 const defaultResolver = "https://resolver.bitmaelum.com"
 
-type client struct {
-	Address    *address.Address
-	Name       string
-	PrivateKey *bmcrypto.PrivKey
-	Vault      *vault.Vault
+type user struct {
+	Address     *address.Address
+	Name        string
+	PrivateKey  *bmcrypto.PrivKey
+	Vault       *vault.Vault
+	RoutingInfo *resolver.RoutingInfo
 }
 
 type BitMaelumClient struct {
-	client          client
+	user            user
 	resolverService *resolver.Service
 }
 
@@ -59,17 +62,17 @@ func (b *BitMaelumClient) SetResolver(url string) {
 }
 
 func (b *BitMaelumClient) SetClientFromVault(accountAddress string) error {
-	if b.client.Vault == nil {
+	if b.user.Vault == nil {
 		return errors.Errorf("vault not loaded")
 	}
 
-	for _, acc := range b.client.Vault.Store.Accounts {
+	for _, acc := range b.user.Vault.Store.Accounts {
 		if acc.Address.String() == accountAddress {
-			b.client.Address = acc.Address
-			b.client.Name = acc.Name
+			b.user.Address = acc.Address
+			b.user.Name = acc.Name
 			privK := acc.GetActiveKey().PrivKey
-			b.client.PrivateKey = &privK
-			return nil
+			b.user.PrivateKey = &privK
+			return b.getRoutingInfo()
 		}
 	}
 
@@ -83,13 +86,20 @@ func (b *BitMaelumClient) SetClientFromMnemonic(accountAddress, name, mnemonic s
 	}
 
 	// Now generate a new key from the mnemonic
-	kp, err := bmcrypto.GenerateKeypairFromMnemonic(mnemonic)
+	kp, err := bmcrypto.GenerateKeypairFromMnemonic(strings.ToLower(mnemonic))
 	if err != nil {
 		return errors.Wrap(err, "parsing mnemonic")
 	}
-	*b.client.PrivateKey = kp.PrivKey
 
-	return nil
+	// Verify public key belongs to account
+	err = b.verifyPublicKey(kp.PubKey)
+	if err != nil {
+		return errors.Wrap(err, "verifying public key")
+	}
+
+	b.user.PrivateKey = &kp.PrivKey
+
+	return b.getRoutingInfo()
 }
 
 func (b *BitMaelumClient) SetClientFromPrivateKey(accountAddress, name, privKey string) error {
@@ -99,29 +109,61 @@ func (b *BitMaelumClient) SetClientFromPrivateKey(accountAddress, name, privKey 
 	}
 
 	// Convert privKey string to bmcrypto
-	b.client.PrivateKey, err = bmcrypto.PrivateKeyFromString(privKey)
+	b.user.PrivateKey, err = bmcrypto.PrivateKeyFromString(privKey)
 	if err != nil {
 		return errors.Wrap(err, "parsing private key")
 	}
 
-	return nil
+	pubK, err := bmcrypto.PublicKeyFromInterface(b.user.PrivateKey.Type, b.user.PrivateKey.K)
+	if err != nil {
+		return errors.Wrap(err, "extracting public key")
+	}
+
+	err = b.verifyPublicKey(*pubK)
+	if err != nil {
+		return errors.Wrap(err, "verifying public key")
+	}
+
+	return b.getRoutingInfo()
 }
 
 func (b *BitMaelumClient) parseAccountAndName(accountAddress, name string) error {
-	var err error
-
-	b.client.Address, err = address.NewAddress(accountAddress)
+	address, err := address.NewAddress(accountAddress)
 	if err != nil {
 		return errors.Wrap(err, "parsing account address")
 	}
 
 	// Verify client exists
-	_, err = b.resolverService.ResolveAddress(b.client.Address.Hash())
+	_, err = b.resolverService.ResolveAddress(address.Hash())
 	if err != nil {
 		return errors.Wrap(err, "resolving client address")
 	}
 
-	b.client.Name = name
+	b.user.Address = address
+	b.user.Name = name
+
+	return nil
+}
+
+func (b *BitMaelumClient) verifyPublicKey(pubK bmcrypto.PubKey) error {
+	clientInfo, _ := b.resolverService.ResolveAddress(b.user.Address.Hash())
+	if clientInfo.PublicKey.S != pubK.S {
+		return errors.New("public key mismatch")
+	}
+
+	return nil
+}
+
+func (b *BitMaelumClient) getRoutingInfo() error {
+	senderInfo, err := b.resolverService.ResolveAddress(b.user.Address.Hash())
+	if err != nil {
+		return err
+	}
+
+	b.user.RoutingInfo, err = b.resolverService.ResolveRouting(senderInfo.RoutingID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
