@@ -165,12 +165,13 @@ func (e *Envelope) CloseAndEncrypt(senderPrivKey *bmcrypto.PrivKey, recipientPub
 
 	// Set catalog information in the header
 	e.Header.Catalog.Size = uint64(len(e.EncryptedCatalog))
-	ek, tx, _, err := bmcrypto.Encrypt(*recipientPubKey, e.catalogKey)
+	ek, settings, err := bmcrypto.Encrypt(*recipientPubKey, e.catalogKey)
 	if err != nil {
 		return err
 	}
+	e.Header.Catalog.Crypto = string(settings.Type)
 	e.Header.Catalog.EncryptedKey = ek
-	e.Header.Catalog.TransactionID = tx
+	e.Header.Catalog.TransactionID = settings.TransactionID
 
 	// Sign the header
 	err = SignClientHeader(e.Header, *senderPrivKey)

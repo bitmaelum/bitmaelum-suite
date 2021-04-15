@@ -46,6 +46,9 @@ func (dz devZero) Read(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+// Hash used for OAEP encryption/decryption
+var oaepHash = sha256.New()
+
 // KeyRsa is the RSA keytype
 type KeyRsa struct {
 	Type    string
@@ -184,16 +187,29 @@ func (k *KeyRsa) Sign(_ io.Reader, key PrivKey, message []byte) ([]byte, error) 
 	return rsa.SignPKCS1v15(randReader, key.K.(*rsa.PrivateKey), crypto.SHA256, hash[:])
 }
 
-// Encrypt will encrypt the given bytes with the public key. Will return the ciphertext, a transaction ID (if needed), the crypto used and an error
-func (k *KeyRsa) Encrypt(key PubKey, message []byte) ([]byte, string, string, error) {
-	data, err := rsa.EncryptPKCS1v15(rand.Reader, key.K.(*rsa.PublicKey), message)
+// Encrypt will encrypt the given message with the public key
+func (k *KeyRsa) Encrypt(pubKey PubKey, msg []byte) ([]byte, *EncryptionSettings, error) {
+	data, err := rsa.EncryptOAEP(oaepHash, rand.Reader, pubKey.K.(*rsa.PublicKey), msg, nil)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return data, "", "rsa", err
+	return data, &EncryptionSettings{
+		Type:          RsaOAEP,
+		TransactionID: "",
+	}, nil
 }
 
-// Decrypt will decrypt the given bytes with the private key
-func (k *KeyRsa) Decrypt(key PrivKey, _ string, message []byte) ([]byte, error) {
-	return rsa.DecryptPKCS1v15(rand.Reader, key.K.(*rsa.PrivateKey), message)
+// Decrypt will decrypt the given ciphertext with the private key
+func (k *KeyRsa) Decrypt(key PrivKey, settings *EncryptionSettings, ciphertext []byte) ([]byte, error) {
+	switch settings.Type {
+	default:
+		fallthrough
+	case Rsav15:
+		return rsa.DecryptPKCS1v15(rand.Reader, key.K.(*rsa.PrivateKey), ciphertext)
+	case RsaOAEP:
+		return rsa.DecryptOAEP(oaepHash, rand.Reader, key.K.(*rsa.PrivateKey), ciphertext, nil)
+	}
 }
 
 // ParsePublicKeyInterface will parse a interface and returns the key representation

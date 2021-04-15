@@ -34,24 +34,31 @@ func TestEncrypt(t *testing.T) {
 	data, _ = ioutil.ReadFile("../../testdata/privkey.rsa")
 	privKey, _ := PrivateKeyFromString(string(data))
 
-	cipher, _, c, err := Encrypt(*pubKey, []byte("foobar"))
-	assert.Nil(t, err)
-	assert.Equal(t, "rsa", c)
-	assert.NotEqual(t, []byte("foobar"), cipher)
+	cipherText, settings, err := Encrypt(*pubKey, []byte("foobar"))
+	assert.NoError(t, err)
+	assert.Equal(t, RsaOAEP, settings.Type)
+	assert.Empty(t, settings.TransactionID)
+	assert.NotEqual(t, []byte("foobar"), cipherText)
 
-	plaintext, err := Decrypt(*privKey, "", cipher)
-	assert.Nil(t, err)
+	plaintext, err := Decrypt(*privKey, settings, cipherText)
+	assert.NoError(t, err)
 	assert.Equal(t, []byte("foobar"), plaintext)
+
+	// Cant decode with different type
+	settings.Type = Rsav15
+	plaintext, err = Decrypt(*privKey, settings, cipherText)
+	assert.Error(t, err)
+	assert.Empty(t, plaintext)
 
 	// ED25519 Dual Key-Exchange + Encryption
 	priv25519Key, _ := PrivateKeyFromString("ed25519 MC4CAQAwBQYDK2VwBCIEIBJsN8lECIdeMHEOZhrdDNEZl5BuULetZsbbdsZBjZ8a")
 	pub25519Key, _ := PublicKeyFromString("ed25519 MCowBQYDK2VwAyEAblFzZuzz1vItSqdHbr/3DZMYvdoy17ALrjq3BM7kyKE=")
-	cipher, txID, c, err := pub25519Key.Type.Encrypt(*pub25519Key, []byte("foobar"))
+	cipher, settings, err := pub25519Key.Type.Encrypt(*pub25519Key, []byte("foobar"))
 	assert.Nil(t, err)
-	assert.Equal(t, "ed25519+aes", c)
+	assert.Equal(t, Ed25519AES, settings.Type)
 	assert.NotEqual(t, []byte("foobar"), cipher)
 
-	plaintext, err = pub25519Key.Type.Decrypt(*priv25519Key, txID, cipher)
+	plaintext, err = pub25519Key.Type.Decrypt(*priv25519Key, settings, cipher)
 	assert.Nil(t, err)
 	assert.Equal(t, []byte("foobar"), plaintext)
 }

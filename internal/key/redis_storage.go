@@ -59,7 +59,7 @@ func (r redisRepo) FetchByHash(h string, v interface{}) (interface{}, error) {
 			continue
 		}
 
-		keys = append(keys, newItem.(interface{}))
+		keys = append(keys, newItem)
 	}
 
 	return keys, nil
