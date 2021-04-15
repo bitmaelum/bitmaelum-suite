@@ -71,7 +71,7 @@ func OtpGenerate(info *vault.AccountInfo, otpSite *string) {
 func printOtpLoop(secret []byte, site string) {
 	data := bytes.Join([][]byte{secret, []byte(site)}, nil)
 
-  for {
+	for {
 		otp := computeOTPFromSecret(data, 8)
 
 		v := blockPeriod - ((time.Now().UnixNano() - getBlockTimestamp()) / int64(time.Second))
