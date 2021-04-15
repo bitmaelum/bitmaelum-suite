@@ -20,6 +20,7 @@
 package handlers
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/binary"
@@ -27,66 +28,56 @@ import (
 	"math"
 	"net"
 	"os"
-	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 )
 
 const blockPeriod = 30
 
-// OtpGenerate will generate an OTP valid for otpServer
-func OtpGenerate(info *vault.AccountInfo, otpServer *string) {
+// OtpGenerate will generate an OTP valid for otpSite
+func OtpGenerate(info *vault.AccountInfo, otpSite *string) {
 	// Get
-	recs, err := net.LookupTXT("_bitmaelum." + *otpServer)
+	keys, err := net.LookupTXT("_otp." + *otpSite)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	resolver := container.Instance.GetResolveService()
-	for _, txt := range recs {
-		orgHash, err := hash.NewFromHash(strings.ToLower(txt))
-		if err != nil {
-			continue
-		}
-
-		oi, err := resolver.ResolveOrganisation(*orgHash)
+	for _, txt := range keys {
+		key, err := bmcrypto.PublicKeyFromString(txt)
 		if err == nil {
-			if !oi.PublicKey.Type.CanKeyExchange() {
+			if !key.Type.CanKeyExchange() {
 				continue
 			}
 
 			// Generate secret on the client and compute OTP
-			secret, err := bmcrypto.KeyExchange(info.GetActiveKey().PrivKey, oi.PublicKey)
+			secret, err := bmcrypto.KeyExchange(info.GetActiveKey().PrivKey, *key)
 			if err != nil {
 				logrus.Fatal(err)
 			}
 
-			printOtpLoop(secret, *otpServer)
+			printOtpLoop(secret, *otpSite)
 
 			return
 		}
 	}
 
-	logrus.Fatal(fmt.Errorf("public key not found for " + *otpServer))
+	logrus.Fatal(fmt.Errorf("The site does not support OTP authentication: " + *otpSite))
 }
 
-func printOtpLoop(secret []byte, server string) {
-
-
+func printOtpLoop(secret []byte, site string) {
+	data := bytes.Join([][]byte{secret, []byte(site)}, nil)
 	for {
-		otp := computeOTPFromSecret(secret, 8)
+		otp := computeOTPFromSecret(data, 8)
 
 		v := blockPeriod - ((time.Now().UnixNano() - getBlockTimestamp()) / int64(time.Second))
 
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"OTP", "Server", "Valid for"})
-		table.Append([]string{otp, server, fmt.Sprintf("%d", v)})
+		table.SetHeader([]string{"OTP", "Site", "Valid for"})
+		table.Append([]string{otp, site, fmt.Sprintf("%d", v)})
 
 		table.Render()
 
