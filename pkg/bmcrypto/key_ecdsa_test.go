@@ -41,13 +41,13 @@ func TestKeyEcdsa_NewEcdsaKey(t *testing.T) {
 
 	msg := []byte("secretmessage")
 
-	b, txid, c, err := kt.Encrypt(*pubKey, msg)
+	b, settings, err := kt.Encrypt(*pubKey, msg)
 	assert.NoError(t, err)
-	assert.NotNil(t, txid)
+	assert.NotNil(t, settings.TransactionID)
 	assert.NotEqual(t, msg, b)
-	assert.Equal(t, "ecdsa+aes", c)
+	assert.Equal(t, "ecdsa+aes", string(settings.Type))
 
-	b, err = kt.Decrypt(*privKey, txid, b)
+	b, err = kt.Decrypt(*privKey, settings, b)
 	assert.NoError(t, err)
 	assert.Equal(t, b, msg)
 }

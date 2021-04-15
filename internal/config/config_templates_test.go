@@ -41,10 +41,10 @@ func TestTemplates(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, buf.String())
 
-	assert.Empty(t, Client.Resolver.Remote.URL)
+	assert.Empty(t, Client.Resolvers.Remote.URL)
 	err = Client.LoadConfig(&buf)
 	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolvers.Remote.URL)
 
 	err = GenerateBridgeConfig(&buf)
 	assert.NoError(t, err)

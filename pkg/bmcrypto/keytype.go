@@ -62,10 +62,10 @@ type KeyType interface {
 	// JWTHasValidSignMethod will return true when this keytype has been used for signing the token
 	JWTHasValidSignMethod(*jwt.Token) bool
 
-	// Encrypt will encrypt the given bytes with the public key. Will return the ciphertext, a transaction ID (if needed), the crypto used and an error
-	Encrypt(PubKey, []byte) ([]byte, string, string, error)
-	// Decrypt will decrypt the given bytes with the private key
-	Decrypt(PrivKey, string, []byte) ([]byte, error)
+	// Encrypt will encrypt the given message with the public key.
+	Encrypt(PubKey, []byte) ([]byte, *EncryptionSettings, error)
+	// Decrypt will decrypt the given ciphertext with the private key
+	Decrypt(PrivKey, *EncryptionSettings, []byte) ([]byte, error)
 
 	// Sign will sign the given bytes with the private key
 	Sign(io.Reader, PrivKey, []byte) ([]byte, error)
