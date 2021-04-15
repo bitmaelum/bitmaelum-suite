@@ -53,44 +53,44 @@ func TestClientConfig(t *testing.T) {
 	assert.NoError(t, err)
 	_ = f.Close()
 
-	Client.Resolver.Remote.URL = ""
+	Client.Resolvers.Remote.URL = ""
 	err = LoadClientConfigOrPass(testingClientConfigPath)
 	assert.NoError(t, err)
-	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolvers.Remote.URL)
 
-	Client.Resolver.Remote.URL = ""
+	Client.Resolvers.Remote.URL = ""
 	err = LoadClientConfigOrPass(testingNotExistsFilePath)
 	assert.Error(t, err)
-	assert.Equal(t, "", Client.Resolver.Remote.URL)
+	assert.Equal(t, "", Client.Resolvers.Remote.URL)
 
-	Client.Resolver.Remote.URL = ""
+	Client.Resolvers.Remote.URL = ""
 	err = LoadClientConfigOrPass(testingClientConfigPath)
 	assert.NoError(t, err)
-	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolvers.Remote.URL)
 
 	// Read from searchpath
 	if runtime.GOOS != "windows" {
 		// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
 		// the searchpath for windows is different. However, we expect a regular path like /etc/bitmaelum/*.yml
 		// for this test to succeed.
-		Client.Resolver.Remote.URL = ""
+		Client.Resolvers.Remote.URL = ""
 		err = LoadClientConfigOrPass("")
 		assert.NoError(t, err)
-		assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
+		assert.Equal(t, testingResolverRemoteURL, Client.Resolvers.Remote.URL)
 	}
 
 	// Read from non-existing env
-	Client.Resolver.Remote.URL = ""
+	Client.Resolvers.Remote.URL = ""
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
 	err = LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
 	// Read from existing env
-	Client.Resolver.Remote.URL = ""
+	Client.Resolvers.Remote.URL = ""
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", testingClientConfigPath)
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
-	assert.Equal(t, testingResolverRemoteURL, Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolvers.Remote.URL)
 }
 
 func TestServerConfig(t *testing.T) {
