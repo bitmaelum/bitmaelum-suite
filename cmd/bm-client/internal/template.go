@@ -50,6 +50,17 @@ This entry could be added to any of the following domains: {{ .Domains }}. Once 
 register the account onto the keyserver. For more information, please visit https://bitmaelum.com/reserved
 `
 
+const OrganisationProofTemplate = `could not find proof in the DNS.
+
+In order to register this reserved organisation, make sure you add the following information to the DNS:
+
+    _bitmaelum TXT {{ .Fingerprint }}
+
+This entry could be added to any of the following domains: {{ .Domains }}. Once we have found the entry, we can 
+register the organisation onto the keyserver. For more information, please visit https://bitmaelum.com/reserved
+`
+
+
 // Generate from generic template data
 func generateFromTemplateData(messageTemplate string, data interface{}) string {
 	msg := fmt.Sprintf("%v", data) // when things fail

@@ -36,33 +36,47 @@ import (
 	pow "github.com/bitmaelum/bitmaelum-suite/pkg/proofofwork"
 )
 
-const (
-	ctxOrganisationFound ctxKey = iota
-	ctxOrgVault
-	ctxOrgAddr
-	ctxOrgHash
-	ctxOrgValidations
-	ctxOrgValidationsStr
-	ctxOrgKeyType
-	ctxOrgKeyPair
-	ctxOrgName
-	ctxOrgInfo
-	ctxOrgProof
-	ctxOrgDomains
-	ctxOrgReserved
-)
+type OrgArgs struct {
+	Vault       *vault.Vault     // Vault
+	AddrStr     string           // Textual representation of the address
+	Name        string           // Name of the account
+	TokenStr    string           // Additional token for mail server
+	KeyType     bmcrypto.KeyType // Type of key to generate
+	Validations []string         // Validations
+}
+
+type OrgSpinnerContext struct {
+	Args            OrgArgs            // Incoming arguments
+	//Addr            *address.Address   // Address to create
+	//AccountInfo     *vault.AccountInfo // Account info found in the vault
+	//Proof           *pow.ProofOfWork   // Generated Proof of work
+	//KeyPair         *bmcrypto.KeyPair  // Generated Keypair
+	Reserved        bool               // True if this address is a reserved address
+	ReservedDomains []string           // domains for reserved validation (if any)
+	//Token           *signature.Token   // Information from given token
+	Organisation     *vault.OrganisationInfo				// Organisation info
+}
+
+// getOrganisationContext returns the spinner context structure with all information that is communicated between spinner steps
+func getOrganisationContext(s stepper.Stepper) *OrgSpinnerContext {
+	return s.Ctx.Value(internal.CtxSpinnerContext).(*OrgSpinnerContext)
+}
 
 // CreateOrganisation creates a new organisation locally in the vault and pushes the public key to the resolver
 func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations []string, kt bmcrypto.KeyType) {
 	s := stepper.New()
 
-	// Set some initial values in the context. We read and write to the context to deal with variables instead of using globals.
-	s.Ctx = context.WithValue(s.Ctx, ctxOrgVault, v)
-	s.Ctx = context.WithValue(s.Ctx, ctxOrgKeyType, kt)
-	s.Ctx = context.WithValue(s.Ctx, ctxOrgName, fullName)
-	s.Ctx = context.WithValue(s.Ctx, ctxOrgValidationsStr, orgValidations)
-	s.Ctx = context.WithValue(s.Ctx, ctxOrgAddr, orgAddr)
-	s.Ctx = context.WithValue(s.Ctx, ctxOrgHash, hash.New(orgAddr))
+	// Setup context for spinner
+	spinnerCtx := OrgSpinnerContext{
+		Args: OrgArgs{
+			Vault:       v,
+			KeyType:     kt,
+			Name:        fullName,
+			Validations: orgValidations,
+			AddrStr:     orgAddr,
+		},
+	}
+	s.Ctx = context.WithValue(s.Ctx, internal.CtxSpinnerContext, spinnerCtx)
 
 	// Add all the steps from the account creation procedure
 
@@ -90,20 +104,20 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 	s.AddStep(stepper.Step{
 		Title:          "Generating organisation public/private keypair",
 		DisplaySpinner: true,
-		SkipIfFunc:     organisationNotFoundInContext,
+		SkipIfFunc: func(s stepper.Stepper) bool { return getOrganisationContext(*s).Organisation == nil },
 		RunFunc:        generateOrganisationKeyPair,
 	})
 
 	s.AddStep(stepper.Step{
 		Title:          fmt.Sprintf("Doing some work to let people know this is not a fake account, %sthis might take a while%s...", stepper.AnsiFgYellow, stepper.AnsiReset),
 		DisplaySpinner: true,
-		SkipIfFunc:     organisationNotFoundInContext,
+		SkipIfFunc: func(s stepper.Stepper) bool { return getOrganisationContext(*s).Organisation == nil },
 		RunFunc:        doProofOfWorkOrg,
 	})
 
 	s.AddStep(stepper.Step{
 		Title:      "Placing your new organisation into the vault",
-		SkipIfFunc: organisationNotFoundInContext,
+		SkipIfFunc: func(s stepper.Stepper) bool { return getOrganisationContext(*s).Organisation == nil },
 		RunFunc:    addOrganisationToVault,
 	})
 
@@ -127,8 +141,7 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 		os.Exit(1)
 	}
 
-	info := s.Ctx.Value(ctxOrgInfo).(*vault.OrganisationInfo)
-	kp := info.GetActiveKey().KeyPair
+	kp := getOrganisationContext(*s).Organisation.GetActiveKey().KeyPair
 	mnemonic := bminternal.WordWrap(bmcrypto.GetMnemonic(&kp), 78)
 
 	fmt.Println(internal.GenerateFromMnemonicTemplate(internal.OrganisationCreatedTemplate, mnemonic))
@@ -139,27 +152,18 @@ func checkOrganisationInVault(s *stepper.Stepper) stepper.StepResult {
 	orgHash := s.Ctx.Value(ctxOrgHash).(hash.Hash)
 
 	if !v.HasOrganisation(orgHash) {
-		return stepper.StepResult{
-			Status:  stepper.SUCCESS,
-			Message: "not found. That's good.",
-		}
+		return s.Success("not found. That's good.")
 	}
 
 	info, err := v.GetOrganisationInfo(orgHash)
 	if err != nil {
-		return stepper.StepResult{
-			Status:  stepper.FAILURE,
-			Message: "found. But error while fetching from the vault.",
-		}
+		return s.Failure("found. But error while fetching from the vault.")
 	}
 
 	s.Ctx = context.WithValue(s.Ctx, ctxOrgInfo, info)
 	s.Ctx = context.WithValue(s.Ctx, ctxOrganisationFound, true)
 
-	return stepper.StepResult{
-		Status:  stepper.SUCCESS,
-		Message: "found. That's odd, but let's continue...",
-	}
+	return s.Success("found. That's odd, but let's continue...")
 }
 
 func checkOrganisationInResolver(s *stepper.Stepper) stepper.StepResult {
@@ -169,32 +173,22 @@ func checkOrganisationInResolver(s *stepper.Stepper) stepper.StepResult {
 	_, err := ks.ResolveOrganisation(orgHash)
 
 	if err == nil {
-		return stepper.StepResult{
-			Status:  stepper.FAILURE,
-			Message: "organisation already found",
-		}
+		return s.Failure("organisation already found")
 	}
 
-	return stepper.StepResult{
-		Status: stepper.SUCCESS,
-	}
+	return s.Success("")
 }
 
 func checkValidations(s *stepper.Stepper) stepper.StepResult {
 	arr := s.Ctx.Value(ctxOrgValidationsStr).([]string)
 	validations, err := organisation.NewValidationTypeFromStringArray(arr)
 	if err != nil {
-		return stepper.StepResult{
-			Status:  stepper.FAILURE,
-			Message: "validation failed",
-		}
+		return s.Failure("validation failed")
 	}
 
 	s.Ctx = context.WithValue(s.Ctx, ctxOrgValidations, validations)
 
-	return stepper.StepResult{
-		Status: stepper.SUCCESS,
-	}
+	return s.Success("")
 }
 
 func doProofOfWorkOrg(s *stepper.Stepper) stepper.StepResult {
@@ -209,25 +203,18 @@ func doProofOfWorkOrg(s *stepper.Stepper) stepper.StepResult {
 
 	s.Ctx = context.WithValue(s.Ctx, ctxOrgProof, proof)
 
-	return stepper.StepResult{
-		Status: stepper.SUCCESS,
-	}
+	return s.Success("")
 }
 
 func generateOrganisationKeyPair(s *stepper.Stepper) stepper.StepResult {
 	kt := s.Ctx.Value(ctxOrgKeyType).(bmcrypto.KeyType)
 	kp, err := bmcrypto.GenerateKeypairWithRandomSeed(kt)
 	if err != nil {
-		return stepper.StepResult{
-			Status:  stepper.FAILURE,
-			Message: err.Error(),
-		}
+		return s.Failure(err.Error())
 	}
 
 	s.Ctx = context.WithValue(s.Ctx, ctxOrgKeyPair, kp)
-	return stepper.StepResult{
-		Status: stepper.SUCCESS,
-	}
+	return s.Success("")
 }
 
 func addOrganisationToVault(s *stepper.Stepper) stepper.StepResult {
@@ -254,18 +241,13 @@ func addOrganisationToVault(s *stepper.Stepper) stepper.StepResult {
 	v.AddOrganisation(*info)
 	err := v.Persist()
 	if err != nil {
-		return stepper.StepResult{
-			Status:  stepper.FAILURE,
-			Message: fmt.Sprintf("error while saving organisation into vault: %#v", err),
-		}
+		return s.Failure(fmt.Sprintf("error while saving organisation into vault: %#v", err))
 	}
 
 	s.Ctx = context.WithValue(s.Ctx, ctxOrgInfo, info)
 	s.Ctx = context.WithValue(s.Ctx, ctxOrganisationFound, true)
 
-	return stepper.StepResult{
-		Status: stepper.SUCCESS,
-	}
+	return s.Success("")
 }
 
 func uploadOrganisationToResolver(s *stepper.Stepper) stepper.StepResult {
@@ -274,19 +256,10 @@ func uploadOrganisationToResolver(s *stepper.Stepper) stepper.StepResult {
 	ks := container.Instance.GetResolveService()
 	err := ks.UploadOrganisationInfo(*info)
 	if err != nil {
-		return stepper.StepResult{
-			Status:  stepper.FAILURE,
-			Message: fmt.Sprintf("error while uploading organisation to the resolver: %s", err.Error()),
-		}
+		return s.Failure(fmt.Sprintf("error while uploading organisation to the resolver: %s", err.Error()))
 	}
 
-	return stepper.StepResult{
-		Status: stepper.SUCCESS,
-	}
-}
-
-func organisationNotFoundInContext(s stepper.Stepper) bool {
-	return s.Ctx.Value(ctxOrganisationFound) == nil
+	return s.Success("")
 }
 
 func checkOrganisationReservedAddress(s *stepper.Stepper) stepper.StepResult {
@@ -300,16 +273,10 @@ func checkOrganisationReservedAddress(s *stepper.Stepper) stepper.StepResult {
 	s.Ctx = context.WithValue(s.Ctx, ctxOrgDomains, domains)
 
 	if len(domains) > 0 {
-		return stepper.StepResult{
-			Status:  stepper.NOTICE,
-			Message: "Yes. DNS verification is needed in order to register this organisation",
-		}
+		return s.Notice("Yes. DNS verification is needed in order to register this organisation")
 	}
 
-	return stepper.StepResult{
-		Status:  stepper.SUCCESS,
-		Message: "Not reserved",
-	}
+	return s.Success("not reserved")
 }
 
 func checkOrganisationReservedDomains(s *stepper.Stepper) stepper.StepResult {
@@ -335,28 +302,11 @@ func checkOrganisationReservedDomains(s *stepper.Stepper) stepper.StepResult {
 
 		for _, entry := range entries {
 			if entry == kp.PubKey.Fingerprint() {
-				return stepper.StepResult{
-					Status:  stepper.SUCCESS,
-					Message: "found reservation at " + domain,
-				}
+				return s.Success("found reservation at " + domain)
 			}
 		}
 	}
 
-	messageTemplate := `could not find proof in the DNS.
-
-In order to register this reserved organisation, make sure you add the following information to the DNS:
-
-    _bitmaelum TXT {{ .Fingerprint }}
-
-This entry could be added to any of the following domains: {{ .Domains }}. Once we have found the entry, we can 
-register the organisation onto the keyserver. For more information, please visit https://bitmaelum.com/reserved
-`
-
-	msg := internal.GenerateFromFingerprintTemplate(messageTemplate, kp.PubKey.Fingerprint(), domains)
-
-	return stepper.StepResult{
-		Status:  stepper.FAILURE,
-		Message: msg,
-	}
+	msg := internal.GenerateFromFingerprintTemplate(internal.OrganisationProofTemplate, kp.PubKey.Fingerprint(), domains)
+	return s.Failure(msg)
 }
