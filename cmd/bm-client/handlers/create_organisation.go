@@ -25,6 +25,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/stepper"
 	bminternal "github.com/bitmaelum/bitmaelum-suite/internal"
@@ -89,27 +90,27 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 	s.AddStep(stepper.Step{
 		Title:          "Generating organisation public/private keypair",
 		DisplaySpinner: true,
-		OnlyIfFunc:     organisationNotFoundInContext,
+		SkipIfFunc:     organisationNotFoundInContext,
 		RunFunc:        generateOrganisationKeyPair,
 	})
 
 	s.AddStep(stepper.Step{
 		Title:          fmt.Sprintf("Doing some work to let people know this is not a fake account, %sthis might take a while%s...", stepper.AnsiFgYellow, stepper.AnsiReset),
 		DisplaySpinner: true,
-		OnlyIfFunc:     organisationNotFoundInContext,
+		SkipIfFunc:     organisationNotFoundInContext,
 		RunFunc:        doProofOfWorkOrg,
 	})
 
 	s.AddStep(stepper.Step{
 		Title:      "Placing your new organisation into the vault",
-		OnlyIfFunc: organisationNotFoundInContext,
+		SkipIfFunc: organisationNotFoundInContext,
 		RunFunc:    addOrganisationToVault,
 	})
 
 	s.AddStep(stepper.Step{
 		Title:          "Checking domains for reservation proof",
 		RunFunc:        checkOrganisationReservedDomains,
-		OnlyIfFunc:     func(s stepper.Stepper) bool { return s.Ctx.Value(ctxOrgReserved) == false },
+		SkipIfFunc:     func(s stepper.Stepper) bool { return s.Ctx.Value(ctxOrgReserved).(bool) == false },
 		DisplaySpinner: true,
 	})
 
@@ -126,26 +127,11 @@ func CreateOrganisation(v *vault.Vault, orgAddr, fullName string, orgValidations
 		os.Exit(1)
 	}
 
-	fmt.Print(`
-*****************************************************************************
-!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORTANT!IMPORT
-*****************************************************************************
-
-We have generated a private key which allows you to control the organisation. 
-If, for any reason, you lose this key, you will need to use the following 
-words in order to recreate the key:
-
-`)
 	info := s.Ctx.Value(ctxOrgInfo).(*vault.OrganisationInfo)
 	kp := info.GetActiveKey().KeyPair
-	fmt.Print(bminternal.WordWrap(bmcrypto.GetMnemonic(&kp), 78))
-	fmt.Print(`
+	mnemonic := bminternal.WordWrap(bmcrypto.GetMnemonic(&kp), 78)
 
-Write these words down and store them in a secure environment. They are the 
-ONLY way to recover your private key in case you lose it.
-
-WITHOUT THESE WORDS, ALL ACCESS TO YOUR ORGANISATION IS LOST!
-`)
+	fmt.Println(internal.GenerateFromMnemonicTemplate(internal.OrganisationCreatedTemplate, mnemonic))
 }
 
 func checkOrganisationInVault(s *stepper.Stepper) stepper.StepResult {
@@ -300,7 +286,7 @@ func uploadOrganisationToResolver(s *stepper.Stepper) stepper.StepResult {
 }
 
 func organisationNotFoundInContext(s stepper.Stepper) bool {
-	return s.Ctx.Value(ctxOrganisationFound) != nil
+	return s.Ctx.Value(ctxOrganisationFound) == nil
 }
 
 func checkOrganisationReservedAddress(s *stepper.Stepper) stepper.StepResult {
@@ -367,7 +353,7 @@ This entry could be added to any of the following domains: {{ .Domains }}. Once 
 register the organisation onto the keyserver. For more information, please visit https://bitmaelum.com/reserved
 `
 
-	msg := generateFromTemplate(messageTemplate, kp.PubKey.Fingerprint(), domains)
+	msg := internal.GenerateFromFingerprintTemplate(messageTemplate, kp.PubKey.Fingerprint(), domains)
 
 	return stepper.StepResult{
 		Status:  stepper.FAILURE,
