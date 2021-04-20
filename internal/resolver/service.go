@@ -45,7 +45,7 @@ type AddressInfo struct {
 	Hash        string          `json:"hash"`       // Hash of the email address
 	PublicKey   bmcrypto.PubKey `json:"public_key"` // PublicKey of the user
 	RoutingID   string          `json:"routing"`    // Routing ID
-	RedirHash   string          `json:"redir_hash"`    // Routing ID
+	RedirHash   string          `json:"redir_hash"` // Routing ID
 	Pow         string          `json:"pow"`        // Proof of work
 	RoutingInfo RoutingInfo     `json:"_"`          // Don't store
 }
@@ -153,7 +153,7 @@ func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	return info, nil
 }
 
-// ResolveOrganisation resolves a route.
+// ResolveOrganisation resolves an organisation object.
 func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
 	logrus.Debugf("Resolving %s", orgHash)
 	info, err := s.repo.ResolveOrganisation(orgHash)
@@ -182,6 +182,15 @@ func (s *Service) UploadAddressInfo(info vault.AccountInfo) error {
 		Hash:      info.Address.Hash().String(),
 		PublicKey: info.GetActiveKey().PubKey,
 		Pow:       info.Pow.String(),
+	}
+	if info.RedirAddress != nil {
+		addrObj.RedirHash = info.RedirAddress.Hash().String()
+	}
+	if info.RoutingID != "" {
+		addrObj.RoutingID = info.RoutingID
+	}
+
+	return s.repo.UploadAddress(*info.Address, addrObj, privKey, *info.Pow)
 	}
 
 	if info.RoutingID != "" {

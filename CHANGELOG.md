@@ -19,7 +19,6 @@
 - bm-client: Added `--debug` flag to display HTTP traffic (override the client config's server.debughttp option) 
 
 
-
 ## 0.1.1-1 (2021-feb-19)
 
 - Hotfix on the MSI packaging
