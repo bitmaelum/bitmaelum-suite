@@ -77,11 +77,7 @@ archives:
       amd64: 64bit
 
 checksum:
-  name_template: 'checksums.txt'
-
-signs:
-  - artifacts: checksum
-    args: ["-u", "C2D6C816449D7AF38853F6FEDFD61AEF353E9701", "--no-tty", "--output", "${signature}", "--detach-sign", "${artifact}"]
+  disable:true
 
 nfpms:
   - license: MIT
@@ -89,6 +85,13 @@ nfpms:
     homepage: https://bitmaelum.org
     bindir: /usr
     description: BitMaelum Suite
+    file_name_template: "{{ .ProjectName }}_nightly_{{ .Os }}_{{ .Arch }}"
     formats:
       - deb
       - rpm
+
+release:
+  prerelease: true
+
+changelog:
+  skip: true
