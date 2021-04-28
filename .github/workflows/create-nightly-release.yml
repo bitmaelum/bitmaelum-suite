@@ -24,6 +24,9 @@ jobs:
         gpg --import --no-tty --batch --yes ~/.gnupg/private.key
       env:
         GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+    - name: Tag nightly
+      run: |
+        git tag v0.0.0
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v2
       with:
