@@ -77,7 +77,7 @@ archives:
       amd64: 64bit
 
 checksum:
-  disable:true
+    disable: true
 
 nfpms:
   - license: MIT
