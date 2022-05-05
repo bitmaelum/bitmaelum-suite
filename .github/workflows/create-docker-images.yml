@@ -1,7 +1,7 @@
 name: Create docker images
 on:
   push:
-    branches: [ master, docker-test ]
+    branches: [ main, docker-test ]
 
 jobs:
   build:
