@@ -29,8 +29,8 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/mailbox"
 	"github.com/bitmaelum/bitmaelum-suite/internal/api"
+	"github.com/bitmaelum/bitmaelum-suite/internal/mailbox"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
@@ -198,7 +198,11 @@ func queryBox(client *api.API, account *vault.AccountInfo, box string, dataCh ch
 	for _, msg := range mb.Messages {
 		idx++
 
-		key, err := bmcrypto.Decrypt(account.GetActiveKey().PrivKey, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+		settings := &bmcrypto.EncryptionSettings{
+			Type:          bmcrypto.CryptoType(msg.Header.Catalog.Crypto),
+			TransactionID: msg.Header.Catalog.TransactionID,
+		}
+		key, err := bmcrypto.Decrypt(account.GetActiveKey().PrivKey, settings, msg.Header.Catalog.EncryptedKey)
 		if err != nil {
 			continue
 		}

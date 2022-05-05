@@ -46,6 +46,16 @@ builds:
     id: "bm-server"
     binary: bm-server
 
+  - <<: *build_defaults
+    main: ./cmd/bm-mail/main.go
+    id: "bm-mail"
+    binary: bm-mail
+
+  - <<: *build_defaults
+    main: ./cmd/bm-bridge/main.go
+    id: "bm-bridge"
+    binary: bm-bridge
+
 
 archives:
   - id: nix

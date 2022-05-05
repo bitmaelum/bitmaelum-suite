@@ -17,18 +17,17 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package internal
+package bmcrypto
 
 import (
 	"encoding/hex"
 	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/tyler-smith/go-bip39"
 )
 
 // GetMnemonic will return a mnemonic representation of the given keypair
-func GetMnemonic(kp *bmcrypto.KeyPair) string {
+func GetMnemonic(kp *KeyPair) string {
 	seed, err := hex.DecodeString(kp.Generator)
 	if err != nil {
 		return ""
@@ -53,21 +52,21 @@ func MnemonicToRandomSeed(mnemonic string) ([]byte, error) {
 }
 
 // GenerateKeypairWithRandomSeed generates a seed and generates a keypair which can be reconstructed again with the same seed
-func GenerateKeypairWithRandomSeed(kt bmcrypto.KeyType) (*bmcrypto.KeyPair, error) {
+func GenerateKeypairWithRandomSeed(kt KeyType) (*KeyPair, error) {
 	// Generate large enough random string
-	seed, err := bip39.NewEntropy(192)
+	seed, err := bip39.NewEntropy(256)
 	if err != nil {
 		return nil, err
 	}
 
-	return bmcrypto.CreateKeypair(kt, seed)
+	return CreateKeypair(kt, seed)
 }
 
 // GenerateKeypairFromMnemonic generates a keypair based on the given mnemonic
-func GenerateKeypairFromMnemonic(mnemonic string) (*bmcrypto.KeyPair, error) {
+func GenerateKeypairFromMnemonic(mnemonic string) (*KeyPair, error) {
 	words := strings.SplitN(mnemonic, " ", 2)
 
-	kt, err := bmcrypto.FindKeyType(words[0])
+	kt, err := FindKeyType(words[0])
 	if err != nil {
 		return nil, err
 	}
@@ -77,5 +76,5 @@ func GenerateKeypairFromMnemonic(mnemonic string) (*bmcrypto.KeyPair, error) {
 		return nil, err
 	}
 
-	return bmcrypto.CreateKeypair(kt, seed)
+	return CreateKeypair(kt, seed)
 }

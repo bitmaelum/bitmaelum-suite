@@ -17,21 +17,13 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package app
+// +build !windows
 
-import (
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/rivo/tview"
-)
+package internal
 
-// Needs to be inside it's own package, otherwise it causes a dependency cycle.
-
-// Type is a struct that holds the current application and "global" data
-type Type struct {
-	App   *tview.Application
-	Pages *tview.Pages
-	Vault *vault.Vault
+func getEditorPaths() []string {
+	return []string{
+		"/usr/bin/editor",
+		"/usr/bin/nano",
+	}
 }
-
-// App is the main instance of the application
-var App Type

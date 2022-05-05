@@ -25,6 +25,7 @@ import (
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
 	"github.com/bitmaelum/bitmaelum-suite/internal"
+	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/sirupsen/logrus"
@@ -54,7 +55,7 @@ var accountKeyGenerateCmd = &cobra.Command{
 			logrus.Fatal(err)
 		}
 
-		kp, err := internal.GenerateKeypairWithRandomSeed(kt)
+		kp, err := bmcrypto.GenerateKeypairWithRandomSeed(kt)
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -74,7 +75,7 @@ If, for any reason, you lose this key, you will need to use the following
 words in order to recreate the key:
 
 `)
-		fmt.Print(internal.WordWrap(internal.GetMnemonic(kp), 78))
+		fmt.Print(internal.WordWrap(bmcrypto.GetMnemonic(kp), 78))
 		fmt.Print(`
 
 Write these words down and store them in a secure environment. They are the 
@@ -89,8 +90,18 @@ WITHOUT THESE WORDS, ALL ACCESS TO YOUR ACCOUNT IS LOST!
 		if *advertise {
 			info.SetActiveKey(kp)
 
+			addrObj := &resolver.AddressInfo{
+				Hash:      info.Address.Hash().String(),
+				PublicKey: info.GetActiveKey().PubKey,
+				RoutingID: info.RoutingID,
+				RedirHash: info.RedirAddress.Hash().String(),
+				Pow:       info.Pow.String(),
+			}
+
+			pk := info.GetActiveKey().PrivKey
+
 			ks := container.Instance.GetResolveService()
-			err = ks.UploadAddressInfo(*info, "")
+			err = ks.UploadAddressInfo(*info.Address, *addrObj, &pk)
 		}
 
 		// Error or we didn't advertise

@@ -45,39 +45,34 @@ var webhookEditCmd = &cobra.Command{
 		// Get webhook and edit
 		src, err := client.GetWebhook(info.Address.Hash(), *wheditID)
 		if err != nil {
-			logrus.Fatal("error while editing webhook: ", err)
-			os.Exit(1)
+			fatal("cannot get webhook: ", err)
 		}
 
 		// Unmarshal src-config for editing
 		var srcConfig interface{}
 		err = json.Unmarshal([]byte(src.Config), &srcConfig)
 		if err != nil {
-			logrus.Fatal("error while editing webhook: ", err)
-			os.Exit(1)
+			fatal("cannot parse webhook: ", err)
 		}
 
-		// Edit into dstConig
+		// Edit into dstconfig
 		var dstConfig interface{}
 		err = internal2.JSONFileEditor(srcConfig, &dstConfig)
 		if err != nil {
-			logrus.Fatal("error while editing webhook: ", err)
-			os.Exit(1)
+			fatal("cannot open webhook: ", err)
 		}
 
 		// Marshal dstconfig back into src config
 		data, err := json.Marshal(dstConfig)
 		if err != nil {
-			logrus.Fatal("error while editing webhook: ", err)
-			os.Exit(1)
+			fatal("cannot edit webhook: ", err)
 		}
 		src.Config = string(data)
 
 		// And update webhook
 		err = client.UpdateWebhook(info.Address.Hash(), *wheditID, *src)
 		if err != nil {
-			logrus.Fatal("cannot update webhook: ", err)
-			os.Exit(1)
+			fatal("cannot update webhook: ", err)
 		}
 	},
 }

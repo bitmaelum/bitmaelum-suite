@@ -39,13 +39,14 @@ func main() {
 	internal.ParseOptions(&opts)
 	config.LoadClientConfig(opts.Config)
 
-	v, err := vault.Open(config.Client.Vault.Path, opts.Password)
-	if err != nil {
-		panic(err)
-	}
+	// Set default vault info if set in config
+	vault.VaultPassword = opts.Password
+	vault.VaultPath = config.Client.Vault.Path
+
+	v := vault.OpenDefaultVault()
 
 	st := vault.StoreType{}
-	err = internal.JSONFileEditor(v.Store, &st)
+	err := internal.JSONFileEditor(v.Store, &st)
 	if err != nil {
 		panic(err)
 	}

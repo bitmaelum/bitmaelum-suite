@@ -1,0 +1,22 @@
+{
+    "from": {
+        "address": "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
+        "signed_by": "authorized"
+    },
+    "to": {
+        "address": "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350"
+    },
+    "catalog": {
+        "size": 983,
+        "checksum": {
+            "ripemd160": "cc83e77af0fae70c3b655f36f110ec4d2eebaf1c",
+            "sha256": "79213f8941437dc22a315636a50d6920507a58fcf97b9ff32b4c15cd26a8209a"
+        },
+        "txid": "",
+        "encrypted_key": "Zm9vYmFy"
+    },
+    "signatures": {
+        "client": "Se4sVKA8DkVfwcIJ3HIqVIds6+ewQC86pwUWX10K4fS8860AhlWJd75XnL4AFs9ofSIwEgVr7D+OvY2eyh8ECw==",
+        "server": "yjBaPd8nWoz6wCJx8kmh7jeU0QcoT9C2oA8Qsh9cq1PRNeE0PLIpDjI4jb3ftP+3PdCRF5TWNOzk8OYbwJkpAg=="
+    }
+}

@@ -20,57 +20,51 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/spf13/cobra"
 )
 
-var accountKeyAdvertiseCmd = &cobra.Command{
-	Use:   "advertise",
-	Short: "Advertise new key to the key resolver",
+var accountStoreGetCmd = &cobra.Command{
+	Use:   "get",
+	Short: "Retrieve contents from the store",
 	Run: func(cmd *cobra.Command, args []string) {
-		v := vault.OpenDefaultVault()
-
-		info, err := vault.GetAccount(v, *akAccount)
+		client, info, err := authenticate(*astAccount)
 		if err != nil {
-			fmt.Println("cannot find account in vault")
+			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		vkp, err := info.FindKey(*akaKey)
+		entry, err := client.StoreGetPath(*info.StoreKey, info.Address.Hash(), *asgPath, *asgRecursive, time.Unix(*asgSince, 0))
 		if err != nil {
-			fmt.Println("cannot find key in account")
+			fmt.Println("cannot find store key")
 			os.Exit(1)
 		}
 
-		info.SetActiveKey(&vkp.KeyPair)
-
-		// Save vault
-		err = v.Persist()
+		b, err := json.MarshalIndent(entry, "", "  ")
 		if err != nil {
-			fmt.Println("cannot save vault")
+			fmt.Println("cannot marshal entry data")
 			os.Exit(1)
 		}
-
-		ks := container.Instance.GetResolveService()
-		err = ks.UploadAddressInfo(*info, "")
-		if err != nil {
-			fmt.Println("cannot advertise key")
-			os.Exit(1)
-		}
-
+		fmt.Println(string(b))
 	},
 }
 
-var akaKey *string
+var (
+	asgPath      *string
+	asgRecursive *bool
+	asgSince     *int64
+)
 
 func init() {
-	accountKeyCmd.AddCommand(accountKeyAdvertiseCmd)
+	accountStoreCmd.AddCommand(accountStoreGetCmd)
 
-	akaKey = accountKeyAdvertiseCmd.Flags().StringP("key", "k", "", "fingerprint of the key to advertise")
+	asgPath = accountStoreGetCmd.PersistentFlags().String("path", "", "Path to get")
+	asgRecursive = accountStoreGetCmd.PersistentFlags().Bool("recursive", false, "Recursive fetch")
+	asgSince = accountStoreGetCmd.PersistentFlags().Int64("since", 0, "Timestamp to filter from")
 
-	_ = accountKeyAdvertiseCmd.MarkPersistentFlagRequired("account")
+	_ = accountStorePutCmd.MarkPersistentFlagRequired("path")
 }

@@ -22,9 +22,20 @@ package container
 import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/bitmaelum/bitmaelum-suite/internal/resolver"
+	"github.com/bitmaelum/bitmaelum-suite/internal/store"
 	"github.com/bitmaelum/bitmaelum-suite/internal/subscription"
 	"github.com/bitmaelum/bitmaelum-suite/internal/ticket"
 	"github.com/bitmaelum/bitmaelum-suite/internal/webhook"
+)
+
+// API keys
+const (
+	APIKey       = "api-key"
+	AuthKey      = "auth-key"
+	Resolver     = "resolver"
+	Subscription = "subscription"
+	Ticket       = "ticket"
+	Webhook      = "webhook"
 )
 
 // Instance is the main bitmaelum service container
@@ -35,30 +46,41 @@ var Instance = Type{
 
 // GetAPIKeyRepo will return the current api key repository
 func (c *Type) GetAPIKeyRepo() key.APIKeyRepo {
-	return c.Get("api-key").(key.APIKeyRepo)
+	retValue, _ := c.Get(APIKey).(key.APIKeyRepo)
+	return retValue
 }
 
 // GetAuthKeyRepo will return the current auth key repository
 func (c *Type) GetAuthKeyRepo() key.AuthKeyRepo {
-	return c.Get("auth-key").(key.AuthKeyRepo)
+	retValue, _ := c.Get(AuthKey).(key.AuthKeyRepo)
+	return retValue
 }
 
 // GetResolveService will return the current resolver service
 func (c *Type) GetResolveService() *resolver.Service {
-	return c.Get("resolver").(*resolver.Service)
+	retValue, _ := c.Get(Resolver).(*resolver.Service)
+	return retValue
 }
 
 // GetSubscriptionRepo will return the current subscription repository
 func (c *Type) GetSubscriptionRepo() subscription.Repository {
-	return c.Get("subscription").(subscription.Repository)
+	retValue, _ := c.Get(Subscription).(subscription.Repository)
+	return retValue
 }
 
 // GetTicketRepo will return the current ticket repository
 func (c *Type) GetTicketRepo() ticket.Repository {
-	return c.Get("ticket").(ticket.Repository)
+	retValue, _ := c.Get(Ticket).(ticket.Repository)
+	return retValue
 }
 
 // GetWebhookRepo will return the current webhook repository
 func (c *Type) GetWebhookRepo() webhook.Repository {
-	return c.Get("webhook").(webhook.Repository)
+	retValue, _ := c.Get(Webhook).(webhook.Repository)
+	return retValue
+}
+
+// GetStoreRepo will return the current store repository
+func (c *Type) GetStoreRepo() store.Repository {
+	return c.Get("store").(store.Repository)
 }

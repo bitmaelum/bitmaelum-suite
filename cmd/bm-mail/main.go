@@ -59,6 +59,5 @@ func main() {
 		vault.VaultPath = opts.Vault
 	}
 
-	v := vault.OpenDefaultVault()
-	gui.Run(v)
+	gui.Run()
 }

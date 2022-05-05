@@ -24,6 +24,7 @@ import (
 	"crypto/elliptic"
 	"crypto/x509"
 	"encoding/asn1"
+	"errors"
 	"io"
 
 	"github.com/vtolstov/jwt-go"
@@ -64,7 +65,6 @@ func (k *KeyEcdsa) String() string {
 // ParsePrivateKeyData will parse a string representation of a key and returns the given key
 func (k *KeyEcdsa) ParsePrivateKeyData(buf []byte) (interface{}, error) {
 	return x509.ParsePKCS8PrivateKey(buf)
-	// return x509.ParseECPrivateKey(buf)
 }
 
 // ParsePrivateKeyInterface will parse a interface and returns the key representation
@@ -132,21 +132,31 @@ func (k *KeyEcdsa) Sign(_ io.Reader, key PrivKey, message []byte) ([]byte, error
 	return asn1.Marshal(sig)
 }
 
-// Encrypt will encrypt the given bytes with the public key. Will return the ciphertext, a transaction ID (if needed), the crypto used and an error
-func (k *KeyEcdsa) Encrypt(key PubKey, message []byte) ([]byte, string, string, error) {
+// Encrypt will encrypt the given msg with the public key.
+func (k *KeyEcdsa) Encrypt(key PubKey, msg []byte) ([]byte, *EncryptionSettings, error) {
 	secret, txID, err := DualKeyExchange(key)
 	if err != nil {
-		return nil, "", "", err
+		return nil, nil, err
 	}
 
-	encryptedMessage, err := MessageEncrypt(secret, message)
+	encryptedMessage, err := MessageEncrypt(secret, msg)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return encryptedMessage, txID.ToHex(), "ecdsa+aes", err
+	return encryptedMessage, &EncryptionSettings{
+		Type:          EcdsaAES,
+		TransactionID: txID.ToHex(),
+	}, nil
 }
 
 // Decrypt will decrypt the given bytes with the private key
-func (k *KeyEcdsa) Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
-	tx, err := TxIDFromString(txID)
+func (k *KeyEcdsa) Decrypt(key PrivKey, settings *EncryptionSettings, cipherText []byte) ([]byte, error) {
+	if settings.Type != EcdsaAES {
+		return nil, errors.New("cannot decrypt this encryption type")
+	}
+
+	tx, err := TxIDFromString(settings.TransactionID)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +166,7 @@ func (k *KeyEcdsa) Decrypt(key PrivKey, txID string, message []byte) ([]byte, er
 		return nil, err
 	}
 
-	return MessageDecrypt(secret, message)
+	return MessageDecrypt(secret, cipherText)
 }
 
 // ParsePublicKeyData will parse a interface and returns the key representation
@@ -181,7 +191,25 @@ func (k *KeyEcdsa) KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
 		pubK.K.(*ecdsa.PublicKey).Y,
 		privK.K.(*ecdsa.PrivateKey).D.Bytes(),
 	)
-	return ke.Bytes(), nil
+
+	// Get the length of the key
+	keyLen := k.Curve.Params().BitSize / 8
+
+	b := ke.Bytes()
+	if len(b) == keyLen {
+		// Length is 48 bytes, so we can return as-is
+		return b, nil
+	}
+
+	// Sanity check
+	if keyLen > len(b) {
+		panic("key length is larger. This would mean we might have ended up with a truncated key.")
+	}
+
+	// Make sure we zero-extend the result (big.Int) to 32 bytes (big endian)
+	var ret = make([]byte, keyLen)
+	copy(ret[keyLen-len(b):], b)
+	return ret[:], nil
 }
 
 // DualKeyExchange allows for a ECIES key exchange

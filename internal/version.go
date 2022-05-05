@@ -28,8 +28,6 @@ import (
 	"github.com/coreos/go-semver/semver"
 )
 
-const ()
-
 var (
 	// BuildDate as filled in during compilation
 	BuildDate string

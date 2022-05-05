@@ -50,13 +50,17 @@ type ClientConfig struct {
 		DebugHTTP     bool `yaml:"debug_http"`
 	} `yaml:"server"`
 
-	Resolver struct {
+	DefaultResolver string `yaml:"default_resolver"`
+	Resolvers       struct {
 		Remote struct {
-			Enabled       bool   `yaml:"enabled"`
 			URL           string `yaml:"url"`
 			AllowInsecure bool   `yaml:"allow_insecure"`
 		} `yaml:"remote"`
-	} `yaml:"resolver"`
+		Sqlite struct {
+			Path string `yaml:"path"`
+		} `yaml:"sqlite"`
+		Chain []string `yaml:"chain"`
+	} `yaml:"resolvers"`
 }
 
 // LoadConfig loads the client configuration from the given path
@@ -78,6 +82,9 @@ func (c *ClientConfig) LoadConfig(r io.Reader) error {
 
 	// Expand homedirs in configuration
 	c.Vault.Path, _ = homedir.Expand(c.Vault.Path)
+	c.Resolvers.Sqlite.Path, _ = homedir.Expand(c.Resolvers.Sqlite.Path)
+
+	loadedConfig = "client"
 
 	return nil
 }

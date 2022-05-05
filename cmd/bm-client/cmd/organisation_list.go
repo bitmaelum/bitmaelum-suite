@@ -24,8 +24,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -108,7 +108,7 @@ func displayOrganisation(info vault.OrganisationInfo) {
 		{"Full name", info.FullName},
 		{"", ""},
 		{"Public key", strings.Join(chunks(kp.PubKey.String(), 78), "\n")},
-		{"Account mnemonic", internal.GetMnemonic(&kp.KeyPair)},
+		{"Account mnemonic", bmcrypto.GetMnemonic(&kp.KeyPair)},
 		{"Proof of work", fmt.Sprintf("%d bits", info.Pow.Bits)},
 	})
 

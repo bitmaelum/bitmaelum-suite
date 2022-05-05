@@ -36,8 +36,6 @@ var (
 func init() {
 	organisationCmd.AddCommand(organisationValidateCmd)
 
-	accountCmd.AddCommand(accountKeyCmd)
-
 	ovOrganisation = organisationValidateCmd.PersistentFlags().StringP("organisation", "o", "", "Organisation")
 
 	_ = organisationValidateCmd.MarkPersistentFlagRequired("organisation")

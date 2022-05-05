@@ -26,6 +26,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestSetMockTime(t *testing.T) {
+	mockTimeNow := func() time.Time {
+		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)
+	}
+
+	SetMockTime(mockTimeNow)
+
+	assert.Equal(t, "2010-01-01 12:34:56 +0000 UTC", TimeNow().String())
+}
+
 func TestTimeNow(t *testing.T) {
 	timeNow = func() time.Time {
 		return time.Date(2010, 01, 01, 12, 34, 56, 0, time.UTC)

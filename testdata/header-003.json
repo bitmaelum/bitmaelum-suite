@@ -12,7 +12,6 @@
             "ripemd160": "cc83e77af0fae70c3b655f36f110ec4d2eebaf1c",
             "sha256": "79213f8941437dc22a315636a50d6920507a58fcf97b9ff32b4c15cd26a8209a"
         },
-        "crypto": "rsa+aes256gcm",
         "txid": "",
         "encrypted_key": "Zm9vYmFy"
     },
@@ -21,7 +20,7 @@
         "public_key": "ed25519 MCowBQYDK2VwAyEA4KhfZWs/+B9Xx6eU+zN+A1USGtXsCs5zJNRq8JOM9EA="
     },
     "signatures": {
-        "client": "Se4sVKA8DkVfwcIJ3HIqVIds6+ewQC86pwUWX10K4fS8860AhlWJd75XnL4AFs9ofSIwEgVr7D+OvY2eyh8ECw==",
+        "client": "hviVRC4zb+RK7f1iHc8Cu/acH1QyI4uIrjqm4OukfGb/z3zFSvLS2G0bDmkBt1kPiSZYTgR33zZRC/kIV1YGAw==",
         "server": "yjBaPd8nWoz6wCJx8kmh7jeU0QcoT9C2oA8Qsh9cq1PRNeE0PLIpDjI4jb3ftP+3PdCRF5TWNOzk8OYbwJkpAg=="
     }
 }

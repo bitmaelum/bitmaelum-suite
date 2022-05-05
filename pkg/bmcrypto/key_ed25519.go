@@ -22,12 +22,11 @@ package bmcrypto
 import (
 	"crypto/ed25519"
 	"crypto/sha256"
-	"crypto/sha512"
 	"crypto/x509"
 	"errors"
 	"io"
-	"math/big"
 
+	"github.com/jorrizza/ed2curve25519"
 	"github.com/vtolstov/jwt-go"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
@@ -81,15 +80,23 @@ func (k *KeyEd25519) ParsePrivateKeyInterface(key interface{}) ([]byte, error) {
 
 // GenerateKeyPair will generate a new keypair for this keytype. io.Reader can be deterministic if needed
 func (k *KeyEd25519) GenerateKeyPair(r io.Reader) (*PrivKey, *PubKey, error) {
-	// Read 192 bits
-	randBuf := make([]byte, 24)
-	_, err := io.ReadFull(r, randBuf)
-	if err != nil {
+	b := make([]byte, 32)
+
+	// Reader could hold either 24 bytes (192bit seed) or new style 32 bytes (256 bit seed)
+	n, err := io.ReadFull(r, b)
+
+	// Something other than EOF happened
+	if err != nil && err != io.ErrUnexpectedEOF {
 		return nil, nil, err
 	}
 
-	// Stretch 192 bits to 256 bits
-	rd := hkdf.New(sha256.New, randBuf[:], []byte{}, []byte{})
+	// Not the correct number of bytes read
+	if n != 24 && n != 32 {
+		return nil, nil, err
+	}
+
+	// Stretch to 256 bits if smaller.. or just hkdf anyways
+	rd := hkdf.New(sha256.New, b[:n], []byte{}, []byte{})
 	expBuf := make([]byte, 32)
 	_, err = io.ReadFull(rd, expBuf)
 	if err != nil {
@@ -131,21 +138,31 @@ func (k *KeyEd25519) Sign(reader io.Reader, key PrivKey, message []byte) ([]byte
 	return ed25519.Sign(key.K.(ed25519.PrivateKey), message), nil
 }
 
-// Encrypt will encrypt the given bytes with the public key. Will return the ciphertext, a transaction ID (if needed), the crypto used and an error
-func (k *KeyEd25519) Encrypt(key PubKey, message []byte) ([]byte, string, string, error) {
+// Encrypt will encrypt the given message with the public key.
+func (k *KeyEd25519) Encrypt(key PubKey, msg []byte) ([]byte, *EncryptionSettings, error) {
 	secret, txID, err := DualKeyExchange(key)
 	if err != nil {
-		return nil, "", "", err
+		return nil, nil, err
 	}
 
-	encryptedMessage, err := MessageEncrypt(secret, message)
+	encryptedMessage, err := MessageEncrypt(secret, msg)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return encryptedMessage, txID.ToHex(), "ed25519+aes", err
+	return encryptedMessage, &EncryptionSettings{
+		Type:          Ed25519AES,
+		TransactionID: txID.ToHex(),
+	}, nil
 }
 
 // Decrypt will decrypt the given bytes with the private key
-func (k *KeyEd25519) Decrypt(key PrivKey, txID string, message []byte) ([]byte, error) {
-	tx, err := TxIDFromString(txID)
+func (k *KeyEd25519) Decrypt(key PrivKey, settings *EncryptionSettings, cipherText []byte) ([]byte, error) {
+	if settings.Type != Ed25519AES {
+		return nil, errors.New("cannot decrypt this encryption type")
+	}
+
+	tx, err := TxIDFromString(settings.TransactionID)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +172,7 @@ func (k *KeyEd25519) Decrypt(key PrivKey, txID string, message []byte) ([]byte, 
 		return nil, err
 	}
 
-	return MessageDecrypt(secret, message)
+	return MessageDecrypt(secret, cipherText)
 }
 
 // ParsePublicKeyData will parse a interface and returns the key representation
@@ -175,60 +192,10 @@ func (k *KeyEd25519) ParsePublicKeyInterface(key interface{}) ([]byte, error) {
 
 // KeyExchange allows for a key exchange (if possible in the keytype)
 func (k *KeyEd25519) KeyExchange(privK PrivKey, pubK PubKey) ([]byte, error) {
-	x25519priv := EdPrivToX25519(privK.K.(ed25519.PrivateKey))
-	x25519pub := EdPubToX25519(pubK.K.(ed25519.PublicKey))
+	x25519priv := ed2curve25519.Ed25519PrivateKeyToCurve25519(privK.K.(ed25519.PrivateKey))
+	x25519pub := ed2curve25519.Ed25519PublicKeyToCurve25519(pubK.K.(ed25519.PublicKey))
 
 	return curve25519.X25519(x25519priv, x25519pub)
-}
-
-// EdPrivToX25519 converts a ed25519 PrivateKey to a X25519 Private Key
-func EdPrivToX25519(privateKey ed25519.PrivateKey) []byte {
-	h := sha512.New()
-	_, _ = h.Write(privateKey[:32])
-	digest := h.Sum(nil)
-	h.Reset()
-
-	/* From https://cr.yp.to/ecdh.html (I don't think this is really needed in this case)
-	 * more info here: https://www.reddit.com/r/crypto/comments/66b3dp/how_do_is_a_curve25519_key_pair_generated/
-	 */
-	digest[0] &= 248
-	digest[31] &= 127
-	digest[31] |= 64
-
-	return digest[:32]
-}
-
-var curve25519P, _ = new(big.Int).SetString("57896044618658097711785492504343953926634992332820282019728792003956564819949", 10)
-
-// EdPubToX25519 converts a ed25519 Public Key to a X25519 Public Key
-func EdPubToX25519(pk ed25519.PublicKey) []byte {
-	// ed25519.PublicKey is a little endian representation of the y-coordinate,
-	// with the most significant bit set based on the sign of the x-coordinate.
-	bigEndianY := make([]byte, ed25519.PublicKeySize)
-	for i, b := range pk {
-		bigEndianY[ed25519.PublicKeySize-i-1] = b
-	}
-	bigEndianY[0] &= 127
-
-	/* The Montgomery u-coordinate is derived through the bilinear map
-	 *
-	 *     u = (1 + y) / (1 - y)
-	 *
-	 * See https://blog.filippo.io/using-ed25519-keys-for-encryption.
-	 */
-	y := new(big.Int).SetBytes(bigEndianY)
-	denom := big.NewInt(1)
-	denom.ModInverse(denom.Sub(denom, y), curve25519P)
-	u := y.Mul(y.Add(y, big.NewInt(1)), denom)
-	u.Mod(u, curve25519P)
-
-	out := make([]byte, curve25519.PointSize)
-	uBytes := u.Bytes()
-	for i, b := range uBytes {
-		out[len(uBytes)-i-1] = b
-	}
-
-	return out
 }
 
 // DualKeyExchange allows for a ECIES key exchange
@@ -243,8 +210,8 @@ func (k *KeyEd25519) DualKeyExchange(pub PubKey) ([]byte, *TransactionID, error)
 
 	// Step 1: D = rA
 	D, err := curve25519.X25519(
-		EdPrivToX25519(r.Seed()),
-		EdPubToX25519(pub.K.(ed25519.PublicKey)),
+		ed2curve25519.Ed25519PrivateKeyToCurve25519(r.Seed()),
+		ed2curve25519.Ed25519PublicKeyToCurve25519(pub.K.(ed25519.PublicKey)),
 	)
 	if err != nil {
 		return nil, nil, err

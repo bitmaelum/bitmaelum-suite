@@ -24,7 +24,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/app"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -76,7 +75,7 @@ func refreshTimer() {
 
 	for {
 		<-t.C
-		app.App.App.QueueUpdateDraw(func() {})
+		// app.QueueUpdateDraw(func() {})
 	}
 }
 

@@ -25,9 +25,9 @@ import (
 	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -110,7 +110,7 @@ func displayAccount(v *vault.Vault, info vault.AccountInfo) {
 		{"Routing Host", getHostByRoutingID(info.RoutingID, "unknown host")},
 		{"", ""},
 		{"Public key", strings.Join(chunks(kp.PubKey.String(), 118), "\n")},
-		{"Account mnemonic", internal.GetMnemonic(&kp.KeyPair)},
+		{"Account mnemonic", bmcrypto.GetMnemonic(&kp.KeyPair)},
 		{"Proof of work", fmt.Sprintf("%d bits", info.Pow.Bits)},
 	})
 

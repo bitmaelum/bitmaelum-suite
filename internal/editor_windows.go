@@ -17,30 +17,12 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package account
+// +build windows
 
-import (
-	"encoding/json"
+package internal
 
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
-)
-
-func (r *fileRepo) StoreOrganisationSettings(addr hash.Hash, settings OrganisationSettings) error {
-	data, err := json.MarshalIndent(settings, "", "  ")
-	if err != nil {
-		return err
+func getEditorPaths() []string {
+	return []string{
+		"c:\\windows\\system32\\notepad.exe",
 	}
-
-	// And store
-	return r.store(addr, organisationFile, data)
-}
-
-func (r *fileRepo) FetchOrganisationSettings(addr hash.Hash) (*OrganisationSettings, error) {
-	settings := &OrganisationSettings{}
-	err := r.fetchJSON(addr, keysFile, settings)
-	if err != nil {
-		return nil, err
-	}
-
-	return settings, nil
 }

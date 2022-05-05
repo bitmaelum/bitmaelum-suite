@@ -53,6 +53,9 @@ func TestGetPath(t *testing.T) {
 
 	_, err = GetPath(5232, "2f9011bf-912d-4c64-91f1-bd6a99c03375", "foo.txt")
 	assert.Error(t, err)
+
+	_, err = GetPath(SectionIncoming, "../../../../../../etc/passwd", "foo.txt")
+	assert.Error(t, err)
 }
 
 func TestIncomingPathExists(t *testing.T) {

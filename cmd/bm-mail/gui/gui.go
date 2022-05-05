@@ -20,28 +20,47 @@
 package gui
 
 import (
-	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/app"
+	"fmt"
+
+	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/app"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-mail/gui/layout"
+	"github.com/bitmaelum/bitmaelum-suite/internal/api"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/rivo/tview"
 )
 
 // Run is the main entrypoint of the gui
-func Run(v *vault.Vault) {
-	app.App = app.Type{
-		App:   tview.NewApplication(),
-		Pages: tview.NewPages(),
-		Vault: v,
+func Run() {
+	app.MailApp = &app.BmMailAppType{
+		App:          tview.NewApplication(),
+		Pages:        tview.NewPages(),
+		MailBoxLists: make(map[string]*api.MailboxList),
 	}
 
-	app.App.Pages.AddPage("main_menu", layout.NewMainMenuScreen(app.App), true, false)
-	app.App.Pages.AddPage("accounts", layout.NewAccountScreen(app.App), true, false)
-	app.App.Pages.AddPage("message-overview", layout.NewMessageOverviewScreen(app.App), true, false)
-	app.App.Pages.AddPage("help", layout.NewHelpScreen(app.App), true, false)
-	app.App.Pages.SwitchToPage("main_menu")
+	app.MailApp.Pages.AddPage("unlock_vault", layout.NewUnlockVault(), true, false)
+	app.MailApp.Pages.AddPage("main_menu", layout.NewMainMenuScreen(), true, false)
+	app.MailApp.Pages.AddPage("accounts", layout.NewAccountScreen(), true, false)
+	app.MailApp.Pages.AddPage("message-overview", layout.NewMessageOverviewScreen(), true, false)
+	app.MailApp.Pages.AddPage("help", layout.NewHelpScreen(), true, false)
+	app.MailApp.App.SetRoot(app.MailApp.Pages, true)
 
-	// Setup AFTER we set app.App, otherwise other systems cannot find App.
-	if err := app.App.App.SetRoot(app.App.Pages, true).EnableMouse(true).Run(); err != nil {
+	// Check if the vault can be opened. If not, display our unlock modal
+	v, err := vault.Open(vault.VaultPath, vault.VaultPassword)
+	if err != nil {
+		// Switch unlock page
+		app.MailApp.Pages.SwitchToPage("unlock_vault")
+		app.MailApp.App.SetFocus(layout.ModalDialogInput)
+	} else {
+		app.MailApp.Vault = v
+		app.MailApp.StaleVault = true
+		layout.Refresh()
+		app.MailApp.Pages.SwitchToPage("main_menu")
+		app.MailApp.App.SetFocus(layout.MainMenuGrid)
+	}
+
+	if err := app.MailApp.App.EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
+
+	fmt.Print("\nThank you for using BitMaelum, the privacy-first email alternative network.\n\n")
 }

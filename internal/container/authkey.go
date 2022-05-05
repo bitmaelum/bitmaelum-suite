@@ -26,7 +26,6 @@ import (
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/key"
 	"github.com/go-redis/redis/v7"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -36,10 +35,7 @@ var (
 
 func setupAuthKeyRepo() (interface{}, error) {
 	authKeyOnce.Do(func() {
-		logrus.Trace("Setting up authKeyOnce")
-
 		// If redis.host is set on the config file it will use redis instead of bolt
-		logrus.Trace("config.Server.Redis.Host:", config.Server)
 		if config.Server.Redis.Host != "" {
 			opts := redis.Options{
 				Addr: config.Server.Redis.Host,
@@ -59,7 +55,6 @@ func setupAuthKeyRepo() (interface{}, error) {
 		authKeyRepository = key.NewAuthBoltRepository(config.Server.Bolt.DatabasePath)
 	})
 
-	logrus.Trace("returning: ", authKeyRepository)
 	return authKeyRepository, nil
 }
 

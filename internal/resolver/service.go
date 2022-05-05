@@ -22,11 +22,11 @@ package resolver
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"strconv"
 
 	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
 	lru "github.com/hashicorp/golang-lru"
@@ -37,6 +37,7 @@ import (
 type Service struct {
 	repo         Repository
 	routingCache *lru.Cache
+	addressCache *lru.Cache
 }
 
 // AddressInfo is a structure returned by the external resolver system
@@ -44,6 +45,7 @@ type AddressInfo struct {
 	Hash        string          `json:"hash"`       // Hash of the email address
 	PublicKey   bmcrypto.PubKey `json:"public_key"` // PublicKey of the user
 	RoutingID   string          `json:"routing"`    // Routing ID
+	RedirHash   string          `json:"redir_hash"` // Routing ID
 	Pow         string          `json:"pow"`        // Proof of work
 	RoutingInfo RoutingInfo     `json:"_"`          // Don't store
 }
@@ -70,19 +72,43 @@ func KeyRetrievalService(repo Repository) *Service {
 		c = nil
 	}
 
+	a, err := lru.New(64)
+	if err != nil {
+		a = nil
+	}
+
 	return &Service{
 		repo:         repo,
 		routingCache: c,
+		addressCache: a,
 	}
 }
 
 // ResolveAddress resolves an address.
 func (s *Service) ResolveAddress(addr hash.Hash) (*AddressInfo, error) {
-	logrus.Debugf("Resolving address %s", addr.String())
-	info, err := s.repo.ResolveAddress(addr)
-	if err != nil {
-		logrus.Debugf("Error while resolving address %s: %s", addr.String(), err)
-		return nil, err
+	var info *AddressInfo
+	// Fetch from cache if available
+	if s.addressCache != nil {
+		res, ok := s.addressCache.Get(addr.String())
+		if ok {
+			info = res.(*AddressInfo)
+			logrus.Debugf("Resolving cached %s", addr.String())
+		}
+	}
+
+	if info == nil {
+		logrus.Debugf("Resolving address %s", addr.String())
+		var err error
+		info, err = s.repo.ResolveAddress(addr)
+		if err != nil {
+			logrus.Debugf("Error while resolving address %s: %s", addr.String(), err)
+			return nil, err
+		}
+
+		// Store in cache if available
+		if s.addressCache != nil {
+			_ = s.addressCache.Add(addr.String(), info)
+		}
 	}
 
 	// Resolve routing info, we often need it
@@ -127,7 +153,7 @@ func (s *Service) ResolveRouting(routingID string) (*RoutingInfo, error) {
 	return info, nil
 }
 
-// ResolveOrganisation resolves a route.
+// ResolveOrganisation resolves an organisation object.
 func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, error) {
 	logrus.Debugf("Resolving %s", orgHash)
 	info, err := s.repo.ResolveOrganisation(orgHash)
@@ -139,25 +165,8 @@ func (s *Service) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, err
 }
 
 // UploadAddressInfo uploads resolve information to one (or more) resolvers
-func (s *Service) UploadAddressInfo(info vault.AccountInfo, orgToken string) error {
-	// Read current key, so we can find the correct privkey for authentication
-	privKey := info.GetActiveKey().PrivKey
-	currentInfo, err := s.repo.ResolveAddress(info.Address.Hash())
-	if err == nil {
-		kp, err := info.FindKey(currentInfo.PublicKey.Fingerprint())
-		if err != nil {
-			return err
-		}
-		fmt.Println("found authorizing key: ", kp.FingerPrint)
-		privKey = kp.PrivKey
-	}
-
-	return s.repo.UploadAddress(*info.Address, &AddressInfo{
-		Hash:      info.Address.Hash().String(),
-		PublicKey: info.GetActiveKey().PubKey,
-		RoutingID: info.RoutingID,
-		Pow:       info.Pow.String(),
-	}, privKey, *info.Pow, orgToken)
+func (s *Service) UploadAddressInfo(addr address.Address, addrObj AddressInfo, privkey *bmcrypto.PrivKey) error {
+	return s.repo.UploadAddress(addr, &addrObj, *privkey)
 }
 
 // UploadRoutingInfo uploads resolve information to one (or more) resolvers
@@ -194,6 +203,11 @@ func (s *Service) GetConfig() ProofOfWorkConfig {
 	}
 }
 
+// CheckReserved will check if the hash is reserved and returns the domains that can validate the reservation
+func (s *Service) CheckReserved(addrOrOrgHash hash.Hash) ([]string, error) {
+	return s.repo.CheckReserved(addrOrOrgHash)
+}
+
 // generateAddressSignature generates a signature with the accounts private key that can be used for authentication on the resolver
 func generateAddressSignature(info *AddressInfo, privKey bmcrypto.PrivKey, serial uint64) string {
 	// Generate token
@@ -228,4 +242,30 @@ func generateOrganisationSignature(info *OrganisationInfo, privKey bmcrypto.Priv
 	}
 
 	return base64.StdEncoding.EncodeToString(signature)
+}
+
+// ActivateAccount will activate an account (public key) on the keyserver. This works only if the key has been previously deactivated and not yet purged
+func (s *Service) ActivateAccount(info vault.AccountInfo) error {
+	addrInfo := AddressInfo{
+		Hash:        info.Address.Hash().String(),
+		PublicKey:   info.GetActiveKey().PubKey,
+		RoutingID:   info.RoutingID,
+		Pow:         info.Pow.String(),
+		RoutingInfo: RoutingInfo{},
+	}
+
+	return s.repo.UndeleteAddress(&addrInfo, info.GetActiveKey().PrivKey)
+}
+
+// DeactivateAccount will deactivate an account (public key) on the keyserver. It can be activated again if the key is not yet purged
+func (s *Service) DeactivateAccount(info vault.AccountInfo) error {
+	addrInfo := AddressInfo{
+		Hash:        info.Address.Hash().String(),
+		PublicKey:   info.GetActiveKey().PubKey,
+		RoutingID:   info.RoutingID,
+		Pow:         info.Pow.String(),
+		RoutingInfo: RoutingInfo{},
+	}
+
+	return s.repo.DeleteAddress(&addrInfo, info.GetActiveKey().PrivKey)
 }

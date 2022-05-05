@@ -2,13 +2,13 @@
 .SILENT:
 
 # Make sure that globstar is active, this allows bash to use ./**/*.go
-SHELL=/bin/bash -O globstar -c
+SHELL=/usr/bin/env bash -O globstar
 
 # Default repository
-REPO="github.com/bitmaelum/bitmaelum-suite"
+REPO=github.com/bitmaelum/bitmaelum-suite
 
 # Our defined apps and tools
-APPS := bm-server bm-client bm-config bm-mail bm-send bm-json
+APPS := bm-server bm-client bm-config bm-mail bm-send bm-json bm-bridge
 TOOLS := hash-address jwt proof-of-work update-resolver vault-edit resolve-auth update-pow jwt-validate toaster
 
 # These files are checked for license headers
@@ -29,20 +29,11 @@ COMMIT=$(shell git rev-parse HEAD)
 VERSIONTAG="v0.0.0"
 LD_FLAGS = -ldflags "-X '${PKG}.BuildDate=${BUILD_DATE}' -X '${PKG}.GitCommit=${COMMIT}' -X '${PKG}.VersionTag=${VERSIONTAG}'"
 
-
 # Set environment variables from GO env if not set explicitly already
-ifndef $(GOPATH)
-    GOPATH=$(shell go env GOPATH)
-    export GOPATH
-endif
-ifndef $(GOOS)
-    GOOS=$(shell go env GOOS)
-    export GOOS
-endif
-ifndef $(GOARCH)
-    GOARCH=$(shell go env GOARCH)
-    export GOARCH
-endif
+GOPATH ?= $(shell go env GOPATH)
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+
 
 # paths to binaries
 GO_STATCHECK_BIN = $(GOPATH)/bin/staticcheck
@@ -69,37 +60,47 @@ lint: ## Formats your go code to specified standards
 ## Runs all tests for the whole repository
 test: test_goimports test_license test_vet test_golint test_staticcheck test_ineffassign test_gocyclo test_unit
 
-test_license:
-	echo "Check licenses"
-	shopt -s globstar
-	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2021 -check $(LICENSE_CHECK_DIRS)
+test_goimports:	
+	source .github/workflows/github.sh  ; \
+	section "Test imports and code style" ; \
+	out=`$(GO_GOIMPORTS_BIN) -l .` ; \
+	echo "$${out}" ; \
+	test -z `echo $${out}`
 
-test_goimports:
-	echo "Check goimports"
-	$(GO_GOIMPORTS_BIN) -l .
+test_license:
+	source .github/workflows/github.sh ;\
+	section "Test for licenses" ;\
+	shopt -s globstar ;\
+	$(GO_LICENSE_BIN) -c "BitMaelum Authors" -l mit -y 2021 -check $(LICENSE_CHECK_DIRS) 
 
 test_vet:
-	echo "Check vet"
+	source .github/workflows/github.sh ;\
+	section "Test go vet" ;\
 	go vet ./...
 
 test_staticcheck:
-	echo "Check static"
+	source .github/workflows/github.sh ;\
+	section "Test static checks" ;\
 	$(GO_STATCHECK_BIN) ./...
 
 test_golint:
-	echo "Check lint"
-	$(GO_LINT_BIN) ./...
+	source .github/workflows/github.sh ;\
+	section "Checking linting" ;\
+	$(GO_LINT_BIN) -set_exit_status ./...
 
 test_ineffassign:
-	echo "Check ineffassign"
+	source .github/workflows/github.sh ;\
+	section "Test ineffassign" ;\
 	$(GO_INEFF_BIN) ./...
 
 test_gocyclo:
-	echo "Check gocyclo"
+	source .github/workflows/github.sh ;\
+	section "Testing cyclomatic complexity" ;\
 	$(GO_GOCYCLO_BIN) -over 15 .
 
 test_unit:
-	echo "Check unit tests"
+	source .github/workflows/github.sh ;\
+	section "Test unittests" ;\
 	go test ./...
 
 clean: ## Clean releases
@@ -118,7 +119,8 @@ $(TOOLS):
 # Build GOOS/GOARCH apps in separate release directory
 $(CROSS_APPS):
 	$(info -   Building app $(subst cross-,,$@) (${GOOS}-${GOARCH}))
-	CGO_ENABLED=0 go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/cmd/$(subst cross-,,$@)
+	if [[ "${GOOS}" == "windows" ]]; then SUFFIX=".exe"; else SUFFIX="" ; fi; \
+	CGO_ENABLED=0 go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@)$${SUFFIX} $(REPO)/cmd/$(subst cross-,,$@)
 
 # Build GOOS/GOARCH tools in separate release directory
 $(CROSS_TOOLS):
@@ -126,14 +128,14 @@ $(CROSS_TOOLS):
 	go build $(LD_FLAGS) -o release/${GOOS}-${GOARCH}/$(subst cross-,,$@) $(REPO)/tools/$(subst cross-,,$@)
 
 $(BUILD_ALL_PLATFORMS):
-	make -j $(CROSS_APPS)
-	#make -j $(CROSS_TOOLS)
+	make -j $(CROSS_APPS) GOOS=${GOOS} GOARCH=${GOARCH}
+	#make -j $(CROSS_TOOLS) GOOS=${GOOS} GOARCH=${GOARCH}
 
 $(PLATFORMS):
 	$(eval GOOS=$(firstword $(subst -, ,$@)))
 	$(eval GOARCH=$(lastword $(subst -, ,$@)))
 	$(info - Cross platform build $(GOOS) / $(GOARCH))
-	make -j build-all-$(GOOS)-$(GOARCH)
+	make -j build-all-$(GOOS)-$(GOARCH) GOOS=$(GOOS) GOARCH=$(GOARCH)
 
 info:
 	$(info Building BitMaelum apps and tools)

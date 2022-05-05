@@ -107,7 +107,11 @@ func (ms *MessageSort) openOrGetCatalog(msg api.MailboxMessagesMessage) *message
 		return cat
 	}
 
-	key, _ := bmcrypto.Decrypt(*ms.key, msg.Header.Catalog.TransactionID, msg.Header.Catalog.EncryptedKey)
+	settings := &bmcrypto.EncryptionSettings{
+		Type:          bmcrypto.CryptoType(msg.Header.Catalog.Crypto),
+		TransactionID: msg.Header.Catalog.TransactionID,
+	}
+	key, _ := bmcrypto.Decrypt(*ms.key, settings, msg.Header.Catalog.EncryptedKey)
 	cat = &message.Catalog{}
 	_ = bmcrypto.CatalogDecrypt(key, msg.Catalog, cat)
 

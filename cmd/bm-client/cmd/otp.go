@@ -30,8 +30,8 @@ import (
 
 var otpCmd = &cobra.Command{
 	Use:   "otp",
-	Short: "Generate a OTP to authenticate to a server",
-	Long:  `It will generate a OTP code that can be used to authenticate to a third party server`,
+	Short: "Generate a OTP to authenticate to a site",
+	Long:  `It will generate a OTP code that can be used to authenticate to a third party site`,
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
@@ -41,13 +41,12 @@ var otpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		handlers.OtpGenerate(info, otpServer)
-
+		handlers.OtpGenerate(info, otpSite)
 	},
 }
 
 var (
-	otpServer  *string
+	otpSite    *string
 	otpAccount *string
 )
 
@@ -55,7 +54,7 @@ func init() {
 	rootCmd.AddCommand(otpCmd)
 
 	otpAccount = otpCmd.Flags().String("account", "a", "Account to be used for authentication")
-	otpServer = otpCmd.Flags().String("server", "s", "Server domain name to get public key from")
+	otpSite = otpCmd.Flags().String("site", "s", "URL to authenticate for")
 
 	_ = otpCmd.MarkFlagRequired("server")
 }

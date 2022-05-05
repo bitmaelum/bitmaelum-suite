@@ -20,22 +20,21 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/handlers"
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
+	"github.com/bitmaelum/bitmaelum-suite/internal"
 	"github.com/bitmaelum/bitmaelum-suite/internal/config"
 	"github.com/bitmaelum/bitmaelum-suite/internal/message"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
 	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
 )
-
-var errNoEditorFound = errors.New("cannot find editor")
 
 var composeCmd = &cobra.Command{
 	Use:     "compose",
@@ -47,19 +46,16 @@ var composeCmd = &cobra.Command{
 
 		fromInfo, err := vault.GetAccount(v, *from)
 		if err != nil {
-			fmt.Println("cannot find account in vault")
-			os.Exit(1)
+			fatal("cannot find account in vault")
 		}
 
 		toAddr, err := address.NewAddress(*to)
 		if err != nil {
-			fmt.Println("Error: ", err)
-			os.Exit(1)
+			fatal("cannot parse receiver address: ", err)
 		}
 
 		if *msg != "" && len(*blocks) > 0 {
-			fmt.Println("Error: cannot specify both a messages (-m) and blocks (-b).")
-			os.Exit(1)
+			fatal("cannot specify both a messages (-m) and blocks (-b)")
 		}
 
 		// Set default message if specified
@@ -73,17 +69,16 @@ var composeCmd = &cobra.Command{
 
 			// Check if we have set $EDITOR so we can use this as our editor
 			if hasEditorConfigured() {
-				block, err = useRegularEditor()
+				block, err = readFromRegularEditor()
 			} else {
 				// fall back to stdEditor
-				block, err = useStdinEditor()
+				block, err = readFromStdinEditor()
 			}
 			if err != nil {
-				fmt.Println("Error: ", err)
-				os.Exit(1)
+				fatal("error reading message", err)
 			}
 			if len(block) == 0 {
-				fmt.Println("Warning: empty message body")
+				warn("empty message body")
 			} else {
 				*blocks = append(*blocks, "default,"+block)
 			}
@@ -104,14 +99,12 @@ var composeCmd = &cobra.Command{
 		resolver := container.Instance.GetResolveService()
 		routingInfo, err := resolver.ResolveRouting(fromInfo.RoutingID)
 		if err != nil {
-			fmt.Println("Error: cannot find routing ID for this account")
-			os.Exit(1)
+			fatal("cannot find routing ID for this account")
 		}
 
 		recipientInfo, err := resolver.ResolveAddress(toAddr.Hash())
 		if err != nil {
-			fmt.Println("Error: cannot resolve recipient. Are you sure you used the correct mail address?")
-			os.Exit(1)
+			fatal("cannot resolve recipient. Are you sure you used the correct mail address?")
 		}
 
 		// Setup addressing and compose the message
@@ -121,35 +114,20 @@ var composeCmd = &cobra.Command{
 
 		err = handlers.ComposeMessage(addressing, *subject, *blocks, *attachments)
 		if err != nil {
-			fmt.Println("Error: ", err)
-			os.Exit(1)
+			fatal("cannot compose message: %v", err)
 		}
 
-		fmt.Println("Message send successfully")
+		fmt.Println("message send successfully")
 	},
 }
 
-func findEditorPath() (string, error) {
-	var editorPath = config.Client.Composer.Editor
-	if editorPath != "" {
-		return editorPath, nil
-	}
-
-	editorPath = os.Getenv("EDITOR")
-	if editorPath != "" {
-		return editorPath, nil
-	}
-
-	return "", errNoEditorFound
-}
-
 func hasEditorConfigured() bool {
-	_, err := findEditorPath()
+	_, err := internal.FindEditor(config.Client.Composer.Editor)
 	return err == nil
 }
 
-func useRegularEditor() (string, error) {
-	p, err := findEditorPath()
+func readFromRegularEditor() (string, error) {
+	p, err := internal.FindEditor(config.Client.Composer.Editor)
 	if err != nil {
 		return "", err
 	}
@@ -167,7 +145,6 @@ func useRegularEditor() (string, error) {
 	c.Stdout = os.Stdout
 	err = c.Run()
 	if err != nil {
-		fmt.Printf("%#v", err)
 		return "", err
 	}
 
@@ -175,16 +152,15 @@ func useRegularEditor() (string, error) {
 	return string(data), err
 }
 
-func useStdinEditor() (string, error) {
-	fmt.Print("\U00002709 Enter your message and press CTRL-D when done.\n")
-
-	data, err := ioutil.ReadAll(os.Stdin)
-	fmt.Printf("%#v", err)
-	if err != nil {
-		return "", err
+func readFromStdinEditor() (string, error) {
+	if runtime.GOOS == "windows" {
+		fmt.Print("\U00002709 Enter your message and press 'CTRL-Z <enter>' when done.\n")
+	} else {
+		fmt.Print("\U00002709 Enter your message and press 'CTRL-D' when done.\n")
 	}
 
-	return string(data), nil
+	data, err := ioutil.ReadAll(os.Stdin)
+	return string(data), err
 }
 
 var (

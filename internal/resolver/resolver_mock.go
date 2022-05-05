@@ -27,9 +27,10 @@ import (
 )
 
 type mockRepo struct {
-	address      map[string]AddressInfo
-	routing      map[string]RoutingInfo
-	organisation map[string]OrganisationInfo
+	address        map[string]AddressInfo
+	deletedAddress map[string]AddressInfo
+	routing        map[string]RoutingInfo
+	organisation   map[string]OrganisationInfo
 }
 
 // NewMockRepository creates a simple mock repository for testing purposes
@@ -37,8 +38,10 @@ func NewMockRepository() (Repository, error) {
 	r := &mockRepo{}
 
 	r.address = make(map[string]AddressInfo)
+	r.deletedAddress = make(map[string]AddressInfo)
 	r.routing = make(map[string]RoutingInfo)
 	r.organisation = make(map[string]OrganisationInfo)
+
 	return r, nil
 
 }
@@ -67,7 +70,7 @@ func (r *mockRepo) ResolveOrganisation(orgHash hash.Hash) (*OrganisationInfo, er
 	return nil, ErrKeyNotFound
 }
 
-func (r *mockRepo) UploadAddress(addr address.Address, info *AddressInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork, orgToken string) error {
+func (r *mockRepo) UploadAddress(_ address.Address, info *AddressInfo, _ bmcrypto.PrivKey) error {
 	r.address[info.Hash] = *info
 	return nil
 }
@@ -79,11 +82,6 @@ func (r *mockRepo) UploadRouting(info *RoutingInfo, _ bmcrypto.PrivKey) error {
 
 func (r *mockRepo) UploadOrganisation(info *OrganisationInfo, _ bmcrypto.PrivKey, _ proofofwork.ProofOfWork) error {
 	r.organisation[info.Hash] = *info
-	return nil
-}
-
-func (r *mockRepo) DeleteAddress(info *AddressInfo, _ bmcrypto.PrivKey) error {
-	delete(r.address, info.Hash)
 	return nil
 }
 
@@ -107,4 +105,22 @@ func (r *mockRepo) GetConfig() (*ProofOfWorkConfig, error) {
 			Organisation: 22,
 		},
 	}, nil
+}
+
+func (r *mockRepo) CheckReserved(addrorOrgHash hash.Hash) ([]string, error) {
+	return []string{"foo.bar"}, nil
+}
+
+func (r *mockRepo) DeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
+	r.deletedAddress[info.Hash] = r.address[info.Hash]
+	delete(r.address, info.Hash)
+
+	return nil
+}
+
+func (r *mockRepo) UndeleteAddress(info *AddressInfo, privKey bmcrypto.PrivKey) error {
+	r.address[info.Hash] = r.deletedAddress[info.Hash]
+	delete(r.deletedAddress, info.Hash)
+
+	return nil
 }

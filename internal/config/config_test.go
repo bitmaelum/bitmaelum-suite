@@ -32,11 +32,14 @@ import (
 )
 
 var (
-	fatal = false
-	hook  *test.Hook
+	hook *test.Hook
 )
 
 func TestClientConfig(t *testing.T) {
+	testingClientConfigPath := "/etc/bitmaelum/bitmaelum-client-config.yml"
+	testingNotExistsFilePath := "/etc/bitmaelum/not-exist.yml"
+	testingResolverRemoteURL := "https://resolver.bitmaelum.com"
+
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "")
 
 	fs = afero.NewMemMapFs()
@@ -44,60 +47,63 @@ func TestClientConfig(t *testing.T) {
 	err := LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
-	f, err := fs.Create("/etc/bitmaelum/bitmaelum-client-config.yml")
+	f, err := fs.Create(testingClientConfigPath)
 	assert.NoError(t, err)
 	err = GenerateClientConfig(f)
 	assert.NoError(t, err)
 	_ = f.Close()
 
-	Client.Resolver.Remote.URL = ""
-	err = LoadClientConfigOrPass("/etc/bitmaelum/bitmaelum-client-config.yml")
+	Client.Resolvers.Remote.URL = ""
+	err = LoadClientConfigOrPass(testingClientConfigPath)
 	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolvers.Remote.URL)
 
-	Client.Resolver.Remote.URL = ""
-	err = LoadClientConfigOrPass("/etc/bitmaelum/not-exist.yml")
+	Client.Resolvers.Remote.URL = ""
+	err = LoadClientConfigOrPass(testingNotExistsFilePath)
 	assert.Error(t, err)
-	assert.Equal(t, "", Client.Resolver.Remote.URL)
+	assert.Equal(t, "", Client.Resolvers.Remote.URL)
 
-	Client.Resolver.Remote.URL = ""
-	err = LoadClientConfigOrPass("/etc/bitmaelum/bitmaelum-client-config.yml")
+	Client.Resolvers.Remote.URL = ""
+	err = LoadClientConfigOrPass(testingClientConfigPath)
 	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolvers.Remote.URL)
 
 	// Read from searchpath
 	if runtime.GOOS != "windows" {
 		// This test fails on windows. It expects the file to be on the searchpath, but it isn't because
 		// the searchpath for windows is different. However, we expect a regular path like /etc/bitmaelum/*.yml
 		// for this test to succeed.
-		Client.Resolver.Remote.URL = ""
+		Client.Resolvers.Remote.URL = ""
 		err = LoadClientConfigOrPass("")
 		assert.NoError(t, err)
-		assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+		assert.Equal(t, testingResolverRemoteURL, Client.Resolvers.Remote.URL)
 	}
 
 	// Read from non-existing env
-	Client.Resolver.Remote.URL = ""
+	Client.Resolvers.Remote.URL = ""
 	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/does/not/exist.yml")
 	err = LoadClientConfigOrPass("")
 	assert.Error(t, err)
 
 	// Read from existing env
-	Client.Resolver.Remote.URL = ""
-	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", "/etc/bitmaelum/bitmaelum-client-config.yml")
+	Client.Resolvers.Remote.URL = ""
+	_ = os.Setenv("BITMAELUM_CLIENT_CONFIG", testingClientConfigPath)
 	err = LoadClientConfigOrPass("")
 	assert.NoError(t, err)
-	assert.Equal(t, "https://resolver.bitmaelum.com", Client.Resolver.Remote.URL)
+	assert.Equal(t, testingResolverRemoteURL, Client.Resolvers.Remote.URL)
 }
 
 func TestServerConfig(t *testing.T) {
+	testingNotExistsFilePath := "/etc/bitmaelum/not-exist.yml"
+	testingServerConfigPath := "/etc/bitmaelum/bitmaelum-server-config.yml"
+
 	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "")
 
 	err := LoadServerConfigOrPass("")
 	assert.Error(t, err)
 
 	fs = afero.NewMemMapFs()
-	f, err := fs.Create("/etc/bitmaelum/bitmaelum-server-config.yml")
+	f, err := fs.Create(testingServerConfigPath)
 	assert.NoError(t, err)
 	err = GenerateServerConfig(f)
 	assert.NoError(t, err)
@@ -105,19 +111,19 @@ func TestServerConfig(t *testing.T) {
 
 	// Load direct
 	Server.Work.Pow.Bits = 0
-	err = LoadServerConfigOrPass("/etc/bitmaelum/bitmaelum-server-config.yml")
+	err = LoadServerConfigOrPass(testingServerConfigPath)
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
 	// Unknown file
 	Server.Work.Pow.Bits = 0
-	err = LoadServerConfigOrPass("/etc/bitmaelum/not-exist.yml")
+	err = LoadServerConfigOrPass(testingNotExistsFilePath)
 	assert.Error(t, err)
 	assert.Equal(t, 0, Server.Work.Pow.Bits)
 
 	// Load direct
 	Server.Work.Pow.Bits = 0
-	err = LoadServerConfigOrPass("/etc/bitmaelum/bitmaelum-server-config.yml")
+	err = LoadServerConfigOrPass(testingServerConfigPath)
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
 
@@ -141,7 +147,7 @@ func TestServerConfig(t *testing.T) {
 
 	// Read from existing env
 	Server.Work.Pow.Bits = 0
-	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", "/etc/bitmaelum/bitmaelum-server-config.yml")
+	_ = os.Setenv("BITMAELUM_SERVER_CONFIG", testingServerConfigPath)
 	err = LoadServerConfigOrPass("")
 	assert.NoError(t, err)
 	assert.Equal(t, 25, Server.Work.Pow.Bits)
@@ -154,12 +160,21 @@ func TestLoadClientConfig(t *testing.T) {
 }
 
 func TestGenerateRoutingFromMnemonic(t *testing.T) {
+	// 192 bits key
 	r, err := GenerateRoutingFromMnemonic("ed25519 cluster puppy wash ceiling skate search great angry drift rose undo fragile boring fence stumble shuffle cable praise")
 	assert.NoError(t, err)
 
 	assert.Equal(t, "f5f1dc4eff7237ac0e061a9e8982b7b913fc479138189cc8d6ba5131dee1bde9", r.RoutingID)
 	assert.Equal(t, "ed25519 MC4CAQAwBQYDK2VwBCIEIDLOvf5iUAPWeNIYlbyDffgv+VA2xnS1s1mUYIOmW8XK", r.KeyPair.PrivKey.String())
 	assert.Equal(t, "ed25519 MCowBQYDK2VwAyEAndS2/G3uasbaYO0+89rNzvNJ3gfOi/An1t5xvETeNoc=", r.KeyPair.PubKey.String())
+
+	// 256 bits mnemonic
+	r, err = GenerateRoutingFromMnemonic("ed25519 stadium divert follow urban butter blanket garlic catalog pride angle unlock zoo recipe property tray analyst define blind purpose direct phrase mesh sugar media")
+	assert.NoError(t, err)
+
+	assert.Equal(t, "1dc47da2e7435857498138e8a94300f240806df9f9a9c3c1d6c06c9c5c9ef6d9", r.RoutingID)
+	assert.Equal(t, "ed25519 MC4CAQAwBQYDK2VwBCIEID6iGsb47ZSj9lPUV/9QPDQX7vfXXgiD8veJt5l3w3s1", r.KeyPair.PrivKey.String())
+	assert.Equal(t, "ed25519 MCowBQYDK2VwAyEAnENAkd7gFx3NrkxYRf5aBVtDM4EayslahDsp4J/2yII=", r.KeyPair.PubKey.String())
 }
 
 func init() {
@@ -167,5 +182,7 @@ func init() {
 	_, hook = test.NewNullLogger()
 	logrus.AddHook(hook)
 	logrus.SetOutput(ioutil.Discard)
-	logrus.StandardLogger().ExitFunc = func(int) { fatal = true }
+	logrus.StandardLogger().ExitFunc = func(int) {
+		// dummy function to prevent os.Exit being called by logrus
+	}
 }

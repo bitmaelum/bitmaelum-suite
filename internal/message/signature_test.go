@@ -33,8 +33,8 @@ import (
 )
 
 const (
-	expectedServerSignature = "h3+FwOJV+FuO2fq42X4XiRkn8Tri2n2orN2ELRKc0E7484HzmpIhIDptGd2m84zsEyKWfi5yoL5k5Ld7p44Odvuh2qtE9S089HONHtH5rcy5kkPoUO0zCCpSrrNPBxuIzfpge64aCihSMHuxJkUoF40iHX0ZG7VNqm1K1RRsgd9e5v1chsr7MepMLCw7Xh4Vc3WTdIV98dBpfUh3XsGNxnIB6xXMPh/mexi35v8MUjgSICEn1Oa9h15WmLdbMictEkWa+yjySM9Udv5rSLSU3lRUzmj6RIqlsKYRegkOAQsXep2d58KFgD86at0ylBBdyeghnQO5aaRuoHpHWbEfjQ=="
-	expectedClientSignature = "qA7PuGm+wTv4bsdWdjaadLeE4urqgV09c1vGnS1ashP54pCSpT/melrGkf7hP36CupnVXMlGvHnC4jEQZM5BJvuThimB0MRYWQta2/2s8xlXfe/crYnyoIEQ58vV9iD/LXQhFxMEQz9K8KO1HuLie3IJYs48yhwrlPn0uKih2BD5mOz6a+bZSex77Karx5N7lcC5Uz4Xr2CV6pTaO2achN2NnTbCuO1HYzx5n5DNe6HfFRKlTIpIoHbqnJOi8f6/wXlCGkpT1+GYvlED+6fowJT7fmXfxePYxB36vMJjhS1P5d1c1bcdYR0ve2kiSNehpF9ScY+A49Ovn3fqRuXL1g=="
+	expectedServerSignature = "cR2RjqQSxCw08G0nsAoa/8DQdjmZzTUtP0Qh41zs//DqHdeW4KoONq9gsHZE6cJVGaOj54EM43JondFX1HOfhK1fpeaS/kZE8dHF3K05n077T59+0gi4/Uz+hlMj2AmaOQ/uwjwSl29AHekMUxVHjzsMQhT1+SC27Q4wZT+GiYFGliIVEkVEsPYQmhGVBarHdwM0U5JuzDROdAJg8nnisw+oqCyTUjdv7TC2P7yib5n18xxQlqEIV3l9J2FBYXneMfFrml7QsvRigpz6GFvgjs4xOH7c7VHKkAHNhoOT9Oxf87DcwjcIdboQr7oe0YHaRMeCMTzfvf2xXNtZ6H93Kw=="
+	expectedClientSignature = "YbV7YXt9yRxPmsyEjqTciQXO6X+Kwib+WeysG/e5AV+zD68bSrA1z25SqXcDz7/vsXANWFyhEUyqCiiTgpPX6IeJWfaagyjoLs8qPIMb9MtPDUtWNc115g/nNHzSeS7vxNAXW77bMbltMTCphj0uJNXxx7mrh1iZh3Bx6VQ0Gdk1Kl4o6iC0MOYT8hwEyDQBYsexrIxciqEq1bFeEzsJOszD6H9ff62HarMTiY3dBci3ofDuuGdyP9g+sk4RqtpDv2+htnNPi4Rat7X4pBWDzEltjrfEYjkgi1/+tRERYfCr0JFzfDyf4XKXJOJBQSuxiy7plsRcHHTg1BGGzCD2sg=="
 )
 
 func TestSignServerHeader(t *testing.T) {
@@ -159,22 +159,23 @@ func TestVerifyClientHeader(t *testing.T) {
 }
 
 func TestVerifyClientHeaderWithServerSignature(t *testing.T) {
+	testingClientSignature := "Dpgm8TJzjmGmkWLDDjkj2Ibh0VdWt3Rx3ap2Xq0P2jz9m17PmkJyAwb1AuzNxjCDHCMguoCL0uhYajlb3NM+Bg=="
+
 	_ = setupClient()
 
 	header := &Header{}
 	_ = testing2.ReadJSON("../../testdata/header-001.json", &header)
 
 	header.From.SignedBy = SignedByTypeServer
-
 	// Test with correct routing ID
 	header.From.Addr = "12345678"
-	header.Signatures.Client = "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+	header.Signatures.Client = testingClientSignature
 	ok := VerifyClientHeader(*header)
 	assert.True(t, ok)
 
 	// Correct sig, wrong routing ID
 	header.From.Addr = "44444444"
-	header.Signatures.Client = "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+	header.Signatures.Client = testingClientSignature
 	ok = VerifyClientHeader(*header)
 	assert.False(t, ok)
 
@@ -186,13 +187,13 @@ func TestVerifyClientHeaderWithServerSignature(t *testing.T) {
 
 	// empty from addr
 	header.From.Addr = ""
-	header.Signatures.Client = "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+	header.Signatures.Client = testingClientSignature
 	ok = VerifyClientHeader(*header)
 	assert.False(t, ok)
 
 	// Wrong from addr (not a routing)
 	header.From.Addr = "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc"
-	header.Signatures.Client = "6i4S/htfh8Ye2e3higYHkQZ5KpIejj6U7sXPLwU2CwAEDYNVZ2OvrFjbRjq49RmySYn8sDvnkhpLr1WRr78+Cg=="
+	header.Signatures.Client = testingClientSignature
 	ok = VerifyClientHeader(*header)
 	assert.False(t, ok)
 }
@@ -215,6 +216,20 @@ func TestVerifyClientHeaderWithOnbehalfSignature(t *testing.T) {
 	header.AuthorizedBy.Signature = "foobar"
 	ok = VerifyClientHeader(*header)
 	assert.False(t, ok)
+
+	// No authorized by header found
+	header.AuthorizedBy = nil
+	ok = VerifyClientHeader(*header)
+	assert.False(t, ok)
+
+	header = &Header{}
+	_ = testing2.ReadJSON("../../testdata/header-004.json", &header)
+
+	// No authorized by header found
+	header.AuthorizedBy = nil
+	ok = VerifyClientHeader(*header)
+	assert.False(t, ok)
+
 }
 
 func setupClient() *bmcrypto.PrivKey {
@@ -243,7 +258,7 @@ func setupClient() *bmcrypto.PrivKey {
 		Pow:         pow.String(),
 		Hash:        "000000000000000000000000000097026f0daeaec1aeb8351b096637679cf350",
 	}
-	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
+	_ = repo.UploadAddress(*addr, &ai, *privKey)
 
 	// Note: our sender uses key3
 	privKey, pubKey, err = testing2.ReadTestKey("../../testdata/key-ed25519-3.json")
@@ -271,7 +286,7 @@ func setupClient() *bmcrypto.PrivKey {
 		Hash:        "000000000000000000018f66a0f3591a883f2b9cc3e95a497e7cf9da1071b4cc",
 		Pow:         pow.String(),
 	}
-	_ = repo.UploadAddress(*addr, &ai, *privKey, *pow, "")
+	_ = repo.UploadAddress(*addr, &ai, *privKey)
 
 	return privKey
 }
@@ -327,6 +342,5 @@ func uploadAddress(repo resolver.AddressRepository, addr address.Address, addrHa
 		Pow:         pow.String(),
 		RoutingInfo: resolver.RoutingInfo{},
 	}
-	_ = repo.UploadAddress(addr, &ai, *privKey, *pow, "")
-
+	_ = repo.UploadAddress(addr, &ai, *privKey)
 }

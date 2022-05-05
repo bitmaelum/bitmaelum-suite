@@ -35,6 +35,31 @@ const (
 	incorrectBlock string = "incorrect block ID"
 )
 
+type moveMessageInput struct {
+	From int `json:"from"`
+	To   int `json:"to"`
+}
+
+// DeleteMessage will delete a message
+func DeleteMessage(w http.ResponseWriter, req *http.Request) {
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
+		return
+	}
+
+	messageID := mux.Vars(req)["message"]
+
+	ar := container.Instance.GetAccountRepo()
+	err = ar.RemoveMessage(*haddr, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	_ = httputils.JSONOut(w, http.StatusOK, nil)
+}
+
 // GetMessage will return a message header and catalog
 func GetMessage(w http.ResponseWriter, req *http.Request) {
 	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
@@ -46,8 +71,16 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 	messageID := mux.Vars(req)["message"]
 
 	ar := container.Instance.GetAccountRepo()
-	header, _ := ar.FetchMessageHeader(*haddr, messageID)
-	catalog, _ := ar.FetchMessageCatalog(*haddr, messageID)
+	header, err := ar.FetchMessageHeader(*haddr, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+	catalog, err := ar.FetchMessageCatalog(*haddr, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
 
 	output := &api.Message{
 		ID:      messageID,
@@ -56,6 +89,101 @@ func GetMessage(w http.ResponseWriter, req *http.Request) {
 	}
 
 	_ = httputils.JSONOut(w, http.StatusOK, output)
+}
+
+// CopyMessage will copy a message to a box
+func CopyMessage(w http.ResponseWriter, req *http.Request) {
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
+		return
+	}
+
+	messageID := mux.Vars(req)["message"]
+
+	var input moveMessageInput
+	err = httputils.DecodeBody(w, req.Body, &input)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ar := container.Instance.GetAccountRepo()
+	err = ar.CopyMessage(*haddr, messageID, input.To)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	httputils.JSONOut(w, http.StatusOK, "")
+}
+
+// MoveMessage will move a message to a box
+func MoveMessage(w http.ResponseWriter, req *http.Request) {
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
+		return
+	}
+
+	messageID := mux.Vars(req)["message"]
+
+	var input moveMessageInput
+	err = httputils.DecodeBody(w, req.Body, &input)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ar := container.Instance.GetAccountRepo()
+	err = ar.MoveMessage(*haddr, messageID, input.From, input.To)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	httputils.JSONOut(w, http.StatusOK, "")
+}
+
+// RemoveMessageFromBox will remove a message from a box
+func RemoveMessageFromBox(w http.ResponseWriter, req *http.Request) {
+	haddr, err := hash.NewFromHash(mux.Vars(req)["addr"])
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, accountNotFound)
+		return
+	}
+
+	messageID := mux.Vars(req)["message"]
+
+	var input moveMessageInput
+	err = httputils.DecodeBody(w, req.Body, &input)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ar := container.Instance.GetAccountRepo()
+	err = ar.RemoveFromBox(*haddr, input.From, messageID)
+	if err != nil {
+		httputils.ErrorOut(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	// Should the message be removed if it's not linked to any mailbox?
+	boxes, err := ar.GetAllBoxes(*haddr)
+	if err == nil {
+		var found bool
+		for box := range boxes {
+			if ar.ExistsInBox(*haddr, box, messageID) {
+				found = true
+			}
+		}
+		if !found {
+			ar.RemoveMessage(*haddr, messageID)
+		}
+	}
+
+	httputils.JSONOut(w, http.StatusOK, "")
 }
 
 // GetMessageBlock will return a message block

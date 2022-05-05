@@ -46,6 +46,7 @@ type DecryptedMessage struct {
 // Decrypt will decrypt the current encrypted message with the given public key and return a decrypted copy
 func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage, error) {
 	dm := DecryptedMessage{
+		ID:     em.ID,
 		Header: em.Header,
 	}
 
@@ -55,7 +56,11 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 	}
 
 	// Decrypt the encryption key
-	key, err := bmcrypto.Decrypt(privKey, em.Header.Catalog.TransactionID, em.Header.Catalog.EncryptedKey)
+	settings := &bmcrypto.EncryptionSettings{
+		Type:          bmcrypto.CryptoType(em.Header.Catalog.Crypto),
+		TransactionID: em.Header.Catalog.TransactionID,
+	}
+	key, err := bmcrypto.Decrypt(privKey, settings, em.Header.Catalog.EncryptedKey)
 	if err != nil {
 		return nil, err
 	}
@@ -69,20 +74,24 @@ func (em *EncryptedMessage) Decrypt(privKey bmcrypto.PrivKey) (*DecryptedMessage
 
 	// Add our block readers
 	for idx, blk := range dm.Catalog.Blocks {
-		r, err := createReader(blk.IV, blk.Key, blk.Compression, em.GenerateBlockReader(em.ID, blk.ID))
-		if err != nil {
-			continue
+		if em.GenerateBlockReader != nil {
+			r, err := createReader(blk.IV, blk.Key, blk.Compression, em.GenerateBlockReader(em.ID, blk.ID))
+			if err != nil {
+				continue
+			}
+			dm.Catalog.Blocks[idx].Reader = r
 		}
-		dm.Catalog.Blocks[idx].Reader = r
 	}
 
 	// Add our attachment readers
 	for idx, att := range dm.Catalog.Attachments {
-		r, err := createReader(att.IV, att.Key, att.Compression, em.GenerateAttachmentReader(em.ID, att.ID))
-		if err != nil {
-			continue
+		if em.GenerateAttachmentReader != nil {
+			r, err := createReader(att.IV, att.Key, att.Compression, em.GenerateAttachmentReader(em.ID, att.ID))
+			if err != nil {
+				continue
+			}
+			dm.Catalog.Attachments[idx].Reader = r
 		}
-		dm.Catalog.Attachments[idx].Reader = r
 	}
 
 	return &dm, nil

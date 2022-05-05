@@ -21,9 +21,12 @@ package vault
 
 import (
 	"errors"
+
+	"github.com/bitmaelum/bitmaelum-suite/pkg/bmcrypto"
 )
 
 var errMigrationError = errors.New("error while migrating vault to the latest version")
+var errGenerateStoreKey = errors.New("error while generating store keys")
 
 // DecryptContainer decrypts a container and fills the values in v.Store
 func (v *Vault) DecryptContainer(container *EncryptedContainer) error {
@@ -46,6 +49,32 @@ func (v *Vault) DecryptContainer(container *EncryptedContainer) error {
 		err = v.Persist()
 		if err != nil {
 			return errMigrationError
+		}
+	}
+
+	// Check if we have store keys
+	updated := false
+	for i := range v.Store.Accounts {
+		if v.Store.Accounts[i].StoreKey == nil {
+			kt, err := bmcrypto.FindKeyType("ed25519")
+			if err != nil {
+				return errGenerateStoreKey
+			}
+
+			kp, err := bmcrypto.GenerateKeypairWithRandomSeed(kt)
+			if err != nil {
+				return errGenerateStoreKey
+			}
+			v.Store.Accounts[i].StoreKey = kp
+			updated = true
+		}
+	}
+
+	// Save vault if store keys are created
+	if updated {
+		err = v.Persist()
+		if err != nil {
+			return errGenerateStoreKey
 		}
 	}
 

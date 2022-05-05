@@ -35,7 +35,6 @@ const (
 
 var (
 	// Override for mocking purposes
-	kr        keyring.Keyring
 	pwdReader PasswordReader = &StdInPasswordReader{}
 )
 
@@ -56,11 +55,12 @@ func (pr *StdInPasswordReader) ReadPassword() ([]byte, error) {
 
 // StorePassword will store the given password into the keychain if possible
 func StorePassword(pwd string) error {
-	if kr != nil {
-		return kr.Set(service, user, pwd)
-	}
+	return keyring.Set(service, user, pwd)
+}
 
-	return nil
+// DeletePassword will delete the password from the keychain if possible
+func DeletePassword() error {
+	return keyring.Delete(service, user)
 }
 
 // AskDoublePassword will ask for a password (and confirmation) on the commandline
@@ -100,11 +100,9 @@ func AskPassword() (string, bool) {
 
 // AskPasswordPrompt will prompt for a password
 func AskPasswordPrompt(p1 string) (string, bool) {
-	if kr != nil {
-		pwd, err := kr.Get(service, user)
-		if err == nil {
-			return pwd, true
-		}
+	pwd, err := keyring.Get(service, user)
+	if err == nil {
+		return pwd, true
 	}
 
 	fmt.Print(p1)

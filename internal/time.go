@@ -23,6 +23,11 @@ import "time"
 
 var timeNow = time.Now
 
+// SetMockTime will set the mocked time. Use in tests only
+func SetMockTime(t func() time.Time) {
+	timeNow = t
+}
+
 // TimeNow returns the current time in UTC zone WITHOUT nanoseconds. This is useful when marshalling times to JSON
 func TimeNow() time.Time {
 	ct := timeNow().Unix()

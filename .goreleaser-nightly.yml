@@ -1,0 +1,94 @@
+before:
+  hooks:
+    - go mod download
+
+builds:
+  - <<: &build_defaults
+      env:
+        - CGO_ENABLED=0
+        - PKG=github.com/bitmaelum/bitmaelum-suite/internal
+      ldflags:
+        - -X '{{.Env.PKG}}.BuildDate={{.Date}}' -X '{{.Env.PKG}}.GitCommit={{.FullCommit}}' -X '{{.Env.PKG}}.VersionTag=develop-nightly'
+      goarch:
+        - amd64
+        - arm64
+      goos:
+        - linux
+        - darwin
+        - windows
+      ignore:
+        - goos: windows
+          goarch: arm64
+        - goos: darwin
+          goarch: arm64
+
+    main: ./cmd/bm-client/main.go
+    id: "bm-client"
+    binary: bm-client
+
+  - <<: *build_defaults
+    main: ./cmd/bm-config/main.go
+    id: "bm-config"
+    binary: bm-config
+
+  - <<: *build_defaults
+    main: ./cmd/bm-json/main.go
+    id: "bm-json"
+    binary: bm-json
+
+  - <<: *build_defaults
+    main: ./cmd/bm-send/main.go
+    id: "bm-send"
+    binary: bm-send
+
+  - <<: *build_defaults
+    main: ./cmd/bm-server/main.go
+    id: "bm-server"
+    binary: bm-server
+
+  - <<: *build_defaults
+    main: ./cmd/bm-mail/main.go
+    id: "bm-mail"
+    binary: bm-mail
+
+  - <<: *build_defaults
+    main: ./cmd/bm-bridge/main.go
+    id: "bm-bridge"
+    binary: bm-bridge
+
+
+archives:
+  - id: nix
+#    builds: [darwin, linux]
+    <<: &archive_defaults
+      name_template: "{{ .ProjectName }}_nightly_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+      files:
+        - LICENSE
+    wrap_in_directory: true
+    format: tar.gz
+    replacements:
+      amd64: x86_64
+  - id: windows
+#    builds: [windows]
+    <<: *archive_defaults
+    wrap_in_directory: false
+    format: zip
+    replacements:
+      amd64: 64bit
+
+checksum:
+  name_template: 'checksums.txt'
+
+signs:
+  - artifacts: checksum
+    args: ["-u", "C2D6C816449D7AF38853F6FEDFD61AEF353E9701", "--no-tty", "--output", "${signature}", "--detach-sign", "${artifact}"]
+
+nfpms:
+  - license: MIT
+    maintainer: GitHub
+    homepage: https://bitmaelum.org
+    bindir: /usr
+    description: BitMaelum Suite
+    formats:
+      - deb
+      - rpm

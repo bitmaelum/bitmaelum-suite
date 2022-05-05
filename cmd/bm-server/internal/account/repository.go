@@ -67,7 +67,6 @@ type Repository interface {
 	KeyRepository
 	BoxRepository
 	MessageRepository
-	OrganisationRepository
 }
 
 // AddressRepository creates, checks or deletes complete accounts. Address is not the correct word for this.
@@ -84,12 +83,6 @@ type KeyRepository interface {
 	FetchKeys(addr hash.Hash) ([]bmcrypto.PubKey, error)
 }
 
-// OrganisationRepository gets and sets organisation settings into an account
-type OrganisationRepository interface {
-	StoreOrganisationSettings(addr hash.Hash, settings OrganisationSettings) error
-	FetchOrganisationSettings(addr hash.Hash) (*OrganisationSettings, error)
-}
-
 // BoxRepository deals with message boxes insides an account
 type BoxRepository interface {
 	CreateBox(addr hash.Hash, parentBox int) error
@@ -103,8 +96,11 @@ type BoxRepository interface {
 type MessageRepository interface {
 	CreateMessage(addr hash.Hash, msgID string) error
 	RemoveMessage(addr hash.Hash, msgID string) error
+	CopyMessage(addr hash.Hash, msgID string, boxID int) error
+	MoveMessage(addr hash.Hash, msgID string, fromBoxID, toBoxID int) error
 	AddToBox(addr hash.Hash, boxID int, msgID string) error
 	RemoveFromBox(addr hash.Hash, boxID int, msgID string) error
+	ExistsInBox(addr hash.Hash, boxID int, msgID string) bool
 
 	// Message boxes
 	FetchListFromBox(addr hash.Hash, box int, since time.Time, offset, limit int) (*MessageList, error)

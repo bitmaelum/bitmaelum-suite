@@ -10,7 +10,9 @@
       "bm-config.exe",
       "bm-json.exe",
       "bm-send.exe",
-      "bm-server.exe"
+      "bm-server.exe",
+      "bm-bridge.exe",
+      "bm-mail.exe"
     ]
   },
   "env": {

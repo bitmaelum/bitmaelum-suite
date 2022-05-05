@@ -88,12 +88,6 @@ func (a *Addressing) AddRecipient(addr *address.Address, h *hash.Hash, key *bmcr
 	a.Recipient.PubKey = key
 }
 
-// AddAuthorizedBy will add authorizedby information to the addressing
-func (a *Addressing) AddAuthorizedBy(sig string, key *bmcrypto.PubKey) {
-	a.AuthorizedBy.Signature = sig
-	a.AuthorizedBy.PubKey = key
-}
-
 // NewEnvelope creates a new (open) envelope which is used for holding a complete message
 func NewEnvelope() (*Envelope, error) {
 	var err error
@@ -135,11 +129,13 @@ func (e *Envelope) AddCatalog(cat *Catalog) error {
 	e.BlockReaders = make(map[string]*io.Reader)
 	e.AttachmentReaders = make(map[string]*io.Reader)
 
-	for _, block := range cat.Blocks {
+	for i := range cat.Blocks {
+		block := cat.Blocks[i]
 		e.BlockReaders[block.ID] = &block.Reader
 	}
 
-	for _, att := range cat.Attachments {
+	for i := range cat.Attachments {
+		att := cat.Attachments[i]
 		e.AttachmentReaders[att.ID] = &att.Reader
 	}
 
@@ -169,13 +165,13 @@ func (e *Envelope) CloseAndEncrypt(senderPrivKey *bmcrypto.PrivKey, recipientPub
 
 	// Set catalog information in the header
 	e.Header.Catalog.Size = uint64(len(e.EncryptedCatalog))
-	ek, tx, cr, err := bmcrypto.Encrypt(*recipientPubKey, e.catalogKey)
+	ek, settings, err := bmcrypto.Encrypt(*recipientPubKey, e.catalogKey)
 	if err != nil {
 		return err
 	}
+	e.Header.Catalog.Crypto = string(settings.Type)
 	e.Header.Catalog.EncryptedKey = ek
-	e.Header.Catalog.TransactionID = tx
-	e.Header.Catalog.Crypto = cr
+	e.Header.Catalog.TransactionID = settings.TransactionID
 
 	// Sign the header
 	err = SignClientHeader(e.Header, *senderPrivKey)

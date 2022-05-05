@@ -78,8 +78,10 @@ func IncomingMessageHeader(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		header.AuthorizedBy.PublicKey = k.PublicKey
-		header.AuthorizedBy.Signature = k.Signature
+		header.AuthorizedBy = &message.AuthorizedByType{
+			PublicKey: k.PublicKey,
+			Signature: k.Signature,
+		}
 	}
 
 	// Add server signature if we are the originating server

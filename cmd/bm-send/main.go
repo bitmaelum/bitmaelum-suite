@@ -90,8 +90,7 @@ func main() {
 	}
 
 	// Set resolve settings, as we don't use a client configuration file
-	config.Client.Resolver.Remote.Enabled = true
-	config.Client.Resolver.Remote.URL = opts.Resolver
+	config.Client.Resolvers.Remote.URL = opts.Resolver
 	if opts.Verbose {
 		config.Client.Server.DebugHTTP = true
 	}
