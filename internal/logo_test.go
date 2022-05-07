@@ -36,7 +36,8 @@ func TestLogo(t *testing.T) {
 	_ = os.Setenv("TERM", "xterm")
 	assert.Contains(t, GetASCIILogo(), "\033[32m")
 
-	_ = os.Setenv("COLORTERM", "")
-	_ = os.Setenv("TERM", "linux")
+	_ = os.Unsetenv("COLORTERM")
+	_ = os.Unsetenv("TERM")
+	_ = os.Unsetenv("WSL_DISTRO_NAME")
 	assert.NotContains(t, GetASCIILogo(), "\033[")
 }

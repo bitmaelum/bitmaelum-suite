@@ -4,7 +4,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.16.x, 1.17.x, 1.18.x ]
+        go-version: [ 1.17.x, 1.18.x ]
         os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
@@ -19,16 +19,18 @@ jobs:
       run: |
         source .github/workflows/github.sh
         section "Checking license headers"
-        go get -u github.com/google/addlicense
+        go get github.com/google/addlicense
+        go install github.com/google/addlicense
         GOPATH=`go env GOPATH`
         shopt -s globstar
-        $GOPATH/bin/addlicense -c "BitMaelum Authors" -l mit -y 2021 -check internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go
+        $GOPATH/bin/addlicense -c "BitMaelum Authors" -l mit -y 2022 -check internal/**/*.go pkg/**/*.go tools/**/*.go cmd/**/*.go
 
     - name: Go imports
       run: |
         source .github/workflows/github.sh
         section "Checking go imports"
-        go get -u golang.org/x/tools/cmd/goimports
+        go mod download golang.org/x/tools
+        go install golang.org/x/tools/cmd/goimports
         OUT=`goimports -l .`
         echo $OUT
         test -z "$OUT"
@@ -40,10 +42,11 @@ jobs:
         go vet ./...
 
     - name: Go static check
+      if: ${{ matrix.go-version != '1.18.x' }}
       run: |
         source .github/workflows/github.sh
         section "Static analysis"
-        go get honnef.co/go/tools/cmd/staticcheck
+        go install honnef.co/go/tools/cmd/staticcheck@2020.2.1
         GOPATH=`go env GOPATH`
         $GOPATH/bin/staticcheck ./...
 
@@ -52,6 +55,7 @@ jobs:
         source .github/workflows/github.sh
         section "Checking ineffassign"
         go get -u github.com/gordonklaus/ineffassign
+        go install github.com/gordonklaus/ineffassign
         GOPATH=`go env GOPATH`
         $GOPATH/bin/ineffassign ./...
 
@@ -59,7 +63,8 @@ jobs:
       run: |
         source .github/workflows/github.sh
         section "Checking for lint"
-        go get -u golang.org/x/lint/golint
+        go mod download golang.org/x/lint
+        go install golang.org/x/lint/golint
         GOPATH=`go env GOPATH`
         $GOPATH/bin/golint -set_exit_status ./...
 
@@ -68,6 +73,7 @@ jobs:
         source .github/workflows/github.sh
         section "Checking cyclomatic complexity"
         go get -u github.com/fzipp/gocyclo/cmd/gocyclo
+        go install github.com/fzipp/gocyclo/cmd/gocyclo
         GOPATH=`go env GOPATH`
         $GOPATH/bin/gocyclo -over 15 .
 
