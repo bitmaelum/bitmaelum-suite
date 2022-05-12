@@ -1,8 +1,8 @@
 <img alt="logo" align=right height=70 src="https://bitmaelum.com/logo_and_name.svg">
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/bitmaelum/bitmaelum-suite)](https://goreportcard.com/report/github.com/bitmaelum/bitmaelum-suite)
-![BitMaelum CI](https://github.com/bitmaelum/bitmaelum-suite/workflows/BitMaelum%20CI/badge.svg?branch=develop)
-[![Coverage Status](https://coveralls.io/repos/github/bitmaelum/bitmaelum-suite/badge.svg?branch=develop)](https://coveralls.io/github/bitmaelum/bitmaelum-suite?branch=develop)
+![BitMaelum CI](https://github.com/bitmaelum/bitmaelum-suite/workflows/BitMaelum%20CI/badge.svg?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/bitmaelum/bitmaelum-suite/badge.svg?branch=main)](https://coveralls.io/github/bitmaelum/bitmaelum-suite?branch=main)
 ![License](https://img.shields.io/github/license/bitmaelum/bitmaelum-suite)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/bitmaelum/bitmaelum-suite) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4122/badge)](https://bestpractices.coreinfrastructure.org/projects/4122)
 [![Discourse](https://camo.githubusercontent.com/5efc418def2498d1d09afb46d8b3b53aaca3a04700f10ec3ab7de0e2041fbfa5/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f646973636f757273652d4a6f696e2d677265656e3f7374796c653d666c6174266c696e6b3d68747470733a2f2f646973636f757273652e6269746d61656c756d2e6f7267)](https://discourse.bitmaelum.com)
