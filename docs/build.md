@@ -1,5 +1,7 @@
 # Build
 
+**Note: Minimum requirements for building BitMaelum is go 1.17.**
+
 We are using `make` to build our suite.
 
 The suite itself consists of several main apps and some additional tools. The tools are not needed for running BitMaelum, but can come in handy during debugging and development.
