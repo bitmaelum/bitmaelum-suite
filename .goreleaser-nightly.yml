@@ -8,7 +8,7 @@ builds:
         - CGO_ENABLED=0
         - PKG=github.com/bitmaelum/bitmaelum-suite/internal
       ldflags:
-        - -X '{{.Env.PKG}}.BuildDate={{.Date}}' -X '{{.Env.PKG}}.GitCommit={{.FullCommit}}' -X '{{.Env.PKG}}.VersionTag=develop-nightly'
+        - -X '{{.Env.PKG}}.BuildDate={{.Date}}' -X '{{.Env.PKG}}.GitCommit={{.FullCommit}}' -X '{{.Env.PKG}}.VersionTag=main-nightly'
       goarch:
         - amd64
         - arm64

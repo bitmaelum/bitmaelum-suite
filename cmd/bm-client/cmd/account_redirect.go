@@ -22,71 +22,64 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/bitmaelum/bitmaelum-suite/cmd/bm-client/internal/container"
-	"github.com/bitmaelum/bitmaelum-suite/internal/organisation"
 	"github.com/bitmaelum/bitmaelum-suite/internal/vault"
-	"github.com/bitmaelum/bitmaelum-suite/pkg/hash"
+	"github.com/bitmaelum/bitmaelum-suite/pkg/address"
 	"github.com/spf13/cobra"
 )
 
-var organisationValidateRemoveCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "Remove an organisation validation",
+var redirectAccountCmd = &cobra.Command{
+	Use:   "redirect",
+	Short: "Redirect account to another account",
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.OpenDefaultVault()
 
-		orgHash := hash.New(strings.TrimRight(*ovOrganisation, "!"))
-
-		info, err := v.GetOrganisationInfo(orgHash)
+		addr, err := address.NewAddress(*lnkAccount)
 		if err != nil {
-			fmt.Println("error: organisation not found: ", *oaddress)
+			fmt.Println("error: bad address: ", *lnkAccount)
 			os.Exit(1)
 		}
 
-		val, err := organisation.NewValidationTypeFromString(fmt.Sprintf("%s %s", *ovrType, *ovrValue))
+		targetAddr, err := address.NewAddress(*lnkTargetAccount)
 		if err != nil {
-			fmt.Println("error: incorrect validation type/value: ", err)
+			fmt.Println("error: bad address: ", *lnkTargetAccount)
 			os.Exit(1)
 		}
 
-		newValidations := []organisation.ValidationType{}
-		for _, srcVal := range info.Validations {
-			if srcVal.String() != val.String() {
-				newValidations = append(newValidations, srcVal)
-			}
-		}
-		info.Validations = newValidations
-
-		err = v.Persist()
+		info, err := v.GetAccountInfo(*addr)
 		if err != nil {
-			fmt.Println("error: cannot save data back into the vault: ", err)
+			fmt.Println("error: account not found: ", addr)
 			os.Exit(1)
 		}
 
+		// Check if target exists
 		rs := container.Instance.GetResolveService()
-		err = rs.UploadOrganisationInfo(*info)
+		_, err = rs.ResolveAddress(targetAddr.Hash())
 		if err != nil {
-			fmt.Println("error: cannot upload data to the resolver: ", err)
+			fmt.Printf("error: target address '%s' not found.\n", targetAddr.String())
 			os.Exit(1)
 		}
 
-		fmt.Println("Successfully removed validation")
+		if info.RedirAddress != nil {
+			fmt.Printf("Warning: you already redirect this address to '%s'. Are you sure you want to remove this and redirect to '%s' instead?\n", info.RedirAddress.String(), targetAddr.String())
+		}
+
+		fmt.Println("Linked")
 	},
 }
 
 var (
-	ovrType  *string
-	ovrValue *string
+	lnkAccount       *string
+	lnkTargetAccount *string
 )
 
 func init() {
-	organisationValidateCmd.AddCommand(organisationValidateRemoveCmd)
+	accountCmd.AddCommand(redirectAccountCmd)
 
-	ovrType = organisationValidateRemoveCmd.PersistentFlags().String("type", "", "Type")
-	ovrValue = organisationValidateRemoveCmd.PersistentFlags().String("value", "", "Value")
+	lnkAccount = redirectAccountCmd.Flags().String("account", "", "Account to redirect")
+	lnkTargetAccount = redirectAccountCmd.Flags().String("target", "", "Target account to redirect to")
 
-	_ = organisationValidateRemoveCmd.MarkPersistentFlagRequired("type")
-	_ = organisationValidateRemoveCmd.MarkPersistentFlagRequired("value")
+	_ = redirectAccountCmd.MarkFlagRequired("account")
+	_ = redirectAccountCmd.MarkFlagRequired("target")
 }
